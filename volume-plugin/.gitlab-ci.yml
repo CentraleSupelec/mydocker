@@ -1,0 +1,10 @@
+stages:
+  - build
+
+build:
+  stage: build
+  image: golang:1.15-alpine
+  script:
+    - go install -v
+  tags:
+    - docker

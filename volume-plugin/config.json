@@ -1,0 +1,41 @@
+{
+  "description": "Plugin to handle volumes with various backends depending on config, local filesystem with directory creation OR rbd",
+  "documentation": "https://gitlab-research.centralesupelec.fr/mydocker/mydockervolume",
+  "interface": {
+    "types": [
+      "docker.volumedriver/1.0"
+    ],
+    "socket": "mydockervolume.sock"
+  },
+  "entrypoint": [
+    "/mydockervolume"
+  ],
+  "env": [
+    {
+      "name": "LOG_LEVEL",
+      "description": "Logging level",
+      "value": "info"
+    },
+    {
+      "name": "DRIVER_MODE",
+      "description": "Mode to run : 'FS'",
+      "value": "FS"
+    }
+  ],
+  "mounts": [
+    {
+      "name": "rootPath",
+      "description":  "Where all volumes will be created",
+      "source": "/mnt/mydocker-fs",
+      "destination": "/mydocker-fs",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ],
+      "settable": [
+        "source"
+      ]
+    }
+  ],
+  "propagatedMount": "/mydocker-fs"
+}
