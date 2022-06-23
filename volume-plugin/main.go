@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
+	wetopi "github.com/wetopi/docker-volume-rbd/lib"
 	"gitlab-research.centralesupelec.fr/mydockervolume/mydockervolume"
 	"os"
 )
@@ -20,11 +21,13 @@ func main() {
 	var mydockerDriver volume.Driver
 	switch mode := os.Getenv("DRIVER_MODE"); mode {
 	case "FS":
-		err, mydockerDriver = mydockervolume.NewFSDriver("/mydocker-fs")
+		err, mydockerDriver = mydockervolume.NewFSDriver(os.Getenv("ROOT_DIR"))
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
+	case "RBD":
+		err, mydockerDriver = wetopi.NewDriver()
 	default:
 		log.Fatalf("unsupported DRIVER_MODE %s", mode)
 		os.Exit(1)

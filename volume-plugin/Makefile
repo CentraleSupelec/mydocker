@@ -1,4 +1,4 @@
-PLUGIN_NAME = mydocker/volume
+PLUGIN_NAME = centralesupelec/mydockervolume
 PLUGIN_VERSION ?= dev
 
 all: clean rootfs create

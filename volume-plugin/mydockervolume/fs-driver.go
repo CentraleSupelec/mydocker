@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/docker/go-plugins-helpers/volume"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path"
@@ -13,10 +14,11 @@ import (
 func NewFSDriver(providedRoot string) (error, *mydockerFsDriver) {
 	var root string
 	if providedRoot == "" {
-		root = "/mnt/mydocker-fs"
+		root = "/mnt/volumes"
 	} else {
 		root = providedRoot
 	}
+	log.Debugf("volume-mydocker Message=Creating %s", root)
 	err := os.MkdirAll(root, os.FileMode(0700))
 	if err != nil {
 		return err, nil
@@ -37,7 +39,8 @@ func (d *mydockerFsDriver) Create(request *volume.CreateRequest) error {
 		return errors.New("name is invalid because it contains '/'")
 	}
 	fullPath := path.Join(d.root, request.Name)
-	if err := os.MkdirAll(fullPath, os.FileMode(0700)); err != nil {
+	log.Debugf("volume-mydocker Message=Creating %s", fullPath)
+	if err := os.MkdirAll(fullPath, os.ModeDir|os.FileMode(0775)); err != nil {
 		return err
 	}
 	return nil
@@ -71,6 +74,7 @@ func (d *mydockerFsDriver) Get(request *volume.GetRequest) (*volume.GetResponse,
 
 func (d *mydockerFsDriver) Remove(request *volume.RemoveRequest) error {
 	fullPath := path.Join(d.root, request.Name)
+	log.Debugf("volume-mydocker Message=Removing %s", fullPath)
 	err := os.RemoveAll(fullPath)
 	if err != nil {
 		return err

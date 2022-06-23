@@ -13,21 +13,109 @@
   "env": [
     {
       "name": "LOG_LEVEL",
-      "description": "Logging level",
+      "description": "Logging level ('debug', 'warning'...)",
+      "settable": [
+        "value"
+      ],
       "value": "info"
     },
     {
+      "name": "ROOT_DIR",
+      "description": "Root directory",
+      "settable": [
+        "value"
+      ],
+      "value": "/mnt/volumes"
+    },
+    {
       "name": "DRIVER_MODE",
-      "description": "Mode to run : 'FS'",
+      "description": "Mode to run : 'FS' for local volumes in /mnt/mydocker-fs or 'RBD' for Ceph RBD images",
+      "settable": [
+        "value"
+      ],
       "value": "FS"
+    },
+    {
+      "name": "RBD_CONF_DEVICE_MAP_ROOT",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "RBD_CONF_POOL",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "RBD_CONF_CLUSTER",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "RBD_CONF_KEYRING_USER",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "MOUNT_OPTIONS",
+      "Description": "Options to pass to the mount command",
+      "settable": [
+        "value"
+      ],
+      "value": "--options=noatime"
     }
   ],
+  "linux": {
+    "AllowAllDevices": true,
+    "capabilities": [
+      "CAP_NET_ADMIN",
+      "CAP_SYS_ADMIN",
+      "CAP_SYS_MODULE"
+    ],
+    "devices": null
+  },
   "mounts": [
+    {
+      "source": "/lib/modules",
+      "destination": "/lib/modules",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
+    },
+    {
+      "source": "/dev",
+      "destination": "/dev",
+      "type": "bind",
+      "options": [
+        "shared",
+        "rbind"
+      ]
+    },
+    {
+      "source": "/etc/ceph",
+      "destination": "/etc/ceph",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
+    },
+    {
+      "source": "/sys",
+      "destination": "/sys",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
+    },
     {
       "name": "rootPath",
       "description":  "Where all volumes will be created",
       "source": "/mnt/mydocker-fs",
-      "destination": "/mydocker-fs",
+      "destination": "/mnt/volumes",
       "type": "bind",
       "options": [
         "rbind"
@@ -37,5 +125,8 @@
       ]
     }
   ],
-  "propagatedMount": "/mydocker-fs"
+  "network": {
+    "type": "host"
+  },
+  "propagatedMount": "/mnt/volumes"
 }
