@@ -15,8 +15,8 @@ WORKDIR /usr/src/mydockervolume
 RUN go install -v
 CMD ["/go/bin/mydockervolume"]
 
-FROM debian:bullseye
-ENV CEPH_VERSION pacific
+FROM debian:bookworm
+ENV CEPH_VERSION quincy
 
 RUN apt-get update && apt-get install -yq software-properties-common wget gnupg2 \
     && wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add - \
