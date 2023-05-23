@@ -1,0 +1,40 @@
+Port: 50000
+Worker: 30
+PortThreshold: 75
+PortSize: 150
+PortMin: 10100
+PortMax: 15000
+DefaultNanoCPUsLimit: 100000000
+DefaultMemoryBytesLimit: 100000000
+BuildRegistryAddress: myregistry.com
+BuildImage: test-kaniko
+RegistryCredentials:
+  - Address: myregistry.com
+    Username: mydocker
+    Password: ""
+LogLevel: trace
+CephFSPrefix: "dev"
+CephServiceName: ""
+DeployImage: "myregistry.com/mydocker/deploy"
+AdminImage: "myregistry.com/mydocker/filebrowser:latest"
+Environment: "dev"
+AutoscalingStateBaseUrl: https://example.com/terraform-preprod
+ScaleUpInterval: "10s"
+ScaleUpCooldown: 30s
+ScaleDownInterval: "7s"
+ScaleDownRemoveNonEmpty: false
+EmailUsername: ""
+EmailPassword: ""
+EmailServer: "host.docker.internal"
+EmailPort: 1025
+EmailFrom: "noreply@example.com"
+EmailTo:
+  - monitoring@example.com
+LogsTimeout: 500ms
+DeployEnvSecrets:
+  - "AWS_ACCESS_KEY_ID="
+  - "AWS_SECRET_ACCESS_KEY="
+  - "OVH_CONSUMER_KEY="
+  - "OVH_APPLICATION_SECRET="
+  - "OS_USERNAME="
+  - "OS_PASSWORD="

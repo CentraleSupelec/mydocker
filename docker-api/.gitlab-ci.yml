@@ -1,0 +1,57 @@
+image: golang:1.15
+
+.go_template: &go_template
+  stage: build
+  tags:
+    - docker
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  before_script:
+    - apt update
+    - apt install -y libcephfs-dev librbd-dev librados-dev
+    - mkdir -p .go
+  cache:
+    key: go-path
+    paths:
+      - .go/pkg/mod/
+
+test:
+  <<: *go_template
+  script:
+    - cd docker-api
+    - go test -tags luminous -v -coverprofile=coverage.txt -covermode count
+    - go get github.com/boumenot/gocover-cobertura
+    - go run github.com/boumenot/gocover-cobertura < coverage.txt > coverage.xml
+  only:
+    - branches
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: docker-api/coverage.xml
+  coverage: '/coverage: \d+\.?\d*% of statements/'
+
+.build_artifacts_template: &build_artifacts_definition
+  <<: *go_template
+  script:
+    - cd docker-api
+    - go build -tags luminous
+
+build_uploaded_artifacts:
+  <<: *build_artifacts_definition
+  artifacts:
+    paths:
+      - docker-api/docker-api
+  only:
+    - tags
+    - master
+
+build_worthless_artifacts:
+  <<: *build_artifacts_definition
+  except:
+    - tags
+    - master
+
+stages:
+  - test
+  - build
