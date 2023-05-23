@@ -1,0 +1,83 @@
+databaseChangeLog:
+- changeSet:
+    id: 1637069204774-2
+    author: arnaud (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: dtype
+            type: VARCHAR(31)
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: permissionPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: type
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: user_id
+            type: BIGINT
+        - column:
+            name: course_id
+            type: BIGINT
+        - column:
+            name: docker_image_id
+            type: BIGINT
+        tableName: permission
+
+    - addColumn:
+        columns:
+        - column:
+            name: visible
+            type: boolean
+        tableName: docker_image
+
+    - sql:
+          sql: UPDATE docker_image SET visible = false
+
+    - addNotNullConstraint:
+          columnDataType: boolean
+          columnName: visible
+          tableName: docker_image
+          validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: docker_image_id
+        baseTableName: permission
+        constraintName: FK6ww7xsppslib2ugqafiiareun
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: docker_image
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: course_id
+        baseTableName: permission
+        constraintName: FKiy2b3ffbkp4pgobdk1xu87oh1
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: courses
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: user_id
+        baseTableName: permission
+        constraintName: FKtpvwdvckg86mpuk9o2j1h6t15
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: users
+        validate: true

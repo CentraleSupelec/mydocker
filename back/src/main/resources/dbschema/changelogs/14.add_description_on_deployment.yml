@@ -1,0 +1,11 @@
+databaseChangeLog:
+- changeSet:
+    id: 1638981597464-2
+    author: arnaud (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: description
+            type: text
+        tableName: deployment

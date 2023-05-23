@@ -1,0 +1,14 @@
+databaseChangeLog:
+- changeSet:
+    id: 1644586398286
+    author: arnaud
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_on
+            type: timestamp
+        tableName: docker_image
+
+    - sql:
+        sql: UPDATE docker_image SET created_on = NOW()

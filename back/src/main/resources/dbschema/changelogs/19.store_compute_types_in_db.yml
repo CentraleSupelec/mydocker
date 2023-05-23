@@ -1,0 +1,133 @@
+databaseChangeLog:
+- changeSet:
+    id: 1657619877827-8
+    author: pdesgarets (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: compute_typesPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: gpu
+            type: BOOLEAN
+        - column:
+            constraints:
+              nullable: false
+            name: display_name
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: technical_name
+            type: VARCHAR(255)
+        tableName: compute_types
+- changeSet:
+    id: 1657619877827-9
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: true
+            name: compute_type_id
+            type: int8
+        tableName: courses
+- changeSet:
+    id: 1657619877827-10
+    author: pdesgarets (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: display_name
+        constraintName: UC_COMPUTE_TYPESDISPLAY_NAME_COL
+        tableName: compute_types
+- changeSet:
+    id: 1657619877827-11
+    author: pdesgarets (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: technical_name
+        constraintName: UC_COMPUTE_TYPESTECHNICAL_NAME_COL
+        tableName: compute_types
+- changeSet:
+    id: 1657619877827-12
+    author: pdesgarets (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: compute_type_id
+        baseTableName: courses
+        constraintName: FK5pjdro85tk7p4mpnkmdieo1uh
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: compute_types
+        validate: true
+- changeSet:
+    id: 1657619877827-13
+    author: pdesgarets (generated)
+    changes:
+    - insert:
+        tableName: compute_types
+        columns:
+        - column:
+            name: gpu
+            value: false
+        - column:
+            name: display_name
+            value: CPU
+        - column:
+            name: technical_name
+            value: ""
+    - insert:
+        tableName: compute_types
+        columns:
+        - column:
+            name: gpu
+            value: true
+        - column:
+            name: display_name
+            value: GPU
+        - column:
+            name: technical_name
+            value: common
+    - insert:
+        tableName: compute_types
+        columns:
+        - column:
+            name: gpu
+            value: true
+        - column:
+            name: display_name
+            value: GPU (DGX)
+        - column:
+            name: technical_name
+            value: dgx
+- changeSet:
+    id: 1657619877827-14
+    author: pdesgarets (generated)
+    changes:
+    - sql: UPDATE courses SET compute_type_id = (SELECT id FROM compute_types WHERE technical_name = 'dgx') WHERE compute_type = 'GPU_DGX'
+    - sql: UPDATE courses SET compute_type_id = (SELECT id FROM compute_types WHERE technical_name = 'common') WHERE compute_type = 'GPU'
+    - sql: UPDATE courses SET compute_type_id = (SELECT id FROM compute_types WHERE technical_name = '') WHERE compute_type = 'CPU'
+- changeSet:
+    id: 1657619877827-15
+    author: pdesgarets (generated)
+    changes:
+    - dropColumn:
+        columnName: compute_type
+        tableName: courses
+- changeSet:
+    id: 1657619877827-16
+    author: pdesgarets (generated)
+    changes:
+    - addNotNullConstraint:
+        columnName: compute_type_id
+        tableName: courses

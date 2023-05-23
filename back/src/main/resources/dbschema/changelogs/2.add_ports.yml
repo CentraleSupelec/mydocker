@@ -1,0 +1,69 @@
+databaseChangeLog:
+- changeSet:
+    id: 1624625890123-2
+    author: pdesgarets (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: portsPK
+            name: id
+            type: BIGINT
+        - column:
+            name: connection_type
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: description
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: map_port
+            type: INTEGER
+        - column:
+            name: course_id
+            type: BIGINT
+        - column:
+            name: docker_image_id
+            type: BIGINT
+        tableName: ports
+    - addForeignKeyConstraint:
+        baseColumnNames: course_id
+        baseTableName: ports
+        constraintName: FKb3bq9dy2qa54b58sg7ukmala6
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: courses
+        validate: true
+    - addForeignKeyConstraint:
+        baseColumnNames: docker_image_id
+        baseTableName: ports
+        constraintName: FKkyqv3cyovydymlx5wt2dqclno
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: docker_image
+        validate: true
+    - sql:
+        sql: INSERT INTO ports(connection_type, map_port, course_id, description) SELECT connexion_type, map_port, id, 'default' FROM courses
+    - sql:
+        sql: INSERT INTO ports(connection_type, map_port, docker_image_id, description) SELECT connexion_type, map_port, id, 'default' FROM docker_image
+    - dropColumn:
+        columnName: connexion_type
+        tableName: courses
+    - dropColumn:
+        columnName: connexion_type
+        tableName: docker_image
+    - dropColumn:
+        columnName: map_port
+        tableName: courses
+    - dropColumn:
+        columnName: map_port
+        tableName: docker_image

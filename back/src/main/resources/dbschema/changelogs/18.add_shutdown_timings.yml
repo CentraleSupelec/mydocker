@@ -1,0 +1,23 @@
+databaseChangeLog:
+- changeSet:
+    id: 1655285851558-7
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: shutdown_after_minutes
+            type: int4
+            defaultValue: 0
+        tableName: courses
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: warn_shutdown_minutes
+            type: int4
+            defaultValue: 0
+        tableName: courses

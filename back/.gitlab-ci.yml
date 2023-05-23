@@ -1,0 +1,60 @@
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+
+image: openjdk:17
+
+build_job:
+  stage: build
+  tags:
+    - docker
+  script:
+    - ./mvnw clean compile -DskipTests
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - target/
+      - .m2/
+
+lint:
+  stage: test
+  tags:
+    - docker
+  dependencies:
+    - build_job
+  script:
+    - ./mvnw checkstyle:check
+  except:
+    - tags
+    - master
+
+.build_artifacts_template: &build_artifacts_definition
+  stage: test
+  tags:
+    - docker
+  dependencies:
+    - build_job
+  script:
+    - "[[ -z \"${CI_COMMIT_TAG}\" ]] && export VERSION=\"${CI_COMMIT_SHA}-SNAPSHOT\" || export VERSION=\"${CI_COMMIT_TAG}\""
+    - "echo \"Setting version to: ${VERSION}\""
+    - ./mvnw versions:set -DgenerateBackupPoms=false -DnewVersion=${VERSION}
+    - ./mvnw package -DskipTests
+
+build_uploaded_artifacts:
+  <<: *build_artifacts_definition
+  artifacts:
+    paths:
+      - target/thuv.jar
+  only:
+    - tags
+    - master
+
+build_worthless_artifacts:
+  <<: *build_artifacts_definition
+  except:
+    - tags
+    - master
+
+stages:
+  - build
+  - test
+  - deploy

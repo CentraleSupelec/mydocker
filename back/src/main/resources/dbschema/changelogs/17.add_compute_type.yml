@@ -1,0 +1,34 @@
+databaseChangeLog:
+- changeSet:
+    id: 1648131459413-1
+    author: pdesgarets
+    changes:
+    - dropNotNullConstraint:
+        columnDataType: varchar(255)
+        columnName: authorization_endpoint
+        tableName: tool_deployments
+    - dropNotNullConstraint:
+        columnDataType: varchar(255)
+        columnName: client_id
+        tableName: tool_deployments
+    - dropNotNullConstraint:
+        columnDataType: varchar(255)
+        columnName: iss
+        tableName: tool_deployments
+    - dropNotNullConstraint:
+        columnDataType: varchar(255)
+        columnName: jwks_uri
+        tableName: tool_deployments
+    - addColumn:
+        columns:
+        - column:
+            name: compute_type
+            type: varchar(255)
+            defaultValue: CPU
+        tableName: courses
+    - dropDefaultValue:
+        columnName: compute_type
+        tableName: courses
+    - addNotNullConstraint:
+        columnName: compute_type
+        tableName: courses
