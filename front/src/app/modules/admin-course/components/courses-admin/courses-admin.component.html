@@ -1,0 +1,86 @@
+<h1 class="mat-display-1">Administration des cours</h1>
+
+<app-courses-list
+  [stopContainerPolling$]="stopContainerPolling$"
+  [buttonCell]="buttonCell"
+  [expandedRow]="expandedRow"
+  [expandedElement]="expandedElement"
+>
+</app-courses-list>
+<ng-template #buttonCell let-element>
+  <ng-container *ngxPermissionsOnly="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']">
+    <a
+      mat-icon-button
+      [href]="element.link|generateJoinLink"
+      target="_blank"
+    >
+      <mat-icon
+        matTooltip="Tester l'environnement"
+      >play_circle_filled</mat-icon>
+    </a>
+  </ng-container>
+  <ng-container *ngxPermissionsOnly="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']">
+    <button
+      mat-icon-button
+      (click)="askAdminContainer($event, element)"
+      matTooltip="Accéder aux travaux des étudiants"
+      *ngIf="element?.saveStudentWork && element?.allowStudentToSubmit"
+    >
+      <mat-icon class="material-symbols-outlined">home_storage</mat-icon>
+    </button>
+  </ng-container>
+  <button mat-icon-button (click)="copyLink($event, element.link)" matTooltip="Copier le lien d'invitation">
+    <mat-icon>content_copy</mat-icon>
+  </button>
+  <ng-template
+    [ngxPermissionsOnly]="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']"
+    [ngxPermissionsOnlyThen]="thenBlock"
+    [ngxPermissionsOnlyElse]="elseBlock"
+  >
+  </ng-template>
+  <ng-template #thenBlock>
+    <a
+      mat-icon-button
+      [routerLink]="[element.id, 'edit']"
+      matTooltip="Editer le cours"
+    >
+      <mat-icon>edit</mat-icon>
+    </a>
+  </ng-template>
+  <ng-template #elseBlock>
+    <a
+      mat-icon-button
+      [routerLink]="[element.id, 'edit']"
+      matTooltip="Voir le cours"
+      *ngxPermissionsOnly="['course.' + element.id + '.view']"
+    >
+      <mat-icon>visibility</mat-icon>
+    </a>
+  </ng-template>
+</ng-template>
+
+<ng-template #expandedRow let-element>
+  <div *ngIf="askContainer">
+    <br>
+    <div *ngIf="container !== null; then thenBlock else elseBlock"></div>
+
+    <ng-template #thenBlock>
+      <app-display-container
+        [container]="container"
+      ></app-display-container>
+      <div fxLayout="column" fxLayoutAlign="center center" fxFill>
+        <button mat-raised-button color="warn" (click)="forceRecreateAdminContainer(element)">
+          Demander un nouvel environnement
+        </button>
+      </div>
+      <br>
+    </ng-template>
+
+    <ng-template #elseBlock>
+      <div fxLayout="column" fxLayoutAlign="center center" fxFill>
+        <mat-spinner></mat-spinner>
+        <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+      </div>
+    </ng-template>
+  </div>
+</ng-template>

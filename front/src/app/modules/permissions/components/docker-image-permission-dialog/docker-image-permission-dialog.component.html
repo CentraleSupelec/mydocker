@@ -1,0 +1,22 @@
+<div mat-dialog-title>
+  <h1 style="margin-bottom: 0;">Permission de l'image: {{ data.name }}</h1>
+</div>
+
+<div mat-dialog-content>
+  <app-permission-form
+    (save$)="save($event)"
+    (delete$)="delete($event)"
+  >
+  </app-permission-form>
+  <app-permission-form
+    *ngFor="let p of permission"
+    [permission]="p"
+    (save$)="save($event)"
+    (delete$)="delete($event)"
+  >
+  </app-permission-form>
+</div>
+
+<div mat-dialog-actions fxLayout="row" fxLayoutAlign="end center">
+  <button mat-button (click)="close()">Fermer</button>
+</div>

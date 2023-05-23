@@ -1,0 +1,82 @@
+<h1 class="mat-display-1">Administration des déploiements</h1>
+
+<mat-table mat-table
+       [dataSource]="deployments"
+       multiTemplateDataRows
+       class="mat-elevation-z3">
+  <ng-container matColumnDef="type">
+    <mat-header-cell *matHeaderCellDef fxFlex="60px">Type</mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="60px">
+      <span [ngSwitch]="element.type">
+        <mat-icon
+          *ngSwitchCase="'launch'"
+          style="color: green"
+          matTooltip="Lancement"
+        >
+          arrow_upward
+        </mat-icon>
+        <mat-icon
+          style="color: red"
+          matTooltip="Nettoyage"
+          *ngSwitchCase="'clean'"
+        >
+          arrow_downward
+        </mat-icon>
+      </span>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="startDateTime">
+    <mat-header-cell *matHeaderCellDef>Date de début</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.startDateTime | date : 'd MMMM y à HH:mm' }}</mat-cell>
+  </ng-container>
+
+
+  <ng-container matColumnDef="courses">
+    <mat-header-cell *matHeaderCellDef>Cours</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ displayCourse(element.sessions) }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="description">
+    <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.description | truncate:30 }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="resources">
+    <mat-header-cell *matHeaderCellDef>Ressources</mat-header-cell>
+    <mat-cell *matCellDef="let element">
+        <ul>
+          <li *ngFor="let worker of element?.workers">
+          {{ worker.count }} {{ findResource(worker.resource) }} sur {{ worker.region }}<span *ngIf="worker.computeTypeId !== null"> ({{ findComputeType(worker.computeTypeId) }})</span>
+          </li>
+        </ul>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <a mat-raised-button color="primary" [routerLink]="'create'">
+        <mat-icon>add</mat-icon>
+        Créer un déploiement
+      </a>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a mat-icon-button [routerLink]="[element.id]" matTooltip="Voir le déploiement">
+        <mat-icon>visibility</mat-icon>
+      </a>
+      <button mat-icon-button (click)="delete(element)" matTooltip="Voir le déploiement">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="noData">
+    <mat-footer-cell *matFooterCellDef>
+      Aucun déploiement n'a été trouvé
+    </mat-footer-cell>
+  </ng-container>
+
+  <mat-header-row mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+  <mat-row mat-row *matRowDef="let element; columns: columnsToDisplay;"></mat-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': deployments.length !== 0}"></mat-footer-row>
+</mat-table>

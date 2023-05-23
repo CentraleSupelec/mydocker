@@ -1,0 +1,8 @@
+window['MY_DOCKER_APP_CONSTANTS'] = {
+  "back_url": "https://mydocker.example.com/api",
+  "front_url": "http://mydocker-local.centralesupelec.fr",
+  "cas": {
+    "login_url": "https://cas2.centralesupelec.fr/cas/login",
+    "logout_url": "https://cas2.centralesupelec.fr/cas/logout",
+  }
+};

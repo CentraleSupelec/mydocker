@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">Créer un utilisateur</h1>
+
+<app-user-form
+  [formControl]="userForm"
+></app-user-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="userForm.invalid" (click)="submit()" color="primary">
+    Créer l'utilisateur
+  </button>
+</div>

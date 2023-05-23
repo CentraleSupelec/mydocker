@@ -1,0 +1,21 @@
+.panel-title {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.mat-expansion-panel {
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+
+.mat-expansion-panel:last-child {
+  margin-bottom: 0;
+}
+
+.session-date {
+  margin-top: 15px;
+}
+
+.session-container:last-child {
+  padding-bottom: 10px;
+}

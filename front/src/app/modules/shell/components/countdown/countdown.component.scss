@@ -1,0 +1,21 @@
+.countdown-container {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  justify-content: center;
+  border: 1px solid var(--warn-color);
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+  padding: 5px;
+  transform: translateY(3px);
+}
+
+.alarm {
+  font-size: 43px;
+  margin-right: 12px;
+}
+
+.time {
+  font-weight: bold;
+  margin: 0;
+}

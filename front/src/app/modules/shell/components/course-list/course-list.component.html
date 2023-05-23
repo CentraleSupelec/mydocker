@@ -1,0 +1,66 @@
+<h1 class="mat-display-1">Mes activités</h1>
+
+<mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedTab.value" (selectedIndexChange)="selectedTab.setValue($event)">
+  <mat-tab label="Mes prochaines activités">
+    <mat-accordion>
+      <div *ngFor="let element of sessionByDate | keyvalue" class="session-container">
+        <h1 class="session-date">{{ element.key | date: 'd MMMM y' }}</h1>
+        <mat-expansion-panel
+          *ngFor="let session of element.value"
+          (afterExpand)="afterExpand(session)"
+          (afterCollapse)="afterCollapse(session)"
+          [expanded]="session.id === selectSessionId"
+          [id]="getSessionHtmlId(0, session.id)"
+        >
+          <mat-expansion-panel-header>
+            <mat-panel-title class="panel-title">
+              <div fxLayout="row" fxLayoutGap="15px" fxLayoutAlign="start center">
+                <span
+                  *ngIf="(session.startDateTime | date : 'HH:mm') !== '00:00'"
+                >
+                  {{ session.startDateTime | date : 'HH:mm' }}
+                </span>
+                <span>{{ session.course.title }}</span>
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <app-course-detail
+            [session]="session"
+            [course]="session.course"
+          ></app-course-detail>
+        </mat-expansion-panel>
+      </div>
+    </mat-accordion>
+
+    <div *ngIf="(sessionByDate | keyvalue).length === 0">
+      <h3>Aucune session à venir</h3>
+    </div>
+  </mat-tab>
+  <mat-tab label="Tous mes cours">
+    <mat-accordion>
+      <div
+        *ngFor="let element of courses"
+        class="session-container"
+        [id]="getSessionHtmlId(1, element.sessions[0].id)"
+      >
+        <h2 class="session-date">{{ element.title }}</h2>
+        <mat-expansion-panel
+          *ngIf="element.sessions.length > 0"
+          [expanded]="element.sessions[0].id === selectSessionId"
+        >
+          <mat-expansion-panel-header>
+            <mat-panel-title class="panel-title">
+              <div fxLayout="row" fxLayoutGap="15px" fxLayoutAlign="start center">
+                <span>{{ element.sessions[0].startDateTime | date : 'le d MMMM y à HH:mm' }}</span>
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <app-course-detail
+            [session]="element.sessions[0]"
+            [course]="element"
+          ></app-course-detail>
+        </mat-expansion-panel>
+      </div>
+    </mat-accordion>
+  </mat-tab>
+</mat-tab-group>

@@ -1,0 +1,25 @@
+<div fxLayout="row" fxLayoutGap="30px" [formGroup]="datetimeFormGroup">
+  <mat-form-field>
+    <input
+      matInput
+      [matDatepicker]="picker_from"
+      [placeholder]="datePlaceholder"
+      formControlName="date"
+      required
+    >
+    <mat-datepicker-toggle matSuffix [for]="picker_from">
+      <mat-icon matDatepickerToggleIcon>date_range</mat-icon>
+    </mat-datepicker-toggle>
+    <mat-datepicker #picker_from></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field>
+    <input
+      matInput
+      type="time"
+      [placeholder]="timePlaceholder"
+      formControlName="time"
+      required
+    >
+  </mat-form-field>
+</div>

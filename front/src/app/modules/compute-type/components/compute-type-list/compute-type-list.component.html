@@ -1,0 +1,63 @@
+<h1 class="mat-display-1">Administration des types de charge</h1>
+<mat-table [dataSource]="computeTypes" class="mat-elevation-z3">
+  <ng-container matColumnDef="id">
+    <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.id }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="displayName">
+    <mat-header-cell *matHeaderCellDef>Nom</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.displayName }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="technicalName">
+    <mat-header-cell *matHeaderCellDef>Identifiant technique</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.technicalName }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="gpu">
+    <mat-header-cell *matHeaderCellDef>GPU ?</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.gpu ? 'Oui' : 'Non' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="autoscaling">
+    <mat-header-cell *matHeaderCellDef>Autoscaling</mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      <ng-container *ngIf="element.autoscalingRegions?.length && element.autoscalingResource">
+        {{ mapRegions(element.autoscalingRegions).join(' / ') }} - {{ element.autoscalingResource.type }}<br />
+        {{ element.minIdleNodesCount }} instances à réserver<br />
+        {{ element.maxNodesCount }} instances max<br />
+        {{ element.manualNodesCount }} instances manuelles<br />
+      </ng-container>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <a mat-raised-button color="primary" [routerLink]="'/admin/compute-types/new'">
+        <mat-icon>add</mat-icon>
+        Créer
+      </a>
+    </mat-header-cell>
+
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a
+        mat-icon-button
+        [routerLink]="[element.id, 'edit']"
+        matTooltip="Editer"
+      >
+        <mat-icon>edit</mat-icon>
+      </a>
+      <button
+        mat-icon-button
+        (click)="remove(element)"
+        matTooltip="Supprimer"
+        >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+  <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+  <mat-row *matRowDef="let element; columns: columnsToDisplay;">
+  </mat-row>
+</mat-table>

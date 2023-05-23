@@ -1,0 +1,20 @@
+<div [formGroup]="userForm" fxLayout="column" class="mat-elevation-z3 form-container">
+  <mat-form-field>
+    <mat-label>Email</mat-label>
+    <input matInput formControlName="email">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Nom</mat-label>
+    <input matInput formControlName="lastname">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Prénom</mat-label>
+    <input matInput formControlName="name">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Role</mat-label>
+    <mat-select formControlName="role">
+      <mat-option value="{{ v[1] }}" *ngFor="let v of roles">{{ v[0] }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

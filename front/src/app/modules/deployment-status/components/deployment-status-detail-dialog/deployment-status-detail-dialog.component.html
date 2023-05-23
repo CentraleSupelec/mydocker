@@ -1,0 +1,16 @@
+<div mat-dialog-title fxLayout="row" fxLayoutAlign="start center">
+  <app-deployment-status-status [status]="data.status"></app-deployment-status-status>
+  <h1 style="margin-bottom: 0;">Déploiement du {{ data.createdOn | date: 'd MMM y à HH:mm' }}</h1>
+</div>
+
+<div mat-dialog-content fxLayout="column">
+  <h3>Erreurs lors du déploiement:</h3>
+  <pre>{{ data.buildErrors }}</pre>
+  <mat-divider></mat-divider>
+  <h3 style="margin-top: 10px">Logs du déploiement:</h3>
+  <pre>{{ data.logs }}</pre>
+</div>
+
+<div mat-dialog-actions fxLayout="row" fxLayoutAlign="end center">
+  <button mat-button (click)="close()">Fermer</button>
+</div>

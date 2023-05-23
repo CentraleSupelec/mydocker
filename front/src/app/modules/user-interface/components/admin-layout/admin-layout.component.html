@@ -1,0 +1,122 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="sidenav.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span routerLink="/admin" style="cursor: pointer">MyDocker</span>
+  <span class="spacer"></span>
+  <button
+    mat-icon-button
+    routerLink="/"
+    matTooltip="Retour à l'interface élève">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+  <button mat-icon-button (click)="logout()" matTooltip="Se déconnecter">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-sidenav-container class="example-container">
+  <mat-sidenav #sidenav mode="side" opened appDrawerAutosizeHack>
+    <mat-nav-list>
+      <a
+        mat-list-item
+        [routerLink]="courseRoute|async"
+        routerLinkActive="active-link"
+      >
+        <div fxLayout="row">
+          <mat-icon>description</mat-icon>
+        </div>
+        <span>Cours</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/admin/images"
+        routerLinkActive="active-link"
+      >
+        <div fxLayout="row">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <span>Images docker</span>
+      </a>
+      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" style="margin-left: 5px; margin-top: 5px;">Gestion des ressources</h2>
+      <a
+        mat-list-item
+        routerLink="/admin/sessions-resources"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>memory</mat-icon>
+        </div>
+        <span>Ressources par session</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/admin/deployment"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>dynamic_form</mat-icon>
+        </div>
+        <span>Déploiement</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/admin/state"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>track_changes</mat-icon>
+        </div>
+        <span>État de l'infrastructure</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/admin/deployment-status"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>task_alt</mat-icon>
+        </div>
+        <span>Statuts des déploiements</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/admin/compute-types"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>settings</mat-icon>
+        </div>
+        <span>Types de charge</span>
+      </a>
+      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" style="margin-left: 5px; margin-top: 5px;">Gestion des utilisateur</h2>
+      <a
+        mat-list-item
+        routerLink="/admin/users"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>person</mat-icon>
+        </div>
+        <span>Utilisateurs</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div fxLayout="column" fxLayoutAlign="flex-start center" style="height: calc(100vh - 64px); overflow: scroll;">
+      <div class="container">
+        <app-breadcrumb></app-breadcrumb>
+        <mat-divider></mat-divider>
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+

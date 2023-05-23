@@ -1,0 +1,17 @@
+<div class="mat-elevation-z3 form-container">
+  <div
+    *ngFor="let control of sessionsFormArray.controls; let index = index"
+    fxLayout="row" fxFlexFill fxLayoutAlign="space-between center" class="mat-elevation-z4 form-container"
+  >
+    <app-resource-form
+      [resources]="resources"
+      [formControl]="$any(control)"
+    ></app-resource-form>
+    <button mat-icon-button (click)="remove(index)" [matTooltip]="'Supprimer cette ressource'">
+      <mat-icon>clear</mat-icon>
+    </button>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="flex-end">
+    <button mat-raised-button color="accent" (click)="addResource()">Ajouter une ressource</button>
+  </div>
+</div>

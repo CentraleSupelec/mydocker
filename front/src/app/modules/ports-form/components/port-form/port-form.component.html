@@ -1,0 +1,25 @@
+<div
+  [formGroup]="portFormGroup"
+  fxLayout="row" fxFlexFill fxLayout.lt-md="column" fxLayoutGap="16px" fxLayoutAlign="start center"
+>
+  <mat-form-field>
+    <mat-label>Titre</mat-label>
+    <input matInput formControlName="description">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Type de connexion</mat-label>
+    <mat-select formControlName="connectionType">
+      <mat-option value="{{ v[0] }}" *ngFor="let v of connectionType">{{ v[1] }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Port à exposer</mat-label>
+    <input matInput formControlName="mapPort" type="number">
+  </mat-form-field>
+  <mat-checkbox
+    formControlName="requiredToAccessContainer"
+    matTooltip="À cocher si ce port doit être accessible au démarrage de l'environnement de l'élève."
+  >
+    Requis
+  </mat-checkbox>
+</div>

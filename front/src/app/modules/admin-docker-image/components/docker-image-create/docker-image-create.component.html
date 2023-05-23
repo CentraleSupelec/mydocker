@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">Créer une nouvelle image docker</h1>
+
+<app-docker-image-form
+  [formControl]="dockerImageForm"
+></app-docker-image-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="dockerImageForm.invalid" (click)="submit()" color="primary">
+     Créer l'image
+  </button>
+</div>

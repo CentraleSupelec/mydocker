@@ -1,0 +1,54 @@
+<mat-card class="form-container">
+  <mat-card-content>
+    <div fxLayout="column" [formGroup]="computeTypeForm">
+      <mat-form-field>
+        <mat-label>Nom d'affichage</mat-label>
+        <input matInput formControlName="displayName">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Identifiant technique</mat-label>
+        <input matInput formControlName="technicalName">
+      </mat-form-field>
+      <mat-checkbox formControlName="gpu">
+        Utilisable pour des tâches avec GPU
+      </mat-checkbox>
+      <mat-accordion class="autoscaling-wrapper">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            Réglages pour l'autoscaling
+          </mat-expansion-panel-header>
+          <div fxLayout="column">
+            <mat-form-field>
+              <mat-label>Région</mat-label>
+              <mat-select formControlName="autoscalingRegions" multiple>
+                <mat-option *ngFor="let region of regions" [value]="region">
+                  {{ region }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field style="width: 300px;">
+              <mat-label>Ressource</mat-label>
+              <mat-select formControlName="autoscalingResource">
+                <mat-option *ngFor="let r of resources" [value]="r.id">
+                  {{ r.type }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Nombre d'instances à garder disponibles</mat-label>
+              <input matInput formControlName="minIdleNodesCount" type="number">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Nombre d'instances max</mat-label>
+              <input matInput formControlName="maxNodesCount" type="number">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Nombre d'instances créées manuellement (décomptées du nombre d'instances à créer)</mat-label>
+              <input matInput formControlName="manualNodesCount" type="number">
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+  </mat-card-content>
+</mat-card>

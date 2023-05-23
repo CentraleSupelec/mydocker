@@ -1,0 +1,10 @@
+<div fxLayout="column">
+  <strong>Accès Web
+    <span *ngIf="containerPort?.description !== 'default'">à "{{ containerPort?.description }}"</span>:&nbsp;
+  </strong>
+  <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
+    <a mat-raised-button color="primary" href="http://{{ ipAddress }}:{{ containerPort?.portMapTo }}" target="_blank" rel="noopener noreferrer" style="margin-top: 5px">
+      Connexion à l'interface
+    </a>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<h1 class="mat-display-1">Créer un nouveau cours</h1>
+
+<app-course-form
+  [formControl]="courseForm"
+  *ngIf="computeTypes"
+  [computeTypes]="computeTypes"
+></app-course-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="courseForm.invalid" (click)="submit()" color="primary">
+    Créer le cours
+  </button>
+</div>

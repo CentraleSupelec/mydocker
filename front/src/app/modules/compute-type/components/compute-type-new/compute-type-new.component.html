@@ -1,0 +1,13 @@
+<h1 class="mat-display-1">Créer un nouveau type de charge</h1>
+
+<app-compute-type-form
+  [formControl]="computeTypeForm"
+  [regions]="regions"
+  [resources]="ovhResources"
+></app-compute-type-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="computeTypeForm.invalid" (click)="submit()" color="primary">
+    Créer le type de charge
+  </button>
+</div>

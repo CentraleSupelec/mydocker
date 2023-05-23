@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">Édition de l'utilisateur: {{ user?.lastname + ' ' + user?.name }} </h1>
+
+<app-user-form
+  [formControl]="userForm"
+></app-user-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="userForm.invalid || !userForm.dirty || userForm.disabled" (click)="submit()" color="primary">
+    Éditer l'utilisateur
+  </button>
+</div>

@@ -1,0 +1,96 @@
+<div class="cards-container">
+  <mat-card class="mat-elevation-z3">
+    <mat-card-content fxLayoutGap="15px">
+      <mat-form-field style="width: 15vw; min-width: 200px;">
+        <input matInput type="search"
+               placeholder="Recherche par nom du cours"
+               [(ngModel)]="query" (ngModelChange)="updateQuery()"/>
+        <button mat-button *ngIf="query" matSuffix mat-icon-button aria-label="Clear" (click)="clearQuery()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-select multiple [(ngModel)]="status" (ngModelChange)="updateQuery()">
+          <mat-option value="{{ v[1] }}" *ngFor="let v of availableStatus">{{ v[0] }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="mat-elevation-z3">
+    <mat-card-content fxLayoutGap="15px">
+    <div>
+      <a mat-raised-button color="primary" [routerLink]="'/admin/courses/new'">
+        Créer un cours
+      </a>
+      <span>ou</span>
+      <a mat-raised-button color="primary" href="mailto:support@example.com">
+        Contacter le support DISI
+      </a>
+    </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+<br><br>
+
+<mat-table [dataSource]="courses" multiTemplateDataRows matSort matSortDisableClear class="mat-elevation-z3">
+  <ng-container matColumnDef="icon">
+    <mat-header-cell *matHeaderCellDef fxFlex="70px"></mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="70px">
+      <app-course-icon-status [status]="element.status"></app-course-icon-status>
+    </mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="title">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Nom du cours</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.title }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="creator">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Créateur</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.creator }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="createdOn">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Date de création</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.createdOn | date : 'd MMMM y' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="description">
+    <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.description | truncate:30 }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef></mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <ng-container [ngTemplateOutlet]="buttonCell" [ngTemplateOutletContext]="{ $implicit: element }">
+      </ng-container>
+    </mat-cell>
+  </ng-container>
+
+  <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+  <ng-container matColumnDef="expandedDetail">
+    <mat-cell *matCellDef="let element" fxLayout="column">
+      <div class="element-detail"
+           [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
+           fxLayout="column"
+      >
+        <ng-container [ngTemplateOutlet]="expandedRow" [ngTemplateOutletContext]="{ $implicit: element }">
+        </ng-container>
+      </div>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+  <mat-row *matRowDef="let element; columns: columnsToDisplay;"
+      [class.expanded-row]="expandedElement === element">
+  </mat-row>
+  <mat-row *matRowDef="let row; columns: ['expandedDetail']"
+           [@detailExpand]="row === expandedElement ? 'expanded' : 'collapsed'"
+  ></mat-row>
+</mat-table>
+
+<mat-paginator [length]="courseSize"
+               [pageSizeOptions]="[5, 10, 25, 100]"
+               class="mat-elevation-z3"
+>
+</mat-paginator>

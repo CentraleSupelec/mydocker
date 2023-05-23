@@ -1,0 +1,47 @@
+.cards-container {
+  display: flex;
+  @media screen and (max-width: 900px) {
+    flex-direction: column;
+  }
+  justify-content: space-between;
+
+  & > mat-card {
+    flex: 50%;
+
+    margin-bottom: 5px;
+    margin-top: 5px;
+    &:not(:last-child) {
+      margin-right: 10px;
+    }
+    &:not(:first-child) {
+      margin-left: 10px;
+    }
+
+    & > mat-card-content {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      @media screen and (max-width: 900px) {
+        flex-direction: column;
+      }
+
+      & > * {
+        margin-top: auto;
+        margin-bottom: auto;
+
+        & > * {
+          margin-top: 5px;
+          margin-bottom: 5px;
+
+          &:not(:last-child) {
+            margin-right: 10px;
+          }
+
+          &:not(:first-child) {
+            margin-left: 10px;
+          }
+        }
+      }
+    }
+  }
+}

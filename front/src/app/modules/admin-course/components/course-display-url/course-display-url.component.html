@@ -1,0 +1,11 @@
+<div fxLayout="column" [formGroup]="formGroup" style="width: 600px">
+  <mat-form-field>
+    <mat-label>Titre</mat-label>
+    <input matInput formControlName="title">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Lien</mat-label>
+    <input matInput formControlName="url">
+  </mat-form-field>
+  <p><strong>Lien rendu:</strong> {{ renderString(formGroup.get('url')?.value) }}</p>
+</div>

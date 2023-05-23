@@ -1,0 +1,29 @@
+<h1 class="mat-display-1">Déploiement du {{deployment?.startDateTime | date : 'd MMMM y à HH:mm' }}</h1>
+
+<div fxLayout="column" fxLayoutGap="5px" class="form-container mat-elevation-z3">
+  <div fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start">
+    <strong>Type:</strong>
+    <p>{{ deployment?.type }}</p>
+  </div>
+  <div fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start">
+    <strong>Description:</strong>
+    <p>{{ deployment?.description }}</p>
+  </div>
+  <div fxLayout="column" fxLayoutAlign="center start">
+    <strong>Sessions:</strong>
+    <ul>
+      <li *ngFor="let session of deployment?.sessions">
+        Du {{ session.startDateTime | date : 'd MMMM y HH:mm' }}
+        au {{ session.endDateTime | date : 'd MMMM y HH:mm' }} pour le cours "{{ session.course.title }}"
+      </li>
+    </ul>
+  </div>
+  <div fxLayout="column" fxLayoutAlign="center start">
+    <strong>Ressources:</strong>
+    <ul>
+      <li *ngFor="let worker of deployment?.workers">
+        <strong>{{ worker.count }}</strong> sur <strong>{{ worker.region }}</strong> de type <strong>{{ findResource(worker.resource) }}</strong><span *ngIf="worker.computeTypeId !== null"> ({{ findComputeType(worker.computeTypeId) }})</span>
+      </li>
+    </ul>
+  </div>
+</div>

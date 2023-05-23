@@ -1,0 +1,34 @@
+<div
+  [formGroup]="workerFormGroup"
+  fxLayout="row" fxLayout.md="column" fxFlexFill
+  fxLayoutGap="10px"
+>
+  <mat-form-field>
+    <mat-label>Region</mat-label>
+    <mat-select formControlName="region">
+      <mat-option *ngFor="let region of regions" [value]="region">
+        {{ region }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field style="width: 300px;">
+    <mat-label>Ressource</mat-label>
+    <mat-select formControlName="resource">
+      <mat-option value="{{ r.id }}" *ngFor="let r of resources">
+        {{ r.type }} | {{ r.ramInGo }} Go de RAM | {{ r.coreNumber }} CPUs
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Nombre d'instances</mat-label>
+    <input matInput formControlName="count" type="number">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Charge de travail</mat-label>
+    <mat-select formControlName="computeTypeId">
+      <mat-option [value]="v.id" *ngFor="let v of computeTypes">
+        {{ v.displayName + (v.gpu ? ' (GPU)' : '') }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

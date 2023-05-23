@@ -1,0 +1,54 @@
+<h1 class="mat-display-1">Liste des déploiements effectués</h1>
+
+<mat-table [dataSource]="deploymentsStatus" class="mat-elevation-z3" multiTemplateDataRows>
+  <ng-container matColumnDef="status">
+    <mat-header-cell *matHeaderCellDef fxFlex="70px" fxLayoutAlign="center center">
+      <div *ngIf="polling; then pollingLoader else refreshButton"></div>
+      <ng-template #refreshButton>
+        <button mat-icon-button matTooltip="Rafraichir" (click)="refresh$.next()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </ng-template>
+      <ng-template #pollingLoader>
+        <mat-spinner [diameter]="24"></mat-spinner>
+      </ng-template>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="70px" fxLayoutAlign="center center">
+      <app-deployment-status-status [status]="element.status"></app-deployment-status-status>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="updatedOn">
+    <mat-header-cell *matHeaderCellDef>Date de mise à jour</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element?.createdOn | date: 'le dd/MM/yy à HH:mm' }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <button mat-raised-button color="primary" (click)="launchDeployment()">
+        <mat-icon>launch</mat-icon>
+        Lancer un déploiement
+      </button>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <button mat-icon-button matTooltip="Voir les informations sur le déploiement" (click)="openDetailDialog(element)">
+        <mat-icon>playlist_add_check</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="noData">
+    <mat-footer-cell *matFooterCellDef>
+      Aucun build encore effectué
+    </mat-footer-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': deploymentsStatus.length !== 0}"></mat-footer-row>
+</mat-table>
+
+<mat-paginator [length]="deploymentsSize"
+               [pageSizeOptions]="[5, 10, 25, 100]">
+</mat-paginator>
+

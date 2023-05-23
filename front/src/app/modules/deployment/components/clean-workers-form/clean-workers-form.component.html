@@ -1,0 +1,47 @@
+<p>Ressource à nettoyer</p>
+
+<div
+  *ngFor="let worker of workerToClean.controls"
+  fxLayout="row" fxFlexFill fxLayoutAlign="start center" class="mat-elevation-z4 form-container"
+  fxLayoutGap="10px"
+>
+  <mat-checkbox [formControl]="$any(worker.get('check'))"></mat-checkbox>
+  <div>
+    <div fxLayout="row" fxFill fxLayoutAlign="start center" fxLayoutGap="10px">
+      <mat-form-field>
+        <mat-label>Région</mat-label>
+        <mat-select [value]="worker.get('region')?.value" disabled>
+          <mat-option value="{{ worker.get('region')?.value }}">
+            {{ worker.get('region')?.value }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field style="width: 300px;">
+        <mat-label>Ressource</mat-label>
+        <mat-select [value]="worker.get('resource')?.value?.toString()" disabled>
+          <mat-option value="{{ r.id }}" *ngFor="let r of resources">
+            {{ r.type }} | {{ r.ramInGo }} Go de RAM | {{ r.coreNumber }} CPUs
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Nombre d'instances</mat-label>
+        <input matInput type="number" [value]="worker.get('count')?.value" disabled>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Charge de travail</mat-label>
+        <mat-select [value]="worker.get('computeTypeId')?.value" disabled>
+          <mat-option [value]="v.id" *ngFor="let v of computeTypes">
+            {{ v.displayName + (v.gpu ? ' (GPU)' : '') }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div fxLayout="row" fxFill fxLayoutAlign="start center" fxLayoutGap="5px">
+      <p><strong>Cours associé: </strong></p>
+      <p>
+        {{ displaySession(worker.value.id) }}
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<mat-toolbar color="primary">
+  <span [routerLink]="'/'" style="cursor: pointer">MyDocker</span>
+  <span class="spacer"></span>
+  <a
+    mat-icon-button
+    routerLink="/admin"
+    *ngxPermissionsOnly="['ROLE_TEACHER', 'ROLE_ADMIN']"
+    matTooltip="Interface d'administration de la plateforme">
+    <mat-icon>admin_panel_settings</mat-icon>
+  </a>
+  <button mat-icon-button (click)="logout()" matTooltip="Se déconnecter">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div fxLayout="column" fxLayoutAlign="flex-start center" style="height: calc(100vh - 64px); overflow: scroll;">
+  <div class="container">
+    <router-outlet></router-outlet>
+  </div>
+</div>

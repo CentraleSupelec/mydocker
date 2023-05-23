@@ -1,0 +1,12 @@
+<h1 class="mat-display-1">Édition du type de charge "{{ computeType?.displayName }}"</h1>
+<app-compute-type-form
+  [formControl]="computeTypeForm"
+  [regions]="regions"
+  [resources]="ovhResources"
+></app-compute-type-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="computeTypeForm.invalid  || computeTypeForm.disabled" (click)="submit()" color="primary">
+    Sauvegarder les changements
+  </button>
+</div>

@@ -1,0 +1,26 @@
+<h1 class="mat-display-1">Choisir un environnement MyDocker</h1>
+
+<p>
+  Choisissez un environnement MyDocker à lier à votre activité ou créez-en un nouveau.
+</p>
+
+<app-courses-list
+  [stopContainerPolling$]="stopContainerPolling$"
+  [buttonCell]="buttonCell"
+>
+</app-courses-list>
+<ng-template #buttonCell let-element>
+    <button
+      [disabled]="loading"
+      mat-raised-button
+      matTooltip="Intégrer à Moodle"
+      color="primary"
+      (click)="choose(element)"
+    >
+      Choisir
+    </button>
+</ng-template>
+
+<form style="display: none;" #jwtForm [action]="deepLinkingUrl" method="post">
+  <input name="JWT" id="JWT" [value]="JWT" />
+</form>

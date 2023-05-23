@@ -1,0 +1,32 @@
+<div
+  [formGroup]="sessionFormGroup"
+  fxLayout="column" fxFlexFill
+>
+  <mat-form-field>
+    <mat-label>Nombre d'étudiants</mat-label>
+    <input matInput formControlName="studentNumber" type="number">
+  </mat-form-field>
+  <div class="grid">
+    <span>Date de début</span>
+    <app-datetime-picker
+      formControlName="startDateTime"
+    >
+    </app-datetime-picker>
+    <span>Date de fin</span>
+    <app-datetime-picker
+      formControlName="endDateTime"
+    >
+    </app-datetime-picker>
+  </div>
+  <mat-checkbox
+    formControlName="blockContainerCreationBeforeStartTime"
+  >
+    Bloquer la connexion avant l'heure
+  </mat-checkbox>
+  <mat-checkbox
+    formControlName="destroyContainerAfterEndTime"
+    style="display: none;"
+  >
+    Extinction automatique des environnements
+  </mat-checkbox>
+</div>

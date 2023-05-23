@@ -1,0 +1,26 @@
+<span [ngSwitch]="status">
+  <mat-icon
+    *ngSwitchCase="'TEST'"
+    [matTooltip]="testToolTip"
+  >
+    shield
+  </mat-icon>
+  <mat-icon
+    [matTooltip]="draftToolTip"
+    *ngSwitchCase="'DRAFT'"
+  >
+    privacy_tip
+  </mat-icon>
+  <mat-icon
+    *ngSwitchCase="'READY'"
+    [matTooltip]="readyToolTip"
+  >
+    done
+  </mat-icon>
+  <mat-icon
+    *ngSwitchCase="'ARCHIVED'"
+    [matTooltip]="archivedToolTip"
+  >
+    archive
+</mat-icon>
+</span>

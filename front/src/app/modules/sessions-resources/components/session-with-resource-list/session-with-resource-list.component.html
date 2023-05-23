@@ -1,0 +1,64 @@
+<h1 class="mat-display-1">Affectation des ressources aux sessions</h1>
+
+<div fxLayout="row" fxLayoutAlign="start center">
+  <h4 style="margin: 0 16px">Date de début des sessions</h4>
+  <app-datetime-picker
+    [formControl]="formControl"
+  >
+  </app-datetime-picker>
+</div>
+
+<mat-table [dataSource]="sessions" class="mat-elevation-z3" matSort matSortDisableClear>
+  <ng-container matColumnDef="hasResource">
+    <mat-header-cell *matHeaderCellDef fxFlex="60px" mat-sort-header></mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="60px" fxLayoutAlign="flex-start center">
+      <mat-icon
+        *ngIf="element.hasResource"
+        style="color: green"
+      >
+        check_circle
+      </mat-icon>
+      <mat-icon
+        *ngIf="!element.hasResource"
+        style="color: red"
+      >
+        error
+      </mat-icon>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="title">
+    <mat-header-cell *matHeaderCellDef>Titre du cours</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.course.title }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="startDateTime">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Début de la session</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.startDateTime | date: 'le dd/MM/y à HH:mm' }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="endDateTime">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Fin de la session</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.endDateTime | date: 'le dd/MM/y à HH:mm' }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a mat-icon-button [routerLink]="[element.id, 'edit']" matTooltip="Ajouter des ressources">
+        <mat-icon>edit</mat-icon>
+      </a>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="noData">
+    <mat-footer-cell *matFooterCellDef>
+      Aucune session n'a été trouvée
+    </mat-footer-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': sessions.data.length !== 0}"></mat-footer-row>
+</mat-table>

@@ -1,0 +1,7 @@
+<div [formGroup]="formGroup" fxLayout="column">
+  <ng-container *ngFor="let port of formGroup.controls | keyvalue">
+    <mat-checkbox [formControlName]="port.key">
+      Afficher le port {{ port.key }}
+    </mat-checkbox>
+  </ng-container>
+</div>

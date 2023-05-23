@@ -1,0 +1,73 @@
+<mat-stepper [formGroup]="deploymentForm" linear class="mat-elevation-z3 form-container" orientation="vertical">
+  <mat-step [stepControl]="$any(deploymentForm.get('type'))">
+    <ng-template matStepLabel>Type de déploiement</ng-template>
+    <mat-form-field fxFill>
+      <mat-label>Type de déploiement</mat-label>
+      <mat-select formControlName="type">
+        <mat-option value="launch">Lancement avant une session</mat-option>
+        <mat-option value="clean">Repli après une session</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field fxFill>
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description"></textarea>
+    </mat-form-field>
+    <div fxLayout="row" fxLayoutAlign="start center">
+      <button mat-button matStepperNext>Suivant</button>
+    </div>
+  </mat-step>
+  <mat-step [stepControl]="$any(deploymentForm.get('sessions'))">
+    <ng-template matStepLabel>Sessions liées au déploiement</ng-template>
+    <mat-form-field fxFill *ngIf="sessions.length > 0 else noSessions">
+      <mat-label>Session liée au déploiement</mat-label>
+      <mat-select formControlName="sessions" multiple>
+        <mat-option *ngFor="let session of sessions" [value]="session.id">{{ session.course.title }} | {{ session.startDateTime | date: 'le dd/MM/yy à HH:mm' }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <ng-template  #noSessions>
+      <p>Aucune session à {{ deploymentForm.get('type')?.value === 'launch' ? 'lancer' : 'nettoyer' }}</p>
+    </ng-template>
+    <div fxLayout="row" fxLayoutAlign="start center">
+      <button mat-button matStepperPrevious>Retour</button>
+      <button mat-button matStepperNext>Suivant</button>
+    </div>
+  </mat-step>
+  <mat-step [stepControl]="$any(deploymentForm.get('startDateTime'))">
+    <ng-template matStepLabel>Date du déploiement</ng-template>
+    <div>
+      <strong>Sessions selectionnées</strong>
+      <ul>
+        <li *ngFor="let session of selectedSessions">
+          {{ session.course.title }}, {{ session.startDateTime | date: 'le dd/MM/yy à HH:mm' }}
+        </li>
+      </ul>
+    </div>
+    <app-datetime-picker
+      formControlName="startDateTime"
+    >
+    </app-datetime-picker>
+    <div fxLayout="row" fxLayoutAlign="start center">
+      <button mat-button matStepperPrevious>Retour</button>
+      <button mat-button matStepperNext>Suivant</button>
+    </div>
+  </mat-step>
+  <mat-step [stepControl]="$any(deploymentForm.get('workers'))">
+    <ng-template matStepLabel>Allocation des ressources</ng-template>
+    <app-launch-workers-form
+      *ngIf="deploymentForm.get('type')?.value === 'launch'"
+      [resources]="resources"
+      [regions]="regions"
+      [selectedSessions]="deploymentForm.get('sessions')?.value"
+      [computeTypes]="computeTypes"
+      formControlName="workers"
+    ></app-launch-workers-form>
+    <app-clean-workers-form
+      *ngIf="deploymentForm.get('type')?.value === 'clean'"
+      [resources]="resources"
+      [startDate]="deploymentForm.get('startDateTime')?.value"
+      [selectedSessions]="deploymentForm.get('sessions')?.value"
+      [computeTypes]="computeTypes"
+      formControlName="workers"
+    ></app-clean-workers-form>
+  </mat-step>
+</mat-stepper>

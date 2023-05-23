@@ -1,0 +1,78 @@
+<mat-tab-group (animationDone)="updateLayout()" #matTabGroup [formGroup]="form" class="mat-elevation-z3 form-container">
+  <mat-tab label="Général">
+    <br>
+    <div fxLayout="column">
+      <mat-form-field *ngIf="!editMode">
+        <mat-label>Nom de l'image</mat-label>
+        <input matInput formControlName="name">
+        <mat-error *ngIf="form?.get('name')?.hasError('pattern')">
+          Le nom de l'image doit contenir uniquement des lettres minuscules, chiffres, - ou _
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Description de l'image</mat-label>
+        <textarea matInput formControlName="description"></textarea>
+      </mat-form-field>
+      <mat-checkbox formControlName="visible">
+        Rendre l'image utilisable par tous
+      </mat-checkbox>
+      <div fxLayout="row" fxLayoutGap="5px">
+        <mat-form-field appFileDrop
+                        (fileDrop)="updateFile($event)"
+                        (click)="fileInput.inputElement.click()"
+                        (keyup.enter)="fileInput.inputElement.click()"
+                        (keyup.delete)="fileInput.clear()"
+                        (keyup.backspace)="fileInput.clear()"
+                        fxFlex="grow">
+          <input matInput
+                 placeholder="Choisissez ou glissez une archive"
+                 [value]="form?.get('contextFolder')?.value?.name"
+                 readonly/>
+        </mat-form-field>
+        <button mat-icon-button color="primary" *ngIf="form?.get('contextFolder')?.value?.name"
+                (click)="fileInput.clear()"
+                (keyup.enter)="fileInput.clear()">
+          <mat-icon>cancel</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" *ngIf="canDownloadFile && form?.get('contextFolder')?.value?.name"
+                (click)="download.next()">
+          <mat-icon>download</mat-icon>
+        </button>
+        <app-file-input-form #fileInput formControlName="contextFolder" accept=".zip">
+          <mat-icon>attach_file</mat-icon>
+          <span>Uploader un dossier de contexte</span>
+        </app-file-input-form>
+      </div>
+      <h2>Ports:</h2>
+      <app-ports-form
+        formControlName="ports"
+      ></app-ports-form>
+    </div>
+  </mat-tab>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon *ngIf="form.get('dockerFile')?.invalid">error</mat-icon>
+      DockerFile
+    </ng-template>
+    <br>
+    <ngx-monaco-editor
+      [options]="editorOptionsDockerFile"
+      (onInit)="onInitDockerFileEditor($event)"
+      style="height: 50vh"
+      formControlName="dockerFile"
+    ></ngx-monaco-editor>
+  </mat-tab>
+  <mat-tab label="WrapperScript">
+    <ng-template mat-tab-label>
+      <mat-icon *ngIf="form.get('wrapperScript')?.invalid">error</mat-icon>
+      WrapperScript
+    </ng-template>
+    <br>
+    <ngx-monaco-editor
+      [options]="editorOptionsWrapperScript"
+      (onInit)="onInitWrapperScriptEditor($event)"
+      style="height: 50vh"
+      formControlName="wrapperScript"
+    ></ngx-monaco-editor>
+  </mat-tab>
+</mat-tab-group>

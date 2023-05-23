@@ -1,0 +1,7 @@
+.display-container-port {
+  margin-bottom: 15px;
+}
+
+.mat-form-field-appearance-outline.mat-form-field-disabled {
+  color: black !important;
+}

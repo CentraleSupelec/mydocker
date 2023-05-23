@@ -1,0 +1,11 @@
+<div fxLayout="column" fxLayoutAlign="center center" fxFill fxLayoutGap="5px">
+  <button mat-raised-button color="primary" (click)="saveData()">
+    Soumettre mon travail
+  </button>
+  <p class="save-information" *ngIf="saveState?.savedAt !== null">
+    Dernière soumission le {{ saveState?.savedAt | date: 'dd/mm/yyyy à HH:mm' }}
+  </p>
+  <p class="save-information" *ngIf="saveState?.savedAt === null">
+    Aucune soumission enregistrée
+  </p>
+</div>

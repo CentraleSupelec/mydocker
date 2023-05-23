@@ -1,0 +1,58 @@
+<h1 mat-dialog-title>Choix d'une image docker</h1>
+
+<div mat-dialog-content>
+  <div fxLayout="column">
+    <mat-form-field>
+      <mat-label>Image docker</mat-label>
+      <input type="text"
+             aria-label="Image docker"
+             matInput
+             [formControl]="control"
+             [matAutocomplete]="auto"
+      >
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        [displayWith]="displayFn"
+        (optionSelected)="dockerImageSelected($event.option.value)"
+      >
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+          {{ option.name }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Choix du build</mat-label>
+      <mat-select [disabled]="buildChoiceDisabled" (selectionChange)="this.chosenDockerImageBuild = $event.value">
+        <mat-select-trigger>
+          {{
+            chosenDockerImageBuild ?
+              chosenDockerImageBuild.id + ' | ' + (chosenDockerImageBuild.updatedOn | date: 'd MMM y à HH:mm'): ''
+          }}
+        </mat-select-trigger>
+        <mat-option *ngFor="let option of dockerImageBuilds" [value]="option">
+          <div fxLayout="row" fxLayoutGap="15px" fxLayoutAlign="start center">
+            <app-docker-image-build-status
+              [status]="option.status"
+            ></app-docker-image-build-status>
+            <span>{{ option.id }} | {{ option.updatedOn | date: 'd MMM y à HH:mm' }}</span>
+          </div>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+<div mat-dialog-actions fxLayoutAlign="end center">
+  <button
+    (click)="closeAndReturnDockerImage()"
+    [disabled]="chosenDockerImage === null || chosenDockerImageBuild === null"
+    color="primary"
+    mat-raised-button
+    type="button"
+  >
+    Confirmer
+  </button>
+  <button type="button" mat-button color="primary" (click)="dialogRef.close(null)">
+    Annuler
+  </button>
+</div>

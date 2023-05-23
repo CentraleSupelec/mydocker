@@ -1,0 +1,28 @@
+<div
+  *ngFor="let control of formArray.controls; let index = index"
+  fxLayout="row"
+  fxFlexFill fxLayoutAlign="start center" fxLayoutGap="15px"
+>
+  <app-course-display-url
+    [ports]="ports"
+    [formControl]="$any(control)"
+  ></app-course-display-url>
+  <button
+    mat-icon-button
+    (click)="remove(index)"
+    [matTooltip]="'Supprimer ce display'"
+    [disabled]="control.disabled"
+  >
+    <mat-icon>clear</mat-icon>
+  </button>
+</div>
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button
+    mat-raised-button
+    color="accent"
+    (click)="addCustomDisplay()"
+    [disabled]="formArray.disabled"
+  >
+    Ajouter un affichage
+  </button>
+</div>

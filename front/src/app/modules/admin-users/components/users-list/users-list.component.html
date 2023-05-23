@@ -1,0 +1,95 @@
+<h1 class="mat-display-1">Liste des utilisateurs</h1>
+
+<mat-card class="mat-elevation-z3">
+  <mat-card-content fxLayoutGap="15px">
+    <mat-form-field style="width: 15vw; min-width: 200px;">
+      <input matInput type="search"
+             placeholder="Recherche par email"
+             [(ngModel)]="query" (ngModelChange)="updateQuery()"/>
+      <button mat-button *ngIf="query" matSuffix mat-icon-button aria-label="Clear" (click)="clearQuery()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select multiple [(ngModel)]="roles" (ngModelChange)="updateQuery()">
+        <mat-option value="{{ v[1] }}" *ngFor="let v of availableRoles">{{ v[0] }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-card-content>
+</mat-card>
+
+<br><br>
+
+<mat-table [dataSource]="users" class="mat-elevation-z3" matSort matSortDisableClear>
+  <ng-container matColumnDef="role">
+    <mat-header-cell *matHeaderCellDef fxFlex="70px" fxLayoutAlign="center center">
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="70px" fxLayoutAlign="center center">
+      <div *ngIf="element.role === 'ROLE_ADMIN'; then admin else teacher"></div>
+      <ng-template #admin>
+        <mat-icon matTooltip="Administrateur">verified_user</mat-icon>
+      </ng-template>
+      <ng-template #teacher>
+        <mat-icon matTooltip="Professeur">people</mat-icon>
+      </ng-template>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="email">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      Email
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      {{ element.email }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      Prénom
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      {{ element.name }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="lastname">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      Nom
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      {{ element.lastname }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <a mat-raised-button color="primary" [routerLink]="'./new'">
+        <mat-icon>person_add_alt</mat-icon>
+        Créer un utilisateur
+      </a>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a mat-icon-button matTooltip="Modifier l'utilisateur" [routerLink]="[element.id, 'edit']">
+        <mat-icon>edit</mat-icon>
+      </a>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="noData">
+    <mat-footer-cell *matFooterCellDef>
+      Aucun utilisateur trouvé
+    </mat-footer-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': users.length !== 0}"></mat-footer-row>
+</mat-table>
+
+<mat-paginator [length]="usersSize"
+               [pageSizeOptions]="[5, 10, 25, 100]"
+               class="mat-elevation-z3"
+>
+</mat-paginator>
+

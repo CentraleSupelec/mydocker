@@ -1,0 +1,75 @@
+download_dependencies:
+  image: node:14.15.4
+  stage: download_dependencies
+  interruptible: true
+  script:
+    - npm ci
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - node_modules/
+  tags:
+    - docker
+
+
+lint:
+  image: node:14.15.4
+  stage: test
+  interruptible: true
+  dependencies:
+    - download_dependencies
+  script:
+    - npm run lint
+  except:
+    - tags
+    - master
+  tags:
+    - docker
+
+tests:
+  image: illuin/node-chrome:release-14.15.4
+  stage: test
+  interruptible: true
+  dependencies:
+    - download_dependencies
+  script:
+    - npm run test:ci
+    - cat coverage/NewMyDockerFront/index.html | grep '% <\/span>' # display coverage result
+  coverage: '/(\d*.?\d+)% <\/span>/'
+  except:
+    - tags
+    - master
+  tags:
+    - docker
+
+.build_artifacts_template: &build_artifacts_definition
+  image: node:14.15.4
+  stage: build
+  interruptible: true
+  script:
+    - npm run build
+  dependencies:
+    - download_dependencies
+  tags:
+    - docker
+
+build_uploaded_artifacts:
+  <<: *build_artifacts_definition
+  artifacts:
+    paths:
+      - dist/NewMyDockerFront
+  only:
+    - tags
+    - master
+
+build_worthless_artifacts:
+  <<: *build_artifacts_definition
+  except:
+    - tags
+    - master
+
+
+stages:
+  - download_dependencies
+  - test
+  - build

@@ -1,0 +1,72 @@
+<div [formGroup]="courseTechnicalForm" fxLayout="column">
+  <div fxLayout="row" fxFlexFill fxLayoutAlign="start center" fxLayoutGap="30px">
+    <mat-form-field style="width: 50%">
+      <mat-label>Image docker</mat-label>
+      <input matInput formControlName="dockerImage">
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="openDialog()" [disabled]="courseTechnicalForm.disabled">
+      À partir d'une image docker existante
+    </button>
+  </div>
+  <h2>Ports:</h2>
+  <app-ports-form
+    formControlName="ports"
+  ></app-ports-form>
+  <br>
+  <mat-divider></mat-divider>
+  <br>
+  <div fxLayout="row" fxFlexFill fxLayout.lt-md="column" fxLayoutGap="16px">
+    <mat-form-field>
+      <mat-label>Charge de travail</mat-label>
+      <mat-select formControlName="computeTypeId" matTooltip="Choisissez GPU uniquement si l'environnement nécessite une carte graphique.">
+        <mat-option [value]="v.id" *ngFor="let v of computeTypes">
+          {{ v.displayName }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Limite CPU (en VCPU)</mat-label>
+      <input matInput formControlName="nanoCpusLimit" type="number">
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Limite RAM (en Go)</mat-label>
+      <input matInput formControlName="memoryBytesLimit" type="number">
+    </mat-form-field>
+  </div>
+  <mat-checkbox formControlName="saveStudentWork" (change)="changeSaveStudentWork($event.checked)">
+    Sauvegarder le travail de l'étudiant
+  </mat-checkbox>
+  <div
+    fxLayout="row"
+    fxFlexFill
+    fxLayout.lt-md="column"
+    fxLayoutGap="16px"
+    fxLayoutAlign="start center"
+     *ngIf="courseTechnicalForm.get('saveStudentWork')?.value"
+  >
+    <mat-form-field>
+      <mat-label>Taille du stockage (en Mo)</mat-label>
+      <input matInput formControlName="workdirSize" type="number">
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Chemin du dossier à sauvegarder</mat-label>
+      <input matInput formControlName="workdirPath">
+    </mat-form-field>
+    <mat-checkbox formControlName="allowStudentToSubmit">
+      Activer le rendu du travail de l'étudiant
+    </mat-checkbox>
+  </div>
+  <br>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Options d'affichage
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <app-course-display-form
+      formControlName="displayOptions"
+      [ports]="courseTechnicalForm.get('ports')?.value"
+    >
+    </app-course-display-form>
+  </mat-expansion-panel>
+</div>
