@@ -1,0 +1,24 @@
+site_name: MyDocker
+site_url: https://centralesupelec.github.io/mydocker/
+site_description: Plateforme de TP numériques dans le cloud
+site_author: CentraleSupélec
+
+repo_name: CentraleSupelec/MyDocker
+repo_url: https://github.com/squidfunk/mkdocs-material
+
+theme:
+  name: material
+  palette:
+    primary: custom
+    accent: custom
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+
+nav:
+  - "Présentation": "index.md"
