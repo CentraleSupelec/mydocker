@@ -3,7 +3,7 @@ site_url: https://centralesupelec.github.io/mydocker/
 site_description: Plateforme de TP numériques dans le cloud
 site_author: CentraleSupélec
 
-repo_name: CentraleSupelec/MyDocker
+repo_name: CentraleSupelec/mydocker
 repo_url: https://github.com/CentraleSupelec/mydocker
 
 theme:
