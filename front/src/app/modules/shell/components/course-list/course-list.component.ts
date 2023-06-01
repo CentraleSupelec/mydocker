@@ -1,0 +1,107 @@
+import { AfterViewInit, Component, OnInit } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
+import { ISession } from "../../interfaces/session";
+import { IBasicCourseWithSession } from "../../interfaces/course";
+import { FormControl } from "@angular/forms";
+import { map, mergeMap, take } from "rxjs/operators";
+
+
+@Component({
+  selector: 'app-course-list',
+  templateUrl: './course-list.component.html',
+  styleUrls: ['./course-list.component.css']
+})
+export class CourseListComponent implements OnInit, AfterViewInit {
+  selectSessionId: number | null = null;
+  sessionByDate: {[date: number]: ISession[]} = {};
+  courses: IBasicCourseWithSession[] = [];
+  selectedTab = new FormControl(0);
+
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+  ) {}
+
+  ngOnInit(): void {
+    this.route.data
+    .pipe(
+      mergeMap((routeData) => {
+        this.courses = routeData.courses;
+        routeData.sessions.forEach(
+          (session: ISession) => {
+            const date = new Date(session.startDateTime);
+            date.setHours(0, 0, 0);
+            const timestamp = date.getTime();
+            if (timestamp in this.sessionByDate) {
+              this.sessionByDate[timestamp].push(session)
+            } else {
+              this.sessionByDate[timestamp] = [session]
+            }
+          });
+        return this.route.queryParamMap;
+      }),
+      take(1),
+      map((queryParamMap) => {
+        if (queryParamMap.has("course_id")) {
+          const courseId = parseInt(<string>queryParamMap.get("course_id"));
+          const sessionId = this.courses.find((course) => course.id === courseId)?.sessions[0].id;
+          if (sessionId) {
+            this.selectSessionId = sessionId;
+          }
+        }
+        if (Object.keys(this.sessionByDate).length === 0 || queryParamMap.has("course_id")) {
+          this.selectedTab.setValue(1);
+        }
+      })
+    ).subscribe();
+    this.route.queryParamMap.subscribe(
+      queryParamMap => {
+        if(queryParamMap.has('session_id')) {
+          this.selectSessionId = parseInt(<string>queryParamMap.get('session_id'));
+        }
+      }
+    )
+  }
+
+  ngAfterViewInit() {
+    if (!this.selectSessionId) {
+      return;
+    }
+    // mandatory to compute the right offset only when all accordions are initialized (and closed)
+    setTimeout(() => {
+      document.getElementById(this.getSessionHtmlId(
+        this.selectedTab.value, this.selectSessionId
+      ))?.scrollIntoView();
+    }, 0);
+  }
+
+  afterExpand(element: ISession) {
+    this.selectSessionId = element.id;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        session_id: element.id,
+        course_id: null,
+      },
+      queryParamsHandling: "merge"
+    });
+  }
+
+  afterCollapse(element: ISession) {
+    if (this.selectSessionId === element.id) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {
+          session_id: null,
+          course_id: null,
+        },
+        queryParamsHandling: "merge"
+      });
+      this.selectSessionId = null;
+    }
+  }
+
+  getSessionHtmlId(tab: number, sessionId: number | null): string {
+    return `session-${tab}-${sessionId}`;
+  }
+}

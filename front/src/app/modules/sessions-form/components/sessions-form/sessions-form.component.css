@@ -1,0 +1,19 @@
+.form-container {
+  background: white;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.email-link {
+  line-height: 18px;
+  margin-top: 15px;
+}
+
+.email-link mat-icon {
+  margin-right: 7px;
+}
+
+.locked-explanation {
+  margin-top: 15px;
+  margin-right: 10px;
+}

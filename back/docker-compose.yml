@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: thuv
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  cas:
+    image: centralesupelec/cas-demo
+    command:
+      - /usr/local/openjdk-11/bin/java
+      - -jar
+      - /root/cas.war
+      - --cas.httpWebRequest.header.xframe=false
+    ports:
+      - "9443:8443"
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: on-failure
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+volumes:
+  db-data:

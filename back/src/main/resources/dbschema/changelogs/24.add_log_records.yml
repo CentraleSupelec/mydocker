@@ -1,0 +1,52 @@
+databaseChangeLog:
+- changeSet:
+    id: 1666279718079-2
+    author: pdesgarets (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: activity_log_recordsPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: action
+            type: VARCHAR(255)
+        - column:
+            name: created_on
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            name: model_id
+            type: VARCHAR(255)
+        - column:
+            name: model_name
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: user_email
+            type: VARCHAR(255)
+        - column:
+            name: user_id
+            type: BIGINT
+        tableName: activity_log_records
+
+- changeSet:
+      id: 1666279718079-3
+      author: pdesgarets (generated)
+      changes:
+          - addForeignKeyConstraint:
+                baseColumnNames: user_id
+                baseTableName: activity_log_records
+                constraintName: FKkimt61cqff6gr6u2phgg9gtsr
+                deferrable: false
+                initiallyDeferred: false
+                referencedColumnNames: id
+                referencedTableName: users
+                validate: true

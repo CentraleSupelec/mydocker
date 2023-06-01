@@ -1,0 +1,61 @@
+<div fxLayout="row" class="top-container">
+  <app-countdown
+    *ngIf="sessionCourseOrCourse?.shutdownAfterMinutes && container?.deletionTime && !waitingForDeletionDelay && container?.status === 'OK'"
+    [targetDatetime]="container?.deletionTime"
+    [sessionId]="session?.id"
+    (timerElapsed)="onTimerElapsed()"
+  ></app-countdown>
+  <div fxLayout="row" fxLayoutAlign="end center" *ngIf="state !== 'ask'">
+    <button mat-icon-button (click)="fetchLogs()" matTooltip="Voir les logs du service">
+      <mat-icon>playlist_add_check</mat-icon>
+    </button>
+  </div>
+</div>
+<div [ngSwitch]="state">
+  <div *ngSwitchCase="'container_created'">
+    <div class="grid">
+      <app-display-container
+        [container]="container"
+        [displayOptions]="sessionCourseOrCourse?.displayOptions"
+      ></app-display-container>
+      <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="15px">
+        <app-save-state
+          [course]="sessionCourseOrCourse"
+          *ngIf="container?.status === 'OK' && sessionCourseOrCourse?.allowStudentToSubmit && sessionCourseOrCourse?.studentWorkIsSaved"
+        >
+        </app-save-state>
+        <div fxLayout="column" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="container?.status === 'OK'">
+          <p class="information">
+            En cas de problème ou si le cours ne répond pas, vous pouvez éteindre cet environnement et en demander un nouveau.
+          </p>
+          <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
+            Éteindre l'environnement
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_init'">
+    <mat-spinner></mat-spinner>
+    <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+  </div>
+
+  <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_shutdown'">
+    <mat-spinner></mat-spinner>
+    <p style="margin-top: 10px">Veuillez patienter pendant l'extinction...</p>
+  </div>
+
+  <div fxLayout="column" fxLayoutAlign="center center" fxFill *ngSwitchCase="'ask'">
+    <div *ngIf="canAskContainer(); then thenBlock else elseBlock"></div>
+    <ng-template #thenBlock>
+      <button mat-raised-button color="primary" (click)="initGetContainer()">
+        Demander un environnement
+      </button>
+    </ng-template>
+    <ng-template #elseBlock>
+      <strong>Il n'est pas possible de demander un environnement avant l'heure de début du cours</strong>
+    </ng-template>
+  </div>
+</div>
+

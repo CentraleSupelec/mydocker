@@ -1,0 +1,36 @@
+databaseChangeLog:
+- changeSet:
+    id: 1641422442708-1
+    author: pdesgarets (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+                nullable: false
+                primaryKey: true
+                primaryKeyName: tool_deployment_PK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+                nullable: false
+            name: client_id
+            type: VARCHAR(255)
+        - column:
+            constraints:
+                nullable: false
+            name: iss
+            type: VARCHAR(255)
+        - column:
+            constraints:
+                nullable: false
+            name: jwks_uri
+            type: VARCHAR(255)
+        - column:
+            constraints:
+                nullable: false
+            name: authorization_endpoint
+            type: VARCHAR(255)
+        tableName: tool_deployments

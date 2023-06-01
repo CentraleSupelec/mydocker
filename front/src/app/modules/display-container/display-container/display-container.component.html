@@ -1,0 +1,51 @@
+<div *ngIf="container?.status === 'OK'; then thenBlock else elseBlock"></div>
+
+<ng-template #thenBlock>
+  <div class="display-container-port" fxLayoutGap="5px">
+    <app-display-container-port
+      *ngFor="let containerPort of container?.ports"
+      [containerPort]="containerPort"
+      [username]="container?.username"
+      [ipAddress]="container?.ip"
+      [shouldDisplay]="shouldDisplay(containerPort)"
+    ></app-display-container-port>
+    <app-display-custom-container-port
+      *ngFor="let customDisplay of displayOptions?.customPortsDisplay"
+      [customDisplay]="customDisplay"
+      [password]="container?.password"
+      [username]="container?.username"
+      [containerPorts]="container?.ports"
+      [ipAddress]="container?.ip"
+    ></app-display-custom-container-port>
+  </div>
+
+  <div fxLayout="column">
+    <mat-form-field
+      appearance="outline"
+      style="max-width: 500px;"
+      *ngIf="displayUsername()"
+    >
+      <mat-label style="color: rgba(0, 0, 0, 0.87)">Username</mat-label>
+      <input matInput disabled value="{{ container?.username }}">
+      <button mat-icon-button matSuffix (click)="copyText(container?.username)">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field
+      appearance="outline"
+      style="max-width: 500px;"
+      *ngIf="displayPassword()"
+    >
+      <mat-label style="color: rgba(0, 0, 0, 0.87)">Mot de passe</mat-label>
+      <input matInput disabled value="{{ container?.password }}">
+      <button mat-icon-button matSuffix (click)="copyText(container?.password)">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+</ng-template>
+
+<ng-template #elseBlock>
+  <p>Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.</p>
+</ng-template>

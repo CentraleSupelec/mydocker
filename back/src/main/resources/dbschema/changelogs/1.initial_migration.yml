@@ -1,0 +1,282 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1623242106179
+      author: arnaud (generated)
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: hibernate_sequence
+            startValue: 1
+
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: coursesPK
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: connexion_type
+                  type: VARCHAR(255)
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
+                  name: docker_image
+                  type: VARCHAR(255)
+              - column:
+                  name: link
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: map_port
+                  type: INTEGER
+              - column:
+                  name: memory_bytes_limit
+                  type: BIGINT
+              - column:
+                  name: nano_cpus_limit
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  defaultValueBoolean: false
+                  name: save_student_work
+                  type: BOOLEAN
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+              - column:
+                  name: workdir_path
+                  type: VARCHAR(255)
+              - column:
+                  name: workdir_size
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: user_id
+                  type: BIGINT
+            tableName: courses
+
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: docker_imagePK
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: connexion_type
+                  type: VARCHAR(255)
+              - column:
+                  name: context_folder_name
+                  type: VARCHAR(255)
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
+                  name: docker_file
+                  type: TEXT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: map_port
+                  type: INTEGER
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: wrapper_script
+                  type: TEXT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: user_id
+                  type: BIGINT
+            tableName: docker_image
+
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: docker_image_buildPK
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: build_errors
+                  type: TEXT
+              - column:
+                  name: image_name
+                  type: VARCHAR(255)
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_on
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                  name: docker_image_id
+                  type: BIGINT
+            tableName: docker_image_build
+
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: rolesPK
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+            tableName: roles
+
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: usersPK
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+              - column:
+                  name: lastname
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+            tableName: users
+
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: users_coursesPK
+                  name: course_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: users_coursesPK
+                  name: user_id
+                  type: BIGINT
+              - column:
+                  name: last_save_error
+                  type: VARCHAR(255)
+              - column:
+                  name: saved_at
+                  type: TIMESTAMP WITHOUT TIME ZONE
+            tableName: users_courses
+
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: user_id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: role_id
+                  type: BIGINT
+            tableName: users_roles
+
+        - addUniqueConstraint:
+            columnNames: email
+            constraintName: UK6dotkott2kjsp8vw4d0m25fb7
+            tableName: users
+
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: users_roles
+            constraintName: FK2o0jvgh89lemvvo17cbqvdxaa
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: users
+            validate: true
+
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: courses
+            constraintName: FK51k53m6m5gi9n91fnlxkxgpmv
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: users
+            validate: true
+
+        - addForeignKeyConstraint:
+            baseColumnNames: docker_image_id
+            baseTableName: docker_image_build
+            constraintName: FK9xas5m5ki7buyutufnqq21xao
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: docker_image
+            validate: true
+
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: users_courses
+            constraintName: FKf9urfrtqmay7r1ee9s5v2ngk5
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: users
+            validate: true
+
+        - addForeignKeyConstraint:
+            baseColumnNames: course_id
+            baseTableName: users_courses
+            constraintName: FKhnobs8cb619w5klgkfp61f7nx
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: courses
+            validate: true
+
+        - addForeignKeyConstraint:
+            baseColumnNames: role_id
+            baseTableName: users_roles
+            constraintName: FKj6m8fwv7oqv74fcehir1a9ffy
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: roles
+            validate: true
+
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: docker_image
+            constraintName: FKs5frrdqa1v2hs9el566ocglqo
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: users
+            validate: true

@@ -1,0 +1,30 @@
+<div [formGroup]="formGroup">
+  <div fxLayout="row" fxLayoutGap="15px">
+    <div fxLayout="column">
+      <mat-checkbox formControlName="displayUsername">
+        Afficher l'utilisateur à l'élève
+      </mat-checkbox>
+      <mat-checkbox formControlName="displayPassword">
+        Afficher le mot de passe à l'élève
+      </mat-checkbox>
+    </div>
+    <div fxLayout="column">
+      <app-course-display-ports-form
+        [ports]="container.ports"
+        formControlName="displayPorts"
+      ></app-course-display-ports-form>
+    </div>
+  </div>
+  <app-course-display-custom-url
+    [ports]="container.ports"
+    formControlName="customPortsDisplay"
+  ></app-course-display-custom-url>
+  <br>
+  <mat-divider></mat-divider>
+  <br>
+  <h2>Exemple de rendu</h2>
+  <app-display-container
+    [container]="container"
+    [displayOptions]="formGroup.value"
+  ></app-display-container>
+</div>

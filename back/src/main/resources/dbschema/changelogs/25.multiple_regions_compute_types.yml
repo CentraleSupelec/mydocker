@@ -1,0 +1,69 @@
+databaseChangeLog:
+- changeSet:
+    id: 1666382472280-2
+    author: pdesgarets (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+            name: compute_type_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+            name: autoscaling_regions_region
+            type: VARCHAR(255)
+        tableName: compute_types_autoscaling_regions
+- changeSet:
+    id: 1666382472280-3
+    author: pdesgarets (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: autoscaling_regions_region
+        baseTableName: compute_types_autoscaling_regions
+        constraintName: FK96o5pxn581941sg7o39lafcn5
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: region
+        referencedTableName: ovh_region
+        validate: true
+- changeSet:
+    id: 1666382472280-4
+    author: pdesgarets (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: compute_type_id
+        baseTableName: compute_types_autoscaling_regions
+        constraintName: FKlwnrxl5b95x0c2fo21h13jc7l
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: compute_types
+        validate: true
+- changeSet:
+    id: 1666382472280-5
+    author: pdesgarets (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: compute_types
+        constraintName: FK7n9mpkxd07o3q9seby8sqhojs
+- changeSet:
+    id: 1666382472280-6
+    author: pdesgarets (generated)
+    changes:
+    - sql:
+          sql: |
+            INSERT INTO compute_types_autoscaling_regions(compute_type_id, autoscaling_regions_region)
+            SELECT id, autoscaling_region_region FROM compute_types WHERE autoscaling_region_region IS NOT NULL;
+- changeSet:
+    id: 1666382472280-7
+    author: pdesgarets (generated)
+    changes:
+    - dropColumn:
+        columnName: autoscaling_region_region
+        tableName: compute_types
+

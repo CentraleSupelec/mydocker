@@ -1,0 +1,123 @@
+<div fxLayout="row" fxLayoutAlign="space-between start">
+  <h1 class="mat-display-1">Image docker: {{ dockerImage?.name }}</h1>
+  <div fxLayout="row" fxLayoutAlign="start center">
+    <ng-template
+      [ngxPermissionsOnly]="['docker_image.' + dockerImage?.id + '.edit', 'docker_image.' + dockerImage?.id + '.creator', 'ROLE_ADMIN']"
+      [ngxPermissionsOnlyThen]="thenBlock"
+      [ngxPermissionsOnlyElse]="elseBlock">
+    </ng-template>
+    <ng-template #thenBlock>
+      <a mat-raised-button color="primary" [routerLink]="['edit']">
+        Éditer l'image
+      </a>
+    </ng-template>
+    <ng-template #elseBlock>
+      <a mat-raised-button color="primary" [routerLink]="['edit']">
+        Voir l'image
+      </a>
+    </ng-template>
+    <button
+      mat-icon-button
+      (click)="openShareDialog()"
+      *ngxPermissionsOnly="['ROLE_ADMIN', 'docker_image.' + dockerImage?.id + '.creator']"
+    >
+      <mat-icon>share</mat-icon>
+    </button>
+  </div>
+</div>
+
+<mat-table [dataSource]="dockerBuilds" class="mat-elevation-z3" multiTemplateDataRows>
+  <ng-container matColumnDef="status">
+    <mat-header-cell *matHeaderCellDef fxFlex="70px" fxLayoutAlign="center center">
+      <div *ngIf="polling; then pollingLoader else refreshButton"></div>
+      <ng-template #refreshButton>
+        <button mat-icon-button matTooltip="Rafraichir" (click)="refresh$.next()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </ng-template>
+      <ng-template #pollingLoader>
+        <mat-spinner [diameter]="24"></mat-spinner>
+      </ng-template>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="70px" fxLayoutAlign="center center">
+      <app-docker-image-build-status
+        [status]="element?.status"
+      ></app-docker-image-build-status>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="updatedOn">
+    <mat-header-cell *matHeaderCellDef>Date de mise à jour</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element?.updatedOn | date: 'd MMM y à HH:mm' }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <div>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="createNewBuild()"
+          *ngxPermissionsOnly="['docker_image.' + dockerImage?.id + '.edit', 'docker_image.' + dockerImage?.id + '.creator', 'ROLE_ADMIN']"
+        >
+          <mat-icon>add</mat-icon>
+          Créer un nouveau build
+        </button>
+      </div>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <button
+        mat-icon-button
+        matTooltip="Tester ce build"
+        (click)="testBuild(element)"
+        *ngIf="element?.status === 'OK'"
+      >
+        <mat-icon>play_circle_filled</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Voir les informations sur le build" (click)="openDetailDialog(element)">
+        <mat-icon>loupe</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+  <ng-container matColumnDef="expandedDetail">
+    <mat-cell *matCellDef="let element" fxLayout="column">
+      <div fxLayout="row" fxLayoutAlign="end center" fxFill>
+        <button mat-icon-button (click)="fetchLogs(element)" matTooltip="Voir les logs du service">
+          <mat-icon>playlist_add_check</mat-icon>
+        </button>
+      </div>
+      <div *ngIf="testContainer !== null; then thenBlock else elseBlock"></div>
+
+      <ng-template #thenBlock>
+        <app-display-container
+          [container]="testContainer"
+        ></app-display-container>
+      </ng-template>
+
+      <ng-template #elseBlock>
+        <div fxLayout="column" fxLayoutAlign="center center" fxFill>
+          <mat-spinner></mat-spinner>
+          <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+        </div>
+      </ng-template>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="noData">
+    <mat-footer-cell *matFooterCellDef>
+      Aucun build encore effectué
+    </mat-footer-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"
+           [class.expanded-row]="expandedElement === row"
+  ></mat-row>
+  <mat-row *matRowDef="let row; columns: ['expandedDetail']"
+           [@detailExpand]="row === expandedElement ? 'expanded' : 'collapsed'"
+  ></mat-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': dockerBuilds.length !== 0}"></mat-footer-row>
+</mat-table>
+

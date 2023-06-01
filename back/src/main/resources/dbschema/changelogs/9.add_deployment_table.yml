@@ -1,0 +1,275 @@
+databaseChangeLog:
+- changeSet:
+    id: 1632219018581-2
+    author: arnaud (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: course_sessions__ovh_ressourcePK
+            name: course_session_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: course_sessions__ovh_ressourcePK
+            name: ovh_ressource_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: count
+            type: BIGINT
+        tableName: course_sessions__ovh_ressource
+
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: dtype
+            type: VARCHAR(31)
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: deploymentPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: start_date_time
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: status
+            type: VARCHAR(255)
+        - column:
+            name: updated_on
+            type: TIMESTAMP WITHOUT TIME ZONE
+        tableName: deployment
+
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: deployment_statusPK
+            name: id
+            type: BIGINT
+        - column:
+            name: build_errors
+            type: TEXT
+        - column:
+            name: created_on
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            name: logs
+            type: TEXT
+        - column:
+            constraints:
+              nullable: false
+            name: workers
+            type: TEXT
+        - column:
+            constraints:
+              nullable: false
+            name: status
+            type: VARCHAR(255)
+        - column:
+            name: updated_on
+            type: TIMESTAMP WITHOUT TIME ZONE
+        tableName: deployment_status
+
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: ovh_regionPK
+            name: region
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: image_id
+            type: VARCHAR(255)
+        tableName: ovh_region
+
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: ovh_region_workerPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: count
+            type: BIGINT
+        - column:
+            name: launch_deployment_id
+            type: BIGINT
+        - column:
+            name: clean_deployment_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: region_region
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: ressource_id
+            type: BIGINT
+        tableName: ovh_region_worker
+
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: ovh_ressourcePK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: core_number
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: ram_in_go
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: type
+            type: VARCHAR(255)
+        tableName: ovh_ressource
+
+    - addColumn:
+        columns:
+        - column:
+            value: 0
+            name: student_number
+            type: int8
+        tableName: course_sessions
+
+    - addColumn:
+        columns:
+        - column:
+            name: clean_deployment_id
+            type: int8
+        tableName: course_sessions
+
+    - addColumn:
+        columns:
+        - column:
+            name: launch_deployment_id
+            type: int8
+        tableName: course_sessions
+
+    - addNotNullConstraint:
+        columnDataType: int8
+        columnName: student_number
+        tableName: course_sessions
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: region_region
+        baseTableName: ovh_region_worker
+        constraintName: FK3d2d3ytna984rymp4peul68ra
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: region
+        referencedTableName: ovh_region
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: course_session_id
+        baseTableName: course_sessions__ovh_ressource
+        constraintName: FK3hsnn3akaxfkedkoec3b2mj4n
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: course_sessions
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: ovh_ressource_id
+        baseTableName: course_sessions__ovh_ressource
+        constraintName: FK3yh61v5yy2esdqanjxkpakh2e
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: ovh_ressource
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: launch_deployment_id
+        baseTableName: ovh_region_worker
+        constraintName: FKd9sd8qqsfuggfpbjn75qd91f5
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: deployment
+        validate: true
+
+    - addForeignKeyConstraint:
+          baseColumnNames: clean_deployment_id
+          baseTableName: ovh_region_worker
+          constraintName: FKd9sd8qqsfuggfpbjn75qd91f6
+          deferrable: false
+          initiallyDeferred: false
+          referencedColumnNames: id
+          referencedTableName: deployment
+          validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: ressource_id
+        baseTableName: ovh_region_worker
+        constraintName: FKsj2rj652f9f0qalqul2hlaxrd
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: ovh_ressource
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: clean_deployment_id
+        baseTableName: course_sessions
+        constraintName: FK7hfc24ay3phwe3ouk2dnwd75y
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: deployment
+        validate: true
+
+    - addForeignKeyConstraint:
+        baseColumnNames: launch_deployment_id
+        baseTableName: course_sessions
+        constraintName: FKrkc3udcuxpc1jxsixdfluth5k
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: deployment
+        validate: true

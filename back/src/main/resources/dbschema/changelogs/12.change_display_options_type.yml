@@ -1,0 +1,10 @@
+databaseChangeLog:
+- changeSet:
+    id: 1636989525694-1
+    author: arnaud (generated)
+    changes:
+    -  modifyDataType:
+           columnName:  display_options
+           newDataType:  text
+           tableName:  courses
+

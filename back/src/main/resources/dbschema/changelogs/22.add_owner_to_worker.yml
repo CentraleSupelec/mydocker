@@ -1,0 +1,24 @@
+databaseChangeLog:
+- changeSet:
+    id: 1662654348205-10
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: compute_type_id
+            type: int8
+        tableName: ovh_region_worker
+- changeSet:
+    id: 1662654348205-11
+    author: pdesgarets (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: compute_type_id
+        baseTableName: ovh_region_worker
+        constraintName: FKt1xdedm60t7yr4olsgty6ca2k
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: compute_types
+        validate: true

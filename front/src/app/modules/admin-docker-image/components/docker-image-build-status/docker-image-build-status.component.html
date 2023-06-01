@@ -1,0 +1,23 @@
+<span [ngSwitch]="status">
+  <mat-icon
+    *ngSwitchCase="'OK'"
+    style="color: green"
+    [matTooltip]="successToolTip"
+  >
+    check_circle
+  </mat-icon>
+  <mat-icon
+    style="color: red"
+    [matTooltip]="errorToolTip"
+    *ngSwitchCase="'ERROR'"
+  >
+    error
+  </mat-icon>
+  <mat-icon
+    *ngSwitchCase="'BUILDING'"
+    style="color: darkblue"
+    [matTooltip]="buildingToolTip"
+  >
+    build_circle
+  </mat-icon>
+</span>

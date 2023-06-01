@@ -1,0 +1,18 @@
+<mat-stepper [formGroup]="courseForm" class="mat-elevation-z3 form-container">
+  <mat-step [stepControl]="$any(courseForm.get('general'))">
+    <ng-template matStepLabel>Informations générales</ng-template>
+    <app-course-general-information-form
+      [sessionsById]="sessionsById"
+      formControlName="general"
+    ></app-course-general-information-form>
+  </mat-step>
+  <mat-step [stepControl]="$any(courseForm.get('technical'))">
+    <ng-template matStepLabel>Informations techniques</ng-template>
+    <app-course-technical-information-form
+      formControlName="technical"
+      *ngIf="computeTypes && defaultComputeTypeId"
+      [computeTypes]="computeTypes"
+      [defaultComputeTypeId]="defaultComputeTypeId"
+    ></app-course-technical-information-form>
+  </mat-step>
+</mat-stepper>

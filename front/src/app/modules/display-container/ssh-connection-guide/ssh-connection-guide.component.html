@@ -1,0 +1,16 @@
+<div fxLayout="column">
+  <strong>Accès SSH
+    <span *ngIf="containerPort?.description !== 'default'">à "{{ containerPort?.description }}"</span>:&nbsp;
+  </strong>
+  <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
+    <code>
+      $ ssh {{ username }}@{{ ipAddress }} -p {{ containerPort?.portMapTo }}
+    </code>
+    <button mat-icon-button (click)="copySshCommand()">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+<!--    <a mat-icon-button routerLink="/shell/help">-->
+<!--      <mat-icon>help</mat-icon>-->
+<!--    </a>-->
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<div fxLayout="row" fxLayoutAlign="space-between start">
+  <h1 class="mat-display-1">Édition du cours: {{ course?.title }}</h1>
+  <button
+    mat-icon-button
+    (click)="openShareDialog()"
+    *ngxPermissionsOnly="['ROLE_ADMIN', 'course.' + course?.id + '.creator']"
+  >
+    <mat-icon>share</mat-icon>
+  </button>
+</div>
+
+<app-course-form
+  *ngIf="computeTypes"
+  [computeTypes]="computeTypes"
+  [formControl]="courseForm"
+  [sessionsById]="sessionsById"
+></app-course-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="courseForm.invalid || !courseForm.dirty || courseForm.disabled" (click)="submit()" color="primary">
+    Sauvegarder les changements
+  </button>
+</div>

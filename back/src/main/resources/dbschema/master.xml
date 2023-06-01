@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+    <include file="changelogs/1.initial_migration.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/2.add_ports.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/3.add_logs_on_docker_build.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/4.add_required_to_access_container.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/5.add_default_value_to_required_port.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/6.add_creation_and_update_date.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/7.add_course_status_and_boolean_to_submit.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/8.add_course_session_table.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/9.add_deployment_table.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/10.add_display_options_in_course.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/11.add_username_password_to_user_course.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/12.change_display_options_type.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/13.add_permissions.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/14.add_description_on_deployment.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/15.add_tool_deployments.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/16.add_created_on_docker_image.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/17.add_compute_type.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/18.add_shutdown_timings.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/19.store_compute_types_in_db.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/20.store_email_case_insensitive.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/21.autoscaling_config.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/22.add_owner_to_worker.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/23.add_manual_nodes_count.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/24.add_log_records.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/25.multiple_regions_compute_types.yml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

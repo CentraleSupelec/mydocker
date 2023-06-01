@@ -1,0 +1,26 @@
+<div>
+  <div class="mat-elevation-z3 region-container" *ngFor="let region of regions">
+    <h2>{{ region }}</h2>
+    <mat-expansion-panel *ngFor="let flavor of flavorForRegion(region)">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ flavor }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ workerByRegion[region][flavor].length }} instances
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <div  class="worker-grid">
+        <div class="mat-elevation-z4 worker-container" *ngFor="let worker of workerByRegion[region][flavor]">
+          <p><strong>Flavor:</strong> {{ worker.flavor_name }}</p>
+          <p><strong>State:</strong> {{ worker.power_state }}</p>
+          <p><strong>IP:</strong> {{ worker.access_ip_v4 }}</p>
+          <p *ngIf="worker.owner"><strong>Owner:</strong> {{ worker.owner }}</p>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </div>
+  <div class="mat-elevation-z3 region-container" *ngIf="regions.length === 0">
+    <h2>Aucune instance actuellement déployé</h2>
+  </div>
+</div>

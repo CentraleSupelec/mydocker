@@ -1,0 +1,74 @@
+databaseChangeLog:
+- changeSet:
+    id: 1659635227517-8
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: autoscaling_region_region
+            type: varchar(255)
+        tableName: compute_types
+- changeSet:
+    id: 1659635227517-9
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: autoscaling_resource_id
+            type: int8
+        tableName: compute_types
+- changeSet:
+    id: 1659635227517-10
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: max_nodes_count
+            constraints:
+                nullable: false
+            type: int8
+            defaultValue: 0
+        tableName: compute_types
+- changeSet:
+    id: 1659635227517-11
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+                nullable: false
+            name: min_idle_nodes_count
+            type: int8
+            defaultValue: 0
+        tableName: compute_types
+- changeSet:
+    id: 1659635227517-12
+    author: pdesgarets (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: autoscaling_region_region
+        baseTableName: compute_types
+        constraintName: FK7n9mpkxd07o3q9seby8sqhojs
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: region
+        referencedTableName: ovh_region
+        validate: true
+- changeSet:
+    id: 1659635227517-13
+    author: pdesgarets (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: autoscaling_resource_id
+        baseTableName: compute_types
+        constraintName: FKb3mpm20m6205nge9hrt6d86m4
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: ovh_ressource
+        validate: true
+

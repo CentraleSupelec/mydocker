@@ -1,0 +1,12 @@
+databaseChangeLog:
+- changeSet:
+    id: 1663172303904-10
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            defaultValueNumeric: 0
+            name: manual_nodes_count
+            type: INT8
+        tableName: compute_types

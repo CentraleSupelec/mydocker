@@ -1,0 +1,31 @@
+databaseChangeLog:
+- changeSet:
+    id: 1632127197299
+    author: arnaud (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            defaultValueBoolean: false
+            name: allow_student_to_submit
+            type: BOOLEAN
+        tableName: courses
+
+    - addColumn:
+        columns:
+        - column:
+            name: status
+            type: varchar(255)
+        tableName: courses
+
+    - sql:
+          sql: UPDATE courses SET status = 'READY'
+
+    - addNotNullConstraint:
+          columnDataType: varchar(255)
+          columnName: status
+          tableName: courses
+          validate: true
+

@@ -1,0 +1,15 @@
+<div [ngSwitch]="containerPort?.connectionType" *ngIf="shouldDisplay">
+  <div *ngSwitchCase="'HTTP'">
+    <app-http-connexion-guide
+      [containerPort]="containerPort"
+      [ipAddress]="ipAddress"
+      ></app-http-connexion-guide>
+  </div>
+  <div *ngSwitchCase="'SSH'">
+    <app-ssh-connexion-guide
+      [containerPort]="containerPort"
+      [username]="username"
+      [ipAddress]="ipAddress"
+      ></app-ssh-connexion-guide>
+  </div>
+</div>

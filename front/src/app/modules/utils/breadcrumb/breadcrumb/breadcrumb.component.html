@@ -1,0 +1,25 @@
+<nav>
+  <mat-toolbar fxLayoutAlign="start center">
+    <a class="secondary-color" routerLink="/admin" style="height: 24px">
+      <mat-icon>home</mat-icon>
+    </a>
+    <ng-template ngFor let-route let-last="last" [ngForOf]="breadcrumbs">
+      <mat-icon style="color: grey">keyboard_arrow_right</mat-icon>
+
+      <ng-container
+        *ngIf="!last && route.url; then link; else text">
+      </ng-container>
+
+      <ng-template #link>
+        <a class="secondary-color" [routerLink]="[route.url]">
+          {{ route.displayName }}
+        </a>
+      </ng-template>
+      <ng-template #text>
+        <p>
+          {{ route.displayName }}
+        </p>
+      </ng-template>
+    </ng-template>
+  </mat-toolbar>
+</nav>

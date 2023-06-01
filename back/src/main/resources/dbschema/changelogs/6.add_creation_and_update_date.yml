@@ -1,0 +1,24 @@
+databaseChangeLog:
+- changeSet:
+    id: 1630938461898
+    author: arnaud
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_on
+            type: timestamp
+        tableName: courses
+
+    - addColumn:
+        columns:
+        - column:
+            name: updated_on
+            type: timestamp
+        tableName: courses
+
+    - sql:
+        sql: UPDATE courses SET created_on = NOW()
+
+    - sql:
+          sql: UPDATE courses SET updated_on = NOW()

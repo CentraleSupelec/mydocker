@@ -1,0 +1,10 @@
+<div class="countdown-container">
+  <mat-icon inline class="alarm">alarm</mat-icon>
+  <div>
+    <div class="mat-caption">Extinction dans</div>
+    <div class="mat-title time">{{hoursToDday}}h{{minutesToDday}}m{{secondsToDday}}s</div>
+  </div>
+</div>
+<button mat-raised-button color="warn" (click)="delayDeletion()" [disabled]="delayPending">
+  Réinitialiser le minuteur
+</button>

@@ -1,0 +1,30 @@
+<span [ngSwitch]="status">
+  <mat-icon
+    *ngSwitchCase="'DONE'"
+    style="color: green"
+    matTooltip="Déploiement fini avec succès"
+  >
+    check_circle
+  </mat-icon>
+  <mat-icon
+    style="color: red"
+    matTooltip="Déploiement fini avec des erreurs"
+    *ngSwitchCase="'ERROR'"
+  >
+    error
+  </mat-icon>
+  <mat-icon
+    *ngSwitchCase="'RUNNING'"
+    style="color: darkblue"
+    matTooltip="Déploiement en cours"
+  >
+    build_circle
+  </mat-icon>
+  <mat-icon
+    *ngSwitchCase="'SKIPPED'"
+    style="color: darkgray"
+    matTooltip="Déploiement annulé"
+  >
+    block
+  </mat-icon>
+</span>

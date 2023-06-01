@@ -1,0 +1,24 @@
+mat-toolbar {
+  background: transparent;
+  padding: 0 10px 0 0;
+  height: unset;
+
+  .breadcrumb-separator {
+    margin-left: 14px;
+    margin-right: 14px;
+    font-size: 12px;
+  }
+
+  a {
+    text-decoration: none;
+    font-size: 14px;
+    padding: 0;
+  }
+
+  p {
+    text-decoration: none;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+  }
+}

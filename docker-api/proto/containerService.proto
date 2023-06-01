@@ -1,0 +1,245 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option go_package = '.;protobuf';
+package fr.centralesupelec.gRPC;
+
+service containerService {
+    rpc getContainer(stream ContainerRequest) returns (stream ContainerResponse);
+    rpc saveData(stream SaveDataRequest) returns (stream SaveDataResponse);
+    rpc getAdminContainer(stream AdminContainerRequest) returns (stream AdminContainerResponse);
+    rpc buildDockerImage(stream DockerImageRequest) returns (stream DockerImageResponse);
+    rpc deployInfra(DeployRequest) returns (stream DeployResponse);
+    rpc getLogs(LogRequest) returns (LogResponse);
+    rpc shutdownContainer(stream ShutdownContainerRequest) returns (stream ShutdownContainerResponse);
+    rpc delayDeletion(DelayDeletionRequest) returns (DelayDeletionResponse);
+    rpc initAutoscaling(InitAutoscalingRequest) returns (InitAutoscalingResponse);
+    rpc getNodeIP(NodeIPRequest) returns (NodeIPResponse);
+};
+
+message NodeIPRequest {
+    string userID = 1;
+    string courseID = 2;
+}
+
+message NodeIPResponse {
+    string IPAddress = 1;
+}
+
+message InitAutoscalingRequest {
+    map<string, OwnerAutoscalingConfig> owners = 1;
+}
+message OwnerAutoscalingConfig {
+    string instanceType = 2;
+    int64 minIdleNodesCount = 3;
+    int64 maxNodesCount = 4;
+    int64 manualNodesCount = 6;
+    repeated ScalingRegion regions = 7;
+}
+
+message ScalingRegion {
+    string imageId = 1;
+    string region = 2;
+}
+
+message InitAutoscalingResponse {
+    string error = 1;
+}
+
+message LogRequest {
+    string userID = 1;
+    string courseID = 2;
+}
+
+message LogResponse {
+    string logs = 1;
+}
+
+message UserPasswordMethod {
+    string username = 1;
+    string password = 2;
+};
+
+message AuthenticationKeyMethod {
+    string generatedKey = 1;
+};
+
+message ResourceLimit {
+    int64 nanoCPUs = 1;
+    int64 memoryBytes = 2;
+};
+
+message Metadata {
+    map<string, string> tags = 1;
+};
+
+message RequestPort {
+    string description = 1;
+    string connexionType = 2;
+    uint32 portToMap = 3;
+    bool requiredToAccessContainer = 4;
+}
+
+message ResponsePort {
+    string description = 1;
+    string connexionType = 2;
+    uint32 portToMap = 3;
+    uint32 mapTo = 4;
+    bool requiredToAccessContainer = 5;
+}
+
+message Label {
+    string key = 1;
+    string value = 2;
+}
+
+message ContainerRequestOptions {
+    bool forceRecreate = 1;
+    AuthenticationKeyOption authenticationKey = 2;
+
+    message AuthenticationKeyOption {
+        bool generateKey = 1;
+        string publicKey = 2;
+    }
+    bool saveStudentWork = 3;
+    uint32 workdirSize = 4;
+    string workdirPath = 5;
+    ResourceLimit limit = 6;
+    UserPasswordMethod userPassword = 7;
+    map<string, uint32> genericResources = 8;
+    repeated Label forbiddenLabels = 9;
+    repeated Label mandatoryLabels = 10;
+}
+
+message ContainerRequest {
+    string userID = 1;
+    string courseID = 2;
+    string imageID = 3;
+
+    Metadata metadata = 4;
+
+    ContainerRequestOptions options = 5;
+
+    repeated RequestPort ports = 6;
+};
+
+message ContainerResponse {
+    string userID = 1;
+    string courseID = 2;
+    string imageID = 3;
+
+    repeated ResponsePort ports = 4;
+    string ipAddress = 5;
+
+    ContainerRequestOptions options = 6;
+
+    oneof authenticationMethod {
+        UserPasswordMethod userPassword = 7;
+        AuthenticationKeyMethod authenticationKey = 8;
+    }
+    int64 deletionTime = 9;
+};
+
+
+message AdminContainerRequest {
+    string courseID = 1;
+    string userName = 2;
+    bool forceRecreate = 3;
+    string courseName = 4;
+    RequestPort port = 5;
+};
+
+message AdminContainerResponse {
+    string courseID = 1;
+    string userName = 2;
+    bool forceRecreate = 3;
+    string courseName = 4;
+    ResponsePort port = 5;
+    string ipAddress = 6;
+
+    UserPasswordMethod userPassword = 7;
+};
+
+message SaveDataRequest {
+    string userID = 1;
+    string courseID = 2;
+    Metadata metadata = 3;
+    uint32 workdirSize = 4;
+    string userEmail = 5;
+};
+
+message SaveDataResponse {
+    string userID = 1;
+    string courseID = 2;
+    string error = 3;
+};
+
+message ShutdownContainerRequest {
+    string userID = 1;
+    string courseID = 2;
+};
+
+message ShutdownContainerResponse {
+    string userID = 1;
+    string courseID = 2;
+    string error = 3;
+};
+
+message DockerImageRequest {
+    string name = 1;
+    string buildId = 2;
+    bytes contextZip = 3;
+    string dockerfile = 4;
+    string wrapperScript = 5;
+};
+
+message DockerImageResponse {
+    string name = 1;
+    string buildId = 2;
+    string error = 3;
+    enum Status {
+        BUILDING = 0;
+        DONE = 1;
+        ERROR = 2;
+    }
+    Status status = 4;
+    string logs = 5;
+};
+
+message Worker {
+    string region = 1;
+    string flavor = 2;
+    string imageId = 3;
+    uint32 count = 4;
+    string owner = 5;
+}
+
+message DeployRequest {
+    string id = 1;
+    repeated Worker workers = 2;
+    repeated string courseIds = 3;
+}
+
+message DeployResponse {
+    string id = 1;
+    string error = 2;
+    enum Status {
+        RUNNING = 0;
+        DONE = 1;
+        ERROR = 2;
+        SKIPPED = 3;
+    }
+    Status status = 4;
+    string logs = 5;
+}
+
+message DelayDeletionRequest {
+    string userID = 1;
+    string courseID = 2;
+    Metadata metadata = 3;
+}
+
+message DelayDeletionResponse {
+    string userID = 1;
+    string courseID = 2;
+    int64 deletionTime = 3;
+}

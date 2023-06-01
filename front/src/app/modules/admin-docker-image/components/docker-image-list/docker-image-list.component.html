@@ -1,0 +1,117 @@
+<h1 class="mat-display-1">Administration des images docker</h1>
+
+<mat-card class="mat-elevation-z3">
+  <mat-card-content fxLayoutGap="15px">
+    <mat-form-field style="width: 15vw; min-width: 200px;">
+      <input matInput type="search"
+             placeholder="Recherche par nom de l'image"
+             [(ngModel)]="query" (ngModelChange)="updateQuery()"/>
+      <button mat-button *ngIf="query" matSuffix mat-icon-button aria-label="Clear" (click)="clearQuery()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </mat-card-content>
+</mat-card>
+
+<br><br>
+
+<mat-table [dataSource]="images" matSort matSortDisableClear class="mat-elevation-z3">
+  <ng-container matColumnDef="status">
+    <mat-header-cell *matHeaderCellDef fxFlex="60px"></mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="60px" fxLayoutAlign="flex-start center">
+      <app-docker-image-build-status
+        [status]="element.lastStatus"
+        [successToolTip]="'Le dernier build a terminé avec succès'"
+        [errorToolTip]="'Le dernier build a rencontré une erreur'"
+        [buildingToolTip]="'Le dernier build est encore en cours'"
+      ></app-docker-image-build-status>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Nom de l'image</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.name }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="description">
+    <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.description | truncate:30 }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="creator">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Créateur de l'image</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.creator }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="createdOn">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Date de création</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.createdOn | date : 'd MMMM y' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <div>
+        <a mat-raised-button color="primary" [routerLink]="'./new'">
+          <mat-icon>add</mat-icon>
+          Créer une image
+        </a>
+      </div>
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a mat-icon-button [routerLink]="[element.id]" matTooltip="Voir les builds de l'image">
+        <mat-icon>playlist_add_check</mat-icon>
+      </a>
+      <ng-template
+        [ngxPermissionsOnly]="['docker_image.' + element.id + '.edit', 'docker_image.' + element.id + '.creator', 'ROLE_ADMIN']"
+        [ngxPermissionsOnlyThen]="thenBlock"
+        [ngxPermissionsOnlyElse]="elseBlock">
+      </ng-template>
+      <ng-template #thenBlock>
+        <a mat-icon-button [routerLink]="[element.id, 'edit']" matTooltip="Editer l'image">
+          <mat-icon>edit</mat-icon>
+        </a>
+      </ng-template>
+      <ng-template #elseBlock>
+        <ng-template
+          [ngxPermissionsOnly]="['docker_image.' + element.id + '.view']"
+          [ngxPermissionsOnlyThen]="then2Block"
+          [ngxPermissionsOnlyElse]="else2Block">
+        </ng-template>
+        <ng-template #then2Block>
+          <a
+            mat-icon-button
+            [routerLink]="[element.id, 'edit']"
+            matTooltip="Voir l'image'"
+          >
+            <mat-icon>visibility</mat-icon>
+          </a>
+        </ng-template>
+        <ng-template #else2Block>
+          <a
+            mat-icon-button
+            [routerLink]="[element.id, 'edit']"
+            matTooltip="Voir l'image'"
+          >
+            <mat-icon>visibility</mat-icon>
+          </a>
+        </ng-template>
+      </ng-template>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="noData">
+    <mat-footer-cell *matFooterCellDef>
+      Aucune image n'a été trouvée
+    </mat-footer-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': images.length !== 0}"></mat-footer-row>
+</mat-table>
+
+<mat-paginator [length]="imagesSize"
+               [pageSizeOptions]="[5, 10, 25, 100]"
+               class="mat-elevation-z3"
+>
+</mat-paginator>

@@ -1,0 +1,52 @@
+databaseChangeLog:
+- changeSet:
+    id: 1631003131962
+    author: arnaud
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: course_sessionsPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: block_container_creation_before_start_time
+            type: BOOLEAN
+        - column:
+            constraints:
+              nullable: false
+            name: destroy_container_after_end_time
+            type: BOOLEAN
+        - column:
+            constraints:
+              nullable: false
+            name: end_date_time
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: start_date_time
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: course_id
+            type: BIGINT
+        tableName: course_sessions
+
+    - addForeignKeyConstraint:
+        baseColumnNames: course_id
+        baseTableName: course_sessions
+        constraintName: FKl5u4b9l4iem3ma04o48akvn2o
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: courses
+        validate: true
+

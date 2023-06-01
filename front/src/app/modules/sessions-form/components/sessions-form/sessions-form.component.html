@@ -1,0 +1,51 @@
+<div
+  *ngFor="let control of sessionsFormArray.controls; let index = index"
+  class="mat-elevation-z4 form-container"
+>
+  <div fxLayout="row" fxFlexFill fxLayoutAlign="space-between center">
+    <app-session-form
+      [formControl]="$any(control)"
+    ></app-session-form>
+    <ng-container *ngIf="isDeploymentFullyScheduled(control); then thenBlock; else elseBlock"></ng-container>
+    <ng-template #thenBlock>
+      <div fxLayout="column" fxLayoutAlign="space-between center">
+        <mat-icon
+          [matTooltip]="formatDeploymentTooltip(control)"
+          style="color: green"
+        >verified
+        </mat-icon>
+        <p class="mat-caption">Déploiements programmés</p>
+      </div>
+    </ng-template>
+    <ng-template #elseBlock>
+      <div fxLayout="column" fxLayoutAlign="space-between center">
+        <mat-icon
+          [matTooltip]="formatDeploymentTooltip(control)"
+          style="color: red"
+        >error
+        </mat-icon>
+        <p class="mat-caption">Déploiement manquant</p>
+        <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>Demander les déploiements<br />pour l'environnement</a>
+      </div>
+    </ng-template>
+    <button mat-icon-button [disabled]="control.disabled" (click)="remove(index)" [matTooltip]="'Supprimer cette session'">
+      <mat-icon>clear</mat-icon>
+    </button>
+  </div>
+  <div *ngIf="isSessionDisabled(control)" fxLayout="row" fxLayoutAlign="center center">
+    <p class="mat-caption locked-explanation">Cette session ne peut pas être modifiée<br /> car un déploiement y est associé.</p>
+    <p>
+      <a [href]="askSessionChangeEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>Demander une modification<br />au support</a>
+    </p>
+  </div>
+</div>
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button
+    mat-raised-button
+    color="accent"
+    (click)="addSession()"
+    [disabled]="!canEdit"
+  >
+    Ajouter une session
+  </button>
+</div>

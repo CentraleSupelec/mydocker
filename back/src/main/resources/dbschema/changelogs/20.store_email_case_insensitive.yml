@@ -1,0 +1,9 @@
+databaseChangeLog:
+- changeSet:
+    id: 1658153983258-1
+    author: pdesgarets (generated)
+    changes:
+    - modifyDataType:
+        tableName: users
+        columnName: email
+        newDataType: citext

@@ -1,0 +1,19 @@
+databaseChangeLog:
+- changeSet:
+    id: 1630413083402
+    author: arnaud
+    changes:
+    - sql:
+        sql: UPDATE ports SET required_to_access_container = false where required_to_access_container IS NULL
+
+    - addDefaultValue:
+          columnDataType: boolean
+          columnName: required_to_access_container
+          defaultValueBoolean: false
+          tableName: ports
+
+    - addNotNullConstraint:
+        columnDataType: boolean
+        columnName: required_to_access_container
+        tableName: ports
+        validate: true

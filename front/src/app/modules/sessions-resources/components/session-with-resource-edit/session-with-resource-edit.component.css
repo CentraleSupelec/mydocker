@@ -1,0 +1,23 @@
+.form-container {
+  background: white;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.info-container {
+  margin-bottom: 16px;
+  padding: 16px;
+  color: white;
+}
+
+.ok {
+  background-color: green;
+}
+
+.warning {
+  background-color: orange;
+}
+
+.error {
+  background-color: darkred;
+}

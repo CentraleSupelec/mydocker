@@ -1,0 +1,20 @@
+<span fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="start center">
+  <ng-container [ngSwitch]="data.type">
+    <ng-container *ngSwitchCase="'success'">
+      <mat-icon color="primary">
+        done
+      </mat-icon>
+    </ng-container>
+      <ng-container *ngSwitchCase="'info'">
+      <mat-icon>
+        info
+      </mat-icon>
+    </ng-container>
+          <ng-container *ngSwitchCase="'error'">
+      <mat-icon color="error">
+        error
+      </mat-icon>
+    </ng-container>
+  </ng-container>
+  {{ data.message }}
+</span>

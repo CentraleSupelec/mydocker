@@ -1,0 +1,15 @@
+<div
+  [formGroup]="sessionFormGroup"
+  fxLayout="row" fxFlexFill fxLayoutGap="10px" fxLayout.sm="column"
+>
+  <mat-form-field style="width: 300px;">
+    <mat-label>Ressource</mat-label>
+    <mat-select formControlName="ovhResourceId">
+      <mat-option value="{{ r.id }}" *ngFor="let r of resources">{{ r.type }} | {{ r.ramInGo }} Go de RAM | {{ r.coreNumber }} CPUs</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Nombre d'instances</mat-label>
+    <input matInput formControlName="count" type="number">
+  </mat-form-field>
+</div>

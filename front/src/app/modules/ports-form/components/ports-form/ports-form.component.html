@@ -1,0 +1,18 @@
+<div *ngFor="let control of portsFormArray.controls; let index = index" fxLayout="row" fxFlexFill fxLayoutAlign="start center" fxLayoutGap="15px">
+  <app-port-form
+    [formControl]="$any(control)"
+  ></app-port-form>
+  <button mat-icon-button (click)="remove(index)" [matTooltip]="'Supprimer ce port'" [disabled]="control.disabled">
+    <mat-icon>clear</mat-icon>
+  </button>
+</div>
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button
+    mat-raised-button
+    color="accent"
+    (click)="addPort()"
+    [disabled]="portsFormArray.disabled"
+  >
+    Ajouter un port
+  </button>
+</div>

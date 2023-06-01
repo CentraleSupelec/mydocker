@@ -1,0 +1,20 @@
+<h1 mat-dialog-title *ngIf="dialogMessage?.title">{{ dialogMessage?.title }}</h1>
+
+<div mat-dialog-content>
+  <p>{{ dialogMessage?.text }}</p>
+</div>
+
+<div mat-dialog-actions fxLayoutAlign="end center">
+  <button type="button" mat-raised-button
+          color="primary"
+          (click)="dialogRef.close(true)"
+  >
+    Confirmer
+  </button>
+  <button type="button" mat-button
+          color="primary"
+          (click)="dialogRef.close(false)"
+  >
+    Annuler
+  </button>
+</div>

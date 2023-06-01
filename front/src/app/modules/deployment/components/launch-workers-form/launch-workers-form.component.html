@@ -1,0 +1,31 @@
+<div>
+  <strong>Sessions selectionnées</strong>
+  <ul>
+    <li *ngFor="let session of sessionsWithResources">
+      {{ session.course.title }}
+      <ul>
+        <li *ngFor="let resource of session.resources">
+          {{ findResource(resource.ovhResourceId)?.type }} - {{ resource.count }}
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+<div
+  *ngFor="let control of regionWorkersForm.controls; let index = index"
+  fxLayout="row" fxFlexFill fxLayoutAlign="space-between center" class="mat-elevation-z4 form-container"
+>
+  <app-worker-form
+    [resources]="resources"
+    [regions]="regions"
+    [formControl]="$any(control)"
+    [computeTypes]="computeTypes"
+  ></app-worker-form>
+  <button mat-icon-button (click)="remove(index)" [matTooltip]="'Supprimer cette région'">
+    <mat-icon>clear</mat-icon>
+  </button>
+</div>
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button color="accent" (click)="addRegionWorker()">Ajouter une ressource</button>
+</div>

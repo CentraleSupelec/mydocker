@@ -1,0 +1,18 @@
+<div fxLayout="row" fxFill fxLayoutGap="10px" [formGroup]="formGroup">
+  <app-search-user formControlName="user" style="width: 40%"></app-search-user>
+  <mat-form-field>
+    <mat-label>Permission</mat-label>
+    <mat-select formControlName="type">
+      <mat-option value="edit">Édition</mat-option>
+      <mat-option value="view">Lecture seule</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <button mat-icon-button (click)="save()" [disabled]="!formGroup.valid">
+    <mat-icon>save</mat-icon>
+  </button>
+  <button
+    mat-icon-button (click)="delete()" [disabled]="!formGroup.valid" *ngIf="formGroup.get('id')?.value !== null"
+  >
+    <mat-icon>delete</mat-icon>
+  </button>
+</div>

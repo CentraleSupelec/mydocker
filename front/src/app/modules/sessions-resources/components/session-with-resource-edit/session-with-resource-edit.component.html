@@ -1,0 +1,52 @@
+<h1 class="mat-display-1">Affectation des ressources pour une session de "{{ session?.course?.title }}"</h1>
+
+<div class="mat-elevation-z3 form-container">
+  <div fxLayout="row" fxLayoutAlign="space-around center">
+    <p><strong>Date de début:</strong> {{ session?.startDateTime | date: 'le dd/MM/yy à HH:mm' }}</p>
+    <p><strong>Date de fin:</strong> {{ session?.endDateTime | date: 'le dd/MM/yy à HH:mm' }}</p>
+    <p><strong>Nombre d'élèves:</strong> {{ session?.studentNumber }}</p>
+  </div>
+  <br>
+  <div>
+    <strong>Description:</strong> {{ session.course.description }}
+  </div>
+  <br>
+  <div fxLayout="row" fxLayoutAlign="space-around center">
+    <div
+      fxLayout="row"
+      fxLayoutAlign="center center"
+      class="info-container mat-elevation-z4"
+      [ngClass]="{
+        'ok': ramSet >= ramRequired,
+        'warning': ramSet >= 0.75 * ramRequired && ramSet < ramRequired,
+        'error': ramSet < 0.75 * ramRequired
+      }"
+    >
+      <strong>{{ ramSet }} Go</strong>&nbsp;alloués sur&nbsp;<strong>{{ ramRequired | number}} Go</strong>&nbsp;requis
+    </div>
+    <div
+      fxLayout="row"
+      fxLayoutAlign="center center"
+      class="info-container mat-elevation-z4"
+      [ngClass]="{
+        'ok': cpuSet >= cpuRequired,
+        'warning': cpuSet >= 0.75 * cpuRequired && cpuSet < cpuRequired,
+        'error': cpuSet < 0.75 * cpuRequired
+      }"
+    >
+      <strong>{{ cpuSet }} vCPU</strong>&nbsp;alloués sur&nbsp;<strong>{{ cpuRequired | number }} vCPU</strong>&nbsp;requis
+    </div>
+  </div>
+</div>
+
+<app-resources-form
+  [resources]="resources"
+  [formControl]="control"
+></app-resources-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="control.invalid || !control.dirty" (click)="submit()" color="primary">
+    Sauvegarder les changements
+  </button>
+</div>
+

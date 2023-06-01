@@ -1,0 +1,15 @@
+<h1 class="mat-display-1">Créer un nouveau déploiement</h1>
+
+<app-deployment-form
+  [regions]="regions"
+  [resources]="ovhResources"
+  [formControl]="deployFormControl"
+  [computeTypes]="computeTypes"
+>
+</app-deployment-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="deployFormControl.invalid" (click)="submit()" color="primary">
+    Créer le déploiement
+  </button>
+</div>

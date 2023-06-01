@@ -1,0 +1,67 @@
+<div [formGroup]="formGroup" fxLayout="column">
+  <mat-form-field>
+    <mat-label>Titre</mat-label>
+    <input matInput formControlName="title">
+    <mat-error *ngIf="formGroup?.get('title')?.hasError('pattern')">
+      Le titre ne doit pas contenir de /
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Description</mat-label>
+    <textarea matInput formControlName="description"></textarea>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Statut du cours</mat-label>
+    <mat-select formControlName="status">
+      <mat-select-trigger fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+        <app-course-icon-status [status]="formGroup.get('status')?.value"></app-course-icon-status>
+        <span>{{ formGroup.get('status')?.value }}</span>
+      </mat-select-trigger>
+      <mat-option value="{{ v[0] }}" *ngFor="let v of courseStatus">
+        <app-course-icon-status [status]="v[1]"></app-course-icon-status>{{ v[1] }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <p>
+    <mat-checkbox formControlName="automaticShutdown">Activer l'extinction automatique</mat-checkbox>
+  </p>
+  <div *ngIf="formGroup.get('automaticShutdown')?.value">
+    <p><em>Après une certaine durée (définie ci-dessous), l'environnement de l'étudiant est automatiquement éteint. Tant que l'extinction n'est pas amorcée, l'étudiant peut relancer le compteur pour retarder l'extinction.</em></p>
+    <p>
+      <span>Temps avant extinction automatique :</span>
+      <mat-form-field [style.width.px]=70 [style.marginLeft.px]=20>
+        <input type="number" matInput formControlName="shutdownAfterHours">
+        <span matSuffix>h</span>
+      </mat-form-field>
+      <mat-form-field [style.width.px]=70 [style.marginLeft.px]=20>
+        <input type="number" matInput formControlName="shutdownAfterMinutesRemainder">
+        <span matSuffix>min</span>
+      </mat-form-field>
+      <mat-error *ngIf="formGroup?.hasError('missingShutdownAfterMinutes')">
+        Vous devez saisir une durée non nulle
+      </mat-error>
+    </p>
+    <p><em>Si vous saisissez une durée ci-dessous, l'étudiant sera prévenu avant que l'extinction ait lieu.</em></p>
+    <p>
+      <span>Temps restant avant d'avertir l'élève de l'extinction :</span>
+      <mat-form-field [style.width.px]=70 [style.marginLeft.px]=20>
+        <input type="number" matInput formControlName="warnShutdownHours">
+        <span matSuffix>h</span>
+      </mat-form-field>
+      <mat-form-field [style.width.px]=70 [style.marginLeft.px]=20>
+        <input type="number" matInput formControlName="warnShutdownMinutesRemainder">
+        <span matSuffix>min</span>
+      </mat-form-field>
+
+      <mat-error *ngIf="formGroup?.hasError('warnAfterShutdown')">
+        La durée avant avertissement doit être plus courte que la durée avant extinction
+      </mat-error>
+    </p>
+  </div>
+  <h2>Sessions:</h2>
+  <app-sessions-form
+    [sessionsById]="sessionsById"
+    formControlName="sessions"
+    [canEdit]="formGroup.enabled"
+  ></app-sessions-form>
+</div>
