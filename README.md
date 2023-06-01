@@ -1,6 +1,13 @@
 # MyDocker - CentraleSupélec's virtual lab platform
+A scalable virtual labs provider based on Docker with simple integration to your LMS (Learning Management System).
 
 ## Description
+Easily give your students access to hundreds of labs based on Docker, directly from your LMS (such as Moodle) in a scalable infrastructure.
+
+With MyDocker :
+- you are free to schedule labs whenever you want (by using cloud computing resourses), and free to update you labs' environements without having to ask support from the IT team (your environements are indepedent from others and thus will not cause any conflict)
+- you give access to the same lab environement with the same performance to the students
+- you keep your students data private and do not leak personnal information
 
 ![Descriptive video](docs/assets/video-students.gif)
 
