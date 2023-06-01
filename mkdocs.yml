@@ -4,7 +4,7 @@ site_description: Plateforme de TP numériques dans le cloud
 site_author: CentraleSupélec
 
 repo_name: CentraleSupelec/MyDocker
-repo_url: https://github.com/squidfunk/mkdocs-material
+repo_url: https://github.com/CentraleSupelec/mydocker
 
 theme:
   name: material
@@ -19,6 +19,12 @@ extra_css:
 markdown_extensions:
   - attr_list
   - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
 
 nav:
   - "Présentation": "index.md"
+  - "Simple pour l'enseignant": "user_guide.md"
+  - "Simple pour l'étudiant": "student_xp.md"
+  - "Autres ressources": "other_ressources.md"
