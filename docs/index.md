@@ -6,7 +6,7 @@ hide:
 MyDocker fournit à vos étudiants des environnements numériques:
 
 - accessibles directement depuis Moodle (ou autre LMS compatible LTI),
-- hébergés sur vos serveurs ou dans le cloud (techn ologie Docker),
+- hébergés sur vos serveurs ou dans le cloud (technologie Docker),
 - aussi bien pour des séances de TPs que pour des projets en autonomie.
 
 En bref, avec MyDocker :
@@ -40,4 +40,3 @@ Enfin MyDocker est respectueux des données des étudiants: votre établissement
 [Expérience Enseignant](/mydocker/user_guide/){ .md-button }
 [Expérience Etudiant](/mydocker/student_xp/){ .md-button }
 [Contactez nous](mailto:contact.opensource@centralesupelec.fr){ .md-button }
-
