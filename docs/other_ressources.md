@@ -3,6 +3,11 @@ hide:
   - toc
 ---
 
+### Présentation aux esup-days #35
+<object data="../assets/ED35--MyDocker.pdf" style="min-height:50vh;width:100%" type="application/pdf">
+    <embed src="../assets/ED35--MyDocker.pdf" type="application/pdf" />
+</object>
+
 ### Vidéo de démontration
 
 <a href="https://webtv.centralesupelec.fr/permalink/v1263ffe31089x1qdyjc/iframe/">Je crée et publie un escape game utilisant MyDocker en 8 minutes</a>
