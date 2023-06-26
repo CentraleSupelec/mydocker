@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -29,7 +29,7 @@ public class LtiJwtConfig {
     @Bean
     public RSAPublicKey publicKey() throws Exception {
         try (
-                FileReader keyReader = new FileReader(this.publicKeyPath.getFile());
+                InputStreamReader keyReader = new InputStreamReader(this.publicKeyPath.getInputStream());
                 PEMParser pemParser = new PEMParser(keyReader)
         ) {
             SubjectPublicKeyInfo pemObject = (SubjectPublicKeyInfo) pemParser.readObject();
@@ -41,7 +41,7 @@ public class LtiJwtConfig {
     @Bean
     public RSAPrivateKey privateKey() throws Exception {
         try (
-                FileReader keyReader = new FileReader(this.privateKeyPath.getFile());
+                InputStreamReader keyReader = new InputStreamReader(this.privateKeyPath.getInputStream());
                 PEMParser pemParser = new PEMParser(keyReader)
         ) {
             PEMKeyPair pemObject = (PEMKeyPair) pemParser.readObject();
