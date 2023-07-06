@@ -6,6 +6,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 ### Changed
+- Optional disabling of the volume precreation (used only for RBD)
 - Put AdminImage in config and rename module
 
 ## 2.15.0

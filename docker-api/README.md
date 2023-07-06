@@ -64,3 +64,31 @@ docker-compose up
 ```
 
 Then launch the remote debugger in Intellij
+
+### Caveats for specific features
+
+- To use `volume` features, the volume plugin `centralesupelec/mydockervolume` must be installed and enabled, with one of the two configurations :
+  - `DRIVER_MODE=FS` : volumes will be stored on the server in `/mnt/mydocker-fs`
+  - `DRIVER_MODE=RBD` : volumes will be stored on a Ceph cluster that must be configured with other plugin parameters and files in `/etc/ceph`
+
+The `saveData` feature will work only if the driver is installed in mode `RBD`.
+
+In both cases, directories `/mnt/mydocker-fs` and `/etc/ceph` must exist prior to enabling the plugin.
+
+### Developing with volumes on macOS
+
+For Docker Desktop on macOS : in modern versions of macOS, it is not allowed to create `/mnt/mydocker-fs`. You must use another Docker engine, e.g. [colima](https://github.com/abiosoft/colima), with following customization :
+1. in `$HOME/.colima/default/colima.yaml`, replace `provision: []` with
+```yaml
+provision:
+  - mode: system
+    script: mkdir -p /etc/ceph
+  - mode: system
+    script: mkdir -p /mnt/mydocker-fs
+```
+2. launch colima with an IP address : `colima start --network-address`
+3. Retrieve the IP address : `colima status`
+4. start the local swarm with the address : `docker swarm init --advertise-addr=...`
+5. Install the plugin: `docker plugin install --disable centralesupelec/mydockervolume`
+6. Configure the plugin : `docker plugin set centralesupelec/mydockervolume DRIVER_MODE=FS`
+7. Then, launch the Go app : `docker-compose up`

@@ -38,3 +38,4 @@ DeployEnvSecrets:
   - "OVH_APPLICATION_SECRET="
   - "OS_USERNAME="
   - "OS_PASSWORD="
+PrecreateVolume: false

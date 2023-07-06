@@ -98,7 +98,7 @@ func getOrCreateContainer(
 		}
 
 		// Pre-create volume if needed
-		if request.Options != nil && request.Options.SaveStudentWork {
+		if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume {
 			createRbdImageIn <- CreateRbdImageWorkerRequest{
 				imageName:   name,
 				size:        request.Options.WorkdirSize,

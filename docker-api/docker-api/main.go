@@ -56,6 +56,7 @@ type config struct {
 	LogsTimeout             string
 	ScaleDownRemoveNonEmpty bool
 	DeployEnvSecrets        []string
+	PrecreateVolume         bool
 }
 
 type registryCredential struct {
