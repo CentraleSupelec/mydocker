@@ -1,5 +1,5 @@
 <div fxLayout="row" fxLayoutGap="30px" [formGroup]="datetimeFormGroup">
-  <mat-form-field>
+  <mat-form-field style="max-width: 8em">
     <input
       matInput
       [matDatepicker]="picker_from"
@@ -13,7 +13,7 @@
     <mat-datepicker #picker_from></mat-datepicker>
   </mat-form-field>
 
-  <mat-form-field>
+  <mat-form-field style="max-width: 6em">
     <input
       matInput
       type="time"

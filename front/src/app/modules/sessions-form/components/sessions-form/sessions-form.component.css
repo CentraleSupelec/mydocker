@@ -4,9 +4,13 @@
   padding: 16px;
 }
 
+@media (min-width: 959px) {
+  .email-link {
+    margin-top: 15px;
+  }
+}
 .email-link {
   line-height: 18px;
-  margin-top: 15px;
 }
 
 .email-link mat-icon {

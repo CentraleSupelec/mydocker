@@ -2,7 +2,7 @@
   *ngFor="let control of sessionsFormArray.controls; let index = index"
   class="mat-elevation-z4 form-container"
 >
-  <div fxLayout="row" fxFlexFill fxLayoutAlign="space-between center">
+  <div fxLayout="row" fxLayout.lt-md="column" fxFlexFill fxLayoutAlign="space-between center" fxLayoutGap.lt-md="20px">
     <app-session-form
       [formControl]="$any(control)"
     ></app-session-form>
@@ -29,7 +29,7 @@
       </div>
     </ng-template>
     <button mat-icon-button [disabled]="control.disabled" (click)="remove(index)" [matTooltip]="'Supprimer cette session'">
-      <mat-icon>clear</mat-icon>
+      <mat-icon>delete</mat-icon>
     </button>
   </div>
   <div *ngIf="isSessionDisabled(control)" fxLayout="row" fxLayoutAlign="center center">
