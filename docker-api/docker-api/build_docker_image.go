@@ -24,7 +24,7 @@ import (
 )
 
 func buildDockerImageWorker(in chan *pb.DockerImageRequest, out chan *pb.DockerImageResponse, dockerClient dockerImageBuilderDockerClient) {
-	dockerImageBuilder := &DockerImageBuilder{dockerClient: dockerClient, dockerUtils: NewDockerUtils(dockerClient)}
+	dockerImageBuilder := newDockerImageBuilder(dockerClient, NewDockerUtils(dockerClient))
 	for request := range in {
 		volumeName, err := dockerImageBuilder.prepareBuildFiles(request.BuildId, request.ContextZip, request.Dockerfile, request.WrapperScript)
 		if err != nil {
@@ -67,13 +67,57 @@ type dockerImageBuilderDockerClient interface {
 	ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error
 	ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error
 	ContainerCreate(ctx context.Context, config *containerTypes.Config, hostConfig *containerTypes.HostConfig, networkingConfig *networkTypes.NetworkingConfig, platform *specs.Platform, containerName string) (containerTypes.ContainerCreateCreatedBody, error)
+	Info(ctx context.Context) (types.Info, error)
+	NodeInspectWithRaw(ctx context.Context, nodeID string) (swarm.Node, []byte, error)
 
 	TaskLogs(ctx context.Context, taskID string, options types.ContainerLogsOptions) (io.ReadCloser, error)
 }
 
+func newDockerImageBuilder(dockerClient dockerImageBuilderDockerClient, dockerUtils DockerUtilsInterface) *DockerImageBuilder {
+	return &DockerImageBuilder{
+		dockerClient: dockerClient,
+		dockerUtils:  dockerUtils,
+	}
+}
+
 type DockerImageBuilder struct {
 	dockerClient dockerImageBuilderDockerClient
-	dockerUtils  *DockerUtils
+	dockerUtils  DockerUtilsInterface
+}
+
+func (d *DockerImageBuilder) buildEnvVars(imageName string) []string {
+	credentials := findMatchingCredential(imageName)
+	if credentials != nil {
+		return []string{
+			fmt.Sprintf("DOCKER_REGISTRY_ADDRESS=%s", credentials.Address),
+			fmt.Sprintf("DOCKER_REGISTRY_USERNAME=%s", credentials.Username),
+			fmt.Sprintf("DOCKER_REGISTRY_PASSWORD=%s", credentials.Password),
+		}
+	}
+	log.Infof("No credentials in config for image %s", imageName)
+	return []string{}
+}
+
+func (d *DockerImageBuilder) buildConstraint(ctx context.Context) (string, error) {
+	nodeInfo, err := d.dockerClient.Info(ctx)
+	if err != nil {
+		return "", fmt.Errorf("unable to retrieve Docker info: %s", err)
+	}
+	currentNodeId := nodeInfo.Swarm.NodeID
+	if currentNodeId == "" {
+		return "", fmt.Errorf("docker node %s is not a Swarm node", nodeInfo.ID)
+	}
+	nodeInspectResult, _, err := d.dockerClient.NodeInspectWithRaw(ctx, currentNodeId)
+	if err != nil {
+		return "", fmt.Errorf("unable to inspect Docker node %s : %s", currentNodeId, err)
+	}
+	volumeBackend := nodeInspectResult.Spec.Labels["volume_backend"]
+	if volumeBackend == "" {
+		return "", fmt.Errorf("empty volume_backend label on current node %s", currentNodeId)
+	}
+	constraint := fmt.Sprintf("node.labels.volume_backend==%s", volumeBackend)
+	log.Debugf("built constraint '%s'", constraint)
+	return constraint, nil
 }
 
 func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName string, buildId string, out chan *pb.DockerImageResponse) error {
@@ -82,6 +126,13 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 		return fmt.Errorf("volume name is empty for image %s", imageName)
 	}
 	ctx := context.Background()
+	var constraints []string
+	constraint, err := d.buildConstraint(ctx)
+	if err != nil {
+		log.Errorf("unable to compute constraint : %s", err)
+	} else {
+		constraints = append(constraints, constraint)
+	}
 	one := uint64(1)
 	spec := swarm.ServiceSpec{
 		Mode: swarm.ServiceMode{
@@ -93,10 +144,11 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 				MaxAttempts: &one,
 			},
 			Placement: &swarm.Placement{
-				Constraints: []string{fmt.Sprintf("node.labels.volume_backend==rbd")},
+				Constraints: constraints,
 			},
 			ContainerSpec: &swarm.ContainerSpec{
 				Image: c.BuildImage,
+				Env:   d.buildEnvVars(imageName),
 				Args: []string{
 					"--dockerfile=Dockerfile", "--context=dir:///context", "--destination=" + imageName, "--push-retry", "5", "--log-format", "text", "--cache=true",
 				},

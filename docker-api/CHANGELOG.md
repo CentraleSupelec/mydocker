@@ -6,6 +6,13 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
+## 2.16.1
+### Added
+- Pass registry credentials to build image
+
+### Fixed
+- Build image on node with same volume_backend swarm label
+
 ## 2.16.0
 ### Changed
 - Optional disabling of the volume precreation (used only for RBD)

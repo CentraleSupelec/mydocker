@@ -18,6 +18,13 @@ type dockerUtilsDockerClient interface {
 	TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error)
 }
 
+type DockerUtilsInterface interface {
+	pullImage(imageName string, requireCredential bool) error
+	waitForContainer(containerID string) error
+	findService(ctx context.Context, userId string, courseId string) (*swarm.Service, error)
+	getRunningTaskNodeId(ctx context.Context, userId string, courseId string) (string, error)
+}
+
 type DockerUtils struct {
 	dockerClient dockerUtilsDockerClient
 }
