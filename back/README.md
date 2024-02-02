@@ -17,8 +17,8 @@ docker-compose exec postgres psql -U thuv -c 'CREATE EXTENSION citext;'
 ### Generate keys
 
 ```shell
-    openssl genrsa -out private_key.pem 4096
-    openssl rsa -pubout -in private_key.pem -out public_key.pem
+    openssl genrsa -traditional -out private_key.pem 4096
+    openssl rsa -traditional -pubout -in private_key.pem -out public_key.pem
     mv private_key.pem public_key.pem src/main/resources/
 ```
 
