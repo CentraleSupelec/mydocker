@@ -17,8 +17,13 @@ import { takeUntil } from "rxjs/operators";
   ]
 })
 export class CourseDisplayPortsFormComponent implements OnInit, ControlValueAccessor, OnDestroy {
+  private valueHistory: {[id: string]: boolean} = {};
+
   @Input() set ports(ports: IPort[]) {
-    const oldValue: {[id: string]: boolean} = this.formGroup.value;
+    this.valueHistory = {
+      ...this.valueHistory,
+      ...this.formGroup.value,
+    };
     for (let controlsKey in this.formGroup.controls) {
       this.formGroup.removeControl(controlsKey);
     }
@@ -28,10 +33,10 @@ export class CourseDisplayPortsFormComponent implements OnInit, ControlValueAcce
           return;
         }
         const key = String(p.mapPort);
-        if (key in oldValue) {
+        if (key in this.valueHistory) {
           this.formGroup.setControl(
             key,
-            this.formBuilder.control({value: oldValue[key], disabled: this.disabled})
+            this.formBuilder.control({value: this.valueHistory[key], disabled: this.disabled})
           );
         } else {
           this.formGroup.setControl(
