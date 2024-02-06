@@ -21,6 +21,7 @@ export class SignInComponent implements OnInit {
         if (paramMap.has('redirectTo')) {
           this.redirectTo = encodeURIComponent(paramMap.get('redirectTo') as string);
         }
+        this.redirectToCas();
       }
     );
   }
