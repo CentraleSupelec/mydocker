@@ -13,7 +13,7 @@ export class RenderStringService {
       switch (group) {
         case 'IP':
           return ip
-        case 'USER':
+        case 'USERNAME':
           return username;
         case 'PASSWORD':
           return password
