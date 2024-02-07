@@ -15,6 +15,7 @@ import { mergeMap } from "rxjs/operators";
 export class DockerImageListComponent implements OnInit {
   images: IDockerImage[] = [];
   imagesSize: number | undefined;
+  loading = true;
   displayedColumns = ['status', 'name', 'creator', 'createdOn', 'description', 'action'];
 
   query: string = '';
@@ -50,6 +51,7 @@ export class DockerImageListComponent implements OnInit {
           ),
       ).pipe(
         mergeMap(() => {
+          this.loading = true;
           return this.dockerImageApiService.getDockerImages(
             this.query,
             this.paginator?.pageIndex,
@@ -60,6 +62,7 @@ export class DockerImageListComponent implements OnInit {
         })
       ).subscribe(
         page => {
+          this.loading = false;
           this.images = page.content
           this.imagesSize = page.totalElements
         }
