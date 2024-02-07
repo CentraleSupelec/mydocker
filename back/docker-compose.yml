@@ -12,12 +12,12 @@ services:
       - db-data:/var/lib/postgresql/data
 
   cas:
-    image: centralesupelec/cas-demo
-    command:
-      - /usr/local/openjdk-11/bin/java
-      - -jar
-      - /root/cas.war
-      - --cas.httpWebRequest.header.xframe=false
+    image: apereo/cas:7.0.1
+    environment:
+      CAS_SERVICE_REGISTRY_CORE_INIT_FROM_JSON: "true"
+      SERVER_SSL_ENABLED: "false"
+    volumes:
+      - $PWD/cas-service-1.json:/tmp/cas/cas-service-1.json
     ports:
       - "9443:8443"
 

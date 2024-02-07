@@ -1,0 +1,19 @@
+{
+  "@class": "org.apereo.cas.services.CasRegisteredService",
+  "serviceId": ".*",
+  "name": "Everything",
+  "id": 1,
+  "description": "Everything is accepted by this definition.",
+  "evaluationOrder": 1,
+  "proxyPolicy": {
+    "@class": "org.apereo.cas.services.RegexMatchingRegisteredServiceProxyPolicy",
+    "pattern": "^https?://.*"
+  },
+  "properties" : {
+    "@class" : "java.util.HashMap",
+    "httpHeaderEnableXFrameOptions" : {
+      "@class" : "org.apereo.cas.services.DefaultRegisteredServiceProperty",
+      "values" : [ "java.util.HashSet", [ "false" ] ]
+    }
+  }
+}
