@@ -1,6 +1,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {APP_CONFIG, IAppConfig} from "../../../../app-config";
 import { ActivatedRoute } from "@angular/router";
+import { NavigationService } from "../../../utils/services/navigation.service";
 
 @Component({
   selector: 'app-sign-in',
@@ -13,6 +14,7 @@ export class SignInComponent implements OnInit {
   constructor(
     @Inject(APP_CONFIG) private readonly config: IAppConfig,
     private route: ActivatedRoute,
+    private readonly navigationService: NavigationService,
   ) {}
 
   ngOnInit(): void {
@@ -29,6 +31,6 @@ export class SignInComponent implements OnInit {
   redirectToCas() {
     let params = new URLSearchParams();
     params.set("service", `${this.config.front_url}/loginAccept?redirectTo=${this.redirectTo}`)
-    window.location.href = `${this.config.cas.login_url}?${params.toString()}`
+    this.navigationService.navigateTo(`${this.config.cas.login_url}?${params.toString()}`);
   }
 }

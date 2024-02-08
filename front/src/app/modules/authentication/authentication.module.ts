@@ -10,6 +10,7 @@ import { TokenService } from "./services/token.service";
 import { AddTokenInterceptor } from "./services/add-token.interceptor";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { AutologinGuard } from './services/autologin.guard';
+import { UtilsModule } from "../utils/utils.module";
 
 
 export const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
@@ -30,6 +31,7 @@ export const loadPermissionsOnStartupAppInitializerFactory = (tokenService: Toke
     MatProgressSpinnerModule,
     NgxPermissionsModule,
     HttpClientModule,
+    UtilsModule,
   ],
   providers: [
     AuthGuard,
