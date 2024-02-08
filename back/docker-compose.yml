@@ -9,6 +9,7 @@ services:
       POSTGRES_USER: thuv
       POSTGRES_PASSWORD: password
     volumes:
+      - $PWD/docker/citext.sql:/docker-entrypoint-initdb.d/citext.sql
       - db-data:/var/lib/postgresql/data
 
   cas:
@@ -17,7 +18,7 @@ services:
       CAS_SERVICE_REGISTRY_CORE_INIT_FROM_JSON: "true"
       SERVER_SSL_ENABLED: "false"
     volumes:
-      - $PWD/cas-service-1.json:/tmp/cas/cas-service-1.json
+      - $PWD/docker/cas-service-1.json:/tmp/cas/cas-service-1.json
     ports:
       - "9443:8443"
 
