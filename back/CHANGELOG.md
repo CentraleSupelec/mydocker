@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.26.0
+### Changed
+- Increase timeout for GPU containers regardless of idle config
+- Drop usage of centralesupelec/cas-demo for local development
+
 ### Fixed
 - Read key files as stream instead of file to allow reading from JAR
 
