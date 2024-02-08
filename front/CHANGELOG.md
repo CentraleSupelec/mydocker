@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.24.2
+### Fixed
+- Redirect immediately to CAS
+- Keep history of wether port should be displayed when a new image is selected in course edit form
+- Fix USER/USERNAME templating in link preview
+- Hide empty list message during loading of images
+
 ## 2.24.1
 ### Fixed
 - Make the sessions form responsive
