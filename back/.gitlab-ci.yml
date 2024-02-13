@@ -28,7 +28,7 @@ lint:
     - master
 
 .build_artifacts_template: &build_artifacts_definition
-  stage: test
+  stage: deploy
   tags:
     - docker
   dependencies:
@@ -53,6 +53,22 @@ build_worthless_artifacts:
   except:
     - tags
     - master
+
+deploy_github:
+  image: alpine:3.19.1
+  stage: deploy
+  only:
+    - tags
+  needs:
+    - build_uploaded_artifacts
+  before_script:
+    - apk add zip github-cli
+    - zip -r artifacts.zip target
+  script:
+    - gh release --repo CentraleSupelec/mydocker create back-${CI_COMMIT_TAG} --notes ""
+    - gh release --repo CentraleSupelec/mydocker upload back-${CI_COMMIT_TAG} artifacts.zip
+  tags:
+    - docker
 
 stages:
   - build
