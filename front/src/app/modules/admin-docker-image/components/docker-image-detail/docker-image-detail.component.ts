@@ -28,7 +28,7 @@ import { OpenLogDialogService } from "../../../log-dialog/open-log-dialog.servic
 export class DockerImageDetailComponent implements OnInit {
   dockerImage: IDockerImage | null = null;
   dockerBuilds: IDockerImageBuild[] = [];
-  displayedColumns = ['status', 'updatedOn', 'action'];
+  displayedColumns = ['status', 'buildId', 'updatedOn', 'action'];
   expandedElement: IDockerImageBuild | null = null;
   polling = false;
   refresh$ = new Subject<void>();

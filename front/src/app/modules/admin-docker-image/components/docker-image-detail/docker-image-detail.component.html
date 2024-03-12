@@ -46,6 +46,11 @@
     </mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="buildId">
+    <mat-header-cell *matHeaderCellDef fxFlex="100px">ID du build</mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="100px"> {{ element?.id }} </mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="updatedOn">
     <mat-header-cell *matHeaderCellDef>Date de mise à jour</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element?.updatedOn | date: 'd MMM y à HH:mm' }} </mat-cell>
