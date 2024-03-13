@@ -116,6 +116,12 @@
     </mat-footer-cell>
   </ng-container>
 
+  <ng-container matColumnDef="loading">
+    <mat-footer-cell *matFooterCellDef>
+      Chargement des builds...
+    </mat-footer-cell>
+  </ng-container>
+
   <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
   <mat-row *matRowDef="let row; columns: displayedColumns;"
            [class.expanded-row]="expandedElement === row"
@@ -123,6 +129,7 @@
   <mat-row *matRowDef="let row; columns: ['expandedDetail']"
            [@detailExpand]="row === expandedElement ? 'expanded' : 'collapsed'"
   ></mat-row>
-  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': dockerBuilds.length !== 0}"></mat-footer-row>
+  <mat-footer-row *matFooterRowDef="['noData']" [ngClass]="{'hide': dockerBuilds.length !== 0 || loading}"></mat-footer-row>
+  <mat-footer-row *matFooterRowDef="['loading']" [ngClass]="{'hide': !loading}"></mat-footer-row>
 </mat-table>
 

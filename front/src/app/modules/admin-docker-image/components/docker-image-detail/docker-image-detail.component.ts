@@ -31,6 +31,7 @@ export class DockerImageDetailComponent implements OnInit {
   displayedColumns = ['status', 'buildId', 'updatedOn', 'action'];
   expandedElement: IDockerImageBuild | null = null;
   polling = false;
+  loading = true;
   refresh$ = new Subject<void>();
   testContainer: IContainer | null = null;
 
@@ -47,10 +48,12 @@ export class DockerImageDetailComponent implements OnInit {
   ngOnInit(): void {
     this.refresh$.pipe(
       mergeMap(() => {
+        this.loading = true;
         return this.dockerImageApiService.getDockerImageBuild(<number>this.dockerImage?.id)
       })
     ).subscribe(
       dockerBuilds => {
+        this.loading = false;
         this.dockerBuilds = dockerBuilds
         if (dockerBuilds[0]?.status !== BuildStatus.BUILDING) {
           this.stopPolling$.next()

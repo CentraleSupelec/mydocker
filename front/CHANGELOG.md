@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.24.3
+### Added
+- Build ID column to list of image builds
+
+### Fixed
+- No builds message while loading image builds
+
 ## 2.24.2
 ### Fixed
 - Redirect immediately to CAS
