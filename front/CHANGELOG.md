@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.24.4
+### Added
+- Automatically start environment when joining a session if computeType is not GPU
+
 ## 2.24.3
 ### Added
 - Build ID column to list of image builds

@@ -3,7 +3,9 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ISession } from "../../interfaces/session";
 import { IBasicCourseWithSession } from "../../interfaces/course";
 import { FormControl } from "@angular/forms";
-import { map, mergeMap, take } from "rxjs/operators";
+import { filter, map, mergeMap, switchMap, take, tap } from "rxjs/operators";
+import { AdminCoursesApiService } from "src/app/modules/admin-course/services/admin-courses-api.service";
+import { ComputeTypesApiService } from "src/app/modules/compute-type/services/compute-types-api.service";
 
 
 @Component({
@@ -16,10 +18,13 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   sessionByDate: {[date: number]: ISession[]} = {};
   courses: IBasicCourseWithSession[] = [];
   selectedTab = new FormControl(0);
+  launchSessionId: number | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly adminCoursesApiService: AdminCoursesApiService,
+    private readonly computeTypesApiService: ComputeTypesApiService,
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +52,11 @@ export class CourseListComponent implements OnInit, AfterViewInit {
           const sessionId = this.courses.find((course) => course.id === courseId)?.sessions[0].id;
           if (sessionId) {
             this.selectSessionId = sessionId;
+            this.adminCoursesApiService.getCourse(courseId).pipe(
+              switchMap(course => this.computeTypesApiService.getComputeType(course.computeTypeId)),
+              filter(computeType => !computeType.gpu),
+              tap(() => this.launchSessionId = sessionId)
+            ).subscribe();
           }
         }
         if (Object.keys(this.sessionByDate).length === 0 || queryParamMap.has("course_id")) {

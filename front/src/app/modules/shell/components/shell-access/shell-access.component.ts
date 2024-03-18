@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { interval, Subject } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
-import { mergeMap, takeUntil } from "rxjs/operators";
+import { filter, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators";
 import { IContainer } from "../../interfaces/container";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { ConfirmDialogService } from "../../../utils/confirm-dialog/confirm-dialog.service";
@@ -18,11 +18,12 @@ import { Roles } from "../../../admin-users/interfaces/roles";
   templateUrl: './shell-access.component.html',
   styleUrls: ['./shell-access.component.scss']
 })
-export class ShellAccessComponent implements OnInit, OnDestroy {
+export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   @Input() $startInitPolling: Subject<void> = new Subject<void>();
   @Input() $reset: Subject<void> = new Subject<void>();
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
+  @Input() launch: boolean = false;
 
   container: IContainer | null = null;
   state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' = 'ask';
@@ -46,6 +47,11 @@ export class ShellAccessComponent implements OnInit, OnDestroy {
     private readonly desktopNotificationService: DesktopNotificationService,
     private readonly ngxPermissionsService: NgxPermissionsService,
   ) {
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.launch && this.launch && this.canAskContainer()) {
+      this.initGetContainer();
+    }
   }
 
   ngOnInit(): void {

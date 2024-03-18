@@ -57,6 +57,7 @@
           </mat-expansion-panel-header>
           <app-course-detail
             [session]="element.sessions[0]"
+            [launch]="element.sessions[0].id === launchSessionId"
             [course]="element"
           ></app-course-detail>
         </mat-expansion-panel>

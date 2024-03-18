@@ -5,6 +5,8 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { of } from "rxjs";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { APP_CONFIG } from 'src/app/app-config';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('CourseListComponent', () => {
   let component: CourseListComponent;
@@ -15,9 +17,10 @@ describe('CourseListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CourseListComponent ],
+      declarations: [CourseListComponent],
       imports: [
         RouterTestingModule,
+        HttpClientTestingModule,
         MatExpansionModule,
       ],
       providers: [{
@@ -26,9 +29,14 @@ describe('CourseListComponent', () => {
           data: sessions,
           queryParamMap: queryParamMap
         }
-      }]
+      },
+      {
+        provide: APP_CONFIG,
+        useValue: {}
+      }
+      ]
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {

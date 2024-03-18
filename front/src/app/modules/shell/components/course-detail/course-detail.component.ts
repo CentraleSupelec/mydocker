@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { IBasicCourse } from "../../interfaces/course";
 import { ISession } from "../../interfaces/session";
 
@@ -10,4 +10,5 @@ import { ISession } from "../../interfaces/session";
 export class CourseDetailComponent {
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
+  @Input() launch: boolean = false;
 }
