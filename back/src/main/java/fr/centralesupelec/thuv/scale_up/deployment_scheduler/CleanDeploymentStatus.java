@@ -2,6 +2,7 @@ package fr.centralesupelec.thuv.scale_up.deployment_scheduler;
 
 import fr.centralesupelec.thuv.scale_up.repository.DeploymentStatusRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "deployment_enabled", havingValue = "true")
 public class CleanDeploymentStatus {
     private static final long DAY_KEEP_IN_DATABASE = 7;
     private final DeploymentStatusRepository deploymentStatusRepository;

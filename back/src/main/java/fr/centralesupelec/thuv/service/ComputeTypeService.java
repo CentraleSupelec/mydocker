@@ -8,6 +8,7 @@ import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,15 +21,20 @@ public class ComputeTypeService {
     private final ComputeTypeMapper computeTypeMapper;
     private final InitAutoscalingService initAutoscalingService;
 
+    @Value("${deployment_enabled}")
+    private boolean deploymentEnabled;
+
     public ComputeType updateComputeType(ComputeTypeUpdateDto dto, ComputeType computeType) {
         computeTypeMapper.updateComputeType(dto, computeType);
         this.computeTypeRepository.saveAndFlush(computeType);
         this.validateEmptyTechnicalName();
-        try {
-            initAutoscalingService.sendInitRequest();
-            logger.info("Successfully updated autoscaling config");
-        } catch (Exception e) {
-            logger.error(String.format("Could not update autoscaling config : %s", e.getMessage()), e);
+        if (deploymentEnabled) {
+            try {
+                initAutoscalingService.sendInitRequest();
+                logger.info("Successfully updated autoscaling config");
+            } catch (Exception e) {
+                logger.error(String.format("Could not update autoscaling config : %s", e.getMessage()), e);
+            }
         }
         return computeType;
     }

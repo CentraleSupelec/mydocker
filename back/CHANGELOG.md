@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.27.0
+### Added
+- deployment_enabled parameter in application.properties to activate/deactivate deployment related CRON jobs
+
 ## 2.26.0
 ### Changed
 - Increase timeout for GPU containers regardless of idle config

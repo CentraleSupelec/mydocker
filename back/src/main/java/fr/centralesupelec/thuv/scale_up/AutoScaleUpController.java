@@ -2,7 +2,7 @@ package fr.centralesupelec.thuv.scale_up;
 
 import fr.centralesupelec.thuv.model.CourseSession;
 import fr.centralesupelec.thuv.repository.CourseSessionRepository;
-import fr.centralesupelec.thuv.scale_up.deployment_scheduler.DeploymentScheduler;
+import fr.centralesupelec.thuv.scale_up.deployment_scheduler.DeploymentLauncher;
 import fr.centralesupelec.thuv.scale_up.dtos.CourseSessionWithResourceDto;
 import fr.centralesupelec.thuv.scale_up.dtos.OVHResourceDto;
 import fr.centralesupelec.thuv.scale_up.dtos.terraform_state.TerraformInstance;
@@ -44,7 +44,7 @@ public class AutoScaleUpController {
     private final ScaleUpParameterConfiguration scaleUpParameterConfiguration;
     private final RestTemplate restTemplate;
     private final ZoneId zoneId;
-    private final DeploymentScheduler deploymentScheduler;
+    private final DeploymentLauncher deploymentLauncher;
     private final TaskScheduler taskScheduler;
     private final DeploymentStatusRepository deploymentStatusRepository;
 
@@ -125,7 +125,7 @@ public class AutoScaleUpController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         this.taskScheduler.schedule(
-                deploymentScheduler, Instant.now()
+                deploymentLauncher, Instant.now()
         );
     }
 }
