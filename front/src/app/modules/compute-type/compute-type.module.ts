@@ -22,7 +22,7 @@ import { SessionsResourcesModule } from '../sessions-resources/sessions-resource
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { RegionsModule } from '../regions/regions.module';
-
+import { APP_CONFIG, appConstantFactory } from "../../app-config";
 
 
 @NgModule({
@@ -52,6 +52,12 @@ import { RegionsModule } from '../regions/regions.module';
     MatSelectModule,
     MatExpansionModule,
     RegionsModule,
-  ]
+  ],
+  providers: [
+    {
+      provide: APP_CONFIG,
+      useFactory: appConstantFactory
+    },
+  ],
 })
 export class ComputeTypeModule { }

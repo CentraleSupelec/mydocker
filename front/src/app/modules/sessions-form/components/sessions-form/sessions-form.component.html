@@ -6,28 +6,30 @@
     <app-session-form
       [formControl]="$any(control)"
     ></app-session-form>
-    <ng-container *ngIf="isDeploymentFullyScheduled(control); then thenBlock; else elseBlock"></ng-container>
-    <ng-template #thenBlock>
-      <div fxLayout="column" fxLayoutAlign="space-between center">
-        <mat-icon
-          [matTooltip]="formatDeploymentTooltip(control)"
-          style="color: green"
-        >verified
-        </mat-icon>
-        <p class="mat-caption">Déploiements programmés</p>
-      </div>
-    </ng-template>
-    <ng-template #elseBlock>
-      <div fxLayout="column" fxLayoutAlign="space-between center">
-        <mat-icon
-          [matTooltip]="formatDeploymentTooltip(control)"
-          style="color: red"
-        >error
-        </mat-icon>
-        <p class="mat-caption">Déploiement manquant</p>
-        <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>Demander les déploiements<br />pour l'environnement</a>
-      </div>
-    </ng-template>
+    <div *ngIf="config.deployment_enabled">
+      <ng-container *ngIf="isDeploymentFullyScheduled(control); then thenBlock; else elseBlock"></ng-container>
+      <ng-template #thenBlock>
+        <div fxLayout="column" fxLayoutAlign="space-between center">
+          <mat-icon
+            [matTooltip]="formatDeploymentTooltip(control)"
+            style="color: green"
+          >verified
+          </mat-icon>
+          <p class="mat-caption">Déploiements programmés</p>
+        </div>
+      </ng-template>
+      <ng-template #elseBlock>
+        <div fxLayout="column" fxLayoutAlign="space-between center">
+          <mat-icon
+            [matTooltip]="formatDeploymentTooltip(control)"
+            style="color: red"
+          >error
+          </mat-icon>
+          <p class="mat-caption">Déploiement manquant</p>
+          <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>Demander les déploiements<br />pour l'environnement</a>
+        </div>
+      </ng-template>
+    </div>
     <button mat-icon-button [disabled]="control.disabled" (click)="remove(index)" [matTooltip]="'Supprimer cette session'">
       <mat-icon>delete</mat-icon>
     </button>

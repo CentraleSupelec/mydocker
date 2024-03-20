@@ -12,7 +12,10 @@
       <mat-checkbox formControlName="gpu">
         Utilisable pour des tâches avec GPU
       </mat-checkbox>
-      <mat-accordion class="autoscaling-wrapper">
+      <mat-accordion 
+        *ngIf="config.deployment_enabled"
+        class="autoscaling-wrapper"
+      >
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             Réglages pour l'autoscaling

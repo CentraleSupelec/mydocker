@@ -39,50 +39,52 @@
         <span>Images docker</span>
       </a>
       <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" style="margin-left: 5px; margin-top: 5px;">Gestion des ressources</h2>
-      <a
-        mat-list-item
-        routerLink="/admin/sessions-resources"
-        routerLinkActive="active-link"
-        *ngxPermissionsOnly="'ROLE_ADMIN'"
-      >
-        <div fxLayout="row">
-          <mat-icon>memory</mat-icon>
-        </div>
-        <span>Ressources par session</span>
-      </a>
-      <a
-        mat-list-item
-        routerLink="/admin/deployment"
-        routerLinkActive="active-link"
-        *ngxPermissionsOnly="'ROLE_ADMIN'"
-      >
-        <div fxLayout="row">
-          <mat-icon>dynamic_form</mat-icon>
-        </div>
-        <span>Déploiement</span>
-      </a>
-      <a
-        mat-list-item
-        routerLink="/admin/state"
-        routerLinkActive="active-link"
-        *ngxPermissionsOnly="'ROLE_ADMIN'"
-      >
-        <div fxLayout="row">
-          <mat-icon>track_changes</mat-icon>
-        </div>
-        <span>État de l'infrastructure</span>
-      </a>
-      <a
-        mat-list-item
-        routerLink="/admin/deployment-status"
-        routerLinkActive="active-link"
-        *ngxPermissionsOnly="'ROLE_ADMIN'"
-      >
-        <div fxLayout="row">
-          <mat-icon>task_alt</mat-icon>
-        </div>
-        <span>Statuts des déploiements</span>
-      </a>
+      <ng-container *ngIf="config.deployment_enabled">
+        <a
+          mat-list-item
+          routerLink="/admin/sessions-resources"
+          routerLinkActive="active-link"
+          *ngxPermissionsOnly="'ROLE_ADMIN'"
+        >
+          <div fxLayout="row">
+            <mat-icon>memory</mat-icon>
+          </div>
+          <span>Ressources par session</span>
+        </a>
+        <a
+          mat-list-item
+          routerLink="/admin/deployment"
+          routerLinkActive="active-link"
+          *ngxPermissionsOnly="'ROLE_ADMIN'"
+        >
+          <div fxLayout="row">
+            <mat-icon>dynamic_form</mat-icon>
+          </div>
+          <span>Déploiement</span>
+        </a>
+        <a
+          mat-list-item
+          routerLink="/admin/state"
+          routerLinkActive="active-link"
+          *ngxPermissionsOnly="'ROLE_ADMIN'"
+        >
+          <div fxLayout="row">
+            <mat-icon>track_changes</mat-icon>
+          </div>
+          <span>État de l'infrastructure</span>
+        </a>
+        <a
+          mat-list-item
+          routerLink="/admin/deployment-status"
+          routerLinkActive="active-link"
+          *ngxPermissionsOnly="'ROLE_ADMIN'"
+        >
+          <div fxLayout="row">
+            <mat-icon>task_alt</mat-icon>
+          </div>
+          <span>Statuts des déploiements</span>
+        </a>
+      </ng-container>
       <a
         mat-list-item
         routerLink="/admin/compute-types"

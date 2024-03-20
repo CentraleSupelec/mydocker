@@ -12,7 +12,7 @@ export class AdminLayoutComponent implements OnInit {
 
   courseRoute = new BehaviorSubject<string>('/admin/courses');
   constructor(
-    @Inject(APP_CONFIG) private readonly config: IAppConfig,
+    @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly authService: AuthService,
     private readonly appModeService: AppModeService,
     private readonly cd: ChangeDetectorRef

@@ -12,7 +12,7 @@ import { SessionFormComponent } from "./components/session-form/session-form.com
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { DatetimePickerModule } from "../utils/datetime-picker/datetime-picker.module";
 import { NgxPermissionsModule } from "ngx-permissions";
-
+import { APP_CONFIG, appConstantFactory } from "../../app-config";
 
 @NgModule({
   declarations: [
@@ -34,6 +34,12 @@ import { NgxPermissionsModule } from "ngx-permissions";
     MatCheckboxModule,
     DatetimePickerModule,
     NgxPermissionsModule,
-  ]
+  ],
+  providers: [
+    {
+      provide: APP_CONFIG,
+      useFactory: appConstantFactory
+    },
+  ],
 })
 export class SessionsFormModule { }

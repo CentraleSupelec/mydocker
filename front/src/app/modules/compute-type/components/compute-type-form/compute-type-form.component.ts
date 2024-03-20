@@ -1,4 +1,5 @@
-import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, forwardRef, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { APP_CONFIG, IAppConfig } from "../../../../app-config";
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -38,7 +39,10 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
   private destroy$: Subject<void> = new Subject<void>();
 
 
-  constructor( private readonly fb: FormBuilder) {
+  constructor(
+    private readonly fb: FormBuilder,
+    @Inject(APP_CONFIG) readonly config: IAppConfig
+  ) {
 
     this.computeTypeForm = fb.group({
       displayName: ['', Validators.required],

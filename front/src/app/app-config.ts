@@ -8,6 +8,7 @@ export interface IAppConfig {
     login_url: string;
     logout_url: string;
   };
+  deployment_enabled: boolean
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -22,5 +23,6 @@ export function appConstantFactory(): IAppConfig {
       login_url: appConstants.cas?.login_url,
       logout_url: appConstants.cas?.logout_url,
     },
+    deployment_enabled: appConstants.deployment_enabled
   };
 }

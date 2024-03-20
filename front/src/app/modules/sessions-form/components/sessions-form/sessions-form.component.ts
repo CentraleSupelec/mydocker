@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, forwardRef, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, forwardRef, Inject, Input, OnInit } from '@angular/core';
+import {APP_CONFIG, IAppConfig} from "../../../../app-config";
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -49,6 +50,7 @@ Je souhaite modifier les sessions de l'environnement ${window.location.href} . V
   private isAdmin = false;
 
   constructor(
+    @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly formBuilder: FormBuilder,
     private readonly cd: ChangeDetectorRef,
     private readonly permissionService: NgxPermissionsService,
