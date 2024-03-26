@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
+	"sync"
+	"time"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -10,9 +15,6 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/go-co-op/gocron"
 	log "github.com/sirupsen/logrus"
-	"strings"
-	"sync"
-	"time"
 )
 
 func addScaleDownCron(s *gocron.Scheduler, dockerClient *client.Client, lock *sync.Mutex, scaleUpConfig *ScaleUpConfig) error {
@@ -61,6 +63,12 @@ type scaleDownService struct {
 func (s *scaleDownService) run() {
 	s.autoscalingLock.Lock()
 	defer s.autoscalingLock.Unlock()
+
+	if _, err := os.Stat(c.StopScaleDownFilePath); err == nil {
+		s.logger.Info("StopScaleDown file detected. Exiting the scale-down process.")
+		return
+	}
+
 	jobId := RandomString(6)
 	s.logger = s.rootLogger.WithFields(log.Fields{"jobId": jobId})
 	s.logger.Tracef("Start scale down #%s", jobId)
