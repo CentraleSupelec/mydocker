@@ -4,5 +4,6 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
   "cas": {
     "login_url": "http://localhost:9443/cas/login",
     "logout_url": "http://localhost:9443/cas/logout",
-  }
+  },
+  "deployment_enabled": true,
 };

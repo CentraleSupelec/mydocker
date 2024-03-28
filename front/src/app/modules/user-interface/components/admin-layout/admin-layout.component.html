@@ -38,7 +38,7 @@
         </div>
         <span>Images docker</span>
       </a>
-      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" style="margin-left: 5px; margin-top: 5px;">Gestion des ressources</h2>
+      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" class="menu-title">Gestion des ressources</h2>
       <ng-container *ngIf="config.deployment_enabled">
         <a
           mat-list-item
@@ -96,7 +96,7 @@
         </div>
         <span>Types de charge</span>
       </a>
-      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" style="margin-left: 5px; margin-top: 5px;">Gestion des utilisateur</h2>
+      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" class="menu-title">Gestion des utilisateur</h2>
       <a
         mat-list-item
         routerLink="/admin/users"

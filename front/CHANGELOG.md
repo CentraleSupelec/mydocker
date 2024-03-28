@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.24.6
+### Fixed
+- Hide autoscaling column when deployment_enabled is false
+
 ## 2.24.5
 ### Added
 - deployement_enabled parameter to show/hide deployment related settings
