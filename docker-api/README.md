@@ -92,7 +92,3 @@ provision:
 5. Install the plugin: `docker plugin install --disable centralesupelec/mydockervolume`
 6. Configure the plugin : `docker plugin set centralesupelec/mydockervolume DRIVER_MODE=FS`
 7. Then, launch the Go app : `docker-compose up`
-
-### Manually stop scaleUp / scaleDown
-
-Configure StopScaleUpFilePath / StopScaleDownFilePath. Each time autoscaleUp(Down) is run, it will first check if the corresponding stop file exists. If found, the autoscaling will not proceed.

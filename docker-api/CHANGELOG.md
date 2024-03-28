@@ -6,9 +6,6 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
-### Added
-- Manually stop autoscaling by creating a file
-
 ## 2.16.1
 ### Added
 - Pass registry credentials to build image

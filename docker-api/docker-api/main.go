@@ -2,15 +2,14 @@ package main
 
 import (
 	"flag"
+	"github.com/go-co-op/gocron"
+	"github.com/spf13/viper"
 	"io"
 	"math/rand"
 	"net"
 	_ "net/http/pprof"
 	"strconv"
 	"time"
-
-	"github.com/go-co-op/gocron"
-	"github.com/spf13/viper"
 
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 
@@ -58,8 +57,6 @@ type config struct {
 	ScaleDownRemoveNonEmpty bool
 	DeployEnvSecrets        []string
 	PrecreateVolume         bool
-	StopScaleUpFilePath     string
-	StopScaleDownFilePath   string
 }
 
 type registryCredential struct {
@@ -298,8 +295,6 @@ func main() {
 	viper.AddConfigPath(".") // optionally look for config in the working directory
 	viper.SetDefault("MaxRecvMsgSize", defaultMaxRecvMsgSize)
 	viper.SetDefault("BuildImageRepository", "dev")
-	viper.SetDefault("StopScaleUpFilePath", "/etc/docker-api/stop-scale-up")
-	viper.SetDefault("StopScaleDownFilePath", "/etc/docker-api/stop-scale-down")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Panicf("Failed to find config file: %v", err)

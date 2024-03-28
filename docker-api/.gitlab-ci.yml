@@ -61,7 +61,7 @@ deploy_github:
     - build_uploaded_artifacts
   before_script:
     - apk add zip github-cli
-    - zip -r artifacts.zip docker-api
+    - zip -r artifacts.zip docker-api/docker-api
   script:
     - gh release --repo CentraleSupelec/mydocker create docker-api-${CI_COMMIT_TAG} --notes ""
     - gh release --repo CentraleSupelec/mydocker upload docker-api-${CI_COMMIT_TAG} artifacts.zip
