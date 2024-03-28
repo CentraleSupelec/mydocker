@@ -3,18 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/rand"
+	"os"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/go-co-op/gocron"
 	log "github.com/sirupsen/logrus"
-	"math"
-	"math/rand"
-	"regexp"
-	"strings"
-	"sync"
-	"time"
 )
 
 type scaleUpDockerClient interface {
@@ -75,6 +77,12 @@ type scaleUpService struct {
 func (s *scaleUpService) run() {
 	s.autoscalingLock.Lock()
 	defer s.autoscalingLock.Unlock()
+
+	if _, err := os.Stat(c.StopScaleUpFilePath); err == nil {
+		s.logger.Info("StopScaleUp file detected. Exiting the scale-up process.")
+		return
+	}
+
 	jobId := RandomString(6)
 	s.logger = s.rootLogger.WithFields(log.Fields{"jobId": jobId})
 	s.logger.Tracef("Start scale up #%s", jobId)
