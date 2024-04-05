@@ -20,5 +20,19 @@ services:
 # Replace the line above with the line below to debug with delve
 #      - "go get github.com/go-delve/delve/cmd/dlv@v1.7.3 && /go/bin/dlv debug --headless --listen=0.0.0.0:2345 --api-version=2 --accept-multiclient --build-flags='-i -tags luminous' -- -config-path=.."
 
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:ci-alpine
+    ports:
+      - 80:80
+      - 443:443
+      - 2019:2019
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - caddy-overlay
 volumes:
   gocache:
+
+networks:
+  caddy-overlay:
+    external: true

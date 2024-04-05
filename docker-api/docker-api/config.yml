@@ -39,3 +39,6 @@ DeployEnvSecrets:
   - "OS_USERNAME="
   - "OS_PASSWORD="
 PrecreateVolume: false
+ReverseProxyUrl: localhost
+CaddyOverlayNetwork: caddy-overlay
+CaddyTlsInternal: true

@@ -12,6 +12,12 @@ You need to have a local docker swarm cluster:
 docker swarm init
 ```
 
+and to setup an attachable overlay network that will host Caddy and swarm services :
+
+```
+docker network create -d overlay --attachable <CaddyOverlayNetwork>
+```
+
 Default configuration can be found in `docker-api/config.yml`.  
 At launch, actual configuration is loaded from `/etc/docker-api/config.yml` + from current folder (whichever is found first).  
 Extra directory can be specified with `-config-path=...`.
@@ -96,3 +102,27 @@ provision:
 ### Manually stop scaleUp / scaleDown
 
 Configure StopScaleUpFilePath / StopScaleDownFilePath. Each time autoscaleUp(Down) is run, it will first check if the corresponding stop file exists. If found, the autoscaling will not proceed.
+
+### Accessing containers through caddy-reverse-proxy
+
+After creating a container, you can access it through <random_username>.<ReverseProxyUrl>
+
+For example :
+
+```
+curl -k --resolve silly_sammet.ovhcaddy.com:443:127.0.0.1 https://silly_sammet.ovhcaddy.com/
+```
+
+To be able to access the reverse proxy in your browser, you need to edit your hosts file and add :
+
+```
+127.0.0.1 *.<ReverseProxyUrl>
+```
+
+**NOTE :**
+
+Some operating systems don't support wildcard entries like *.<ReverseProxyUrl>. They only supports exact domain mappings. So if you need to access your container in your browser, you have to add it specifically :
+
+```
+127.0.0.1 <random_username>.<ReverseProxyUrl>
+```

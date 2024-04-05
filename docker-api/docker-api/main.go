@@ -60,6 +60,11 @@ type config struct {
 	PrecreateVolume         bool
 	StopScaleUpFilePath     string
 	StopScaleDownFilePath   string
+	ReverseProxyUrl         string
+	CaddyOverlayNetwork     string
+	CaddyTlsInternal        bool
+	CaddyTlsCertificatePath string
+	CaddyTlsKeyPath         string
 }
 
 type registryCredential struct {
@@ -300,6 +305,11 @@ func main() {
 	viper.SetDefault("BuildImageRepository", "dev")
 	viper.SetDefault("StopScaleUpFilePath", "/etc/docker-api/stop-scale-up")
 	viper.SetDefault("StopScaleDownFilePath", "/etc/docker-api/stop-scale-down")
+	viper.SetDefault("ReverseProxyUrl", "localhost")
+	viper.SetDefault("CaddyOverlayNetwork", "caddy-overlay")
+	viper.SetDefault("CaddyTlsInternal", false)
+	viper.SetDefault("CaddyTlsCertificatePath", "/etc/ssl/caddy_reverse_proxy/cert.pem")
+	viper.SetDefault("CaddyTlsKeyPath", "/etc/ssl/caddy_reverse_proxy/key.pem")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Panicf("Failed to find config file: %v", err)

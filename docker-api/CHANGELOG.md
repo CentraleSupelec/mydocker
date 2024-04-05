@@ -6,6 +6,9 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
+### Added
+- Reverse proxy to containers
+
 ## 2.16.2
 ### Added
 - Manually stop autoscaling by creating a file

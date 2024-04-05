@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Workiva/go-datastructures/queue"
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
@@ -14,14 +18,15 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/namesgenerator"
 	log "github.com/sirupsen/logrus"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
-	SAVE_IMAGE    = "instrumentisto/rsync-ssh:latest"
-	CEPHFS_DRIVER = "cephfs"
+	SAVE_IMAGE                = "instrumentisto/rsync-ssh:latest"
+	CEPHFS_DRIVER             = "cephfs"
+	CADDY_KEY                 = "caddy_%d"
+	CADDY_REVERSE_PROXY_KEY   = "caddy_%d.reverse_proxy"
+	CADDY_REVERSE_PROXY_VALUE = "{{ upstreams %s }}"
+	PORT_TO_CADDY_INDEX_KEY   = "port_%d_caddy_index"
 )
 
 func getOrCreateContainer(
@@ -83,6 +88,9 @@ func getOrCreateContainer(
 		for index, value := range request.Ports {
 			response.Ports[index] = convertRequestPortToResponsePort(value)
 			response.Ports[index].MapTo = portsArray[index].(uint32)
+			if value.ConnexionType == "HTTP" {
+				response.Ports[index].Hostname = fmt.Sprintf("%s.%s", strings.ReplaceAll(namesgenerator.GetRandomName(0), "_", "-"), c.ReverseProxyUrl)
+			}
 		}
 
 		userPassword := &pb.UserPasswordMethod{
@@ -316,6 +324,10 @@ func exist(
 		for _, port := range service.Endpoint.Ports {
 			if _, ok := mapPorts[port.TargetPort]; ok {
 				mapPorts[port.TargetPort].MapTo = port.PublishedPort
+				if mapPorts[port.TargetPort].ConnexionType == "HTTP" {
+					caddyIndex, _ := strconv.Atoi(service.Spec.Labels[fmt.Sprintf(PORT_TO_CADDY_INDEX_KEY, port.TargetPort)])
+					mapPorts[port.TargetPort].Hostname = service.Spec.Labels[fmt.Sprintf(CADDY_KEY, caddyIndex)]
+				}
 			}
 		}
 		authenticationMethod := &pb.ContainerResponse_UserPassword{
@@ -373,7 +385,8 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 			},
 		}
 	}
-	var labels map[string]string
+	var labels map[string]string = make(map[string]string)
+
 	if request.Metadata != nil {
 		labels = request.Metadata.Tags
 	}
@@ -395,13 +408,35 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 	}
 
 	ports := []swarm.PortConfig{}
+	caddyIndex := 0
 	for _, port := range response.Ports {
 		ports = append(ports, swarm.PortConfig{
 			TargetPort:    port.PortToMap,
 			PublishedPort: port.MapTo,
 			Protocol:      swarm.PortConfigProtocolTCP,
 		})
+
+		if port.ConnexionType == "HTTP" {
+			labels[fmt.Sprintf(CADDY_KEY, caddyIndex)] = port.Hostname
+			labels[fmt.Sprintf(CADDY_REVERSE_PROXY_KEY, caddyIndex)] = fmt.Sprintf(CADDY_REVERSE_PROXY_VALUE, strconv.FormatUint(uint64(port.PortToMap), 10))
+			labels[fmt.Sprintf(PORT_TO_CADDY_INDEX_KEY, port.PortToMap)] = strconv.FormatInt(int64(caddyIndex), 10)
+
+			if c.CaddyTlsInternal {
+				labels[fmt.Sprintf(CADDY_KEY+".tls", caddyIndex)] = "internal"
+			} else {
+				labels[fmt.Sprintf(CADDY_KEY+".tls", caddyIndex)] = fmt.Sprintf("%s %s", c.CaddyTlsCertificatePath, c.CaddyTlsKeyPath)
+			}
+			caddyIndex += 1
+		}
 	}
+
+	if caddyIndex != 0 {
+		labels["caddy_ingress_network"] = c.CaddyOverlayNetwork
+	}
+
+	networks := []swarm.NetworkAttachmentConfig{}
+	networks = append(networks, swarm.NetworkAttachmentConfig{Target: c.CaddyOverlayNetwork})
+
 	var resources []swarm.GenericResource
 	for key, value := range request.GetOptions().GetGenericResources() {
 		resources = append(resources, swarm.GenericResource{DiscreteResourceSpec: &swarm.DiscreteGenericResource{
@@ -432,6 +467,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 				Reservations: &swarm.Resources{GenericResources: resources},
 			},
 			Placement: &swarm.Placement{Constraints: constraints},
+			Networks:  networks,
 		},
 		EndpointSpec: &swarm.EndpointSpec{
 			Ports: ports,
