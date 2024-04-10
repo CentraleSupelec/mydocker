@@ -9,4 +9,8 @@ import { IContainerPort } from "../../shell/interfaces/container-port";
 export class HttpConnectionGuideComponent {
   @Input() containerPort: IContainerPort | null = null;
   @Input() ipAddress: string | undefined = '';
+
+  getContainerUrl(): string {
+    return this.containerPort?.hostname ? "https://" + this.containerPort?.hostname: "http://" + this.ipAddress + ':' + this.containerPort?.portMapTo
+  }
 }

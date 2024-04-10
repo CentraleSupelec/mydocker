@@ -8,7 +8,7 @@ export interface IAppConfig {
     login_url: string;
     logout_url: string;
   };
-  deployment_enabled: boolean
+  deployment_enabled: boolean;
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');

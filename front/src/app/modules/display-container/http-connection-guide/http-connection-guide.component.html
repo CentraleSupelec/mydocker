@@ -3,7 +3,16 @@
     <span *ngIf="containerPort?.description !== 'default'">à "{{ containerPort?.description }}"</span>:&nbsp;
   </strong>
   <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
-    <a mat-raised-button color="primary" href="http://{{ ipAddress }}:{{ containerPort?.portMapTo }}" target="_blank" rel="noopener noreferrer" style="margin-top: 5px">
+    <a 
+      mat-raised-button
+      color="primary"
+      href="{{ getContainerUrl() }}"
+      target="_blank"
+      rel="noopener noreferrer"
+      style="margin-top: 5px"
+      matTooltip="http://{{ ipAddress }}:{{ containerPort?.portMapTo }}"
+      matTooltipShowDelay=1500
+    >
       Connexion à l'interface
     </a>
   </div>

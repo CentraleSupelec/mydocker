@@ -12,6 +12,7 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import { RouterModule } from "@angular/router";
 import { SnackNotificationModule } from "../utils/snack-notification/snack-notification.module";
 import { DisplayCustomContainerPortComponent } from './display-custom-container-port/display-custom-container-port.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 
@@ -29,6 +30,7 @@ import { DisplayCustomContainerPortComponent } from './display-custom-container-
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
     FlexLayoutModule,
     RouterModule,
     SnackNotificationModule,
