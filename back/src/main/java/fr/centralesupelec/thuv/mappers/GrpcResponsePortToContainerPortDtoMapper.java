@@ -22,6 +22,7 @@ public class GrpcResponsePortToContainerPortDtoMapper {
                 )
                 .setRequiredToAccessContainer(
                         responsePort.getRequiredToAccessContainer()
-                );
+                )
+                .setHostname(responsePort.getHostname());
     }
 }

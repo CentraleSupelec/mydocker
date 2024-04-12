@@ -85,6 +85,7 @@ message ResponsePort {
     uint32 portToMap = 3;
     uint32 mapTo = 4;
     bool requiredToAccessContainer = 5;
+    string hostname = 6;
 }
 
 message Label {

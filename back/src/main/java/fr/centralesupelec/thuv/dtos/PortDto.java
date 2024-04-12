@@ -13,4 +13,5 @@ public class PortDto {
     @NotEmpty
     private String connectionType;
     private Boolean requiredToAccessContainer = false;
+    private String hostname;
 }

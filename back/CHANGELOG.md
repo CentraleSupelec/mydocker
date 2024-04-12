@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+- Add hostname in ResponsePort and PortDto
+
 ## 2.27.0
 ### Added
 - deployment_enabled parameter in application.properties to activate/deactivate deployment related CRON jobs
