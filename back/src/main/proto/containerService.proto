@@ -109,6 +109,7 @@ message ContainerRequestOptions {
     map<string, uint32> genericResources = 8;
     repeated Label forbiddenLabels = 9;
     repeated Label mandatoryLabels = 10;
+    string command = 11;
 }
 
 message ContainerRequest {
