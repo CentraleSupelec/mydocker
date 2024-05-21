@@ -1,0 +1,11 @@
+databaseChangeLog:
+- changeSet:
+    id: 1716294243169-1
+    author: pdesgarets (generated)
+    changes:
+    - addNotNullConstraint:
+        columnDataType: varchar(255)
+        columnName: command
+        tableName: courses
+        validate: true
+

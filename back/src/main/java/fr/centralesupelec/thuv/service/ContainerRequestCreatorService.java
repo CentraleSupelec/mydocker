@@ -13,12 +13,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ContainerRequestCreatorService {
-    private static final String DEFAULT_COMMAND = "${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}";
     private final PortToGrpcRequestPortMapper portToGrpcRequestPortMapper;
     private final UserCourseRepository userCourseRepository;
     private final ContainerUtilsService containerUtilsService;
@@ -30,7 +28,7 @@ public class ContainerRequestCreatorService {
         ContainerRequestOptions.Builder builder = ContainerRequestOptions.newBuilder()
                 .setForceRecreate(forceRecreate)
                 .setSaveStudentWork(course.isSaveStudentWork())
-                .setCommand(Objects.requireNonNullElse(course.getCommand(), DEFAULT_COMMAND))
+                .setCommand(course.getCommand())
         ;
 
         if (course.getComputeType().isGpu()) {

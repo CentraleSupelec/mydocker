@@ -8,6 +8,7 @@ databaseChangeLog:
         - column:
             name: command
             type: varchar(255)
+            value: "${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}"
         tableName: courses
 - changeSet:
     id: 1713449443267-4
@@ -15,19 +16,8 @@ databaseChangeLog:
     changes:
     - dropSequence:
         sequenceName: hibernate_sequence
-- changeSet:
-    id: 1713449443267-1
-    author: mohamedalibarka (generated)
-    changes:
-    - dropUniqueConstraint:
-        constraintName: UC_COMPUTE_TYPESTECHNICAL_NAME_COL
-        tableName: compute_types
-- changeSet:
-    id: 1713449443267-2
-    author: mohamedalibarka (generated)
-    changes:
-    - addUniqueConstraint:
-        columnNames: technical_name
-        constraintName: UC_COMPUTE_TYPESTECHNICAL_NAME_COL
-        tableName: compute_types
-
+    rollback:
+    - createSequence:
+          incrementBy: 1
+          sequenceName: hibernate_sequence
+          startValue: 1

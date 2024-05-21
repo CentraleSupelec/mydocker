@@ -37,6 +37,7 @@ public class Course {
     private String dockerImage;
     private Long nanoCpusLimit;
     private Long memoryBytesLimit;
+    @NotNull
     private String command;
 
     @Column(columnDefinition = "INT4 DEFAULT 0", nullable = false)
