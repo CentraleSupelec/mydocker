@@ -100,7 +100,7 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
         nanoCpusLimit: obj?.nanoCpusLimit || null,
         memoryBytesLimit: obj?.memoryBytesLimit || null,
         computeTypeId: obj?.computeTypeId || this.defaultComputeTypeId,
-        command: null === obj?.command ? DEFAULT_COMMAND : obj?.command,
+        command: undefined === obj?.command ? DEFAULT_COMMAND : obj?.command,
 
         saveStudentWork: obj?.saveStudentWork || false,
         workdirSize: obj?.workdirSize || null,
