@@ -67,6 +67,11 @@ public class ContainerRequestCreatorService {
             builder.setWorkdirPath(course.getWorkdirPath())
                     .setWorkdirSize(course.getWorkdirSize());
         }
+        if (course.getUseStudentVolume()) {
+            builder
+                    .setUseStudentVolume(true)
+                    .setStudentVolumePath(course.getStudentVolumePath());
+        }
 
         userCourseRepository.findByUserIdAndCourseId(
                 user.getId(), course.getId()

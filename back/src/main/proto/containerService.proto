@@ -110,6 +110,8 @@ message ContainerRequestOptions {
     repeated Label forbiddenLabels = 9;
     repeated Label mandatoryLabels = 10;
     string command = 11;
+    bool useStudentVolume = 12;
+    string studentVolumePath = 13;
 }
 
 message ContainerRequest {

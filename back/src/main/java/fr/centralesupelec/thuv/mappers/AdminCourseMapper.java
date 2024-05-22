@@ -59,7 +59,10 @@ public class AdminCourseMapper {
                                 .stream()
                                 .map(portsMapper::convertToDTO)
                                 .collect(Collectors.toList())
-                );
+                )
+                .setUseStudentVolume(course.getUseStudentVolume())
+                .setStudentVolumePath(course.getStudentVolumePath())
+                ;
 
         try {
             courseDto.setDisplayOptions(

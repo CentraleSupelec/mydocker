@@ -41,6 +41,9 @@ public class AdminCourseBaseDto {
     private Integer workdirSize;
     private String workdirPath;
     @NotNull
+    private Boolean useStudentVolume = false;
+    private String studentVolumePath;
+    @NotNull
     private Boolean allowStudentToSubmit = false;
 
     @NotNull

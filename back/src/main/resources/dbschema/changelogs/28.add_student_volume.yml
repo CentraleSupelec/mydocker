@@ -1,0 +1,24 @@
+databaseChangeLog:
+- changeSet:
+    id: 1716309039628-1
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: student_volume_path
+            type: varchar(255)
+        tableName: courses
+- changeSet:
+    id: 1716309039628-2
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            defaultValueBoolean: false
+            name: use_student_volume
+            type: BOOLEAN
+        tableName: courses
