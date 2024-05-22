@@ -28,6 +28,8 @@ export interface IAdminCourseBase {
   workdirSize: number;
   workdirPath: string;
   allowStudentToSubmit: boolean;
+  useStudentVolume: boolean;
+  studentVolumePath: string;
 
   displayOptions: ICourseDisplay;
 

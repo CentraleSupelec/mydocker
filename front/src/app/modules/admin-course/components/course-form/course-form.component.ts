@@ -108,6 +108,8 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
         allowStudentToSubmit: obj?.allowStudentToSubmit || false,
 
         displayOptions: obj?.displayOptions || {},
+        useStudentVolume: obj?.useStudentVolume || false,
+        studentVolumePath: obj?.studentVolumePath || null,
       }
     });
   }

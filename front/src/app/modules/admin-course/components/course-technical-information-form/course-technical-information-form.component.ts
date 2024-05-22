@@ -60,6 +60,8 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       workdirSize: null,
       workdirPath: null,
       allowStudentToSubmit: false,
+      useStudentVolume: false,
+      studentVolumePath: null,
 
       displayOptions: formBuilder.control({}),
     });
@@ -116,6 +118,8 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       allowStudentToSubmit: obj?.allowStudentToSubmit || false,
 
       displayOptions: obj?.displayOptions || {},
+      useStudentVolume: obj?.useStudentVolume || false,
+      studentVolumePath: obj?.studentVolumePath || null,
     });
 
     this.changeSaveStudentWork(obj?.saveStudentWork);
@@ -134,6 +138,15 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     }
     this.courseTechnicalForm.get('workdirSize')?.updateValueAndValidity();
     this.courseTechnicalForm.get('workdirPath')?.updateValueAndValidity();
+  }
+
+  changeUseStudentVolume(checked: boolean) {
+    if(checked) {
+      this.courseTechnicalForm.get('studentVolumePath')?.setValidators([Validators.required]);
+    } else {
+      this.courseTechnicalForm.get('studentVolumePath')?.clearValidators();
+    }
+    this.courseTechnicalForm.get('studentVolumePath')?.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {
