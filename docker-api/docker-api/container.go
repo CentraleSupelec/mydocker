@@ -387,16 +387,14 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 
 	if request.Options != nil && request.Options.Command != "" {
 		command := request.Options.Command
-		command = strings.Replace(command, fmt.Sprintf("$%s", MYDOCKER_USERNAME), response.GetUserPassword().Username, -1)
-		command = strings.Replace(command, fmt.Sprintf("${%s}", MYDOCKER_USERNAME), response.GetUserPassword().Username, -1)
-		command = strings.Replace(command, fmt.Sprintf("$%s", MYDOCKER_PASSWORD), response.GetUserPassword().Password, -1)
-		command = strings.Replace(command, fmt.Sprintf("${%s}", MYDOCKER_PASSWORD), response.GetUserPassword().Password, -1)
+		command = strings.Replace(command, "{{USERNAME}}", response.GetUserPassword().Username, -1)
+		command = strings.Replace(command, "{{PASSWORD}}", response.GetUserPassword().Password, -1)
 		args = commandToParts(command)
 	}
 
-	if request.Options != nil && request.Options.SaveStudentWork {
-		mounts = []mount.Mount{
-			{
+	if request.Options != nil {
+		if request.Options.SaveStudentWork {
+			mounts = append(mounts, mount.Mount{
 				Type:   mount.TypeVolume,
 				Source: name,
 				Target: request.Options.WorkdirPath,
@@ -409,7 +407,23 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 						},
 					},
 				},
-			},
+			})
+		}
+		if request.Options.UseStudentVolume {
+			mounts = append(mounts, mount.Mount{
+				Type:   mount.TypeVolume,
+				Source: createStudentVolumeName(request.UserID),
+				Target: request.Options.StudentVolumePath,
+				VolumeOptions: &mount.VolumeOptions{
+					DriverConfig: &mount.Driver{
+						Name: "centralesupelec/mydockervolume",
+						Options: map[string]string{
+							"size":        fmt.Sprintf("%d", c.StudentVolumeSize),
+							"mkfsOptions": "-O ^mmp",
+						},
+					},
+				},
+			})
 		}
 	}
 	var labels map[string]string = make(map[string]string)

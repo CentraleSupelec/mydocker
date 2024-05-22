@@ -27,27 +27,27 @@ func TestCommandToParts(t *testing.T) {
 	var expected []string
 
 	// Typical command
-	command = `start-notebook.sh --NotebookApp.token=${MYDOCKER_PASSWORD}`
+	command = `start-notebook.sh --NotebookApp.token={{PASSWORD}}`
 	parts = commandToParts(command)
-	expected = []string{"start-notebook.sh", `--NotebookApp.token=${MYDOCKER_PASSWORD}`}
+	expected = []string{"start-notebook.sh", `--NotebookApp.token={{PASSWORD}}`}
 	validateCommand(t, parts, expected)
 
-	// Example with default command "${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}" after replacement
+	// Example with default command "{{USERNAME}} {{PASSWORD}}" after replacement
 	command = `friendly_cat xTz31oi3e`
 	parts = commandToParts(command)
 	expected = []string{"friendly_cat", "xTz31oi3e"}
 	validateCommand(t, parts, expected)
 
 	// Word's last part is param expression
-	command = `./mycommand -username=${MYDOCKER_USERNAME}`
+	command = `./mycommand -username={{USERNAME}}`
 	parts = commandToParts(command)
-	expected = []string{"./mycommand", "-username=${MYDOCKER_USERNAME}"}
+	expected = []string{"./mycommand", "-username={{USERNAME}}"}
 	validateCommand(t, parts, expected)
 
 	// Word's last part is param expression simplified
-	command = `./mycommand -username=$MYDOCKER_USERNAME`
+	command = `./mycommand -username={{USERNAME}}`
 	parts = commandToParts(command)
-	expected = []string{"./mycommand", "-username=$MYDOCKER_USERNAME"}
+	expected = []string{"./mycommand", "-username={{USERNAME}}"}
 	validateCommand(t, parts, expected)
 
 	// Word's first part is single quote without dollar

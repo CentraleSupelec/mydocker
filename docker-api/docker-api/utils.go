@@ -178,6 +178,10 @@ func createContainerName(userId string, courseId string) string {
 	return userId + "-" + courseId
 }
 
+func createStudentVolumeName(userId string) string {
+	return "student-" + userId
+}
+
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 func getJson(url string, target interface{}, catch404 bool) error {
