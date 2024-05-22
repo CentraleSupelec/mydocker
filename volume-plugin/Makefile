@@ -11,7 +11,7 @@ clean:
 .PHONY: rootfs
 rootfs:
 	@echo "### docker build: rootfs image with docker-volume-rbd"
-	@docker build -q -t ${PLUGIN_NAME}:rootfs .
+	@docker build --platform linux/amd64 -q -t ${PLUGIN_NAME}:rootfs .
 	@echo "### create rootfs directory in ./plugin/rootfs"
 	@mkdir -p ./plugin/rootfs
 	@docker create --name tmp ${PLUGIN_NAME}:rootfs

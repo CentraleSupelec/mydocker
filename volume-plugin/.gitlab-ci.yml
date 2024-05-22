@@ -2,11 +2,11 @@ stages:
   - build
 
 variables:
-  CEPH_VERSION: pacific
+  CEPH_VERSION: reef
 
 build:
   stage: build
-  image: golang:1.16
+  image: golang:1.22
   script:
     - apt-get update && apt-get install -yq software-properties-common wget gnupg2
     - bash -c "wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -"

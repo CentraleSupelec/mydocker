@@ -96,11 +96,15 @@
       ]
     },
     {
+      "name": "cephConf",
       "source": "/etc/ceph",
       "destination": "/etc/ceph",
       "type": "bind",
       "options": [
         "rbind"
+      ],
+      "settable": [
+        "source"
       ]
     },
     {
