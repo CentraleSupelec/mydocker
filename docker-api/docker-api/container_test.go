@@ -2,7 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/swarm"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	"testing"
 
 	"github.com/Workiva/go-datastructures/queue"
@@ -79,4 +84,159 @@ func TestGetOrCreateContainer(t *testing.T) {
 	here, id, _, _, _, _, err = exist("test-test", responsePorts, cli)
 	assert.False(t, here)
 	assert.Nil(t, err)
+}
+
+type testingCreateStudentVolumeDockerClient struct {
+	mock.Mock
+	createStudentVolumeDockerClient
+}
+
+func (t *testingCreateStudentVolumeDockerClient) ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error) {
+	args := t.Called(ctx, options)
+	return args.Get(0).([]swarm.Service), args.Error(1)
+}
+
+type ContainerTestSuite struct {
+	suite.Suite
+	mocks []*mock.Call
+}
+
+func (suite *ContainerTestSuite) SetupTest() {
+	suite.mocks = []*mock.Call{}
+}
+
+func (suite *ContainerTestSuite) AfterTest() {
+	for _, m := range suite.mocks {
+		m.Unset()
+	}
+}
+
+func (suite *ContainerTestSuite) TestCanCreateStudentVolumeNoService() {
+	stubClient := new(testingCreateStudentVolumeDockerClient)
+	suite.mocks = append(suite.mocks,
+		stubClient.On(
+			"ServiceList", mock.Anything, mock.Anything,
+		).Return(make([]swarm.Service, 0), nil).Times(1),
+	)
+	result, err := canCreateStudentVolume(stubClient, &pb.ContainerRequest{
+		UserID: "1",
+		Options: &pb.ContainerRequestOptions{
+			StorageBackend: pb.StorageBackend_RBD,
+		},
+	})
+	suite.Nil(err)
+	suite.Equal(true, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestCanCreateStudentVolumeServiceNoMount() {
+	stubClient := new(testingCreateStudentVolumeDockerClient)
+	suite.mocks = append(suite.mocks,
+		stubClient.On(
+			"ServiceList", mock.Anything, mock.Anything,
+		).Return([]swarm.Service{
+			{
+				ID: "serviceID",
+				Spec: swarm.ServiceSpec{
+					TaskTemplate: swarm.TaskSpec{
+						ContainerSpec: &swarm.ContainerSpec{
+							Mounts: []mount.Mount{
+								{
+									Source: "another-source",
+								},
+							},
+						},
+					},
+				},
+			},
+		}, nil).Times(1),
+	)
+	result, err := canCreateStudentVolume(stubClient, &pb.ContainerRequest{
+		UserID: "1",
+		Options: &pb.ContainerRequestOptions{
+			StorageBackend: pb.StorageBackend_RBD,
+		},
+	})
+	suite.Nil(err)
+	suite.Equal(true, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestCanCreateStudentVolumeServiceMount() {
+	stubClient := new(testingCreateStudentVolumeDockerClient)
+	suite.mocks = append(suite.mocks,
+		stubClient.On(
+			"ServiceList", mock.Anything, mock.Anything,
+		).Return([]swarm.Service{
+			{
+				ID: "serviceID",
+				Spec: swarm.ServiceSpec{
+					TaskTemplate: swarm.TaskSpec{
+						ContainerSpec: &swarm.ContainerSpec{
+							Mounts: []mount.Mount{
+								{
+									Source: "student-1",
+								},
+							},
+						},
+					},
+				},
+			},
+		}, nil).Times(1),
+	)
+	result, err := canCreateStudentVolume(stubClient, &pb.ContainerRequest{
+		UserID: "1",
+		Options: &pb.ContainerRequestOptions{
+			StorageBackend: pb.StorageBackend_RBD,
+		},
+	})
+	suite.NotNil(err)
+	suite.Equal(false, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestCanCreateStudentVolumeNFS() {
+	stubClient := new(testingCreateStudentVolumeDockerClient)
+	stubClient.AssertNotCalled(suite.T(), "ServiceList", mock.Anything, mock.Anything)
+	result, err := canCreateStudentVolume(stubClient, &pb.ContainerRequest{
+		UserID: "1",
+		Options: &pb.ContainerRequestOptions{
+			StorageBackend: pb.StorageBackend_NFS,
+		},
+	})
+	suite.Nil(err)
+	suite.Equal(true, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestCanCreateStudentVolumeLocal() {
+	stubClient := new(testingCreateStudentVolumeDockerClient)
+	stubClient.AssertNotCalled(suite.T(), "ServiceList", mock.Anything, mock.Anything)
+	result, err := canCreateStudentVolume(stubClient, &pb.ContainerRequest{
+		UserID: "1",
+		Options: &pb.ContainerRequestOptions{
+			StorageBackend: pb.StorageBackend_LOCAL,
+		},
+	})
+	suite.NotNil(err)
+	suite.Equal(false, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestCanCreateStudentVolumeUnknown() {
+	stubClient := new(testingCreateStudentVolumeDockerClient)
+	stubClient.AssertNotCalled(suite.T(), "ServiceList", mock.Anything, mock.Anything)
+	result, err := canCreateStudentVolume(stubClient, &pb.ContainerRequest{
+		UserID: "1",
+		Options: &pb.ContainerRequestOptions{
+			StorageBackend: 3,
+		},
+	})
+	suite.NotNil(err)
+	suite.Equal(false, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func TestContainerSuite(t *testing.T) {
+	suite.Run(t, new(ContainerTestSuite))
 }

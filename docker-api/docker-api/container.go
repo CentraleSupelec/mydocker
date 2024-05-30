@@ -20,15 +20,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type StorageBackend string
+
 const (
-	SAVE_IMAGE                = "instrumentisto/rsync-ssh:latest"
-	CEPHFS_DRIVER             = "cephfs"
-	CADDY_KEY                 = "caddy_%d"
-	CADDY_REVERSE_PROXY_KEY   = "caddy_%d.reverse_proxy"
-	CADDY_REVERSE_PROXY_VALUE = "{{ upstreams %s }}"
-	PORT_TO_CADDY_INDEX_KEY   = "port_%d_caddy_index"
-	MYDOCKER_USERNAME         = "MYDOCKER_USERNAME"
-	MYDOCKER_PASSWORD         = "MYDOCKER_PASSWORD"
+	SAVE_IMAGE                               = "instrumentisto/rsync-ssh:latest"
+	CEPHFS_DRIVER                            = "cephfs"
+	CADDY_KEY                                = "caddy_%d"
+	CADDY_REVERSE_PROXY_KEY                  = "caddy_%d.reverse_proxy"
+	CADDY_REVERSE_PROXY_VALUE                = "{{ upstreams %s }}"
+	PORT_TO_CADDY_INDEX_KEY                  = "port_%d_caddy_index"
+	MYDOCKER_USERNAME                        = "MYDOCKER_USERNAME"
+	MYDOCKER_PASSWORD                        = "MYDOCKER_PASSWORD"
+	NFS                       StorageBackend = "NFS"
+	LOCAL                     StorageBackend = "LOCAL"
+	RBD                       StorageBackend = "RBD"
 )
 
 func getOrCreateContainer(
@@ -108,7 +113,7 @@ func getOrCreateContainer(
 		}
 
 		// Pre-create volume if needed
-		if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume {
+		if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume && request.Options.StorageBackend.String() == string(RBD) {
 			createRbdImageIn <- CreateRbdImageWorkerRequest{
 				imageName:   name,
 				size:        request.Options.WorkdirSize,
@@ -410,20 +415,24 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 			})
 		}
 		if request.Options.UseStudentVolume {
-			mounts = append(mounts, mount.Mount{
-				Type:   mount.TypeVolume,
-				Source: createStudentVolumeName(request.UserID),
-				Target: request.Options.StudentVolumePath,
-				VolumeOptions: &mount.VolumeOptions{
-					DriverConfig: &mount.Driver{
-						Name: "centralesupelec/mydockervolume",
-						Options: map[string]string{
-							"size":        fmt.Sprintf("%d", c.StudentVolumeSize),
-							"mkfsOptions": "-O ^mmp",
+			if res, err := canCreateStudentVolume(dockerClient, request); res {
+				mounts = append(mounts, mount.Mount{
+					Type:   mount.TypeVolume,
+					Source: createStudentVolumeName(request.UserID),
+					Target: request.Options.StudentVolumePath,
+					VolumeOptions: &mount.VolumeOptions{
+						DriverConfig: &mount.Driver{
+							Name: "centralesupelec/mydockervolume",
+							Options: map[string]string{
+								"size":        fmt.Sprintf("%d", c.StudentVolumeSize),
+								"mkfsOptions": "-O ^mmp",
+							},
 						},
 					},
-				},
-			})
+				})
+			} else {
+				return err
+			}
 		}
 	}
 	var labels map[string]string = make(map[string]string)
@@ -521,6 +530,38 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 		return err
 	}
 	return nil
+}
+
+type createStudentVolumeDockerClient interface {
+	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
+}
+
+func canCreateStudentVolume(dockerClient createStudentVolumeDockerClient, request *pb.ContainerRequest) (bool, error) {
+	switch storageBackend := request.Options.StorageBackend.String(); storageBackend {
+	case string(NFS):
+		return true, nil
+	case string(LOCAL):
+		return false, errors.New("unable to create student volume for local storage backend")
+	case string(RBD):
+		ctx := context.TODO()
+		services, err := dockerClient.ServiceList(ctx, types.ServiceListOptions{
+			Filters: filters.NewArgs(filters.KeyValuePair{
+				Key: "label", Value: fmt.Sprintf("userId=%s", request.UserID),
+			}),
+		})
+		if err != nil {
+			return false, err
+		}
+		for _, service := range services {
+			for _, serviceMount := range service.Spec.TaskTemplate.ContainerSpec.Mounts {
+				if serviceMount.Source == createStudentVolumeName(request.UserID) {
+					return false, fmt.Errorf("unable to create student volume because there is a conflicting service %s", service.Spec.Name)
+				}
+			}
+		}
+		return true, nil
+	}
+	return false, fmt.Errorf("unknown storage backend %s", request.Options.StorageBackend.String())
 }
 
 func createAdmin(name string, response *pb.AdminContainerResponse, dockerClient *client.Client) error {

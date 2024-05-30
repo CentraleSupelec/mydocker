@@ -28,6 +28,13 @@ message NodeIPResponse {
 message InitAutoscalingRequest {
     map<string, OwnerAutoscalingConfig> owners = 1;
 }
+
+enum StorageBackend {
+    LOCAL = 0;
+    NFS = 1;
+    RBD = 2;
+}
+
 message OwnerAutoscalingConfig {
     string instanceType = 2;
     int64 minIdleNodesCount = 3;
@@ -112,6 +119,7 @@ message ContainerRequestOptions {
     string command = 11;
     bool useStudentVolume = 12;
     string studentVolumePath = 13;
+    StorageBackend storageBackend = 14;
 }
 
 message ContainerRequest {
