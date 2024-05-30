@@ -15,7 +15,9 @@ describe('ComputeTypeEditComponent', () => {
     await TestBed.configureTestingModule({
       providers: [{
         provide: APP_CONFIG,
-        useValue: {}
+        useValue: {
+          default_storage_backend: 'RBD',
+        }
       }],
       declarations: [ ComputeTypeEditComponent ],
       imports: [
