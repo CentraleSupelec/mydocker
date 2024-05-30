@@ -1,0 +1,14 @@
+databaseChangeLog:
+- changeSet:
+    id: 1716908756452-1
+    author: pdesgarets (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: storage_backend
+            type: varchar(255)
+            value: RBD
+            constraints:
+                nullable: false
+        tableName: compute_types

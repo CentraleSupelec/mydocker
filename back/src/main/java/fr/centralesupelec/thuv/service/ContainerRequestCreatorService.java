@@ -106,8 +106,11 @@ public class ContainerRequestCreatorService {
             );
         }
 
+        builder.setStorageBackend(StorageBackend.valueOf(course.getComputeType().getStorageBackend().toString()));
+
         Metadata.Builder metadataBuilder = Metadata.newBuilder()
                 .putTags("courseId", String.valueOf(course.getId()))
+                .putTags("userId", String.valueOf(user.getId()))
                 .putTags("email", String.valueOf(user.getEmail()));
 
         Long deletionTime = containerUtilsService.computeDeletionTime(courseSession);

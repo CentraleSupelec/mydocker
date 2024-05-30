@@ -33,4 +33,5 @@
     <include file="changelogs/26.add_command_to_courses.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/27.add_not_null_command.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/28.add_student_volume.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/29.add_storage_backend.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
