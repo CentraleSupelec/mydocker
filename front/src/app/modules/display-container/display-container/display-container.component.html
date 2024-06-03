@@ -47,5 +47,12 @@
 </ng-template>
 
 <ng-template #elseBlock>
-  <p>Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.</p>
+  <p *ngIf="container?.creationError; else noCreationError">
+    Impossible de créer un environnement : {{ container?.creationError }}
+  </p>
+  <ng-template #noCreationError>
+    <p>
+      Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.
+    </p>
+  </ng-template>
 </ng-template>
