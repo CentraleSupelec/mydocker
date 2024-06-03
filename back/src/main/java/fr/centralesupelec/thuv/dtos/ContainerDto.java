@@ -13,4 +13,5 @@ public class ContainerDto {
     private ContainerStatusDto status = ContainerStatusDto.OK;
     private Long deletionTime;
     private Boolean needsNewGpu;
+    private String creationError;
 }

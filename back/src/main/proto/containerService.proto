@@ -149,6 +149,7 @@ message ContainerResponse {
         AuthenticationKeyMethod authenticationKey = 8;
     }
     int64 deletionTime = 9;
+    string error = 10;
 };
 
 
