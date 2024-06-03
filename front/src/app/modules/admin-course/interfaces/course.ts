@@ -25,11 +25,11 @@ export interface IAdminCourseBase {
   command: string;
 
   saveStudentWork: boolean;
-  workdirSize: number;
-  workdirPath: string;
+  workdirSize: number | null;
+  workdirPath: string | null;
   allowStudentToSubmit: boolean;
   useStudentVolume: boolean;
-  studentVolumePath: string;
+  studentVolumePath: string | null;
 
   displayOptions: ICourseDisplay;
 

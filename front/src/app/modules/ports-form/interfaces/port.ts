@@ -3,7 +3,7 @@ export interface IPort {
   mapPort: number;
   connectionType: ConnectionType;
   requiredToAccessContainer: boolean;
-  hostname: string;
+  hostname?: string;
 }
 
 export enum ConnectionType {
