@@ -8,4 +8,5 @@ export interface IContainer {
   status: 'OK' | 'KO';
   deletionTime?: number;
   creationError?: string;
+  errorParams: { [key: string]: string};
 }

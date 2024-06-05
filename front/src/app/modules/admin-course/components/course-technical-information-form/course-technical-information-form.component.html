@@ -61,8 +61,12 @@
       Activer le rendu du travail de l'étudiant
     </mat-checkbox>
   </div>
-  <br><mat-checkbox formControlName="useStudentVolume" (change)="changeUseStudentVolume($event.checked)">
-    Activer le volume spécifique à l'étudiant
+  <br>
+  <mat-checkbox
+    formControlName="useStudentVolume"
+    (change)="changeUseStudentVolume($event.checked)"
+  >
+    <span matTooltip="Met à disposition de l'élève un espace de stockage partagé entre les différents cours">Activer le répertoire personnel de l'élève</span>
   </mat-checkbox>
   <div
     fxLayout="row"

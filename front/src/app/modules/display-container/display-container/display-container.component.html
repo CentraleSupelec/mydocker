@@ -48,7 +48,7 @@
 
 <ng-template #elseBlock>
   <p *ngIf="container?.creationError; else noCreationError">
-    Impossible de créer un environnement : {{ container?.creationError }}
+    Impossible de démarrer, car <span [innerHTML]="container | renderCreationError"></span>
   </p>
   <ng-template #noCreationError>
     <p>

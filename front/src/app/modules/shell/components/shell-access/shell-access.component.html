@@ -13,7 +13,7 @@
 </div>
 <div [ngSwitch]="state">
   <div *ngSwitchCase="'container_created'">
-    <div class="grid">
+    <div class="grid" [ngClass]="{'two-columns': container?.status === 'OK'}">
       <app-display-container
         [container]="container"
         [displayOptions]="sessionCourseOrCourse?.displayOptions"
