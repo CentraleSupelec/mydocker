@@ -110,6 +110,7 @@ public class ContainerRequestCreatorService {
 
         Metadata.Builder metadataBuilder = Metadata.newBuilder()
                 .putTags("courseId", String.valueOf(course.getId()))
+                .putTags("courseTitle", course.getTitle())
                 .putTags("userId", String.valueOf(user.getId()))
                 .putTags("email", String.valueOf(user.getEmail()));
 

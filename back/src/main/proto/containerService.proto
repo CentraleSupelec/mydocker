@@ -150,6 +150,7 @@ message ContainerResponse {
     }
     int64 deletionTime = 9;
     string error = 10;
+    map<string, string> errorParams = 11;
 };
 
 

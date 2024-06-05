@@ -74,6 +74,7 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
         containerDto.setPassword(containerResponse.getUserPassword().getPassword());
         containerDto.setUsername(containerResponse.getUserPassword().getUsername());
         containerDto.setCreationError(containerResponse.getError());
+        containerDto.getErrorParams().putAll(containerResponse.getErrorParamsMap());
         containerDto.setDeletionTime(containerResponse.getDeletionTime());
         containerDto.setNeedsNewGpu(course.isPresent() && course.get().getComputeType().isGpu());
         return containerDto;
