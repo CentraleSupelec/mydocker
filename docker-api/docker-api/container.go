@@ -37,11 +37,15 @@ const (
 )
 
 type VisibleError struct {
-	msg string
+	msg    string
+	params map[string]string
 }
 
 func (e *VisibleError) Error() string {
 	return e.msg
+}
+func (e *VisibleError) Params() map[string]string {
+	return e.params
 }
 
 func getOrCreateContainer(
@@ -148,8 +152,9 @@ func getOrCreateContainer(
 		if err != nil {
 			var visibleError *VisibleError
 			if errors.As(err, &visibleError) {
-				log.Warn(err.Error())
+				log.Warnf("%s , %v", err.Error(), err.(*VisibleError).Params())
 				response.Error = err.Error()
+				response.ErrorParams = err.(*VisibleError).Params()
 			} else {
 				log.Error(err)
 				continue
@@ -555,7 +560,7 @@ func canCreateStudentVolume(dockerClient createStudentVolumeDockerClient, reques
 	case string(NFS):
 		return true, nil
 	case string(LOCAL):
-		return false, &VisibleError{msg: "impossible d'utiliser les volumes uniques sur le stockage local"}
+		return false, &VisibleError{msg: "student-volume.local-storage"}
 	case string(RBD):
 		ctx := context.TODO()
 		services, err := dockerClient.ServiceList(ctx, types.ServiceListOptions{
@@ -569,7 +574,14 @@ func canCreateStudentVolume(dockerClient createStudentVolumeDockerClient, reques
 		for _, service := range services {
 			for _, serviceMount := range service.Spec.TaskTemplate.ContainerSpec.Mounts {
 				if serviceMount.Source == createStudentVolumeName(request.UserID) {
-					return false, &VisibleError{msg: fmt.Sprintf("impossible d'utiliser le volume unique car un service l'utilisant existe déjà: %s", service.Spec.Name)}
+					return false, &VisibleError{
+						msg: "student-volume.existing-rbd-service",
+						params: map[string]string{
+							"courseId":    service.Spec.Labels["courseId"],
+							"createdAt":   service.CreatedAt.Format(time.RFC3339),
+							"courseTitle": service.Spec.Labels["courseTitle"],
+						},
+					}
 				}
 			}
 		}
