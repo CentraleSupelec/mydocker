@@ -17,6 +17,8 @@ import {
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 
+const DEFAULT_COMMAND = "${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}"
+
 @Component({
   selector: 'app-course-form',
   templateUrl: './course-form.component.html',
@@ -98,6 +100,7 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
         nanoCpusLimit: obj?.nanoCpusLimit || null,
         memoryBytesLimit: obj?.memoryBytesLimit || null,
         computeTypeId: obj?.computeTypeId || this.defaultComputeTypeId,
+        command: undefined === obj?.command ? DEFAULT_COMMAND : obj?.command,
 
         saveStudentWork: obj?.saveStudentWork || false,
         workdirSize: obj?.workdirSize || null,

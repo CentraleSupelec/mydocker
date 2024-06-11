@@ -54,6 +54,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       nanoCpusLimit: null,
       memoryBytesLimit: null,
       computeTypeId: null,
+      command: null,
 
       saveStudentWork: false,
       workdirSize: null,
@@ -107,6 +108,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       nanoCpusLimit: obj?.nanoCpusLimit * 1e-9 || null,
       memoryBytesLimit: obj?.memoryBytesLimit * 1e-9 || null,
       computeTypeId: obj?.computeTypeId || this.defaultComputeTypeId,
+      command: obj?.command || null,
 
       saveStudentWork: obj?.saveStudentWork || false,
       workdirSize: obj?.workdirSize || null,

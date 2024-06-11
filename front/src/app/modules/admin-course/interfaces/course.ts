@@ -22,6 +22,7 @@ export interface IAdminCourseBase {
   nanoCpusLimit: number;
   memoryBytesLimit: number;
   computeTypeId: number;
+  command: string;
 
   saveStudentWork: boolean;
   workdirSize: number;
