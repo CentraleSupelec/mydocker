@@ -8,7 +8,6 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ### Added
 - Reverse proxy to containers
-- Parse and pass a command to service arguments
 
 ## 2.16.2
 ### Added

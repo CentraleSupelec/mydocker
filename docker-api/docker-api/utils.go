@@ -6,6 +6,10 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
+	"github.com/docker/distribution/reference"
+	"github.com/docker/docker/api/types"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"math/rand"
 	"net/http"
@@ -14,12 +18,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
-	"github.com/docker/distribution/reference"
-	"github.com/docker/docker/api/types"
-	log "github.com/sirupsen/logrus"
-	"mvdan.cc/sh/syntax"
 )
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
@@ -178,10 +176,6 @@ func createContainerName(userId string, courseId string) string {
 	return userId + "-" + courseId
 }
 
-func createStudentVolumeName(userId string) string {
-	return "student-" + userId
-}
-
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 func getJson(url string, target interface{}, catch404 bool) error {
@@ -227,46 +221,4 @@ func allMapValuesZero(input map[string]int64) bool {
 		}
 	}
 	return true
-}
-
-func wordPartToPosition(wordPart syntax.WordPart, start bool, wordContainsOnlyOnePart bool) int {
-	switch x := wordPart.(type) {
-	case *syntax.DblQuoted:
-		offset := 0
-		if x.Dollar && start {
-			offset += 1
-		}
-
-		// To know if we include the double quotes or not
-		// Example 1: `sh -c "start.sh -test=true"` => we don't want to inclue the double quotes in the extracted part
-		// Example 2: `start.sh -var="test"` => we want to inclue the double quotes in the extracted part
-		if !wordContainsOnlyOnePart {
-			offset += 1
-		}
-		if start {
-			return wordPartToPosition(x.Parts[0], true, len(x.Parts) == 1) - offset
-		} else {
-			return wordPartToPosition(x.Parts[len(x.Parts)-1], false, len(x.Parts) == 1) + offset
-		}
-	default:
-		if start {
-			return int(x.Pos().Offset())
-		} else {
-			return int(x.End().Offset())
-		}
-	}
-}
-
-func commandToParts(command string) []string {
-	var result []string
-	p := syntax.NewParser()
-	in := strings.NewReader(command)
-	p.Words(in, func(w *syntax.Word) bool {
-		start := wordPartToPosition(w.Parts[0], true, len(w.Parts) == 1)
-		end := wordPartToPosition(w.Parts[len(w.Parts)-1], false, len(w.Parts) == 1)
-		result = append(result, command[start:end])
-
-		return true
-	})
-	return result
 }

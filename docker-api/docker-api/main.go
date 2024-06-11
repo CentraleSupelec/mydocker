@@ -65,7 +65,6 @@ type config struct {
 	CaddyTlsInternal        bool
 	CaddyTlsCertificatePath string
 	CaddyTlsKeyPath         string
-	StudentVolumeSize       int
 }
 
 type registryCredential struct {
