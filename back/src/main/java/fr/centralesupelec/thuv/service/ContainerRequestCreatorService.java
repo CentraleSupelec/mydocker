@@ -27,7 +27,9 @@ public class ContainerRequestCreatorService {
 
         ContainerRequestOptions.Builder builder = ContainerRequestOptions.newBuilder()
                 .setForceRecreate(forceRecreate)
-                .setSaveStudentWork(course.isSaveStudentWork());
+                .setSaveStudentWork(course.isSaveStudentWork())
+                .setCommand(course.getCommand())
+        ;
 
         if (course.getComputeType().isGpu()) {
             String gpuResource = "gpu";

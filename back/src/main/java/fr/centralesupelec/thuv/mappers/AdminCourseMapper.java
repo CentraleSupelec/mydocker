@@ -43,6 +43,7 @@ public class AdminCourseMapper {
                 .setDockerImage(course.getDockerImage())
                 .setNanoCpusLimit(course.getNanoCpusLimit())
                 .setMemoryBytesLimit(course.getMemoryBytesLimit())
+                .setCommand(course.getCommand())
                 .setComputeTypeId(course.getComputeType().getId())
                 .setSaveStudentWork(course.isSaveStudentWork())
                 .setWorkdirSize(course.getWorkdirSize())

@@ -1,0 +1,23 @@
+databaseChangeLog:
+- changeSet:
+    id: 1713449443267-3
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: command
+            type: varchar(255)
+            value: "${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}"
+        tableName: courses
+- changeSet:
+    id: 1713449443267-4
+    author: mohamedalibarka (generated)
+    changes:
+    - dropSequence:
+        sequenceName: hibernate_sequence
+    rollback:
+    - createSequence:
+          incrementBy: 1
+          sequenceName: hibernate_sequence
+          startValue: 1

@@ -27,6 +27,8 @@ public class AdminCourseBaseDto {
     private String dockerImage;
     private Long nanoCpusLimit;
     private Long memoryBytesLimit;
+    @NotNull
+    private String command;
 
     private int shutdownAfterMinutes = 0;
     private int warnShutdownMinutes = 0;

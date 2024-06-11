@@ -53,6 +53,9 @@ public class UpdateCourseMapper {
                 .setMemoryBytesLimit(
                         dto.getMemoryBytesLimit()
                 )
+                .setCommand(
+                        dto.getCommand()
+                )
                 .setComputeType(
                         computeType.get()
                 )

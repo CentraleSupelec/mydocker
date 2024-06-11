@@ -30,4 +30,6 @@
     <include file="changelogs/23.add_manual_nodes_count.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/24.add_log_records.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/25.multiple_regions_compute_types.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/26.add_command_to_courses.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/27.add_not_null_command.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
