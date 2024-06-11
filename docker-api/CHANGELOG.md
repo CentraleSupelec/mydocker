@@ -6,9 +6,12 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
+## 2.17.0
 ### Added
 - Reverse proxy to containers
 - Parse and pass a command to service arguments
+- Add Student Volume on container creation
+- Return creation error message
 
 ## 2.16.2
 ### Added
