@@ -4,7 +4,11 @@ export interface IOvhRegion {
   region: string;
   imageId: string;
 }
-
+export enum IStorageBackend {
+  LOCAL = 'Local',
+  NFS = 'NFS',
+  RBD = 'RBD',
+}
 export interface IComputeType {
   displayName: string;
   technicalName: string;
@@ -15,6 +19,7 @@ export interface IComputeType {
   autoscalingResource: IOvhResource;
   autoscalingRegions: Array<IOvhRegion>;
   manualNodesCount: number;
+  storageBackend: IStorageBackend;
 }
 
 export interface IComputeTypeUpdateDto {

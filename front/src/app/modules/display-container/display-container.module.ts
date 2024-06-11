@@ -13,6 +13,7 @@ import { RouterModule } from "@angular/router";
 import { SnackNotificationModule } from "../utils/snack-notification/snack-notification.module";
 import { DisplayCustomContainerPortComponent } from './display-custom-container-port/display-custom-container-port.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RenderCreationErrorPipe } from "./render-creation-error.pipe";
 
 
 
@@ -23,6 +24,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     HttpConnectionGuideComponent,
     SshConnectionGuideComponent,
     DisplayCustomContainerPortComponent,
+    RenderCreationErrorPipe,
   ],
   imports: [
     CommonModule,

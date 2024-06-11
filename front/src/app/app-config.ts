@@ -8,6 +8,7 @@ export interface IAppConfig {
     login_url: string;
     logout_url: string;
   };
+  default_storage_backend?: string;
   deployment_enabled: boolean;
 }
 
@@ -23,6 +24,7 @@ export function appConstantFactory(): IAppConfig {
       login_url: appConstants.cas?.login_url,
       logout_url: appConstants.cas?.logout_url,
     },
+    default_storage_backend: appConstants.default_storage_backend,
     deployment_enabled: appConstants.deployment_enabled
   };
 }

@@ -16,8 +16,8 @@ import {
 } from "../../interfaces/course";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
+import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
 
-const DEFAULT_COMMAND = "${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}"
 
 @Component({
   selector: 'app-course-form',
@@ -93,22 +93,9 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
         shutdownAfterMinutes: obj?.shutdownAfterMinutes,
         warnShutdownMinutes: obj?.warnShutdownMinutes,
       },
-      technical: {
-        ports: obj?.ports || [],
-
-        dockerImage: obj?.dockerImage || '',
-        nanoCpusLimit: obj?.nanoCpusLimit || null,
-        memoryBytesLimit: obj?.memoryBytesLimit || null,
-        computeTypeId: obj?.computeTypeId || this.defaultComputeTypeId,
-        command: undefined === obj?.command ? DEFAULT_COMMAND : obj?.command,
-
-        saveStudentWork: obj?.saveStudentWork || false,
-        workdirSize: obj?.workdirSize || null,
-        workdirPath: obj?.workdirPath || null,
-        allowStudentToSubmit: obj?.allowStudentToSubmit || false,
-
-        displayOptions: obj?.displayOptions || {},
-      }
+      technical: DefaultCourseFormValuesService.getTechnicalValues(
+        obj, this.defaultComputeTypeId,
+      ),
     });
   }
 

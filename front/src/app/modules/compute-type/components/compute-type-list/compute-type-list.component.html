@@ -20,6 +20,11 @@
     <mat-cell *matCellDef="let element"> {{ element.gpu ? 'Oui' : 'Non' }}</mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="storageBackend">
+    <mat-header-cell *matHeaderCellDef>Stockage de fichiers</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.storageBackend }}</mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="autoscaling">
     <mat-header-cell *matHeaderCellDef>Autoscaling</mat-header-cell>
     <mat-cell *matCellDef="let element">

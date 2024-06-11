@@ -9,7 +9,7 @@ import {
   NG_VALUE_ACCESSOR, ValidationErrors,
   Validator, Validators
 } from '@angular/forms';
-import { IComputeType } from '../../interfaces/compute-type';
+import { IComputeType, IStorageBackend } from '../../interfaces/compute-type';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
@@ -37,6 +37,7 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
   computeTypeForm: FormGroup;
   private propagateChange = (_: IComputeType) => {};
   private destroy$: Subject<void> = new Subject<void>();
+  readonly storageBackends = Object.entries(IStorageBackend);
 
 
   constructor(
@@ -53,6 +54,7 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
       minIdleNodesCount: [null],
       maxNodesCount: [null],
       manualNodesCount: [null],
+      storageBackend: ['', Validators.required]
     });
   }
 
@@ -101,6 +103,7 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
       minIdleNodesCount: obj?.minIdleNodesCount == null ? null : obj?.minIdleNodesCount,
       maxNodesCount: obj?.maxNodesCount == null ? null : obj?.maxNodesCount,
       manualNodesCount: obj?.manualNodesCount == null ? null : obj?.manualNodesCount,
+      storageBackend: obj?.storageBackend || this.config.default_storage_backend,
     })
   }
 

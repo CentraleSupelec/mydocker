@@ -12,7 +12,7 @@
   <app-ports-form
     formControlName="ports"
   ></app-ports-form>
-  
+
   <mat-form-field>
     <mat-label>Commande</mat-label>
     <input matInput formControlName="command" type="text">
@@ -60,6 +60,26 @@
     <mat-checkbox formControlName="allowStudentToSubmit">
       Activer le rendu du travail de l'étudiant
     </mat-checkbox>
+  </div>
+  <br>
+  <mat-checkbox
+    formControlName="useStudentVolume"
+    (change)="changeUseStudentVolume($event.checked)"
+  >
+    <span matTooltip="Met à disposition de l'élève un espace de stockage partagé entre les différents cours">Activer le répertoire personnel de l'élève</span>
+  </mat-checkbox>
+  <div
+    fxLayout="row"
+    fxFlexFill
+    fxLayout.lt-md="column"
+    fxLayoutGap="16px"
+    fxLayoutAlign="start center"
+     *ngIf="courseTechnicalForm.get('useStudentVolume')?.value"
+  >
+    <mat-form-field>
+      <mat-label>Chemin du volume étudiant</mat-label>
+      <input matInput formControlName="studentVolumePath">
+    </mat-form-field>
   </div>
   <br>
   <mat-expansion-panel>

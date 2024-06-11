@@ -45,7 +45,8 @@ export class CourseDisplayFormComponent implements OnInit, ControlValueAccessor,
     password: 'PASSWORD',
     ip: 'IP_ADDRESS',
     ports: [],
-    status: 'OK'
+    status: 'OK',
+    errorParams: {},
   };
 
   private readonly destroy$ = new Subject<void>();
