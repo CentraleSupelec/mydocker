@@ -65,6 +65,11 @@ public class Course {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean allowStudentToSubmit = false;
 
+    @NotNull
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean useStudentVolume = false;
+    private String studentVolumePath;
+
     @UpdateTimestamp
     private LocalDateTime updatedOn;
     @CreationTimestamp

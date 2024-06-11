@@ -83,7 +83,10 @@ public class UpdateCourseMapper {
                     dto.getPorts().stream()
                             .map(portsMapper::convertDTOToModel)
                             .collect(Collectors.toSet())
-                );
+                )
+                .setUseStudentVolume(dto.getUseStudentVolume())
+                .setStudentVolumePath(dto.getStudentVolumePath())
+        ;
 
         try {
             course.setDisplayOptions(
