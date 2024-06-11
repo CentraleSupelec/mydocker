@@ -22,14 +22,11 @@ export interface IAdminCourseBase {
   nanoCpusLimit: number;
   memoryBytesLimit: number;
   computeTypeId: number;
-  command: string;
 
   saveStudentWork: boolean;
-  workdirSize: number | null;
-  workdirPath: string | null;
+  workdirSize: number;
+  workdirPath: string;
   allowStudentToSubmit: boolean;
-  useStudentVolume: boolean;
-  studentVolumePath: string | null;
 
   displayOptions: ICourseDisplay;
 

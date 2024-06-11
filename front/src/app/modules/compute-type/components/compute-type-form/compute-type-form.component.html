@@ -12,15 +12,9 @@
       <mat-checkbox formControlName="gpu">
         Utilisable pour des tâches avec GPU
       </mat-checkbox>
-      <mat-form-field class="field-spacer">
-        <mat-label>Stockage de fichiers</mat-label>
-        <mat-select formControlName="storageBackend">
-          <mat-option value="{{ v[0] }}" *ngFor="let v of storageBackends">{{ v[1] }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-accordion
+      <mat-accordion 
         *ngIf="config.deployment_enabled"
-        class="field-spacer"
+        class="autoscaling-wrapper"
       >
         <mat-expansion-panel>
           <mat-expansion-panel-header>

@@ -15,9 +15,7 @@ describe('ComputeTypeNewComponent', () => {
     await TestBed.configureTestingModule({
       providers: [{
         provide: APP_CONFIG,
-        useValue: {
-          default_storage_backend: 'RBD',
-        }
+        useValue: {}
       }],
       declarations: [ ComputeTypeNewComponent ],
       imports: [

@@ -17,7 +17,7 @@ import { APP_CONFIG, IAppConfig } from "../../../../app-config";
 export class ComputeTypeListComponent implements OnInit {
 
   computeTypes: IComputeType[] = [];
-  columnsToDisplay = ['id', 'displayName', 'technicalName', 'gpu', 'storageBackend']
+  columnsToDisplay = ['id', 'displayName', 'technicalName', 'gpu']
 
   constructor(
     private readonly route: ActivatedRoute,

@@ -17,7 +17,6 @@ import { DockerImageApiService } from "../../../admin-docker-image/services/dock
 import { MatDialog } from "@angular/material/dialog";
 import { DockerImageChoiceDialogComponent } from "../docker-image-choice-dialog/docker-image-choice-dialog.component";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
-import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
 
 @Component({
   selector: 'app-course-technical-information-form',
@@ -55,14 +54,11 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       nanoCpusLimit: null,
       memoryBytesLimit: null,
       computeTypeId: null,
-      command: null,
 
       saveStudentWork: false,
       workdirSize: null,
       workdirPath: null,
       allowStudentToSubmit: false,
-      useStudentVolume: false,
-      studentVolumePath: null,
 
       displayOptions: formBuilder.control({}),
     });
@@ -104,11 +100,21 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   }
 
   writeValue(obj: IAdminCourse): void {
-    this.courseTechnicalForm.setValue(
-      DefaultCourseFormValuesService.getTechnicalValues(
-        obj, this.defaultComputeTypeId, true,
-      ),
-    );
+    this.courseTechnicalForm.setValue({
+      ports: obj?.ports || [],
+
+      dockerImage: obj?.dockerImage || '',
+      nanoCpusLimit: obj?.nanoCpusLimit * 1e-9 || null,
+      memoryBytesLimit: obj?.memoryBytesLimit * 1e-9 || null,
+      computeTypeId: obj?.computeTypeId || this.defaultComputeTypeId,
+
+      saveStudentWork: obj?.saveStudentWork || false,
+      workdirSize: obj?.workdirSize || null,
+      workdirPath: obj?.workdirPath || null,
+      allowStudentToSubmit: obj?.allowStudentToSubmit || false,
+
+      displayOptions: obj?.displayOptions || {},
+    });
 
     this.changeSaveStudentWork(obj?.saveStudentWork);
   }
@@ -126,15 +132,6 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     }
     this.courseTechnicalForm.get('workdirSize')?.updateValueAndValidity();
     this.courseTechnicalForm.get('workdirPath')?.updateValueAndValidity();
-  }
-
-  changeUseStudentVolume(checked: boolean) {
-    if(checked) {
-      this.courseTechnicalForm.get('studentVolumePath')?.setValidators([Validators.required]);
-    } else {
-      this.courseTechnicalForm.get('studentVolumePath')?.clearValidators();
-    }
-    this.courseTechnicalForm.get('studentVolumePath')?.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {

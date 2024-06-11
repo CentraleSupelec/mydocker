@@ -6,10 +6,8 @@
 
 .grid {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   grid-row: 1;
-  &.two-columns {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 .top-container {

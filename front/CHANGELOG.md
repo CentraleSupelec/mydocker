@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Redirect to containers through reverse proxy
-- Can add a custom command to a course
 
 ## 2.24.6
 ### Fixed

@@ -47,12 +47,5 @@
 </ng-template>
 
 <ng-template #elseBlock>
-  <p *ngIf="container?.creationError; else noCreationError">
-    Impossible de démarrer, car <span [innerHTML]="container | renderCreationError"></span>
-  </p>
-  <ng-template #noCreationError>
-    <p>
-      Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.
-    </p>
-  </ng-template>
+  <p>Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.</p>
 </ng-template>
