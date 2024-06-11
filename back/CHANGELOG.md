@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.28.0
 ### Added
 - Add hostname in ResponsePort and PortDto
 - Add command to course
+- Add storage backend configuration on compute type
+- Add student volume on course CRUD
 
 ## 2.27.0
 ### Added
