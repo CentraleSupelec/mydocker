@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.25.0
 ### Added
 - Redirect to containers through reverse proxy
 - Can add a custom command to a course
+- Add storage backend configuration on compute type
+- Add student volume on course CRUD
 
 ## 2.24.6
 ### Fixed
