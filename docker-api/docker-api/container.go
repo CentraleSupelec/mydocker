@@ -27,6 +27,8 @@ const (
 	CADDY_REVERSE_PROXY_KEY   = "caddy_%d.reverse_proxy"
 	CADDY_REVERSE_PROXY_VALUE = "{{ upstreams %s }}"
 	PORT_TO_CADDY_INDEX_KEY   = "port_%d_caddy_index"
+	MYDOCKER_USERNAME         = "MYDOCKER_USERNAME"
+	MYDOCKER_PASSWORD         = "MYDOCKER_PASSWORD"
 )
 
 func getOrCreateContainer(
@@ -330,10 +332,24 @@ func exist(
 				}
 			}
 		}
+
+		var username string
+		var password string
+
+		for _, envVariable := range service.Spec.TaskTemplate.ContainerSpec.Env {
+			split := strings.Split(envVariable, "=")
+			switch split[0] {
+			case MYDOCKER_USERNAME:
+				username = split[1]
+			case MYDOCKER_PASSWORD:
+				password = split[1]
+			}
+		}
+
 		authenticationMethod := &pb.ContainerResponse_UserPassword{
 			UserPassword: &pb.UserPasswordMethod{
-				Username: service.Spec.TaskTemplate.ContainerSpec.Args[0],
-				Password: service.Spec.TaskTemplate.ContainerSpec.Args[1],
+				Username: username,
+				Password: password,
 			}}
 		ports := make([]*pb.ResponsePort, len(mapPorts))
 		index := 0
@@ -367,6 +383,15 @@ func getIPAdress(dockerClient *client.Client) (string, error) {
 
 func create(name string, response *pb.ContainerResponse, dockerClient *client.Client, request *pb.ContainerRequest) error {
 	var mounts []mount.Mount
+	var args []string
+
+	if request.Options != nil && request.Options.Command != "" {
+		command := request.Options.Command
+		command = strings.Replace(command, "{{USERNAME}}", response.GetUserPassword().Username, -1)
+		command = strings.Replace(command, "{{PASSWORD}}", response.GetUserPassword().Password, -1)
+		args = commandToParts(command)
+	}
+
 	if request.Options != nil && request.Options.SaveStudentWork {
 		mounts = []mount.Mount{
 			{
@@ -459,8 +484,9 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 		TaskTemplate: swarm.TaskSpec{
 			ContainerSpec: &swarm.ContainerSpec{
 				Image:  response.ImageID,
-				Args:   []string{response.GetUserPassword().Username, response.GetUserPassword().Password},
+				Args:   args,
 				Mounts: mounts,
+				Env:    []string{fmt.Sprintf("%s=%s", MYDOCKER_USERNAME, response.GetUserPassword().Username), fmt.Sprintf("%s=%s", MYDOCKER_PASSWORD, response.GetUserPassword().Password)},
 			},
 			Resources: &swarm.ResourceRequirements{
 				Limits:       limit,
