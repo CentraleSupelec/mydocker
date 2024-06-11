@@ -4,7 +4,6 @@ import fr.centralesupelec.gRPC.OwnerAutoscalingConfig;
 import fr.centralesupelec.gRPC.ScalingRegion;
 import fr.centralesupelec.thuv.dtos.ComputeTypeUpdateDto;
 import fr.centralesupelec.thuv.model.ComputeType;
-import fr.centralesupelec.thuv.model.StorageBackend;
 import fr.centralesupelec.thuv.scale_up.model.OVHRegion;
 import fr.centralesupelec.thuv.scale_up.model.OVHResource;
 import fr.centralesupelec.thuv.scale_up.repository.OVHRegionRepository;
@@ -78,7 +77,6 @@ public class ComputeTypeMapper {
                 .setGpu(dto.isGpu())
                 .setDisplayName(dto.getDisplayName())
                 .setTechnicalName(dto.getTechnicalName())
-                .setStorageBackend(StorageBackend.valueOf(dto.getStorageBackend()))
         ;
     }
 

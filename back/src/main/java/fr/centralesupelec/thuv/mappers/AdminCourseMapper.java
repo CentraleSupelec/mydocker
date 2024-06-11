@@ -43,7 +43,6 @@ public class AdminCourseMapper {
                 .setDockerImage(course.getDockerImage())
                 .setNanoCpusLimit(course.getNanoCpusLimit())
                 .setMemoryBytesLimit(course.getMemoryBytesLimit())
-                .setCommand(course.getCommand())
                 .setComputeTypeId(course.getComputeType().getId())
                 .setSaveStudentWork(course.isSaveStudentWork())
                 .setWorkdirSize(course.getWorkdirSize())
@@ -59,10 +58,7 @@ public class AdminCourseMapper {
                                 .stream()
                                 .map(portsMapper::convertToDTO)
                                 .collect(Collectors.toList())
-                )
-                .setUseStudentVolume(course.getUseStudentVolume())
-                .setStudentVolumePath(course.getStudentVolumePath())
-                ;
+                );
 
         try {
             courseDto.setDisplayOptions(

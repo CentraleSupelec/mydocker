@@ -1,6 +1,5 @@
 package fr.centralesupelec.thuv.dtos;
 
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,6 +18,4 @@ public class ComputeTypeUpdateDto {
     private Long minIdleNodesCount;
     private Long maxNodesCount;
     private Long manualNodesCount;
-    @NotEmpty
-    private String storageBackend;
 }

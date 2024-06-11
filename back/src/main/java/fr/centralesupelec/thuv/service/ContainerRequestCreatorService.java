@@ -27,9 +27,7 @@ public class ContainerRequestCreatorService {
 
         ContainerRequestOptions.Builder builder = ContainerRequestOptions.newBuilder()
                 .setForceRecreate(forceRecreate)
-                .setSaveStudentWork(course.isSaveStudentWork())
-                .setCommand(course.getCommand())
-        ;
+                .setSaveStudentWork(course.isSaveStudentWork());
 
         if (course.getComputeType().isGpu()) {
             String gpuResource = "gpu";
@@ -67,11 +65,6 @@ public class ContainerRequestCreatorService {
             builder.setWorkdirPath(course.getWorkdirPath())
                     .setWorkdirSize(course.getWorkdirSize());
         }
-        if (course.getUseStudentVolume()) {
-            builder
-                    .setUseStudentVolume(true)
-                    .setStudentVolumePath(course.getStudentVolumePath());
-        }
 
         userCourseRepository.findByUserIdAndCourseId(
                 user.getId(), course.getId()
@@ -106,12 +99,8 @@ public class ContainerRequestCreatorService {
             );
         }
 
-        builder.setStorageBackend(StorageBackend.valueOf(course.getComputeType().getStorageBackend().toString()));
-
         Metadata.Builder metadataBuilder = Metadata.newBuilder()
                 .putTags("courseId", String.valueOf(course.getId()))
-                .putTags("courseTitle", course.getTitle())
-                .putTags("userId", String.valueOf(user.getId()))
                 .putTags("email", String.valueOf(user.getEmail()));
 
         Long deletionTime = containerUtilsService.computeDeletionTime(courseSession);

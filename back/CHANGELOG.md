@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Add hostname in ResponsePort and PortDto
-- Add command to course
 
 ## 2.27.0
 ### Added

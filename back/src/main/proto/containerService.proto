@@ -28,13 +28,6 @@ message NodeIPResponse {
 message InitAutoscalingRequest {
     map<string, OwnerAutoscalingConfig> owners = 1;
 }
-
-enum StorageBackend {
-    LOCAL = 0;
-    NFS = 1;
-    RBD = 2;
-}
-
 message OwnerAutoscalingConfig {
     string instanceType = 2;
     int64 minIdleNodesCount = 3;
@@ -116,10 +109,6 @@ message ContainerRequestOptions {
     map<string, uint32> genericResources = 8;
     repeated Label forbiddenLabels = 9;
     repeated Label mandatoryLabels = 10;
-    string command = 11;
-    bool useStudentVolume = 12;
-    string studentVolumePath = 13;
-    StorageBackend storageBackend = 14;
 }
 
 message ContainerRequest {
@@ -149,8 +138,6 @@ message ContainerResponse {
         AuthenticationKeyMethod authenticationKey = 8;
     }
     int64 deletionTime = 9;
-    string error = 10;
-    map<string, string> errorParams = 11;
 };
 
 

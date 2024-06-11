@@ -41,10 +41,6 @@ public class ComputeType {
     @Column(columnDefinition = "INT8 DEFAULT 0")
     private Long manualNodesCount = 0L;
 
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private StorageBackend storageBackend;
-
     public boolean isAutoscalingConfigured() {
         return (!this.getAutoscalingRegions().isEmpty())
                 && this.getAutoscalingResource() != null

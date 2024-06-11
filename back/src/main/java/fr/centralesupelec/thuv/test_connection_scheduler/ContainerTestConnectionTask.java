@@ -22,15 +22,6 @@ public class ContainerTestConnectionTask implements Runnable {
     @Override
 
     public void run() {
-        if (!StringUtils.isBlank(containerScheduledDto.getContainerDto().getCreationError())) {
-            containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
-            containerStorage.addContainer(
-                    containerScheduledDto.getContainerDto(),
-                    containerScheduledDto.getUserId(),
-                    containerScheduledDto.getCourseId()
-            );
-            return;
-        }
         boolean succededConnection = testAllConnection();
         Long maxConnectionRetry = containerScheduledDto.getContainerDto().getNeedsNewGpu()
                 ? containerTestParameterConfiguration.getNumberOfConnectionRetryForGpu()
