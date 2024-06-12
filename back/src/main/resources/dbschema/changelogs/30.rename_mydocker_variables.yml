@@ -1,0 +1,10 @@
+databaseChangeLog:
+- changeSet:
+    id: 1718184680868-1
+    author: pdesgarets (generated)
+    changes:
+    - sql:
+        sql: UPDATE courses SET command = '{{USERNAME}} {{PASSWORD}}' WHERE command = '${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}'
+    rollback:
+    - sql:
+        sql: UPDATE courses SET command = '${MYDOCKER_USERNAME} ${MYDOCKER_PASSWORD}' WHERE command = '{{USERNAME}} {{PASSWORD}}'
