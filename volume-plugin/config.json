@@ -66,6 +66,14 @@
         "value"
       ],
       "value": "--options=noatime"
+    },
+    {
+      "name": "VOLUME_MOUNT_MODE",
+      "Description": "Mode to set the root mounted directory. No chmod if empty",
+      "settable": [
+        "value"
+      ],
+      "value": "777"
     }
   ],
   "linux": {

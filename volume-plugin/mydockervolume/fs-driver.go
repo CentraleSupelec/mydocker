@@ -97,6 +97,18 @@ func (d *mydockerFsDriver) Mount(request *volume.MountRequest) (*volume.MountRes
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("volume %s does not exist", request.Name)
 	}
+
+	volumeMountMode := os.Getenv("VOLUME_MOUNT_MODE")
+	if volumeMountMode != "" {
+		log.Debugf("volume-mydocker Name=%s Message=chmod %s to %s", request.Name, fullPath, volumeMountMode)
+		err := os.Chmod(fullPath, os.FileMode(int(0777)))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		log.Debugf("volume-mydocker Name=%s Message=no chmod for %s", request.Name, fullPath)
+	}
+
 	return &volume.MountResponse{
 		Mountpoint: fullPath,
 	}, nil

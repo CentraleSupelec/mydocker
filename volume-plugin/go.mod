@@ -16,3 +16,6 @@ require (
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 )
+replace (
+	github.com/wetopi/docker-volume-rbd v0.0.0-20220511082147-6481d0b09eb9 => github.com/pdesgarets/docker-volume-rbd v0.0.0-20240619160931-588d3b276faa
+)
