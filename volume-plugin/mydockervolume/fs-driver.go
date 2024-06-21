@@ -7,7 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -100,13 +102,29 @@ func (d *mydockerFsDriver) Mount(request *volume.MountRequest) (*volume.MountRes
 
 	volumeMountMode := os.Getenv("VOLUME_MOUNT_MODE")
 	if volumeMountMode != "" {
-		log.Debugf("volume-mydocker Name=%s Message=chmod %s to %s", request.Name, fullPath, volumeMountMode)
-		err := os.Chmod(fullPath, os.FileMode(int(0777)))
+		parsedMode, err := strconv.ParseUint(volumeMountMode, 8, 32)
+		if err != nil {
+			return nil, err
+		}
+		log.Debugf("volume-mydocker Name=%s Message=chmod %s to %s (%v)", request.Name, fullPath, volumeMountMode, os.FileMode(parsedMode))
+		err = os.Chmod(fullPath, os.FileMode(parsedMode))
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		log.Debugf("volume-mydocker Name=%s Message=no chmod for %s", request.Name, fullPath)
+	}
+
+	volumeMountDefaultACL := os.Getenv("VOLUME_MOUNT_DEFAULT_ACL")
+	if volumeMountDefaultACL != "" {
+		log.Debugf("volume-mydocker Name=%s Message=setfacl %s to %s", request.Name, fullPath, volumeMountDefaultACL)
+		cmd := exec.Command("setfacl", "-dm", volumeMountDefaultACL, fullPath)
+		if err := cmd.Run(); err != nil {
+			log.Errorf("volume-mydocker Name=%s Message=unable to set acl : %v", request.Name, err)
+			return nil, err
+		}
+	} else {
+		log.Debugf("volume-mydocker Name=%s Message=no ACL for %s", request.Name, fullPath)
 	}
 
 	return &volume.MountResponse{

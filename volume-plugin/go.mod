@@ -18,4 +18,4 @@ require (
 	golang.org/x/tools v0.18.0 // indirect
 )
 
-replace github.com/wetopi/docker-volume-rbd v0.0.0-20220511082147-6481d0b09eb9 => github.com/pdesgarets/docker-volume-rbd v0.0.0-20240619160931-588d3b276faa
+replace github.com/wetopi/docker-volume-rbd v0.0.0-20220511082147-6481d0b09eb9 => github.com/pdesgarets/docker-volume-rbd v0.0.0-20240620134238-a5d71f56fa21

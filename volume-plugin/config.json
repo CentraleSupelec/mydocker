@@ -73,7 +73,15 @@
       "settable": [
         "value"
       ],
-      "value": "777"
+      "value": "0777"
+    },
+    {
+      "name": "VOLUME_MOUNT_DEFAULT_ACL",
+      "Description": "Used as default mode for setfacl. Unused if empty",
+      "settable": [
+        "value"
+      ],
+      "value": "u::rwX,g::rwX,o::rwX"
     }
   ],
   "linux": {

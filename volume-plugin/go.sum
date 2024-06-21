@@ -13,8 +13,8 @@ github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651 h1:YcvzL
 github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651/go.mod h1:LFyLie6XcDbyKGeVK6bHe+9aJTYCxWLBg5IrJZOaXKA=
 github.com/gofrs/uuid v4.4.0+incompatible h1:3qXRTX8/NbyulANqlc0lchS1gqAVxRgsuW1YrTJupqA=
 github.com/gofrs/uuid v4.4.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
-github.com/pdesgarets/docker-volume-rbd v0.0.0-20240619160931-588d3b276faa h1:apKQNuNsP7JtM/lcYtk95NBBadGqTnHfNS92sv5Z1dE=
-github.com/pdesgarets/docker-volume-rbd v0.0.0-20240619160931-588d3b276faa/go.mod h1:KIp/cfkuVZ5LbzO+NXOkRw9ZvBh3a38GnS01NC3piUM=
+github.com/pdesgarets/docker-volume-rbd v0.0.0-20240620134238-a5d71f56fa21 h1:16eUH4fvkc9HpZFNDY0ZTOySyPuQf3cnIKFK9vnT1eY=
+github.com/pdesgarets/docker-volume-rbd v0.0.0-20240620134238-a5d71f56fa21/go.mod h1:KIp/cfkuVZ5LbzO+NXOkRw9ZvBh3a38GnS01NC3piUM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
