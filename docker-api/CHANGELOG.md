@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.17.1
+### Fixed
+- Stop services when exit is successful
 
 ## 2.17.0
 ### Added

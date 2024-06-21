@@ -34,6 +34,7 @@ const (
 	NFS                       StorageBackend = "NFS"
 	LOCAL                     StorageBackend = "LOCAL"
 	RBD                       StorageBackend = "RBD"
+	ON_FAILURE                               = "on-failure"
 )
 
 type VisibleError struct {
@@ -261,7 +262,7 @@ func doSaveData(dockerClient *client.Client, request *pb.SaveDataRequest) error 
 				Constraints: []string{fmt.Sprintf("node.id==%s", nodeId)},
 			},
 			RestartPolicy: &swarm.RestartPolicy{
-				Condition:   "on-failure",
+				Condition:   ON_FAILURE,
 				MaxAttempts: &one,
 			},
 			ContainerSpec: &swarm.ContainerSpec{
@@ -526,6 +527,9 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 			Labels: labels,
 		},
 		TaskTemplate: swarm.TaskSpec{
+			RestartPolicy: &swarm.RestartPolicy{
+				Condition: ON_FAILURE,
+			},
 			ContainerSpec: &swarm.ContainerSpec{
 				Image:  response.ImageID,
 				Args:   args,
@@ -599,6 +603,9 @@ func createAdmin(name string, response *pb.AdminContainerResponse, dockerClient 
 			},
 		},
 		TaskTemplate: swarm.TaskSpec{
+			RestartPolicy: &swarm.RestartPolicy{
+				Condition: ON_FAILURE,
+			},
 			ContainerSpec: &swarm.ContainerSpec{
 				Image: c.AdminImage,
 				Args:  []string{response.GetUserPassword().Username, response.GetUserPassword().Password, "--branding.name", "MyDocker"},
