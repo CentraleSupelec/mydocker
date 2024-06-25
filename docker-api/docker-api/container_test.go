@@ -74,14 +74,14 @@ func TestGetOrCreateContainer(t *testing.T) {
 	responsePorts := map[uint32]*pb.ResponsePort{
 		uint32(8888): {MapTo: 10000, PortToMap: 8888},
 	}
-	here, id, _, _, _, _, err := exist("test-test", responsePorts, cli)
+	here, id, _, _, _, _, _, err := exist("test-test", responsePorts, cli)
 	assert.Nil(t, err)
 	assert.True(t, here)
 
 	err = deleteService(id, cli)
 	assert.Nil(t, err)
 
-	here, id, _, _, _, _, err = exist("test-test", responsePorts, cli)
+	here, id, _, _, _, _, _, err = exist("test-test", responsePorts, cli)
 	assert.False(t, here)
 	assert.Nil(t, err)
 }

@@ -75,7 +75,7 @@ func getOrCreateContainer(
 			mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
 		}
 		name := createContainerName(request.UserID, request.CourseID)
-		if exist, id, imageId, userPassword, existingPorts, deletionTime, err := exist(name, mapPort, dockerClient); exist {
+		if exist, id, imageId, userPassword, existingPorts, deletionTime, isAlive, err := exist(name, mapPort, dockerClient); exist {
 			log.Debugf("Service %s already exists", name)
 			response.ImageID = imageId
 			response.AuthenticationMethod = userPassword
@@ -86,7 +86,7 @@ func getOrCreateContainer(
 				continue
 			}
 
-			if request.Options != nil && request.Options.ForceRecreate {
+			if !isAlive || (request.Options != nil && request.Options.ForceRecreate) {
 				err = deleteService(id, dockerClient)
 				if err != nil {
 					log.Error(err)
@@ -199,7 +199,7 @@ func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *
 		name := fmt.Sprintf("%s-admin", request.GetCourseID())
 		mapPort := map[uint32]*pb.ResponsePort{}
 		mapPort[request.Port.PortToMap] = convertRequestPortToResponsePort(request.Port)
-		if exist, id, _, userPassword, publishedPort, _, err := exist(name, mapPort, dockerClient); exist {
+		if exist, id, _, userPassword, publishedPort, _, isAlive, err := exist(name, mapPort, dockerClient); exist {
 			response.UserPassword = userPassword.UserPassword
 			response.Port = publishedPort[0]
 			if err != nil {
@@ -207,7 +207,7 @@ func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *
 				continue
 			}
 
-			if request.ForceRecreate {
+			if !isAlive || request.ForceRecreate {
 				err = deleteService(id, dockerClient)
 				if err != nil {
 					log.Error(err)
@@ -335,18 +335,19 @@ func exist(
 	name string,
 	mapPorts map[uint32]*pb.ResponsePort,
 	dockerClient *client.Client,
-) (bool, string, string, *pb.ContainerResponse_UserPassword, []*pb.ResponsePort, int64, error) {
+) (bool, string, string, *pb.ContainerResponse_UserPassword, []*pb.ResponsePort, int64, bool, error) {
 	filtersArgs := filters.NewArgs()
 	filtersArgs.Add("name", name)
-	services, err := dockerClient.ServiceList(context.TODO(), types.ServiceListOptions{Filters: filtersArgs})
+	services, err := dockerClient.ServiceList(context.TODO(), types.ServiceListOptions{Filters: filtersArgs, Status: true})
 	if err != nil {
-		return false, "", "", nil, []*pb.ResponsePort{}, 0, err
+		return false, "", "", nil, []*pb.ResponsePort{}, 0, false, err
 	}
 	switch len(services) {
 	case 0:
-		return false, "", "", nil, []*pb.ResponsePort{}, 0, nil
+		return false, "", "", nil, []*pb.ResponsePort{}, 0, false, nil
 	case 1:
 		service := services[0]
+		isAlive := service.ServiceStatus.RunningTasks == service.ServiceStatus.DesiredTasks
 		imageID := service.Spec.TaskTemplate.ContainerSpec.Image
 		for _, port := range service.Endpoint.Ports {
 			if _, ok := mapPorts[port.TargetPort]; ok {
@@ -384,11 +385,11 @@ func exist(
 		}
 		deletionTime, err := strconv.ParseInt(service.Spec.Labels["deletionTime"], 10, 64)
 		if err != nil {
-			return true, service.ID, imageID, authenticationMethod, ports, 0, nil
+			return true, service.ID, imageID, authenticationMethod, ports, 0, isAlive, nil
 		}
-		return true, service.ID, imageID, authenticationMethod, ports, deletionTime, nil
+		return true, service.ID, imageID, authenticationMethod, ports, deletionTime, isAlive, nil
 	default:
-		return false, "", "", nil, []*pb.ResponsePort{}, 0, errors.New("Something is wrong ... Multiple service have the same name")
+		return false, "", "", nil, []*pb.ResponsePort{}, 0, false, errors.New("Something is wrong ... Multiple service have the same name")
 	}
 }
 

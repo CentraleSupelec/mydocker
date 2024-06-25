@@ -330,7 +330,7 @@ func main() {
 	log.SetLevel(level)
 
 	//docker client
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.39"))
+	cli, err := client.NewClientWithOpts(client.WithVersion("1.44"))
 	if err != nil {
 		log.Panic(err)
 	}
