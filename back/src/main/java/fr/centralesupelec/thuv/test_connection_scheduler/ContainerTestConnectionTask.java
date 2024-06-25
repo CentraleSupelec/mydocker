@@ -1,5 +1,6 @@
 package fr.centralesupelec.thuv.test_connection_scheduler;
 
+import fr.centralesupelec.thuv.model.ConnectionType;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.dtos.ContainerPortDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ContainerTestConnectionTask implements Runnable {
@@ -19,6 +21,7 @@ public class ContainerTestConnectionTask implements Runnable {
     private final ContainerScheduledDto containerScheduledDto;
     private final ContainerTestParameterConfiguration containerTestParameterConfiguration;
     private final NodeIPRequestService nodeIPRequestService;
+    private final TestSocket testSocket;
     @Override
 
     public void run() {
@@ -87,6 +90,15 @@ public class ContainerTestConnectionTask implements Runnable {
     private boolean testPortConnection(ContainerPortDto p) {
         if (!p.getRequiredToAccessContainer()) {
             return true;
+        }
+        if (
+                (Objects.equals(p.getConnectionType(), ConnectionType.HTTP.name()))
+                        && !StringUtils.isBlank(p.getHostname())
+        ) {
+            return testSocket.isHttpsAlive(
+                    p.getHostname(),
+                    containerTestParameterConfiguration.getTimeInSecondBeforeConnectionTestTimeout()
+            );
         }
         return TestSocket.isSocketAlive(
                 containerScheduledDto.getContainerDto().getIp(),

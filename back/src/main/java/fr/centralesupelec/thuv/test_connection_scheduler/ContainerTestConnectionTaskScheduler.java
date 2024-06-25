@@ -23,6 +23,7 @@ public class ContainerTestConnectionTaskScheduler {
     private final TaskExecutor taskExecutor;
     private final ContainerTestParameterConfiguration containerTestParameterConfiguration;
     private final NodeIPRequestService nodeIPRequestService;
+    private final TestSocket testSocket;
 
     private final Set<ContainerScheduledDto> containerScheduledDtos = Collections.synchronizedSet(new HashSet<>());
 
@@ -50,7 +51,8 @@ public class ContainerTestConnectionTaskScheduler {
                                                     this,
                                                     c,
                                                     containerTestParameterConfiguration,
-                                                    nodeIPRequestService
+                                                    nodeIPRequestService,
+                                                    testSocket
                                             )
                                     );
                         }
