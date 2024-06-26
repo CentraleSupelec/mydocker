@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 	"github.com/go-co-op/gocron"
 	log "github.com/sirupsen/logrus"
@@ -14,26 +16,19 @@ func addCleaningCron(s *gocron.Scheduler, dockerClient *client.Client) {
 	_, _ = s.Every(5).Minute().Do(
 		func() {
 			findServiceToDeleteAndDoIt(dockerClient)
+			findAndDeleteCompletedTasks(dockerClient)
 		})
 }
 
 func findServiceToDeleteAndDoIt(dockerClient *client.Client) {
 	nowSec := time.Now().Unix()
-	services, err := dockerClient.ServiceList(context.TODO(), types.ServiceListOptions{Status: true})
+	filtersArgs := filters.NewArgs()
+	filtersArgs.Add("label", "deleteAfter=true")
+	services, err := dockerClient.ServiceList(context.TODO(), types.ServiceListOptions{Filters: filtersArgs})
 	if err != nil {
 		log.Errorf("Failed to get service to delete: %s", err)
 	}
 	for _, service := range services {
-		if deleteAfter, exist := service.Spec.Labels["deleteAfter"]; !exist || (deleteAfter != "true") {
-			if service.ServiceStatus.DesiredTasks != service.ServiceStatus.RunningTasks {
-				log.Infof("Delete service %s with completed tasks", service.ID)
-				err = dockerClient.ServiceRemove(context.TODO(), service.ID)
-				if err != nil {
-					log.Errorf("Failed to delete service %s in cron job", service.ID)
-				}
-			}
-			continue
-		}
 		deletionDateStr, exist := service.Spec.Labels["deletionTime"]
 		if !exist {
 			log.Errorf("Failed to find deletion time for service %s", service.ID)
@@ -49,6 +44,25 @@ func findServiceToDeleteAndDoIt(dockerClient *client.Client) {
 			if err != nil {
 				log.Errorf("Failed to delete service %s in cron job", service.ID)
 			}
+		}
+	}
+}
+
+func findAndDeleteCompletedTasks(dockerClient *client.Client) {
+	filtersArgs := filters.NewArgs()
+	filtersArgs.Add("desired-state", string(swarm.TaskStateShutdown))
+	tasks, err := dockerClient.TaskList(context.TODO(), types.TaskListOptions{Filters: filtersArgs})
+	if err != nil {
+		log.Errorf("Failed to get tasks to delete: %s", err)
+	}
+	for _, task := range tasks {
+		if task.Status.State != swarm.TaskStateComplete {
+			continue
+		}
+		log.Infof("Delete service %s", task.ServiceID)
+		err = dockerClient.ServiceRemove(context.TODO(), task.ServiceID)
+		if err != nil {
+			log.Errorf("Failed to delete service %s in cron job", task.ServiceID)
 		}
 	}
 }

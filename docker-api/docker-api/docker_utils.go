@@ -87,7 +87,7 @@ func (d *DockerUtils) getRunningTaskNodeId(ctx context.Context, userId string, c
 	serviceName := createContainerName(userId, courseId)
 	filtersArgs := filters.NewArgs()
 	filtersArgs.Add("service", serviceName)
-	filtersArgs.Add("desired-state", "running")
+	filtersArgs.Add("desired-state", string(swarm.TaskStateRunning))
 	tasks, err := d.dockerClient.TaskList(ctx, types.TaskListOptions{Filters: filtersArgs})
 	if err != nil {
 		return "", err

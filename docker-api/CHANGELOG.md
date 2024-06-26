@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.17.3
+### Fixed
+- List tasks instead of services for completed services deletion
+
 ## 2.17.2
 ### Fixed
 - Delete services when exit is successful (before recreation and periodically)
