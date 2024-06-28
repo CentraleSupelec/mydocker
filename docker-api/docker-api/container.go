@@ -75,7 +75,7 @@ func getOrCreateContainer(
 			mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
 		}
 		name := createContainerName(request.UserID, request.CourseID)
-		if exist, id, imageId, userPassword, existingPorts, deletionTime, isAlive, err := exist(name, mapPort, dockerClient); exist {
+		if exist, id, imageId, userPassword, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
 			log.Debugf("Service %s already exists", name)
 			response.ImageID = imageId
 			response.AuthenticationMethod = userPassword
@@ -86,7 +86,7 @@ func getOrCreateContainer(
 				continue
 			}
 
-			if !isAlive || (request.Options != nil && request.Options.ForceRecreate) {
+			if shouldBeReplaced || (request.Options != nil && request.Options.ForceRecreate) {
 				err = deleteService(id, dockerClient)
 				if err != nil {
 					log.Error(err)
@@ -199,7 +199,7 @@ func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *
 		name := fmt.Sprintf("%s-admin", request.GetCourseID())
 		mapPort := map[uint32]*pb.ResponsePort{}
 		mapPort[request.Port.PortToMap] = convertRequestPortToResponsePort(request.Port)
-		if exist, id, _, userPassword, publishedPort, _, isAlive, err := exist(name, mapPort, dockerClient); exist {
+		if exist, id, _, userPassword, publishedPort, _, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
 			response.UserPassword = userPassword.UserPassword
 			response.Port = publishedPort[0]
 			if err != nil {
@@ -207,7 +207,7 @@ func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *
 				continue
 			}
 
-			if !isAlive || request.ForceRecreate {
+			if shouldBeReplaced || request.ForceRecreate {
 				err = deleteService(id, dockerClient)
 				if err != nil {
 					log.Error(err)
@@ -331,6 +331,38 @@ func doSaveData(dockerClient *client.Client, request *pb.SaveDataRequest) error 
 	return nil
 }
 
+type dockerExistenceCheckClient interface {
+	TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error)
+}
+
+func shouldServiceBeReplaced(service swarm.Service, dockerClient dockerExistenceCheckClient) (bool, error) {
+	if service.ServiceStatus.RunningTasks == service.ServiceStatus.DesiredTasks {
+		return false, nil
+	}
+	tasks, err := dockerClient.TaskList(context.TODO(), types.TaskListOptions{Filters: filters.NewArgs(filters.KeyValuePair{
+		Key:   "service",
+		Value: service.Spec.Name,
+	})})
+	if err != nil {
+		return false, nil
+	}
+	tasksByState := map[swarm.TaskState]int{}
+	for _, task := range tasks {
+		tasksByState[task.Status.State] = tasksByState[task.Status.State] + 1
+	}
+	// Replace if all tasks are in "complete" state
+	if tasksByState[swarm.TaskStateComplete] == len(tasks) {
+		log.Debugf("service %s should be replaced because all tasks are complete, %v", service.Spec.Name, tasksByState)
+		return true, nil
+	}
+	// Replace if all tasks (except the one being retried) are in "error" state
+	if tasksByState[swarm.TaskStateFailed] > 0 && tasksByState[swarm.TaskStateFailed] >= (len(tasks)-1) {
+		log.Debugf("service %s should be replaced because all tasks are failed, %v", service.Spec.Name, tasksByState)
+		return true, nil
+	}
+	return false, nil
+}
+
 func exist(
 	name string,
 	mapPorts map[uint32]*pb.ResponsePort,
@@ -347,7 +379,7 @@ func exist(
 		return false, "", "", nil, []*pb.ResponsePort{}, 0, false, nil
 	case 1:
 		service := services[0]
-		isAlive := service.ServiceStatus.RunningTasks == service.ServiceStatus.DesiredTasks
+		shouldBeReplaced, err := shouldServiceBeReplaced(service, dockerClient)
 		imageID := service.Spec.TaskTemplate.ContainerSpec.Image
 		for _, port := range service.Endpoint.Ports {
 			if _, ok := mapPorts[port.TargetPort]; ok {
@@ -385,9 +417,9 @@ func exist(
 		}
 		deletionTime, err := strconv.ParseInt(service.Spec.Labels["deletionTime"], 10, 64)
 		if err != nil {
-			return true, service.ID, imageID, authenticationMethod, ports, 0, isAlive, nil
+			return true, service.ID, imageID, authenticationMethod, ports, 0, shouldBeReplaced, nil
 		}
-		return true, service.ID, imageID, authenticationMethod, ports, deletionTime, isAlive, nil
+		return true, service.ID, imageID, authenticationMethod, ports, deletionTime, shouldBeReplaced, nil
 	default:
 		return false, "", "", nil, []*pb.ResponsePort{}, 0, false, errors.New("Something is wrong ... Multiple service have the same name")
 	}
@@ -401,6 +433,9 @@ func getIPAdress(dockerClient *client.Client) (string, error) {
 	for _, node := range nodes {
 		// Return the first active node
 		if node.Spec.Availability == swarm.NodeAvailabilityActive && node.Status.State == swarm.NodeStateReady {
+			if node.ManagerStatus != nil {
+				return strings.SplitN(node.ManagerStatus.Addr, ":", 2)[0], nil
+			}
 			return node.Status.Addr, nil
 		}
 	}

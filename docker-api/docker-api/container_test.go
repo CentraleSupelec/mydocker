@@ -96,6 +96,16 @@ func (t *testingCreateStudentVolumeDockerClient) ServiceList(ctx context.Context
 	return args.Get(0).([]swarm.Service), args.Error(1)
 }
 
+type testingDockerExistenceCheckClientlient struct {
+	mock.Mock
+	dockerExistenceCheckClient
+}
+
+func (t *testingDockerExistenceCheckClientlient) TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error) {
+	args := t.Called(ctx, options)
+	return args.Get(0).([]swarm.Task), args.Error(1)
+}
+
 type ContainerTestSuite struct {
 	suite.Suite
 	mocks []*mock.Call
@@ -126,6 +136,77 @@ func (suite *ContainerTestSuite) TestCanCreateStudentVolumeNoService() {
 	})
 	suite.Nil(err)
 	suite.Equal(true, result)
+	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestShouldBeReplaced() {
+	stubClient := new(testingDockerExistenceCheckClientlient)
+	matcher := func(serviceName string) func(options types.TaskListOptions) bool {
+		return func(options types.TaskListOptions) bool {
+			return findStringInListCaseInsensitive(serviceName, options.Filters.Get("service"))
+		}
+	}
+	suite.mocks = append(suite.mocks, stubClient.
+		On(
+			"TaskList", mock.Anything, mock.MatchedBy(matcher("startingService")),
+		).
+		Return([]swarm.Task{
+			{
+				Status: swarm.TaskStatus{State: swarm.TaskStateStarting},
+			},
+		}, nil))
+	suite.mocks = append(suite.mocks, stubClient.
+		On(
+			"TaskList", mock.Anything, mock.MatchedBy(matcher("errorService")),
+		).
+		Return([]swarm.Task{
+			{
+				Status: swarm.TaskStatus{State: swarm.TaskStateStarting},
+			},
+			{
+				Status: swarm.TaskStatus{State: swarm.TaskStateFailed},
+			},
+		}, nil),
+	)
+	suite.mocks = append(suite.mocks, stubClient.
+		On(
+			"TaskList", mock.Anything, mock.MatchedBy(matcher("completedService")),
+		).
+		Return([]swarm.Task{
+			{
+				Status: swarm.TaskStatus{State: swarm.TaskStateComplete},
+			},
+		}, nil),
+	)
+
+	runningService := swarm.Service{Spec: swarm.ServiceSpec{Annotations: swarm.Annotations{Name: "runningService"}}, ServiceStatus: &swarm.ServiceStatus{
+		RunningTasks: 1,
+		DesiredTasks: 1,
+	}}
+	result, err := shouldServiceBeReplaced(runningService, stubClient)
+	suite.False(result)
+	suite.Nil(err)
+	startingService := swarm.Service{Spec: swarm.ServiceSpec{Annotations: swarm.Annotations{Name: "startingService"}}, ServiceStatus: &swarm.ServiceStatus{
+		RunningTasks: 0,
+		DesiredTasks: 1,
+	}}
+	result, err = shouldServiceBeReplaced(startingService, stubClient)
+	suite.False(result)
+	suite.Nil(err)
+	errorService := swarm.Service{Spec: swarm.ServiceSpec{Annotations: swarm.Annotations{Name: "errorService"}}, ServiceStatus: &swarm.ServiceStatus{
+		RunningTasks: 0,
+		DesiredTasks: 1,
+	}}
+	result, err = shouldServiceBeReplaced(errorService, stubClient)
+	suite.True(result)
+	suite.Nil(err)
+	completedService := swarm.Service{Spec: swarm.ServiceSpec{Annotations: swarm.Annotations{Name: "completedService"}}, ServiceStatus: &swarm.ServiceStatus{
+		RunningTasks: 0,
+		DesiredTasks: 1,
+	}}
+	result, err = shouldServiceBeReplaced(completedService, stubClient)
+	suite.True(result)
+	suite.Nil(err)
 	stubClient.AssertExpectations(suite.T())
 }
 
