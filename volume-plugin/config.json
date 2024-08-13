@@ -68,6 +68,38 @@
       "value": "--options=noatime"
     },
     {
+      "name": "VOLUME_FSTYPE",
+      "Description": "Default file system",
+      "settable": [
+        "value"
+      ],
+      "value": "ext4"
+    },
+    {
+      "name": "VOLUME_MKFS_OPTIONS",
+      "Description": "Options to pass to the mkfs command",
+      "settable": [
+        "value"
+      ],
+      "value": "-O mmp"
+    },
+    {
+      "name": "VOLUME_SIZE",
+      "Description": "Default volume size",
+      "settable": [
+        "value"
+      ],
+      "value": "512"
+    },
+    {
+      "name": "VOLUME_ORDER",
+      "Description": "Order number. RBD stripe/chunk size, e.g. 4MB (order 22)",
+      "settable": [
+        "value"
+      ],
+      "value": "22"
+    },
+    {
       "name": "VOLUME_MOUNT_MODE",
       "Description": "Mode to set the root mounted directory. No chmod if empty",
       "settable": [

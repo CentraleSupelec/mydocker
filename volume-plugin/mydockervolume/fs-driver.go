@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func NewFSDriver(providedRoot string) (error, *mydockerFsDriver) {
+func NewFSDriver(providedRoot string) (error, *MydockerFsDriver) {
 	var root string
 	if providedRoot == "" {
 		root = "/mnt/volumes"
@@ -25,18 +25,18 @@ func NewFSDriver(providedRoot string) (error, *mydockerFsDriver) {
 	if err != nil {
 		return err, nil
 	}
-	driver := &mydockerFsDriver{
+	driver := &MydockerFsDriver{
 		root: root,
 	}
 	return nil, driver
 }
 
-type mydockerFsDriver struct {
+type MydockerFsDriver struct {
 	d    volume.Driver
 	root string
 }
 
-func (d *mydockerFsDriver) Create(request *volume.CreateRequest) error {
+func (d *MydockerFsDriver) Create(request *volume.CreateRequest) error {
 	if strings.Contains(request.Name, "/") {
 		return errors.New("name is invalid because it contains '/'")
 	}
@@ -48,7 +48,7 @@ func (d *mydockerFsDriver) Create(request *volume.CreateRequest) error {
 	return nil
 }
 
-func (d *mydockerFsDriver) List() (*volume.ListResponse, error) {
+func (d *MydockerFsDriver) List() (*volume.ListResponse, error) {
 	fileInfos, err := ioutil.ReadDir(d.root)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (d *mydockerFsDriver) List() (*volume.ListResponse, error) {
 	return &volume.ListResponse{Volumes: volumes}, nil
 }
 
-func (d *mydockerFsDriver) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
+func (d *MydockerFsDriver) Get(request *volume.GetRequest) (*volume.GetResponse, error) {
 	fullPath := path.Join(d.root, request.Name)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("volume %s does not exist", request.Name)
@@ -74,7 +74,7 @@ func (d *mydockerFsDriver) Get(request *volume.GetRequest) (*volume.GetResponse,
 	}}, nil
 }
 
-func (d *mydockerFsDriver) Remove(request *volume.RemoveRequest) error {
+func (d *MydockerFsDriver) Remove(request *volume.RemoveRequest) error {
 	fullPath := path.Join(d.root, request.Name)
 	log.Debugf("volume-mydocker Message=Removing %s", fullPath)
 	err := os.RemoveAll(fullPath)
@@ -84,7 +84,7 @@ func (d *mydockerFsDriver) Remove(request *volume.RemoveRequest) error {
 	return nil
 }
 
-func (d *mydockerFsDriver) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
+func (d *MydockerFsDriver) Path(request *volume.PathRequest) (*volume.PathResponse, error) {
 	fullPath := path.Join(d.root, request.Name)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("volume %s does not exist", request.Name)
@@ -94,7 +94,7 @@ func (d *mydockerFsDriver) Path(request *volume.PathRequest) (*volume.PathRespon
 	}, nil
 }
 
-func (d *mydockerFsDriver) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
+func (d *MydockerFsDriver) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
 	fullPath := path.Join(d.root, request.Name)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("volume %s does not exist", request.Name)
@@ -132,11 +132,11 @@ func (d *mydockerFsDriver) Mount(request *volume.MountRequest) (*volume.MountRes
 	}, nil
 }
 
-func (d *mydockerFsDriver) Unmount(request *volume.UnmountRequest) error {
+func (d *MydockerFsDriver) Unmount(request *volume.UnmountRequest) error {
 	return nil
 }
 
-func (d *mydockerFsDriver) Capabilities() *volume.CapabilitiesResponse {
+func (d *MydockerFsDriver) Capabilities() *volume.CapabilitiesResponse {
 	return &volume.CapabilitiesResponse{
 		Capabilities: volume.Capability{
 			Scope: "global",
