@@ -15,6 +15,7 @@ import fr.centralesupelec.thuv.lti.repository.ToolDeploymentRepository;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.security.JwtTokenProvider;
 import fr.centralesupelec.thuv.security.MyUserDetailsService;
+import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +152,7 @@ public class LtiController {
 
         String localToken = jwtTokenProvider
                 .generateToken(
-                        user.getEmail()
+                        user.getEmail(), TokenOrigin.LTI
                 );
 
         activityLogger.log(LogAction.USER_LOGIN_LTI, user);

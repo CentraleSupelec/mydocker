@@ -1,4 +1,4 @@
-package fr.centralesupelec.thuv.web;
+package fr.centralesupelec.thuv.security.controllers;
 
 import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
@@ -8,6 +8,7 @@ import fr.centralesupelec.thuv.model.cas.AuthenticationSuccessType;
 import fr.centralesupelec.thuv.model.cas.ServiceResponseType;
 import fr.centralesupelec.thuv.security.JwtTokenProvider;
 import fr.centralesupelec.thuv.security.MyUserDetailsService;
+import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +126,7 @@ public class CasController {
 
             String jwtToken = jwtTokenProvider
                     .generateToken(
-                            user.getEmail()
+                            user.getEmail(), TokenOrigin.CAS
                     );
             logger.debug("JWT token: " + jwtToken);
             activityLogger.log(LogAction.USER_LOGIN_CAS, user);

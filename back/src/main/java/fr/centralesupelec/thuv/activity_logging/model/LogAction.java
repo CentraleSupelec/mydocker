@@ -3,6 +3,7 @@ package fr.centralesupelec.thuv.activity_logging.model;
 public enum LogAction {
     USER_LOGIN_LTI,
     USER_LOGIN_CAS,
+    USER_LOGIN_OIDC,
     ENVIRONMENT_ASK,
     ENVIRONMENT_CREATED_OK,
     ENVIRONMENT_CREATED_KO,

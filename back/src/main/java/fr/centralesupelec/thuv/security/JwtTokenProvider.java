@@ -6,6 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class JwtTokenProvider {
         verifier = JWT.require(algorithmHS256).build();
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, TokenOrigin tokenOrigin) {
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
@@ -44,6 +45,7 @@ public class JwtTokenProvider {
                 .withExpiresAt(expiryDate)
                 .withIssuedAt(now)
                 .withSubject(username)
+                .withClaim("origin", tokenOrigin.toString())
                 .sign(algorithmHS256);
     }
 
