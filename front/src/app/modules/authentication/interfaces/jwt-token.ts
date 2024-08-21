@@ -7,6 +7,13 @@ export interface IJWTToken {
     jti: string;
     nbf: number;
     sub: string;
+    origin: TokenOrigin;
   };
   expirationDate: Date;
+}
+
+export enum TokenOrigin {
+  CAS = 'CAS',
+  LTI = 'LTI',
+  OIDC = 'OIDC',
 }

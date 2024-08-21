@@ -8,13 +8,14 @@ import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { AuthModule } from "angular-auth-oidc-client";
 
 describe('LoginAcceptComponent', () => {
   let component: LoginAcceptComponent;
   let fixture: ComponentFixture<LoginAcceptComponent>;
 
   beforeEach(async () => {
-    const queryParamMap = of(convertToParamMap({ redirectTo: "/" }))
+    const queryParamMap = of(convertToParamMap({ redirectTo: "/", ticket: "CAS_TOKEN" }))
     await TestBed.configureTestingModule({
       declarations: [ LoginAcceptComponent ],
       providers: [
@@ -34,6 +35,7 @@ describe('LoginAcceptComponent', () => {
         HttpClientTestingModule,
         NgxPermissionsModule.forRoot(),
         MatProgressSpinnerModule,
+        AuthModule.forRoot({}),
       ]
     })
     .compileComponents();

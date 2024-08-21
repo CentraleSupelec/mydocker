@@ -6,6 +6,7 @@ import { UserInterfaceModule } from "../../user-interface.module";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
+import { AuthModule } from "angular-auth-oidc-client";
 
 describe('BasicLayoutComponent', () => {
   let component: BasicLayoutComponent;
@@ -19,6 +20,7 @@ describe('BasicLayoutComponent', () => {
         NgxPermissionsModule.forRoot(),
         HttpClientTestingModule,
         RouterTestingModule,
+        AuthModule.forRoot({}),
       ],
       providers: [
         {

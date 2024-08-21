@@ -37,7 +37,19 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     if (this.tokenService.isSignedIn()) {
       return true;
     }
-    this.router.navigate(['login'], {queryParams: {redirectTo: url}});
+    const queryParams: {[key: string]: string} = {};
+    if (url) {
+      queryParams['redirectTo'] = url;
+      const parsedUrl = new URL(window.location.origin + url);
+      const urlParams = new URLSearchParams(parsedUrl.search);
+      ['code', 'session_state', 'state'].forEach(param => {
+        const paramValue = urlParams.get(param);
+        if (paramValue) {
+          queryParams[param] = paramValue;
+        }
+      });
+    }
+    this.router.navigate(['login'], {queryParams});
     return false;
   }
 }

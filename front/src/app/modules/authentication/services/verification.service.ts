@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
 @Injectable({
   providedIn: 'root'
 })
-export class CasVerificationService {
+export class VerificationService {
 
   constructor(
     private readonly httClient: HttpClient,
@@ -21,6 +21,16 @@ export class CasVerificationService {
       serviceUrl += `?${params.toString()}`;
     }
     return this.httClient.get(`${this.config.back_url}auth/cas/${ticket}?serviceURL=${serviceUrl}`, {
+      responseType: 'text'
+    });
+  }
+
+  validateOidcToken(accessToken: string, redirectTo: string | null): Observable<string> {
+    if (redirectTo) {
+      let params = new URLSearchParams();
+      params.set("redirectTo", redirectTo)
+    }
+    return this.httClient.post(`${this.config.back_url}auth/oidc/`, {accessToken}, {
       responseType: 'text'
     });
   }

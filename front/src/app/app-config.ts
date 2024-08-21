@@ -10,6 +10,7 @@ export interface IAppConfig {
   };
   default_storage_backend?: string;
   deployment_enabled: boolean;
+  default_idp?: string;
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -25,6 +26,7 @@ export function appConstantFactory(): IAppConfig {
       logout_url: appConstants.cas?.logout_url,
     },
     default_storage_backend: appConstants.default_storage_backend,
-    deployment_enabled: appConstants.deployment_enabled
+    deployment_enabled: appConstants.deployment_enabled,
+    default_idp: appConstants.default_idp,
   };
 }

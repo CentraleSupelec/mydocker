@@ -7,6 +7,7 @@ import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { AuthModule } from "angular-auth-oidc-client";
 
 describe('AdminLayoutComponent', () => {
   let component: AdminLayoutComponent;
@@ -21,6 +22,7 @@ describe('AdminLayoutComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule,
         NoopAnimationsModule,
+        AuthModule.forRoot({}),
       ],
       providers: [
         {

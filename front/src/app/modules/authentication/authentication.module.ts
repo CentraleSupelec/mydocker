@@ -11,6 +11,7 @@ import { AddTokenInterceptor } from "./services/add-token.interceptor";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { AutologinGuard } from './services/autologin.guard';
 import { UtilsModule } from "../utils/utils.module";
+import { AuthModule, LogLevel } from 'angular-auth-oidc-client';
 
 
 export const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
@@ -32,6 +33,21 @@ export const loadPermissionsOnStartupAppInitializerFactory = (tokenService: Toke
     NgxPermissionsModule,
     HttpClientModule,
     UtilsModule,
+    AuthModule.forRoot({
+      config: {
+        // Todo : Mettre en config
+        authority: 'https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod',
+        redirectUrl: `${window.location.origin}/loginAccept`,
+        postLogoutRedirectUri: window.location.origin,
+        // Todo : Mettre en config
+        clientId: 'mydocker-local',
+        scope: 'openid profile email edu',
+        responseType: 'code',
+        silentRenew: true,
+        useRefreshToken: true,
+        logLevel: LogLevel.Debug,
+      },
+    }),
   ],
   providers: [
     AuthGuard,

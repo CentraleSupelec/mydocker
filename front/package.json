@@ -25,6 +25,7 @@
     "@angular/platform-browser-dynamic": "~13.0.1",
     "@angular/router": "~13.0.1",
     "@auth0/angular-jwt": "^5.0.2",
+    "angular-auth-oidc-client": "^13.1.0",
     "date-fns": "^2.25.0",
     "monaco-editor": "^0.26.1",
     "ngx-monaco-editor": "^9.0.0",

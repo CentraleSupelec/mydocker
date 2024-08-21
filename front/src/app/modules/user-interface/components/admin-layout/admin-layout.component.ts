@@ -31,8 +31,5 @@ export class AdminLayoutComponent implements OnInit {
 
   logout() {
     this.authService.signOut();
-    let params = new URLSearchParams();
-    params.set("service", `${this.config.front_url}/login`)
-    window.location.href = `${this.config.cas.logout_url}?${params.toString()}`
   }
 }
