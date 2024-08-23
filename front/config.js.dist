@@ -6,4 +6,10 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
     "logout_url": "http://localhost:9443/cas/logout",
   },
   "deployment_enabled": true,
+  "default_storage_backend": "LOCAL",
+  "oidc_default_idp": "satosa",
+  "oidc_client_id": "mydocker-local",
+  "oidc_authority": "https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod",
+  "oidc_scope": "openid profile email edu",
+  // "auto_login": "OIDC",
 };

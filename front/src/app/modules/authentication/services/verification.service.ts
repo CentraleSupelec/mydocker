@@ -25,11 +25,7 @@ export class VerificationService {
     });
   }
 
-  validateOidcToken(accessToken: string, redirectTo: string | null): Observable<string> {
-    if (redirectTo) {
-      let params = new URLSearchParams();
-      params.set("redirectTo", redirectTo)
-    }
+  validateOidcToken(accessToken: string): Observable<string> {
     return this.httClient.post(`${this.config.back_url}auth/oidc/`, {accessToken}, {
       responseType: 'text'
     });

@@ -1,4 +1,5 @@
 import { InjectionToken } from "@angular/core";
+import { TokenOrigin } from "./modules/authentication/interfaces/jwt-token";
 
 
 export interface IAppConfig {
@@ -10,7 +11,11 @@ export interface IAppConfig {
   };
   default_storage_backend?: string;
   deployment_enabled: boolean;
-  default_idp?: string;
+  auto_login?: TokenOrigin;
+  oidc_default_idp?: string;
+  oidc_client_id?: string;
+  oidc_authority?: string;
+  oidc_scope?: string;
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -27,6 +32,10 @@ export function appConstantFactory(): IAppConfig {
     },
     default_storage_backend: appConstants.default_storage_backend,
     deployment_enabled: appConstants.deployment_enabled,
-    default_idp: appConstants.default_idp,
+    auto_login: appConstants.auto_login,
+    oidc_default_idp: appConstants.oidc_default_idp,
+    oidc_client_id: appConstants.oidc_client_id,
+    oidc_authority: appConstants.oidc_authority,
+    oidc_scope: appConstants.oidc_scope,
   };
 }

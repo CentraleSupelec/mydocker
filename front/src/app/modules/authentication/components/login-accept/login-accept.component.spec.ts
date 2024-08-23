@@ -9,6 +9,7 @@ import { APP_CONFIG } from "../../../../app-config";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { AuthModule } from "angular-auth-oidc-client";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
 describe('LoginAcceptComponent', () => {
   let component: LoginAcceptComponent;
@@ -36,6 +37,7 @@ describe('LoginAcceptComponent', () => {
         NgxPermissionsModule.forRoot(),
         MatProgressSpinnerModule,
         AuthModule.forRoot({}),
+        MatSnackBarModule,
       ]
     })
     .compileComponents();

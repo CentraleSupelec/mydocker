@@ -96,8 +96,20 @@ export class LocalStorageService {
   clear(): void {
     try {
       localStorage.clear();
+      sessionStorage.clear();
     } catch (error) {
       console.error(error);
     }
+  }
+
+  sessionSet(key:string, value: string, prefix?: string): void {
+    sessionStorage.setItem(`${prefix || this._prefix}_${key}`, value);
+  }
+
+  sessionGetAndRemove(key:string, prefix?: string): string | null {
+    const keyWithPrefix = `${prefix || this._prefix}_${key}`;
+    const value = sessionStorage.getItem(keyWithPrefix);
+    sessionStorage.removeItem(keyWithPrefix);
+    return value;
   }
 }

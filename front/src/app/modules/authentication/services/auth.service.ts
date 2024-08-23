@@ -30,7 +30,11 @@ export class AuthService {
           window.location.href = `${this.config.cas.logout_url}?${params.toString()}`;
           break;
         case TokenOrigin.OIDC:
-          this.oidcSecurityService.logoff();
+          if (this.oidcSecurityService.isAuthenticated()) {
+            this.oidcSecurityService.logoffAndRevokeTokens().subscribe();
+          } else {
+            this.oidcSecurityService.logoffLocal();
+          }
           break;
       }
     }

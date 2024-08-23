@@ -1,9 +1,10 @@
 <div class="container">
-  <div class="card">
+  <div class="card" *ngIf="showButtons; else spinner">
     <img src="../../../../../assets/1200px-Logo_CentraleSupélec.svg.png" alt="Logo CentraleSupelec">
     <h2>Bienvenue sur MyDocker !</h2>
-    <p>Connectez-vous avec vos identifiants CentraleSupélec afin d’accéder à vos activités en ligne</p>
-    <button mat-flat-button color="primary" (click)="redirectToCas()">CONNEXION AVEC LE CAS</button>
-    <button mat-flat-button color="primary" (click)="login()">CONNEXION AVEC OIDC</button>
+    <p>Connectez-vous avec vos identifiants afin d’accéder à vos activités en ligne</p>
+    <button *ngIf="isCasLoginEnabled" mat-flat-button color="primary" (click)="redirectToCas()">CONNEXION AVEC LE CAS</button>
+    <button *ngIf="isOIDCLoginEnabled" mat-flat-button color="primary" (click)="loginOIDC()">CONNEXION AVEC OIDC</button>
   </div>
+  <ng-template #spinner><mat-spinner></mat-spinner></ng-template>
 </div>

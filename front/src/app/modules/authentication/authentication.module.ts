@@ -11,14 +11,28 @@ import { AddTokenInterceptor } from "./services/add-token.interceptor";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { AutologinGuard } from './services/autologin.guard';
 import { UtilsModule } from "../utils/utils.module";
-import { AuthModule, LogLevel } from 'angular-auth-oidc-client';
+import { AuthModule, LogLevel, StsConfigLoader, StsConfigStaticLoader } from "angular-auth-oidc-client";
+import { APP_CONFIG, IAppConfig } from "../../app-config";
 
-
-export const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
+const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
   function(): Promise<any> {
     return tokenService.signInFromStorage()
       .toPromise();
   };
+
+const generateAuthConfiguration = (appConfig: IAppConfig) => {
+  return new StsConfigStaticLoader({
+    authority: appConfig.oidc_authority,
+    redirectUrl: `${window.location.origin}/loginAccept`,
+    postLogoutRedirectUri: `${window.location.origin}/login?preventAutoSignIn=true`,
+    clientId: appConfig.oidc_client_id,
+    scope: appConfig.oidc_scope,
+    responseType: 'code',
+    silentRenew: false,
+    logLevel: LogLevel.Warn,
+    triggerAuthorizationResultEvent: true,
+  });
+}
 
 
 @NgModule({
@@ -34,19 +48,11 @@ export const loadPermissionsOnStartupAppInitializerFactory = (tokenService: Toke
     HttpClientModule,
     UtilsModule,
     AuthModule.forRoot({
-      config: {
-        // Todo : Mettre en config
-        authority: 'https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod',
-        redirectUrl: `${window.location.origin}/loginAccept`,
-        postLogoutRedirectUri: window.location.origin,
-        // Todo : Mettre en config
-        clientId: 'mydocker-local',
-        scope: 'openid profile email edu',
-        responseType: 'code',
-        silentRenew: true,
-        useRefreshToken: true,
-        logLevel: LogLevel.Debug,
-      },
+      loader: {
+        provide: StsConfigLoader,
+        useFactory: generateAuthConfiguration,
+        deps: [APP_CONFIG],
+      }
     }),
   ],
   providers: [

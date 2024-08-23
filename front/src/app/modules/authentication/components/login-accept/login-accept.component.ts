@@ -4,6 +4,8 @@ import { VerificationService } from "../../services/verification.service";
 import { mergeMap } from "rxjs/operators";
 import { TokenService } from "../../services/token.service";
 import { LoginResponse, OidcSecurityService } from "angular-auth-oidc-client";
+import { SnackNotificationService } from "../../../utils/snack-notification/snack-notification.service";
+import { LocalStorageService } from "../../../utils/services/local-storage.service";
 
 @Component({
   selector: "app-login-accept",
@@ -19,6 +21,8 @@ export class LoginAcceptComponent implements OnInit {
     private readonly tokenService: TokenService,
     private readonly router: Router,
     private readonly oidcSecurityService: OidcSecurityService,
+    private readonly snackNotificationService: SnackNotificationService,
+    private readonly localStorageService: LocalStorageService,
   ) {
   }
 
@@ -32,18 +36,23 @@ export class LoginAcceptComponent implements OnInit {
           return this.oidcSecurityService
             .checkAuth()
             .pipe(mergeMap((loginResponse: LoginResponse) => {
-              const {isAuthenticated, accessToken} = loginResponse;
+              const {isAuthenticated, accessToken, errorMessage} = loginResponse;
               if (isAuthenticated) {
-                return this.verificationService.validateOidcToken(accessToken, this.redirectTo);
+                return this.verificationService.validateOidcToken(accessToken);
+              } else {
+                this.snackNotificationService.push('Impossible de vous authentifier', 'error');
+                const error = `Authentication error : ${errorMessage}`;
+                this.router.navigateByUrl('/login?preventAutoSignIn=true');
+                throw new Error(error);
               }
-              throw new Error("Code is defined but still unauthenticated");
             }));
         }
         throw new Error("There is no ticket and no code in param map");
       }),
       mergeMap(token => this.tokenService.loadToken(token)),
     ).subscribe(
-      () => this.router.navigateByUrl(decodeURIComponent(this.redirectTo || "/")),
+      () => this.router.navigateByUrl(
+        decodeURIComponent(this.redirectTo ?? this.localStorageService.sessionGetAndRemove("redirectTo") ?? "/" ))
     );
   }
 }
