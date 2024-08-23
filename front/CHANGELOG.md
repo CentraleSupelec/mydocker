@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.26.0
+### Added
+- Add OIDC
+- Remove CS specific wording
+
 ## 2.25.0
 ### Added
 - Redirect to containers through reverse proxy

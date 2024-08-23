@@ -35,7 +35,6 @@ export class SignInComponent implements OnInit {
       paramMap => {
         if (paramMap.has('redirectTo')) {
           this.redirectTo = encodeURIComponent(paramMap.get('redirectTo') as string);
-          console.warn(this.redirectTo);
         }
         if (paramMap.get('preventAutoSignIn') === 'true') {
           this.showButtons = true;
