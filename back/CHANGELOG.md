@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.29.0
+### Added
+- Add OIDC
+
 ## 2.28.2
 ### Fixed
 - Test connection for HTTP using HTTP client instead of socket connection
