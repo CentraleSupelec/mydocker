@@ -5,6 +5,7 @@ import com.auth0.jwk.JwkProviderBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ public class OIDCConfig {
     private static final int OIDC_WELL_KNOWN_CACHE_EXPIRATION_HOURS = 24;
     public static final int JWKS_CACHE_SIZE = 10;
     public static final int JWKS_CACHE_EXPIRATION_HOURS = 24;
+    public static final String JWK_BEAN_NAME = "jwkProvider";
 
     @Bean
     public Cache<String, String> wellKnownCache() {
@@ -34,12 +36,16 @@ public class OIDCConfig {
                 .build();
     }
 
-    @Bean
+    @Bean(name = OIDCConfig.JWK_BEAN_NAME)
     public JwkProvider jwkProvider(
             @Value("${oidc.issuer}") String issuer,
             Cache<String, String> wellKnownCache,
             RestTemplate restTemplate
     ) throws MalformedURLException, ExecutionException {
+        if (StringUtils.isBlank(issuer)) {
+            logger.debug("Skipping OIDC Provider initialization");
+            return null;
+        }
         logger.debug("Initializing OIDC Provider");
         String jwksUriValue = wellKnownCache
                 .get(issuer, () -> {

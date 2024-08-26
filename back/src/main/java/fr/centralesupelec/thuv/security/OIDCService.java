@@ -32,7 +32,6 @@ public class OIDCService {
     private final ActivityLogger activityLogger;
     private final ApplicationContext applicationContext;
     private final Cache<String, String> wellKnownCache;
-    private final JwkProvider jwkProvider;
 
     @Value("${oidc.audience}")
     private String audience;
@@ -90,7 +89,7 @@ public class OIDCService {
                 );
                 DefaultSingletonBeanRegistry registry = (DefaultSingletonBeanRegistry) applicationContext
                         .getAutowireCapableBeanFactory();
-                registry.destroySingleton("jwkProvider");
+                registry.destroySingleton(OIDCConfig.JWK_BEAN_NAME);
                 this.wellKnownCache.invalidateAll();
                 this.verifyToken(jwt, retries + 1);
             } else {
