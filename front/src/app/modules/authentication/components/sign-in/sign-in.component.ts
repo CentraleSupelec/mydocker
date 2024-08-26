@@ -5,6 +5,7 @@ import { NavigationService } from "../../../utils/services/navigation.service";
 import { OidcSecurityService } from "angular-auth-oidc-client";
 import { TokenOrigin } from "../../interfaces/jwt-token";
 import { LocalStorageService } from "../../../utils/services/local-storage.service";
+import { skipWhile } from "rxjs/operators";
 
 @Component({
   selector: 'app-sign-in',
@@ -31,7 +32,12 @@ export class SignInComponent implements OnInit {
     this.showButtons = this.config.auto_login !== TokenOrigin.CAS
       && this.config.auto_login !== TokenOrigin.OIDC
       && (this.isOIDCLoginEnabled || this.isCasLoginEnabled);
-    this.route.queryParamMap.subscribe(
+    this.route.queryParamMap
+      .pipe(
+        // To avoid handling paramMap when it has not been initialized. See https://github.com/angular/angular/issues/12157#issuecomment-756379506
+        skipWhile(() => this.route.component === null)
+      )
+      .subscribe(
       paramMap => {
         if (paramMap.has('redirectTo')) {
           this.redirectTo = encodeURIComponent(paramMap.get('redirectTo') as string);
