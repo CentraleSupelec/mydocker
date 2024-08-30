@@ -7,7 +7,10 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
   },
   "deployment_enabled": true,
   "default_storage_backend": "LOCAL",
-  "oidc_default_idp": "satosa",
+  "oidc_idps": [
+    {"idp_hint": "microsoft-oidc", "title": "CONNEXION ÉTUDIANTS PARIS-SACLAY"},
+    {"idp_hint": "satosa", "title": "CONNEXION VIA FÉDÉRATION RENATER", "tooltip": "Pour enseignants et étudiants d'autres universités"}
+  ],
   "oidc_client_id": "mydocker-local",
   "oidc_authority": "https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod",
   "oidc_scope": "openid profile email edu",

@@ -19,7 +19,7 @@ export class SignInComponent implements OnInit {
   isOIDCLoginEnabled = false;
 
   constructor(
-    @Inject(APP_CONFIG) private readonly config: IAppConfig,
+    @Inject(APP_CONFIG) readonly config: IAppConfig,
     private route: ActivatedRoute,
     private readonly navigationService: NavigationService,
     private readonly oidcSecurityService: OidcSecurityService,
@@ -51,17 +51,17 @@ export class SignInComponent implements OnInit {
             this.redirectToCas();
             break;
           case TokenOrigin.OIDC:
-            this.loginOIDC();
+            this.loginOIDC(this.config.oidc_idps?.[0].idp_hint);
             break;
         }
       }
     );
   }
 
-  loginOIDC() {
+  loginOIDC(hint?: string) {
     const customParams: {[key: string]: string} = {};
-    if (this.config.oidc_default_idp) {
-      customParams["kc_idp_hint"] = this.config.oidc_default_idp;
+    if (hint) {
+      customParams["kc_idp_hint"] = hint;
     }
     // TODO : Handle redirectTo when library is upgraded to v16
     this.localStorageService.sessionSet('redirectTo', this.redirectTo);

@@ -26,7 +26,7 @@ export class AuthService {
       switch (tokenOrigin) {
         case TokenOrigin.CAS:
           let params = new URLSearchParams();
-          params.set("service", `${this.config.front_url}/login`);
+          params.set("service", `${this.config.front_url}/login?preventAutoSignIn=true`);
           window.location.href = `${this.config.cas.logout_url}?${params.toString()}`;
           break;
         case TokenOrigin.OIDC:

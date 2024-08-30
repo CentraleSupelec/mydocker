@@ -13,6 +13,7 @@ import { AutologinGuard } from './services/autologin.guard';
 import { UtilsModule } from "../utils/utils.module";
 import { AuthModule, LogLevel, StsConfigLoader, StsConfigStaticLoader } from "angular-auth-oidc-client";
 import { APP_CONFIG, IAppConfig } from "../../app-config";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
   function(): Promise<any> {
@@ -52,8 +53,9 @@ const generateAuthConfiguration = (appConfig: IAppConfig) => {
         provide: StsConfigLoader,
         useFactory: generateAuthConfiguration,
         deps: [APP_CONFIG],
-      }
+      },
     }),
+    MatTooltipModule,
   ],
   providers: [
     AuthGuard,

@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { NavigationService } from "../../../utils/services/navigation.service";
 import { AuthModule } from "angular-auth-oidc-client";
 import { RouterTestingModule } from "@angular/router/testing";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 describe('SignInComponent', () => {
   let component: SignInComponent;
@@ -43,6 +44,7 @@ describe('SignInComponent', () => {
       imports: [
         MatProgressSpinnerModule,
         RouterTestingModule,
+        MatTooltipModule,
         AuthModule.forRoot({}),
       ]
     })

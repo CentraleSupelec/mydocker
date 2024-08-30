@@ -4,7 +4,17 @@
     <h2>Bienvenue sur MyDocker !</h2>
     <p>Connectez-vous avec vos identifiants afin d’accéder à vos activités en ligne</p>
     <button *ngIf="isCasLoginEnabled" mat-flat-button color="primary" (click)="redirectToCas()">CONNEXION AVEC LE CAS</button>
-    <button *ngIf="isOIDCLoginEnabled" mat-flat-button color="primary" (click)="loginOIDC()">CONNEXION AVEC VOTRE ÉTABLISSEMENT</button>
+    <ng-container *ngIf="isOIDCLoginEnabled">
+      <button
+        *ngFor="let oidc_idp of config.oidc_idps"
+        mat-flat-button
+        color="primary"
+        (click)="loginOIDC(oidc_idp.idp_hint)"
+        [matTooltip]="oidc_idp.tooltip ?? ''"
+        [matTooltipDisabled]="!oidc_idp.tooltip">
+        {{ oidc_idp.title ?? 'CONNEXION AVEC VOTRE ÉTABLISSEMENT' }}
+      </button>
+    </ng-container>
   </div>
   <ng-template #spinner><mat-spinner></mat-spinner></ng-template>
 </div>
