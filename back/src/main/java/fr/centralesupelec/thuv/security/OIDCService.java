@@ -45,13 +45,14 @@ public class OIDCService {
             DecodedJWT jwt = JWT.decode(oidcToken);
             this.verifyToken(jwt, 0);
 
-            String email = jwt.getClaim("preferred_username").asString();
+            String username = jwt.getClaim("preferred_username").asString();
+            String email = jwt.getClaim("email").asString();
             String name = jwt.getClaim("given_name").asString();
             String lastName = jwt.getClaim("family_name").asString();
 
             // FindorCreate user
 
-            User user = myUserDetailsService.upsertUser(email, name, lastName);
+            User user = myUserDetailsService.upsertUser(new String[]{username, email}, name, lastName);
             List<String> roles = (List<String>) jwt.getClaim("realm_access").asMap().get("roles");
             if (roles.contains("teacher")) {
                 myUserDetailsService.ensureTeacher(user);
