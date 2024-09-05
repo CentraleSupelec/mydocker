@@ -21,7 +21,7 @@ import java.util.Collection;
 @Primary
 @Service
 public class MyUserDetailsService implements UserDetailsService {
-    private static final Logger logger = LoggerFactory.getLogger(UserDetailsService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MyUserDetailsService.class);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
