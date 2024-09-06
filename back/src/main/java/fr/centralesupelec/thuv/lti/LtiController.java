@@ -137,6 +137,7 @@ public class LtiController {
             @RequestHeader("origin") String origin,
             HttpSession session
     ) {
+        logger.debug("Lti token : {}", idToken);
         DecodedJWT jwt = this.ltiService.getValidatedJWT(idToken, state, origin, session);
 
         User user = myUserDetailsService.upsertUser(
