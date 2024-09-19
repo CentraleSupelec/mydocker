@@ -135,9 +135,6 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 	}
 	one := uint64(1)
 	spec := swarm.ServiceSpec{
-		Mode: swarm.ServiceMode{
-			ReplicatedJob: &swarm.ReplicatedJob{},
-		},
 		TaskTemplate: swarm.TaskSpec{
 			RestartPolicy: &swarm.RestartPolicy{
 				Condition:   "on-failure",

@@ -254,9 +254,6 @@ func doSaveData(dockerClient *client.Client, request *pb.SaveDataRequest) error 
 	one := uint64(1)
 	userDir := fmt.Sprintf("%s-%s", strings.Split(request.GetUserEmail(), "@")[0], request.GetUserID())
 	spec := swarm.ServiceSpec{
-		Mode: swarm.ServiceMode{
-			ReplicatedJob: &swarm.ReplicatedJob{},
-		},
 		TaskTemplate: swarm.TaskSpec{
 			Placement: &swarm.Placement{
 				Constraints: []string{fmt.Sprintf("node.id==%s", nodeId)},
