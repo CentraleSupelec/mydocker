@@ -35,4 +35,5 @@
     <include file="changelogs/28.add_student_volume.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/29.add_storage_backend.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/30.rename_mydocker_variables.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/31.add-username.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -8,14 +8,16 @@ services:
     environment:
       POSTGRES_USER: thuv
       POSTGRES_PASSWORD: password
+      TEST_DB: thuvtest
     volumes:
-      - $PWD/docker/citext.sql:/docker-entrypoint-initdb.d/citext.sql
+      - $PWD/docker/setup.sh:/docker-entrypoint-initdb.d/setup.sh
       - db-data:/var/lib/postgresql/data
 
   cas:
     image: apereo/cas:7.0.1
     environment:
       CAS_SERVICE_REGISTRY_CORE_INIT_FROM_JSON: "true"
+      CAS_LOGOUT_FOLLOW_SERVICE_REDIRECTS: "true"
       SERVER_SSL_ENABLED: "false"
     volumes:
       - $PWD/docker/cas-service-1.json:/tmp/cas/cas-service-1.json

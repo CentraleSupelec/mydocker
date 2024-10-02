@@ -141,6 +141,7 @@ public class LtiController {
         DecodedJWT jwt = this.ltiService.getValidatedJWT(idToken, state, origin, session);
 
         User user = myUserDetailsService.upsertUser(
+                null,
                 jwt.getClaim("email").asString(),
                 jwt.getClaim("given_name").asString(),
                 jwt.getClaim("family_name").asString()

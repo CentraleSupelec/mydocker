@@ -26,6 +26,12 @@ public class UserMapper {
                 .setEmail(
                         user.getEmail()
                 )
+                .setUsername(
+                        user.getUsername()
+                )
+                .setEnabled(
+                        user.getEnabled()
+                )
                 .setRole(
                         user.getRoles().stream().findAny().orElseGet(Role::new).getName()
                 );
@@ -36,12 +42,18 @@ public class UserMapper {
         .setEmail(
                 updateUserDto.getEmail()
         )
+        .setUsername(
+                user.getUsername()
+        )
         .setLastname(
                 updateUserDto.getLastname()
         )
         .setName(
                 updateUserDto.getName()
         );
+        if (updateUserDto.getEnabled() != null) {
+            user.setEnabled(updateUserDto.getEnabled());
+        }
         user.getRoles().clear();
         user.getRoles().add(
             roleRepository.getByName(

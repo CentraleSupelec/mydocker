@@ -15,4 +15,5 @@ public class UpdateUserDto {
     private String lastname;
     @Pattern(regexp = "ROLE_TEACHER|ROLE_ADMIN")
     private String role;
+    private Boolean enabled;
 }

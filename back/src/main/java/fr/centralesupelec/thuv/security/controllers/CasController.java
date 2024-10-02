@@ -122,7 +122,7 @@ public class CasController {
 
             // FindorCreate user
 
-            User user = myUserDetailsService.upsertUser(email, name, lastName);
+            User user = myUserDetailsService.upsertUser(null, email, name, lastName);
 
             String jwtToken = jwtTokenProvider
                     .generateToken(

@@ -52,7 +52,7 @@ public class OIDCService {
 
             // FindorCreate user
 
-            User user = myUserDetailsService.upsertUser(new String[]{email, username}, name, lastName);
+            User user = myUserDetailsService.upsertUser(username, email, name, lastName);
             List<String> roles = (List<String>) jwt.getClaim("realm_access").asMap().get("roles");
             if (roles.contains("teacher")) {
                 myUserDetailsService.ensureTeacher(user);

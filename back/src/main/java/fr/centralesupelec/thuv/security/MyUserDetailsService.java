@@ -1,9 +1,11 @@
 package fr.centralesupelec.thuv.security;
 
+import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.RoleRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collection;
+import java.util.*;
 
 @Primary
 @Service
@@ -34,34 +33,169 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = userRepository
-                .findByEmail(s)
+                .findByUsername(s)
                 .orElseThrow(
                         () -> new UsernameNotFoundException("User " + s + " not found !")
                 );
         return new MyUserDetails(user.getRoles(), user.getEmail(), user.getId());
     }
 
-    public User upsertUser(String email, String name, String lastName) {
-        return this.upsertUser(new String[]{email}, name, lastName);
+    public User findUser(String username, String email) throws UserUpsertException {
+        if (username == null) {
+            logger.debug(String.format("username is null, searching only for email '%s'", email));
+            List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
+            logger.debug(String.format("Found %d users with email '%s'", usersWithCorrectEmail.size(), email));
+            if (usersWithCorrectEmail.size() > 1) {
+                throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
+            }
+            Optional<User> userWithEmailAsUsername = userRepository.findByEnabledTrueAndUsername(email);
+            logger.debug(String.format(
+                    "Found user with username '%s': %s",
+                    email,
+                    userWithEmailAsUsername.orElse(null)
+            ));
+            if (
+                    userWithEmailAsUsername.isPresent()
+                            && usersWithCorrectEmail.size() == 1
+                            && !userWithEmailAsUsername.get().equals(usersWithCorrectEmail.get(0))
+            ) {
+                usersWithCorrectEmail.forEach(user -> {
+                    user.setEnabled(false);
+                    if (StringUtils.isBlank(user.getName())) {
+                        user.setName("placeholder");
+                    }
+                    if (StringUtils.isBlank(user.getLastname())) {
+                        user.setLastname("placeholder");
+                    }
+                    userRepository.save(user);
+                });
+                userWithEmailAsUsername.get().setEmail(email);
+                return userWithEmailAsUsername.get();
+            }
+            if (usersWithCorrectEmail.size() == 1) {
+                return usersWithCorrectEmail.get(0);
+            }
+            User user = userWithEmailAsUsername.orElse((new User()).setUsername(email));
+            user.setEmail(email);
+            return user;
+        }
+        Optional<User> userWithCorrectUsername = userRepository.findByEnabledTrueAndUsername(username);
+        logger.debug(String.format(
+                "User with correct username '%s' : %s ", username,userWithCorrectUsername.orElse(null)
+        ));
+        Optional<User> userWithEmailAsUsername = userRepository.findByEnabledTrueAndUsername(email);
+        logger.debug(String.format(
+                "User with email as username '%s' : %s ", email, userWithEmailAsUsername.orElse(null)
+        ));
+        List<User> usersWithUsernameAsEmail = userRepository.findByEnabledTrueAndEmail(username);
+        logger.debug(String.format(
+                "Found %d users with username '%s' as email", usersWithUsernameAsEmail.size(), email
+        ));
+        List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
+        logger.debug(String.format("Found %d users with email '%s'", usersWithCorrectEmail.size(), email));
+        if (usersWithCorrectEmail.size() > 1) {
+            throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
+        }
+        if (usersWithUsernameAsEmail.size() > 1) {
+            throw new UserUpsertException(String.format("More than one user found for email '%s'", username));
+        }
+        if (userWithCorrectUsername.isPresent()) {
+            userWithEmailAsUsername.ifPresent(user -> {
+                logger.debug(String.format("Disabling user with email as username %s ", user));
+                if (user.equals(userWithCorrectUsername.get())) {
+                    return;
+                }
+                user.setEnabled(false);
+                if (StringUtils.isBlank(user.getEmail())) {
+                    user.setEmail(email);
+                }
+                if (StringUtils.isBlank(user.getName())) {
+                    user.setName("placeholder");
+                }
+                if (StringUtils.isBlank(user.getLastname())) {
+                    user.setLastname("placeholder");
+                }
+                userRepository.save(user);
+            });
+            usersWithCorrectEmail.forEach(user -> {
+                if (user.equals(userWithCorrectUsername.get())) {
+                    return;
+                }
+                logger.debug(String.format("Disabling user with correct email %s ", user));
+                user.setEnabled(false);
+                if (StringUtils.isBlank(user.getEmail())) {
+                    user.setEmail(email);
+                }
+                if (StringUtils.isBlank(user.getName())) {
+                    user.setName("placeholder");
+                }
+                if (StringUtils.isBlank(user.getLastname())) {
+                    user.setLastname("placeholder");
+                }
+                userRepository.save(user);
+            });
+            usersWithUsernameAsEmail.forEach(user -> {
+                if (user.equals(userWithCorrectUsername.get())) {
+                    return;
+                }
+                logger.debug(String.format("Disabling user with username as email %s ", user));
+                user.setEnabled(false);
+                if (StringUtils.isBlank(user.getEmail())) {
+                    user.setEmail(email);
+                }
+                if (StringUtils.isBlank(user.getName())) {
+                    user.setName("placeholder");
+                }
+                if (StringUtils.isBlank(user.getLastname())) {
+                    user.setLastname("placeholder");
+                }
+                userRepository.save(user);
+            });
+            User user = userWithCorrectUsername.get();
+            user.setEmail(email);
+            logger.debug(String.format("Found user with username '%s': %s", username, user));
+            return user;
+        }
+        HashSet<User> usersInDb = new HashSet<>();
+        if (userWithEmailAsUsername.isPresent()) {
+            usersInDb.add(userWithEmailAsUsername.get());
+        }
+        if (usersWithCorrectEmail.size() == 1) {
+            usersInDb.add(usersWithCorrectEmail.get(0));
+        }
+        if (usersWithUsernameAsEmail.size() == 1) {
+            usersInDb.add(usersWithUsernameAsEmail.get(0));
+        }
+
+        if (usersInDb.size() > 1) {
+            throw new UserUpsertException(String.format(
+                    "Found %d users with matching username '%s' and with matching email '%s'",
+                    usersInDb.size(), username, email
+            ));
+        }
+        if (usersWithCorrectEmail.size() == 1) {
+            User user = usersWithCorrectEmail.get(0);
+            logger.debug(String.format("Updating username for user %s to %s ", user, username));
+            user.setUsername(username);
+            return user;
+        }
+        if (usersWithUsernameAsEmail.size() == 1) {
+            User user = usersWithUsernameAsEmail.get(0);
+            logger.debug(String.format("Updating username for user %s to %s ", user, username));
+            user.setUsername(username);
+            return user;
+        }
+        User user = userWithEmailAsUsername.orElse(new User());
+        user.setEmail(email).setUsername(username);
+        return user;
     }
 
-    public User upsertUser(String[] emails, String name, String lastName) {
-        List<User> users = userRepository.findByEmailIn(Arrays.stream(emails).toList());
-        logger.debug(
-                "Found users {} for emails {}",
-                Arrays.toString(users.stream().map(User::getId).toArray()),
-                Arrays.toString(emails)
-        );
-        User user;
-        if (users.size() > 1) {
-            logger.error("Multiple users found with emails {}, using the first one", Arrays.toString(emails));
-            user = users.get(0);
-        } else if (users.size() == 1) {
-            user = users.get(0);
-            logger.debug("Upserting user {}", user.getId());
-        } else {
+    public User upsertUser(String username, String email, String name, String lastName) {
+        User user = null;
+        try {
+            user = this.findUser(username, email);
+        } catch (Exception e) {
             user = new User();
-            user.setEmail(emails[0]);
         }
         // Update with latest informations
         user.setName(name);

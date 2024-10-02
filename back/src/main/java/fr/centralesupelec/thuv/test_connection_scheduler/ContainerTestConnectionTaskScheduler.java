@@ -5,6 +5,7 @@ import fr.centralesupelec.thuv.test_connection_scheduler.dtos.ContainerScheduled
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class ContainerTestConnectionTaskScheduler {
     private final Set<ContainerScheduledDto> containerScheduledDtos = Collections.synchronizedSet(new HashSet<>());
 
     @Scheduled(fixedRate = 1000)
+    @Profile("!test")
     public void scheduleConnectionTest() {
         LocalDateTime secondsAgo = LocalDateTime.now().minusSeconds(
                 containerTestParameterConfiguration.getTimeInSecondBetweenTwoConnectionsTry()

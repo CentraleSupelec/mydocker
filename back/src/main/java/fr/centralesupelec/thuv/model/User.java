@@ -5,12 +5,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.ToString;
 
 import java.util.*;
 
 @Entity
 @Table(name = "users", indexes = {
-        @Index(columnList = "email", unique = true)
+        @Index(columnList = "username", unique = true)
 })
 @Data
 @EqualsAndHashCode(of = {"id"})
@@ -24,10 +25,16 @@ public class User {
     private String email;
 
     @NotBlank
+    @Column(columnDefinition = "CITEXT")
+    private String username;
+
+    @NotBlank
     private String name;
 
     @NotBlank
     private String lastname;
+
+    private Boolean enabled = true;
 
     public Set<UserCourse> getUserCourses() {
         return userCourses;
@@ -36,6 +43,7 @@ public class User {
     /*
      * Relationships
      */
+    @ToString.Exclude
     @OneToMany(
         cascade = { CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE },
         fetch = FetchType.LAZY,
@@ -56,6 +64,7 @@ public class User {
     )
     private Collection<Role> roles = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(
         fetch = FetchType.LAZY,
         mappedBy = "creator",
@@ -97,6 +106,7 @@ public class User {
         userCourse.setUser(null);
     }
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<ActivityLogRecord> logs = new ArrayList<>();
 

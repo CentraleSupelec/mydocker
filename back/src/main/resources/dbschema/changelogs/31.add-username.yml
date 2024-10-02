@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1725904633745-5
+      author: pdesgarets (generated)
+      changes:
+        - renameColumn:
+            oldColumnName: email
+            newColumnName: username
+            tableName: users
+  - changeSet:
+      id: 1725904680938-5
+      author: pdesgarets (generated)
+      changes:
+        - addColumn:
+            columns:
+              - column:
+                  name: email
+                  type: CITEXT
+            tableName: users
+  - changeSet:
+      id: 1725904680938-7
+      author: pdesgarets (generated)
+      changes:
+        - addColumn:
+            columns:
+              - column:
+                  name: enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  value: true
+            tableName: users
+  - changeSet:
+      id: 1725904680938-6
+      author: pdesgarets (generated)
+      changes:
+        - addUniqueConstraint:
+            columnNames: username
+            constraintName: UKr43af9ap4edm43mmtq01oddj6
+            tableName: users
+  - changeSet:
+      id: 1725904680938-8
+      author: pdesgarets (generated)
+      changes:
+        - dropUniqueConstraint:
+            constraintName: UK6dotkott2kjsp8vw4d0m25fb7
+            tableName: users

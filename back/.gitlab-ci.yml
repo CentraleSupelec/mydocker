@@ -1,28 +1,42 @@
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2"
 
-image: openjdk:17
-
-build_job:
-  stage: build
-  tags:
-    - docker
-  script:
-    - ./mvnw clean compile -DskipTests
-  artifacts:
-    expire_in: 1 hour
-    paths:
-      - target/
-      - .m2/
+image: eclipse-temurin:17
 
 lint:
-  stage: test
   tags:
     - docker
-  dependencies:
-    - build_job
   script:
     - ./mvnw checkstyle:check
+  except:
+    - tags
+    - master
+
+test:
+  variables:
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydocker
+    SPRING_DATASOURCE_USERNAME: mydocker
+    SPRING_DATASOURCE_PASSWORD: mydocker
+  services:
+    - name: postgres:13
+      alias: postgres
+      entrypoint:
+      - /bin/sh
+      command:
+      - -c
+      - echo "CREATE EXTENSION citext;" > /docker-entrypoint-initdb.d/citext.sql && exec docker-entrypoint.sh postgres
+      variables:
+        POSTGRES_DB: mydocker
+        POSTGRES_USER: mydocker
+        POSTGRES_PASSWORD: mydocker
+  tags:
+    - docker
+  before_script:
+    - openssl genrsa -traditional -out src/main/resources/private_key.pem 4096
+    - openssl rsa -traditional -pubout -in src/main/resources/private_key.pem -out src/main/resources/public_key.pem
+  script:
+    - ./mvnw generate-sources
+    - ./mvnw test || { [ "$DEBUG" = "true" ] && sleep 3600; }
   except:
     - tags
     - master
@@ -31,8 +45,6 @@ lint:
   stage: deploy
   tags:
     - docker
-  dependencies:
-    - build_job
   script:
     - "[[ -z \"${CI_COMMIT_TAG}\" ]] && export VERSION=\"${CI_COMMIT_SHA}-SNAPSHOT\" || export VERSION=\"${CI_COMMIT_TAG}\""
     - "echo \"Setting version to: ${VERSION}\""
@@ -69,8 +81,3 @@ deploy_github:
     - gh release --repo CentraleSupelec/mydocker upload back-${CI_COMMIT_TAG} artifacts.zip
   tags:
     - docker
-
-stages:
-  - build
-  - test
-  - deploy
