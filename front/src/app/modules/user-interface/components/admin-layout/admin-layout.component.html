@@ -4,6 +4,7 @@
   </button>
   <span routerLink="/admin" style="cursor: pointer">MyDocker</span>
   <span class="spacer"></span>
+  <span class="mat-body" [matTooltip]="userInfo">{{ email }}</span>
   <button
     mat-icon-button
     routerLink="/"

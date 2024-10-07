@@ -37,9 +37,11 @@ export class UserFormComponent implements OnInit, OnDestroy, ControlValueAccesso
     formBuilder: FormBuilder,
   ) {
     this.userForm = formBuilder.group({
-      email: ['', Validators.email],
+      username: ['', Validators.required],
       name: ['', Validators.required],
       lastname: ['', Validators.required],
+      email: ['', [Validators.email, Validators.required]],
+      enabled: [true],
       role: 'ROLE_TEACHER'
     })
   }
@@ -72,9 +74,11 @@ export class UserFormComponent implements OnInit, OnDestroy, ControlValueAccesso
 
   writeValue(obj: any): void {
     this.userForm.setValue({
-      email: obj?.email || '',
+      username: obj?.username || '',
       name: obj?.name || '',
       lastname: obj?.lastname || '',
+      email: obj?.email || '',
+      enabled: obj?.enabled ?? true,
       role: obj?.role || 'ROLE_TEACHER'
     })
   }

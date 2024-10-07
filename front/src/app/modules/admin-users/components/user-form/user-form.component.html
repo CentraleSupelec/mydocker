@@ -1,7 +1,7 @@
 <div [formGroup]="userForm" fxLayout="column" class="mat-elevation-z3 form-container">
   <mat-form-field>
-    <mat-label>Email</mat-label>
-    <input matInput formControlName="email">
+    <mat-label>Username</mat-label>
+    <input matInput formControlName="username">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Nom</mat-label>
@@ -11,6 +11,13 @@
     <mat-label>Prénom</mat-label>
     <input matInput formControlName="name">
   </mat-form-field>
+  <mat-form-field>
+    <mat-label>Email</mat-label>
+    <input matInput formControlName="email">
+  </mat-form-field>
+  <div>
+    <mat-slide-toggle formControlName="enabled">Activé</mat-slide-toggle>
+  </div>
   <mat-form-field>
     <mat-label>Role</mat-label>
     <mat-select formControlName="role">

@@ -7,6 +7,7 @@ export interface IJWTToken {
     jti: string;
     nbf: number;
     sub: string;
+    email: null | string;
     origin: TokenOrigin;
   };
   expirationDate: Date;

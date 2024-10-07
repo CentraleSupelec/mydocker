@@ -1,6 +1,7 @@
 <mat-toolbar color="primary">
   <span [routerLink]="'/'" style="cursor: pointer">MyDocker</span>
   <span class="spacer"></span>
+  <span class="mat-body" [matTooltip]="userInfo">{{ email }}</span>
   <a
     mat-icon-button
     routerLink="/admin"

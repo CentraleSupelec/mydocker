@@ -18,8 +18,8 @@ import { UserFormComponent } from './components/user-form/user-form.component';
 import { MatSelectModule } from "@angular/material/select";
 import { UserCreateComponent } from './components/user-create/user-create.component';
 import { UserEditComponent } from './components/user-edit/user-edit.component';
-import { ObservableSnackNotificationService } from "../utils/snack-notification/observable-snack-notification.service";
 import { SnackNotificationModule } from "../utils/snack-notification/snack-notification.module";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 
 @NgModule({
@@ -29,23 +29,24 @@ import { SnackNotificationModule } from "../utils/snack-notification/snack-notif
     UserCreateComponent,
     UserEditComponent
   ],
-  imports: [
-    CommonModule,
-    AdminUsersRoutingModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatSortModule,
-    FlexLayoutModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    FormsModule,
-    MatCardModule,
-    MatSelectModule,
-    SnackNotificationModule,
-  ]
+    imports: [
+        CommonModule,
+        AdminUsersRoutingModule,
+        MatTableModule,
+        MatPaginatorModule,
+        MatSortModule,
+        FlexLayoutModule,
+        MatButtonModule,
+        MatTooltipModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        ReactiveFormsModule,
+        FormsModule,
+        MatCardModule,
+        MatSelectModule,
+        SnackNotificationModule,
+        MatSlideToggleModule,
+    ],
 })
 export class AdminUsersModule { }

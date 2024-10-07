@@ -35,11 +35,20 @@
     </mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="username">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      Username
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" [title]="element.username">
+      {{ element.username }}
+    </mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="email">
     <mat-header-cell *matHeaderCellDef mat-sort-header>
       Email
     </mat-header-cell>
-    <mat-cell *matCellDef="let element">
+    <mat-cell *matCellDef="let element" [title]="element.email">
       {{ element.email }}
     </mat-cell>
   </ng-container>
@@ -48,25 +57,40 @@
     <mat-header-cell *matHeaderCellDef mat-sort-header>
       Prénom
     </mat-header-cell>
-    <mat-cell *matCellDef="let element">
+    <mat-cell *matCellDef="let element" [title]="element.name">
       {{ element.name }}
     </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="lastname">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>
+    <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-secondToLast">
       Nom
     </mat-header-cell>
-    <mat-cell *matCellDef="let element">
+    <mat-cell *matCellDef="let element" [title]="element.lastname">
       {{ element.lastname }}
     </mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="enabled">
+    <mat-header-cell *matHeaderCellDef fxFlex="70px" fxLayoutAlign="center center">
+      Activé
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" fxFlex="70px" fxLayoutAlign="center center">
+      <div *ngIf="element.enabled; then enabled else disabled"></div>
+      <ng-template #enabled>
+        <mat-icon matTooltip="Activé">check</mat-icon>
+      </ng-template>
+      <ng-template #disabled>
+        <mat-icon matTooltip="Désactivé">close</mat-icon>
+      </ng-template>
+    </mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="action">
-    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center" class="mat-column-last">
       <a mat-raised-button color="primary" [routerLink]="'./new'">
         <mat-icon>person_add_alt</mat-icon>
-        Créer un utilisateur
+        Créer
       </a>
     </mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
