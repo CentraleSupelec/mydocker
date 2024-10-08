@@ -33,7 +33,7 @@ public class JwtTokenProvider {
         verifier = JWT.require(algorithmHS256).build();
     }
 
-    public String generateToken(String username, TokenOrigin tokenOrigin) {
+    public String generateToken(String username, String email, TokenOrigin tokenOrigin) {
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
@@ -45,6 +45,7 @@ public class JwtTokenProvider {
                 .withExpiresAt(expiryDate)
                 .withIssuedAt(now)
                 .withSubject(username)
+                .withClaim("email", email)
                 .withClaim("origin", tokenOrigin.toString())
                 .sign(algorithmHS256);
     }

@@ -154,7 +154,7 @@ public class LtiController {
 
         String localToken = jwtTokenProvider
                 .generateToken(
-                        user.getEmail(), TokenOrigin.LTI
+                        user.getUsername(), user.getEmail(), TokenOrigin.LTI
                 );
 
         activityLogger.log(LogAction.USER_LOGIN_LTI, user);

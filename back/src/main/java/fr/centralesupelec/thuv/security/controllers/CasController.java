@@ -126,7 +126,7 @@ public class CasController {
 
             String jwtToken = jwtTokenProvider
                     .generateToken(
-                            user.getEmail(), TokenOrigin.CAS
+                            user.getUsername(), user.getEmail(), TokenOrigin.CAS
                     );
             logger.debug("JWT token: " + jwtToken);
             activityLogger.log(LogAction.USER_LOGIN_CAS, user);

@@ -58,7 +58,7 @@ public class OIDCService {
                 myUserDetailsService.ensureTeacher(user);
             }
 
-            String jwtToken = jwtTokenProvider.generateToken(user.getEmail(), TokenOrigin.OIDC);
+            String jwtToken = jwtTokenProvider.generateToken(user.getUsername(), user.getEmail(), TokenOrigin.OIDC);
             logger.debug("JWT token: " + jwtToken);
             activityLogger.log(LogAction.USER_LOGIN_OIDC, user);
             return jwtToken;
