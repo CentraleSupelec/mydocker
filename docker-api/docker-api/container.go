@@ -23,18 +23,19 @@ import (
 type StorageBackend string
 
 const (
-	SAVE_IMAGE                               = "instrumentisto/rsync-ssh:latest"
-	CEPHFS_DRIVER                            = "cephfs"
-	CADDY_KEY                                = "caddy_%d"
-	CADDY_REVERSE_PROXY_KEY                  = "caddy_%d.reverse_proxy"
-	CADDY_REVERSE_PROXY_VALUE                = "{{ upstreams %s }}"
-	PORT_TO_CADDY_INDEX_KEY                  = "port_%d_caddy_index"
-	MYDOCKER_USERNAME                        = "MYDOCKER_USERNAME"
-	MYDOCKER_PASSWORD                        = "MYDOCKER_PASSWORD"
-	NFS                       StorageBackend = "NFS"
-	LOCAL                     StorageBackend = "LOCAL"
-	RBD                       StorageBackend = "RBD"
-	ON_FAILURE                               = "on-failure"
+	SAVE_IMAGE                                                = "instrumentisto/rsync-ssh:latest"
+	CEPHFS_DRIVER                                             = "cephfs"
+	CADDY_KEY                                                 = "caddy_%d"
+	CADDY_REVERSE_PROXY_KEY                                   = "caddy_%d.reverse_proxy"
+	CADDY_REVERSE_PROXY_VALUE                                 = "{{ upstreams %s }}"
+	CADDY_REVERSE_PROXY_STREAM_CLOSE_DELAY_KEY                = "caddy_%d.reverse_proxy.stream_close_delay"
+	PORT_TO_CADDY_INDEX_KEY                                   = "port_%d_caddy_index"
+	MYDOCKER_USERNAME                                         = "MYDOCKER_USERNAME"
+	MYDOCKER_PASSWORD                                         = "MYDOCKER_PASSWORD"
+	NFS                                        StorageBackend = "NFS"
+	LOCAL                                      StorageBackend = "LOCAL"
+	RBD                                        StorageBackend = "RBD"
+	ON_FAILURE                                                = "on-failure"
 )
 
 type VisibleError struct {
@@ -523,6 +524,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 			labels[fmt.Sprintf(CADDY_KEY, caddyIndex)] = port.Hostname
 			labels[fmt.Sprintf(CADDY_REVERSE_PROXY_KEY, caddyIndex)] = fmt.Sprintf(CADDY_REVERSE_PROXY_VALUE, strconv.FormatUint(uint64(port.PortToMap), 10))
 			labels[fmt.Sprintf(PORT_TO_CADDY_INDEX_KEY, port.PortToMap)] = strconv.FormatInt(int64(caddyIndex), 10)
+			labels[fmt.Sprintf(CADDY_REVERSE_PROXY_STREAM_CLOSE_DELAY_KEY, caddyIndex)] = c.CaddyStreamCloseDelay
 
 			if c.CaddyTlsInternal {
 				labels[fmt.Sprintf(CADDY_KEY+".tls", caddyIndex)] = "internal"

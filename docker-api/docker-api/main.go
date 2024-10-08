@@ -65,6 +65,7 @@ type config struct {
 	CaddyTlsInternal        bool
 	CaddyTlsCertificatePath string
 	CaddyTlsKeyPath         string
+	CaddyStreamCloseDelay   string
 	StudentVolumeSize       int
 }
 
@@ -311,6 +312,7 @@ func main() {
 	viper.SetDefault("CaddyTlsInternal", false)
 	viper.SetDefault("CaddyTlsCertificatePath", "/etc/ssl/caddy_reverse_proxy/cert.pem")
 	viper.SetDefault("CaddyTlsKeyPath", "/etc/ssl/caddy_reverse_proxy/key.pem")
+	viper.SetDefault("CaddyStreamCloseDelay", "4h")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Panicf("Failed to find config file: %v", err)
