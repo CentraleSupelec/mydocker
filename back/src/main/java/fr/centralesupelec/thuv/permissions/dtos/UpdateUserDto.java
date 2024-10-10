@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Pattern;
 public class UpdateUserDto {
     @Email
     private String email;
+    @Email
+    private String username;
     @NotEmpty
     private String name;
     @NotEmpty

@@ -43,7 +43,7 @@ public class UserMapper {
                 updateUserDto.getEmail()
         )
         .setUsername(
-                user.getUsername()
+                updateUserDto.getUsername()
         )
         .setLastname(
                 updateUserDto.getLastname()
