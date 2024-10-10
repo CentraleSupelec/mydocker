@@ -81,7 +81,7 @@ public class UserController {
     public void createUser(
             @RequestBody @Valid UpdateUserDto updateUserDto
     ) {
-        if (userRepository.existsByEmail(updateUserDto.getEmail())) {
+        if (userRepository.existsByUsername(updateUserDto.getUsername())) {
             throw new UserAlreadyExistException();
         }
         User user = new User();

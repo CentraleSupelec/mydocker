@@ -78,10 +78,10 @@ public class ContainerController {
                 .setMetadata(
                         Metadata.newBuilder()
                                 .putTags("courseId", String.valueOf(course.getId()))
-                                .putTags("email", String.valueOf(user.getEmail()))
+                                .putTags("email", String.valueOf(user.getUsername()))
                                 .build()
                 )
-                .setUserEmail(user.getEmail())
+                .setUserEmail(user.getUsername())
                 .build();
         saveDataService.sendSaveData(saveDataRequest);
         return ResponseEntity.status(HttpStatus.OK).build();

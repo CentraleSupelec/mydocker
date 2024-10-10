@@ -112,7 +112,7 @@ public class ContainerRequestCreatorService {
                 .putTags("courseId", String.valueOf(course.getId()))
                 .putTags("courseTitle", course.getTitle())
                 .putTags("userId", String.valueOf(user.getId()))
-                .putTags("email", String.valueOf(user.getEmail()));
+                .putTags("email", String.valueOf(user.getUsername()));
 
         Long deletionTime = containerUtilsService.computeDeletionTime(courseSession);
         if (deletionTime != null) {

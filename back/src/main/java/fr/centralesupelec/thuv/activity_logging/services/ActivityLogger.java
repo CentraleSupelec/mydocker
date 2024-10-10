@@ -38,7 +38,7 @@ public class ActivityLogger {
         ActivityLogRecord record = new ActivityLogRecord()
                 .setAction(action)
                 .setUser(user)
-                .setUserEmail(user.getEmail())
+                .setUserEmail(user.getUsername())
                 .setModelName(logModelName)
                 .setModelId(modelId)
                 ;

@@ -37,7 +37,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 .orElseThrow(
                         () -> new UsernameNotFoundException("User " + s + " not found !")
                 );
-        return new MyUserDetails(user.getRoles(), user.getEmail(), user.getId());
+        return new MyUserDetails(user.getRoles(), user.getUsername(), user.getId());
     }
 
     public User findUser(String username, String email) throws UserUpsertException {

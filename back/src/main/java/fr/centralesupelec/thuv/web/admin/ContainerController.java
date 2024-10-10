@@ -52,7 +52,7 @@ public class ContainerController {
                 .setForceRecreate(forceRecreate)
                 .setCourseID(String.valueOf(course.getId()))
                 .setCourseName(course.getTitle())
-                .setUserName(user.getEmail())
+                .setUserName(user.getUsername())
                 .setPort(
                         RequestPort.newBuilder()
                                 .setPortToMap(ADMIN_PORT)

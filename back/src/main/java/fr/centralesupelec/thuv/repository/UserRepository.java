@@ -23,5 +23,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @NotBlank String email, Collection<String> rolesName, Pageable pageable
     );
     Page<User> findDistinctByRolesNameIn(Collection<String> rolesName, Pageable pageable);
-    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
 }
