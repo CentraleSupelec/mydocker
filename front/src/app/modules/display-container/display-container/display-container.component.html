@@ -47,5 +47,18 @@
 </ng-template>
 
 <ng-template #elseBlock>
-  <p>Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.</p>
+  <p>Le démarrage de votre environnement a échoué. Trois causes
+    principales sont à envisager:
+    <ul>
+      <li>Le téléchargement vers myDocker de l'<strong>image
+	docker<strong> (les logiciels) de l'environnement a pris trop
+	de temps. Ce téléchargement est incrémental et mémorisé d'une
+	fois sur l'autre. Vous pouvez réessayer quelques fois de
+	relancer l'environnement en rechargeant cette page.
+      <li>L'image docker est mal configurée. Nous vous recommandons
+	alors de contacter les auteurs de l'environnement.
+      <li>Tous les serveurs alloués à cette environnement sont
+	actuellement utilisés. Vous pourrez réessayer ultérieurement.
+    </ul>
+  </p>
 </ng-template>
