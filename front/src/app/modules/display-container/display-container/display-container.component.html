@@ -51,8 +51,20 @@
     Impossible de démarrer, car <span [innerHTML]="container | renderCreationError"></span>
   </p>
   <ng-template #noCreationError>
-    <p>
-      Tous les serveurs alloués à cette activité sont actuellement utilisés. Nous ne pouvons pas vous en allouer un tout de suite.
+    <p>Le démarrage de votre environnement a échoué. Trois causes
+      principales sont à envisager:
     </p>
+    <ul>
+      <li>Le téléchargement vers MyDocker de l'<strong>image</strong> (les logiciels) de l'environnement a pris trop
+        de temps. Ce téléchargement est incrémental et mémorisé d'une
+        fois sur l'autre. Vous pouvez réessayer quelques fois de
+        relancer l'environnement en rechargeant cette page.</li>
+      <li>L'environnement est mal configuré. Nous vous recommandons
+        alors de contacter les auteurs de l'environnement.
+      </li>
+      <li>Tous les serveurs alloués à cet environnement sont
+        actuellement utilisés. Vous pourrez réessayer ultérieurement.
+      </li>
+    </ul>
   </ng-template>
 </ng-template>
