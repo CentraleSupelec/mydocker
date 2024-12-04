@@ -101,10 +101,10 @@ public class MyUserDetailsService implements UserDetailsService {
         }
         if (userWithCorrectUsername.isPresent()) {
             userWithEmailAsUsername.ifPresent(user -> {
-                logger.debug(String.format("Disabling user with email as username %s ", user));
                 if (user.equals(userWithCorrectUsername.get())) {
                     return;
                 }
+                logger.debug(String.format("Disabling user with email as username %s ", user));
                 user.setEnabled(false);
                 if (StringUtils.isBlank(user.getEmail())) {
                     user.setEmail(email);
