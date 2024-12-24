@@ -5,3 +5,7 @@
 .mat-form-field-appearance-outline.mat-form-field-disabled {
   color: black !important;
 }
+
+.shutdown-paragraph {
+  text-align: center;
+}

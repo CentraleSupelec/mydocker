@@ -28,6 +28,7 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { LogDialogModule } from "../log-dialog/log-dialog.module";
 import { CountdownComponent } from './components/countdown/countdown.component';
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 
 @NgModule({
@@ -61,6 +62,7 @@ import { CountdownComponent } from './components/countdown/countdown.component';
         MatTabsModule,
         MatTooltipModule,
         LogDialogModule,
+        MatProgressBarModule,
     ],
   providers: [
     {

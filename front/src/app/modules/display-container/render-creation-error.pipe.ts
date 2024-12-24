@@ -35,7 +35,12 @@ export class RenderCreationErrorPipe implements PipeTransform {
           ["/shell"],
           {queryParams: {course_id: container.errorParams["courseId"]}},
         ).toString()}">${courseTitle}</a> démarré ${formattedDate} utilise actuellement le répertoire personnel. Il est nécessaire de l'éteindre au préalable.`;
+      default:
+        if (container.creationError?.startsWith("No such image:")) {
+          return `le cours est configuré avec un modèle introuvable. Contactez le responsable du cours.`;
+        } else {
+          return `le cours a rencontré un problème : "${container.creationError}"`;
+        }
     }
-    return container.creationError;
   }
 }

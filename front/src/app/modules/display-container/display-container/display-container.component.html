@@ -52,7 +52,7 @@
     Impossible de démarrer, car <span [innerHTML]="container | renderCreationError"></span>
   </p>
   <ng-template #noCreationError>
-    <p>Le démarrage de votre environnement a échoué. Trois causes
+    <p>Le démarrage de votre environnement a échoué (état : "{{ ContainerSwarmStateMessages[container?.state ?? ContainerSwarmState.UNKNOWN] }}"). Trois causes
       principales sont à envisager:
     </p>
     <ul>
@@ -68,4 +68,9 @@
       </li>
     </ul>
   </ng-template>
+  <p class="shutdown-paragraph">
+    <button mat-raised-button color="warn" (click)="onDeleteEnv()">
+      Éteindre l'environnement
+    </button>
+  </p>
 </ng-template>

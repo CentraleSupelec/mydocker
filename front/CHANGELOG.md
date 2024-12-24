@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 ### Added
+- Add container swarm state and a progress bar for container startup
+- Add a button to delete a container if it is KO
 - Add docker environment to deploy / dev the application
 
 ## 2.27.3

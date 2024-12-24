@@ -1,8 +1,13 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { interval, Subject } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
-import { filter, mergeMap, switchMap, takeUntil, tap } from "rxjs/operators";
-import { IContainer } from "../../interfaces/container";
+import { mergeMap, takeUntil } from "rxjs/operators";
+import {
+  ContainerStatus,
+  ContainerSwarmState,
+  ContainerSwarmStateMessages,
+  IContainer,
+} from "../../interfaces/container";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { ConfirmDialogService } from "../../../utils/confirm-dialog/confirm-dialog.service";
 import { ISession } from "../../interfaces/session";
@@ -12,6 +17,18 @@ import { SnackNotificationService } from '../../../utils/snack-notification/snac
 import { DesktopNotificationService } from '../../../utils/services/desktop-notification.service';
 import { NgxPermissionsObject, NgxPermissionsService } from "ngx-permissions";
 import { Roles } from "../../../admin-users/interfaces/roles";
+
+
+const ContainerSwarmStateOrder = [
+  ContainerSwarmState.NEW,
+  ContainerSwarmState.PENDING,
+  ContainerSwarmState.ASSIGNED,
+  ContainerSwarmState.ACCEPTED,
+  ContainerSwarmState.PREPARING,
+  ContainerSwarmState.READY,
+  ContainerSwarmState.STARTING,
+  ContainerSwarmState.RUNNING,
+];
 
 @Component({
   selector: 'app-shell-access',
@@ -27,7 +44,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   @Input() userRedirect: string | undefined = undefined;
 
   container: IContainer | null = null;
-  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' = 'ask';
+  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' = 'ask';
+  step: number = 0;
+  stepMessage: string = '';
 
   private readonly stopInitPolling$: Subject<void> = new Subject<void>();
   private readonly stopShutdownPolling$: Subject<void> = new Subject<void>();
@@ -95,9 +114,19 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       container => {
         if (container) {
           this.container = container;
-          this.state = 'container_created';
-          this.stopInitPolling$.next();
-          this.setWarningTimeout();
+          const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
+          this.step =  index * 100 / ContainerSwarmStateOrder.length;
+          this.stepMessage = `${ContainerSwarmStateMessages[container.state ?? ContainerSwarmState.UNKNOWN]} (étape ${index + 1}/${ContainerSwarmStateOrder.length})`;
+          if (container.status === ContainerStatus.OK || (container.state === ContainerSwarmState.RUNNING && container.status !== ContainerStatus.CHECKING)) {
+            this.state = 'container_created';
+            this.stopInitPolling$.next();
+            this.setWarningTimeout();
+          } else if ([ContainerSwarmState.FAILED, ContainerSwarmState.REJECTED, ContainerSwarmState.SHUTDOWN].includes(container.state as ContainerSwarmState) || container.status === ContainerStatus.KO) {
+            this.state = 'container_created';
+            this.stopInitPolling$.next();
+          } else {
+            this.state = 'pending';
+          }
         }
       }
     )
@@ -211,11 +240,15 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       })
       .subscribe((confirm:boolean) => {
         if(confirm) {
-          this.containerApiService.shutdownContainer(this.sessionCourseOrCourse?.id).subscribe(() => {
-            this.startShutdownPolling();
-          });
+          this.deleteEnv();
         }
       });
+  }
+
+  deleteEnv() {
+    this.containerApiService.shutdownContainer(this.sessionCourseOrCourse?.id).subscribe(() => {
+      this.startShutdownPolling();
+    });
   }
 
   onTimerElapsed() {

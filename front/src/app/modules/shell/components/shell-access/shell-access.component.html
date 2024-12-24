@@ -18,6 +18,7 @@
         [container]="container"
         [displayOptions]="sessionCourseOrCourse?.displayOptions"
         [userRedirect]="userRedirect"
+        (deleteEnv)="deleteEnv()"
       ></app-display-container>
       <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="15px">
         <app-save-state
@@ -40,6 +41,10 @@
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_init'">
     <mat-spinner></mat-spinner>
     <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+  </div>
+  <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'pending'">
+    <mat-progress-bar mode="buffer" [value]="step"></mat-progress-bar>
+    <p style="margin-top: 10px">{{ stepMessage }}</p>
   </div>
 
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_shutdown'">

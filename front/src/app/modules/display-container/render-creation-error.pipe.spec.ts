@@ -72,7 +72,7 @@ describe("RenderCreationErrorPipe", () => {
         creationError: "unknown",
         errorParams: {},
       },
-      expected: "unknown",
+      expected: "le cours a rencontré un problème : \"unknown\"",
     },
   ];
   testCases.forEach(((testCase, index) => {

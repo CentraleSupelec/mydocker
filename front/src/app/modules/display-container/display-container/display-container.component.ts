@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { IContainer } from "../../shell/interfaces/container";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { ContainerSwarmState, ContainerSwarmStateMessages, IContainer } from "../../shell/interfaces/container";
 import { ClipboardSnackService } from "../../utils/snack-notification/clipboard-snack.service";
 import { ICourseDisplay } from "../../admin-course/interfaces/course-display";
 import { IContainerPort } from "../../shell/interfaces/container-port";
@@ -14,6 +14,7 @@ export class DisplayContainerComponent {
   @Input() container: IContainer | null = null;
   @Input() displayOptions: ICourseDisplay | undefined = undefined;
   @Input() userRedirect: string | undefined = 'USER_REDIRECT';
+  @Output() deleteEnv = new EventEmitter<void>();
 
   constructor(
     private readonly clipboardSnackService: ClipboardSnackService,
@@ -51,4 +52,11 @@ export class DisplayContainerComponent {
     }
     return this.displayOptions.displayPassword;
   }
+
+  onDeleteEnv(): void {
+    this.deleteEnv.emit();
+  }
+
+  public readonly ContainerSwarmState = ContainerSwarmState;
+  public readonly ContainerSwarmStateMessages = ContainerSwarmStateMessages;
 }
