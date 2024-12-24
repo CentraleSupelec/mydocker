@@ -1,13 +1,13 @@
 package fr.centralesupelec.thuv.service;
 
 import fr.centralesupelec.gRPC.ContainerResponse;
+import fr.centralesupelec.gRPC.ContainerStatusRequest;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.mappers.GrpcResponsePortToContainerPortDtoMapper;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
-import fr.centralesupelec.thuv.test_connection_scheduler.ContainerTestConnectionTaskScheduler;
-import fr.centralesupelec.thuv.test_connection_scheduler.dtos.ContainerScheduledDto;
+import fr.centralesupelec.thuv.storage.ContainerStorage;
 import io.grpc.stub.StreamObserver;
 import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
@@ -23,20 +23,27 @@ import java.util.stream.Collectors;
 public class ContainerResponseStreamObserver implements StreamObserver<ContainerResponse> {
     private static final Logger logger = LoggerFactory.getLogger(ContainerResponseStreamObserver.class);
 
-    private final ContainerTestConnectionTaskScheduler containerTestConnectionTaskScheduler;
     private final GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper;
     private final UserCourseRepository userCourseRepository;
     private final CourseRepository courseRepository;
+    private final ContainerStatusConfigureService containerStatusConfigureService;
+    private final ContainerStorage containerStorage;
 
     @Override
     public void onNext(ContainerResponse containerResponse) {
         ContainerDto containerDto = mapContainerResponseToContainer(containerResponse);
         saveUserPasswordInDb(containerResponse);
-        containerTestConnectionTaskScheduler.addContainerScheduledDto(
-                new ContainerScheduledDto()
-                    .setContainerDto(containerDto)
-                    .setUserId(containerResponse.getUserID())
-                    .setCourseId(containerResponse.getCourseID())
+        logger.debug(String.format(
+                "ContainerResponse received for courseId %s / userId %s ; containerDto is %s",
+                containerResponse.getCourseID(),
+                containerResponse.getUserID(),
+                containerDto
+        ));
+        containerStorage.addContainer(containerDto, containerResponse.getUserID(), containerResponse.getCourseID());
+        containerStatusConfigureService.configureContainerStatus(
+                containerResponse.getCourseID(),
+                containerResponse.getUserID(),
+                ContainerStatusRequest.Action.on
         );
     }
 

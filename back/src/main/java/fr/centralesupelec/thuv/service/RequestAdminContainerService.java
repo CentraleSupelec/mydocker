@@ -2,6 +2,7 @@ package fr.centralesupelec.thuv.service;
 
 import fr.centralesupelec.gRPC.AdminContainerRequest;
 import fr.centralesupelec.gRPC.AdminContainerResponse;
+import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
@@ -46,6 +47,7 @@ public class RequestAdminContainerService {
 
             public void onNext(AdminContainerResponse adminContainerResponse) {
                 ContainerDto containerDto = mapContainerResponseToContainer(adminContainerResponse);
+                containerDto.setStatus(ContainerStatusDto.OK);
                 containerStorage.addAdminContainer(
                         containerDto,
                         Long.valueOf(adminContainerResponse.getCourseID())

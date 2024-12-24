@@ -49,7 +49,12 @@ public class GrpcClient {
                             ) {
                                 @Override
                                 public void sendMessage(ReqT message) {
-                                    logger.debug("Sending message to gRPC: {}", message);
+                                    if (logger.isTraceEnabled()) {
+                                        Exception e = new Exception();
+                                        logger.trace("Sending message to gRPC: {}\n{}", message, e.getStackTrace());
+                                    } else {
+                                        logger.debug("Sending message to gRPC: {}", message);
+                                    }
                                     super.sendMessage(message);
                                 }
 

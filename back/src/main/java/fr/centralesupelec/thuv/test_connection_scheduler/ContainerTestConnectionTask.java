@@ -1,6 +1,8 @@
 package fr.centralesupelec.thuv.test_connection_scheduler;
 
+import fr.centralesupelec.gRPC.ContainerStatusRequest;
 import fr.centralesupelec.thuv.model.ConnectionType;
+import fr.centralesupelec.thuv.service.ContainerStatusConfigureService;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.dtos.ContainerPortDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
@@ -22,15 +24,29 @@ public class ContainerTestConnectionTask implements Runnable {
     private final ContainerTestParameterConfiguration containerTestParameterConfiguration;
     private final NodeIPRequestService nodeIPRequestService;
     private final TestSocket testSocket;
+    private final ContainerStatusConfigureService containerStatusConfigureService;
     @Override
 
     public void run() {
-        if (!StringUtils.isBlank(containerScheduledDto.getContainerDto().getCreationError())) {
+        if (containerScheduledDto.getContainerDto().getStatus() == ContainerStatusDto.KO) {
+            return;
+        }
+        // For "no suitable node", we want to wait for an available node to pop.
+        // If it never pops, the TestConnectionTask will mark the container status as KO.
+        if (
+                StringUtils.isNotBlank(containerScheduledDto.getContainerDto().getCreationError())
+                        && !containerScheduledDto.getContainerDto().getCreationError().contains("no suitable node")
+        ) {
             containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
             containerStorage.addContainer(
                     containerScheduledDto.getContainerDto(),
                     containerScheduledDto.getUserId(),
                     containerScheduledDto.getCourseId()
+            );
+            containerStatusConfigureService.configureContainerStatus(
+                    containerScheduledDto.getCourseId(),
+                    containerScheduledDto.getUserId(),
+                    ContainerStatusRequest.Action.off
             );
             return;
         }
@@ -46,10 +62,16 @@ public class ContainerTestConnectionTask implements Runnable {
             if (!StringUtils.isBlank(nodeIP)) {
                 containerScheduledDto.getContainerDto().setIp(nodeIP);
             }
+            containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.OK);
             containerStorage.addContainer(
                     containerScheduledDto.getContainerDto(),
                     containerScheduledDto.getUserId(),
                     containerScheduledDto.getCourseId()
+            );
+            containerStatusConfigureService.configureContainerStatus(
+                    containerScheduledDto.getCourseId(),
+                    containerScheduledDto.getUserId(),
+                    ContainerStatusRequest.Action.off
             );
         } else {
             if (containerScheduledDto.getNumberOfRetry() > maxConnectionRetry) {
@@ -61,6 +83,11 @@ public class ContainerTestConnectionTask implements Runnable {
                         containerScheduledDto.getContainerDto(),
                         containerScheduledDto.getUserId(),
                         containerScheduledDto.getCourseId()
+                );
+                containerStatusConfigureService.configureContainerStatus(
+                        containerScheduledDto.getCourseId(),
+                        containerScheduledDto.getUserId(),
+                        ContainerStatusRequest.Action.off
                 );
             } else {
                 logger.debug(

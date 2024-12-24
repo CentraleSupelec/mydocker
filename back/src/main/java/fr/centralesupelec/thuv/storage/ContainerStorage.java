@@ -5,33 +5,50 @@ import fr.centralesupelec.thuv.activity_logging.model.LogModelName;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
+import fr.centralesupelec.thuv.dtos.ContainerSwarmStateDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Optional;
 
 @Service
 public class ContainerStorage {
-    private final HashMap<String, ContainerDto> containers;
+    private static final Logger logger = LoggerFactory.getLogger(ContainerStorage.class);
+    private final ConcurrentHashMap<String, ContainerDto> containers;
+    // Use distinct HashMaps to avoid concurrency writings to state/status
+    private final ConcurrentHashMap<String, ContainerSwarmStateDto> containersStates;
     private final ActivityLogger activityLogger;
 
     public ContainerStorage(ActivityLogger activityLogger) {
-        this.containers = new HashMap<>();
+        this.containers = new ConcurrentHashMap<>();
+        this.containersStates = new ConcurrentHashMap<>();
         this.activityLogger = activityLogger;
     }
 
 
     public void addContainer(ContainerDto containerDto, String userId, String courseId) {
         String key = generateKey(userId, courseId);
+        logger.debug(String.format("Adding container %s to storage: %s", key, containerDto));
         this.containers.put(key, containerDto);
+        LogAction logAction = switch (containerDto.getStatus()) {
+            case OK -> LogAction.ENVIRONMENT_CREATED_OK;
+            case KO -> LogAction.ENVIRONMENT_CREATED_KO;
+            case PENDING -> LogAction.ENVIRONMENT_PENDING;
+            case CHECKING -> LogAction.ENVIRONMENT_CHECKING;
+        };
         activityLogger.log(
-                containerDto.getStatus().equals(ContainerStatusDto.OK)
-                        ? LogAction.ENVIRONMENT_CREATED_OK
-                        : LogAction.ENVIRONMENT_CREATED_KO,
+                logAction,
                 LogModelName.COURSE,
                 courseId,
                 userId
         );
+    }
+
+    public void setContainerState(String userId, String courseId, ContainerSwarmStateDto state) {
+        String key = generateKey(userId, courseId);
+        this.containersStates.put(key, state);
     }
 
     public void addAdminContainer(ContainerDto containerDto, Long courseId) {
@@ -42,7 +59,17 @@ public class ContainerStorage {
     public Optional<ContainerDto> getContainer(String userId, String courseId) {
         String key = generateKey(userId, courseId);
         Optional<ContainerDto> optContainer = Optional.ofNullable(this.containers.getOrDefault(key, null));
-        optContainer.ifPresent(theContainer -> this.containers.remove(key));
+        optContainer.ifPresent(containerDto -> {
+            containerDto.setState(this.containersStates.get(key));
+        });
+        if (optContainer.isPresent() && (
+                optContainer.get().getStatus().equals(ContainerStatusDto.OK)
+                        || optContainer.get().getStatus().equals(ContainerStatusDto.KO))
+        ) {
+            logger.debug(String.format("Removing container %s from storage", key));
+            this.containers.remove(key);
+            this.containersStates.remove(key);
+        }
 
         return optContainer;
     }

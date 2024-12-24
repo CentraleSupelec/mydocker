@@ -1,8 +1,11 @@
 package fr.centralesupelec.thuv.test_connection_scheduler;
 
+import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
+import fr.centralesupelec.thuv.service.ContainerStatusConfigureService;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.test_connection_scheduler.dtos.ContainerScheduledDto;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -27,6 +30,8 @@ public class ContainerTestConnectionTaskScheduler {
     private final TestSocket testSocket;
 
     private final Set<ContainerScheduledDto> containerScheduledDtos = Collections.synchronizedSet(new HashSet<>());
+    @Setter
+    private ContainerStatusConfigureService containerStatusConfigureService;
 
     @Scheduled(fixedRate = 1000)
     @Profile("!test")
@@ -35,6 +40,15 @@ public class ContainerTestConnectionTaskScheduler {
                 containerTestParameterConfiguration.getTimeInSecondBetweenTwoConnectionsTry()
         );
         logger.debug("ContainerScheduledDtos before executing : " + containerScheduledDtos);
+        Set<ContainerScheduledDto> toRemove = containerScheduledDtos
+                .stream()
+                .filter(
+                        c -> c.getContainerDto().getStatus() == ContainerStatusDto.KO
+                )
+                .collect(Collectors.toSet());
+        // Example cases : container started so was marked in "CHECKING" status and test was scheduled,
+        // but entrypoint script failed
+        containerScheduledDtos.removeAll(toRemove);
         Set<ContainerScheduledDto> toTest = containerScheduledDtos
                 .stream()
                 .filter(
@@ -54,7 +68,8 @@ public class ContainerTestConnectionTaskScheduler {
                                                     c,
                                                     containerTestParameterConfiguration,
                                                     nodeIPRequestService,
-                                                    testSocket
+                                                    testSocket,
+                                                    containerStatusConfigureService
                                             )
                                     );
                         }

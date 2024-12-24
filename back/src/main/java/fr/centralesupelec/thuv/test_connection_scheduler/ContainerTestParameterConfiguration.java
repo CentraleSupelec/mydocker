@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 public class ContainerTestParameterConfiguration {
     private static final long DEFAULT_TIME_IN_SECOND_BETWEEN_TWO_CONNECTIONS_TRY = 5;
     private static final int DEFAULT_TIME_IN_SECOND_BEFORE_CONNECTION_TEST_TIMEOUT = 2;
-    private static final long DEFAULT_NUMBER_OF_CONNECTION_RETRY = 45;
+    private static final long DEFAULT_NUMBER_OF_CONNECTION_RETRY = 100;
     private static final long DEFAULT_NUMBER_OF_CONNECTION_RETRY_FOR_GPU = 390;
 
     private long timeInSecondBetweenTwoConnectionsTry = DEFAULT_TIME_IN_SECOND_BETWEEN_TWO_CONNECTIONS_TRY;

@@ -3,15 +3,15 @@ package fr.centralesupelec.thuv.storage;
 import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Optional;
 
 @Service
 public class ShutdownStatusStorage {
-    private final HashMap<String, ShutdownContainerDto> containers;
+    private final ConcurrentHashMap<String, ShutdownContainerDto> containers;
 
     public ShutdownStatusStorage() {
-        this.containers = new HashMap<>();
+        this.containers = new ConcurrentHashMap<>();
     }
 
 
