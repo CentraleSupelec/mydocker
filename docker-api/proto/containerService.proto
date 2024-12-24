@@ -14,6 +14,7 @@ service containerService {
     rpc delayDeletion(DelayDeletionRequest) returns (DelayDeletionResponse);
     rpc initAutoscaling(InitAutoscalingRequest) returns (InitAutoscalingResponse);
     rpc getNodeIP(NodeIPRequest) returns (NodeIPResponse);
+    rpc getContainerStatus(stream ContainerStatusRequest) returns (stream ContainerStatusResponse);
 };
 
 message NodeIPRequest {
@@ -256,4 +257,41 @@ message DelayDeletionResponse {
     string userID = 1;
     string courseID = 2;
     int64 deletionTime = 3;
+}
+
+message ContainerStatusRequest {
+    string userID = 1;
+    string courseID = 2;
+    bool isAdmin = 3;
+    enum Action {
+        unknown = 0;
+        on = 1;
+        off = 2;
+    }
+    Action action = 4;
+}
+
+message ContainerStatusResponse {
+    string userID = 1;
+    string courseID = 2;
+    bool isAdmin = 3;
+    enum State {
+        // From https://github.com/moby/swarmkit/blob/master/design/tla/Types.tla#L44
+        UNKNOWN = 0;
+        NEW = 1;
+        PENDING = 2;
+        ASSIGNED = 3;
+        ACCEPTED = 4;
+        PREPARING = 5;
+        READY = 6;
+        STARTING = 7;
+        RUNNING = 8;
+        COMPLETE = 9;
+        SHUTDOWN = 10;
+        FAILED = 11;
+        REJECTED = 12;
+        ORPHANED = 13;
+    }
+    State state = 4;
+    string errorMessage = 5;
 }

@@ -198,7 +198,7 @@ func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *
 			IpAddress:     ip,
 			CourseName:    request.CourseName,
 		}
-		name := fmt.Sprintf("%s-admin", request.GetCourseID())
+		name := createAdminContainerName(request.GetCourseID())
 		mapPort := map[uint32]*pb.ResponsePort{}
 		mapPort[request.Port.PortToMap] = convertRequestPortToResponsePort(request.Port)
 		if exist, id, _, userPassword, publishedPort, _, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {

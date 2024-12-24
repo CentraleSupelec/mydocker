@@ -5,6 +5,7 @@ import (
 	"bufio"
 	b64 "encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -176,6 +177,27 @@ func convertRequestPortToResponsePort(port *pb.RequestPort) *pb.ResponsePort {
 
 func createContainerName(userId string, courseId string) string {
 	return userId + "-" + courseId
+}
+
+func createAdminContainerName(courseId string) string {
+	return fmt.Sprintf("%s-admin", courseId)
+}
+
+type containerInfo struct {
+	userId   string
+	courseId string
+	isAdmin  bool
+}
+
+func parseContainerName(containerName string) (*containerInfo, error) {
+	split := strings.Split(containerName, "-")
+	if len(split) != 2 {
+		return nil, errors.New("Invalid container name")
+	}
+	if split[1] == "admin" {
+		return &containerInfo{userId: "", courseId: split[0], isAdmin: true}, nil
+	}
+	return &containerInfo{userId: split[0], courseId: split[1], isAdmin: false}, nil
 }
 
 func createStudentVolumeName(userId string) string {

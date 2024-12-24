@@ -44,3 +44,4 @@ PrecreateVolume: false
 ReverseProxyUrl: localhost
 CaddyOverlayNetwork: caddy-overlay
 CaddyTlsInternal: true
+ContainerStatusInterval: "1s"

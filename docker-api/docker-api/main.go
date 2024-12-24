@@ -52,6 +52,7 @@ type config struct {
 	Environment             string
 	RegistryCredentials     []registryCredential
 	AutoscalingStateBaseUrl string
+	ContainerStatusInterval string
 	ScaleUpInterval         string
 	ScaleUpCooldown         string
 	ScaleDownInterval       string
@@ -222,6 +223,43 @@ func (s *server) GetAdminContainer(stream pb.ContainerService_GetAdminContainerS
 	return nil
 }
 
+func (s *server) GetContainerStatus(stream pb.ContainerService_GetContainerStatusServer) error {
+	// chan for input request and response
+	in, out := make(chan *pb.ContainerStatusRequest), make(chan *pb.ContainerStatusResponse)
+	done := make(chan struct{})
+
+	containersToWatch := map[string]bool{}
+
+	// Create Go worker
+	go configureContainerStatus(in, containersToWatch)
+	go setupContainerStatusCron(out, containersToWatch, s.dockerClient, s.cronScheduler)
+
+	go func() {
+		for {
+			select {
+			case data := <-out:
+				_ = stream.Send(data)
+			case <-done:
+				return
+			}
+		}
+	}()
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			close(in)
+			close(done)
+			break
+		} else if err != nil {
+			log.Error(err)
+			return err
+		}
+		in <- req
+	}
+	return nil
+}
+
 func (s *server) BuildDockerImage(stream pb.ContainerService_BuildDockerImageServer) error {
 	// chan for input request and response
 	in, out := make(chan *pb.DockerImageRequest, c.Worker), make(chan *pb.DockerImageResponse, c.Worker)
@@ -362,6 +400,7 @@ func main() {
 	viper.SetDefault("CaddyTlsCertificatePath", "/etc/ssl/caddy_reverse_proxy/cert.pem")
 	viper.SetDefault("CaddyTlsKeyPath", "/etc/ssl/caddy_reverse_proxy/key.pem")
 	viper.SetDefault("CaddyStreamCloseDelay", "4h")
+	viper.SetDefault("ContainerStatusInterval", "1s")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Panicf("Failed to find config file: %v", err)
