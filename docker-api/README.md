@@ -18,6 +18,12 @@ and to setup an attachable overlay network that will host Caddy and swarm servic
 docker network create -d overlay --attachable <CaddyOverlayNetwork>
 ```
 
+and an attachable overlay network for the caddy controller instance to configure the server instances :
+
+```
+docker network create -d overlay --subnet=10.200.200.0/24 --attachable caddy-controller
+```
+
 Default configuration can be found in `docker-api/config.yml`.  
 At launch, actual configuration is loaded from `/etc/docker-api/config.yml` + from current folder (whichever is found first).  
 Extra directory can be specified with `-config-path=...`.

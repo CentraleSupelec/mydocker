@@ -5,6 +5,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
+	"time"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
 	containerTypes "github.com/docker/docker/api/types/container"
@@ -15,12 +22,6 @@ import (
 	volumeTypes "github.com/docker/docker/api/types/volume"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strconv"
-	"time"
 )
 
 func buildDockerImageWorker(in chan *pb.DockerImageRequest, out chan *pb.DockerImageResponse, dockerClient dockerImageBuilderDockerClient) {
@@ -127,6 +128,11 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 	}
 	ctx := context.Background()
 	var constraints []string
+
+	if c.Environment != "dev" {
+		constraints = append(constraints, "node.role==worker")
+	}
+
 	constraint, err := d.buildConstraint(ctx)
 	if err != nil {
 		log.Errorf("unable to compute constraint : %s", err)

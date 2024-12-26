@@ -550,6 +550,11 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 		}})
 	}
 	var constraints []string
+
+	if c.Environment != "dev" {
+		constraints = append(constraints, "node.role==worker")
+	}
+
 	for _, label := range request.GetOptions().GetMandatoryLabels() {
 		constraints = append(constraints, fmt.Sprintf("node.labels.%s==%s", label.GetKey(), label.GetValue()))
 	}
