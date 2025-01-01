@@ -31,7 +31,12 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     this.route.data
     .pipe(
       mergeMap((routeData) => {
-        this.courses = routeData.courses;
+        this.courses = routeData.courses?.map(((course: IBasicCourseWithSession) => {
+          const futureSessions = course.sessions.filter(session => session.endDateTime > Date.now());
+          course.sessions = futureSessions.length > 0? futureSessions: course.sessions.slice(-1)
+          return course;
+        }));
+
         routeData.sessions.forEach(
           (session: ISession) => {
             const date = new Date(session.startDateTime);
