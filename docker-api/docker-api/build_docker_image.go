@@ -14,6 +14,7 @@ import (
 
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	containerTypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
@@ -151,10 +152,14 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 			},
 			ContainerSpec: &swarm.ContainerSpec{
 				Image: c.BuildImage,
-				Env:   d.buildEnvVars(imageName),
+				Healthcheck: &container.HealthConfig{
+					Test: []string{"NONE"},
+				},
+				Env: d.buildEnvVars(imageName),
 				Args: []string{
 					"--dockerfile=Dockerfile", "--context=dir:///context", "--destination=" + imageName, "--push-retry", "5", "--log-format", "text", "--cache=true",
 				},
+				CapabilityAdd: []string{"SYS_PTRACE"},
 				Mounts: []mount.Mount{
 					{
 						Type:     mount.TypeVolume,
@@ -267,10 +272,14 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 
 	contConfig := &containerTypes.Config{
 		Image: SAVE_IMAGE,
-		Cmd:   []string{"rsync", "-a", "--delete", "/tmp/source/", "/tmp/dest"},
+		Healthcheck: &container.HealthConfig{
+			Test: []string{"NONE"},
+		},
+		Cmd: []string{"rsync", "-a", "--delete", "/tmp/source/", "/tmp/dest"},
 	}
 
 	hostConfig := &containerTypes.HostConfig{
+		CapAdd: []string{"SYS_PTRACE"},
 		Mounts: []mount.Mount{
 			{
 				Type:     mount.TypeBind,

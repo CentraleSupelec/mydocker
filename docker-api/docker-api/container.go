@@ -12,6 +12,7 @@ import (
 	"github.com/Workiva/go-datastructures/queue"
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
@@ -265,7 +266,11 @@ func doSaveData(dockerClient *client.Client, request *pb.SaveDataRequest) error 
 			},
 			ContainerSpec: &swarm.ContainerSpec{
 				Image: SAVE_IMAGE,
-				Args:  []string{"rsync", "-a", "--delete", "--exclude='lost+found'", "/tmp/source/", "/tmp/dest"},
+				Healthcheck: &container.HealthConfig{
+					Test: []string{"NONE"},
+				},
+				Args:          []string{"rsync", "-a", "--delete", "--exclude='lost+found'", "/tmp/source/", "/tmp/dest"},
+				CapabilityAdd: []string{"SYS_PTRACE"},
 				Mounts: []mount.Mount{
 					{
 						Type:     mount.TypeVolume,
@@ -571,10 +576,14 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 				Condition: ON_FAILURE,
 			},
 			ContainerSpec: &swarm.ContainerSpec{
-				Image:  response.ImageID,
-				Args:   args,
-				Mounts: mounts,
-				Env:    []string{fmt.Sprintf("%s=%s", MYDOCKER_USERNAME, response.GetUserPassword().Username), fmt.Sprintf("%s=%s", MYDOCKER_PASSWORD, response.GetUserPassword().Password)},
+				Image: response.ImageID,
+				Healthcheck: &container.HealthConfig{
+					Test: []string{"NONE"},
+				},
+				Args:          args,
+				CapabilityAdd: []string{"SYS_PTRACE"},
+				Mounts:        mounts,
+				Env:           []string{fmt.Sprintf("%s=%s", MYDOCKER_USERNAME, response.GetUserPassword().Username), fmt.Sprintf("%s=%s", MYDOCKER_PASSWORD, response.GetUserPassword().Password)},
 			},
 			Resources: &swarm.ResourceRequirements{
 				Limits:       limit,
@@ -648,7 +657,11 @@ func createAdmin(name string, response *pb.AdminContainerResponse, dockerClient 
 			},
 			ContainerSpec: &swarm.ContainerSpec{
 				Image: c.AdminImage,
-				Args:  []string{response.GetUserPassword().Username, response.GetUserPassword().Password, "--branding.name", "MyDocker"},
+				Healthcheck: &container.HealthConfig{
+					Test: []string{"NONE"},
+				},
+				Args:          []string{response.GetUserPassword().Username, response.GetUserPassword().Password, "--branding.name", "MyDocker"},
+				CapabilityAdd: []string{"SYS_PTRACE"},
 				Mounts: []mount.Mount{
 					{
 						Type:     mount.TypeVolume,
