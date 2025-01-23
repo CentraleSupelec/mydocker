@@ -19,6 +19,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   courses: IBasicCourseWithSession[] = [];
   selectedTab = new FormControl(0);
   launchSessionId: number | null = null;
+  courseId: number | undefined = undefined;
+  userRedirect: string | undefined = undefined;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -53,17 +55,18 @@ export class CourseListComponent implements OnInit, AfterViewInit {
       take(1),
       map((queryParamMap) => {
         if (queryParamMap.has("course_id")) {
-          const courseId = parseInt(<string>queryParamMap.get("course_id"));
-          const sessionId = this.courses.find((course) => course.id === courseId)?.sessions[0].id;
+          this.courseId = parseInt(<string>queryParamMap.get("course_id"));
+          const sessionId = this.courses.find((course) => course.id === this.courseId)?.sessions[0].id;
           if (sessionId) {
             this.selectSessionId = sessionId;
-            this.adminCoursesApiService.getCourse(courseId).pipe(
+            this.adminCoursesApiService.getCourse(this.courseId).pipe(
               switchMap(course => this.computeTypesApiService.getComputeType(course.computeTypeId)),
               filter(computeType => !computeType.gpu),
               tap(() => this.launchSessionId = sessionId)
             ).subscribe();
           }
         }
+        this.userRedirect = queryParamMap.get("user_redirect") ?? undefined;
         if (Object.keys(this.sessionByDate).length === 0 || queryParamMap.has("course_id")) {
           this.selectedTab.setValue(1);
         }

@@ -14,6 +14,7 @@ export class DisplayCustomContainerPortComponent {
   @Input() username: string | undefined = '';
   @Input() ipAddress: string | undefined = '';
   @Input() password: string | undefined = '';
+  @Input() userRedirect: string | undefined = '';
 
   constructor(
     private readonly renderStringService: RenderStringService,
@@ -30,7 +31,8 @@ export class DisplayCustomContainerPortComponent {
       this.containerPorts ? this.containerPorts : [],
       this.username ? this.username : '',
       this.password ? this.password : '',
-      this.ipAddress ? this.ipAddress : ''
+      this.ipAddress ? this.ipAddress : '',
+      this.userRedirect ? this.userRedirect : ''
     )
   }
 }

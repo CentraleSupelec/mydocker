@@ -67,7 +67,7 @@ export class CourseDisplayUrlComponent implements OnInit, ControlValueAccessor, 
 
   renderString(url: string): string {
     return this.renderStringService.renderString(
-      url, this.ports, 'USERNAME', 'PASSWORD', 'IP_ADDRESS'
+      url, this.ports, 'USERNAME', 'PASSWORD', 'IP_ADDRESS', 'USER_REDIRECT'
     )
   }
 

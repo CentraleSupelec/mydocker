@@ -10,6 +10,16 @@ const routes: Routes = [
   {
     path: 'join/:link',
     component: CourseJoinComponent,
+    children: [
+      {
+        path: 'hub/user-redirect/:user_redirect',
+        component: CourseJoinComponent
+      },
+      {
+        path: 'user-redirect/:user_redirect',
+        component: CourseJoinComponent
+      }
+    ]
   },
   {
     path: '',

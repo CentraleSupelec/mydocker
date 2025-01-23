@@ -24,6 +24,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
   @Input() launch: boolean = false;
+  @Input() userRedirect: string | undefined = undefined;
 
   container: IContainer | null = null;
   state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' = 'ask';

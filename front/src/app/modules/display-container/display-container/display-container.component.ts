@@ -13,6 +13,7 @@ import { IContainerPort } from "../../shell/interfaces/container-port";
 export class DisplayContainerComponent {
   @Input() container: IContainer | null = null;
   @Input() displayOptions: ICourseDisplay | undefined = undefined;
+  @Input() userRedirect: string | undefined = 'USER_REDIRECT';
 
   constructor(
     private readonly clipboardSnackService: ClipboardSnackService,

@@ -11,4 +11,5 @@ export class CourseDetailComponent {
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
   @Input() launch: boolean = false;
+  @Input() userRedirect: string | undefined = undefined;
 }

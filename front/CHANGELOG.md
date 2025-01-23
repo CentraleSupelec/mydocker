@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.27.3
+### Added
+- Add possibilty to add a string to the join link that is added to the container's URL
 ## 2.27.2
 ### Changed
 - Logic of shown session for a course

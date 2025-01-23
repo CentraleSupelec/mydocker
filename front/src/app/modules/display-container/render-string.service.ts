@@ -11,11 +11,11 @@ class WrongPortType extends Error {
 })
 export class RenderStringService {
 
-  private readonly regex = /{{([a-zA-Z\[\]'0-9]+)}}/g;
+  private readonly regex = /{{([a-zA-Z\[\]'0-9_]+)}}/g;
   private readonly portRegex = /PORT\['([0-9]+)']/;
   private readonly hostRegex = /HOST\['([0-9]+)']/;
 
-  renderString(stringToRender: string, ports: IContainerPort[], username: string, password: string, ip: string) {
+  renderString(stringToRender: string, ports: IContainerPort[], username: string, password: string, ip: string, userRedirect: string) {
     try {
       let returnHostname = false;
       const replaced = stringToRender.replace(this.regex, (_: string, group: string) => {
@@ -26,6 +26,8 @@ export class RenderStringService {
             return username;
           case 'PASSWORD':
             return password
+          case 'USER_REDIRECT':
+            return decodeURI(userRedirect)
         }
         const matchPort = group.match(this.portRegex);
         if (matchPort !== null) {

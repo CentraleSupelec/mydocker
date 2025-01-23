@@ -18,6 +18,9 @@ export class CourseJoinComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    const splitUrl = this.router.url.split('/user-redirect/')
+    const userRedirect = splitUrl.length > 1? splitUrl[1]: null;
+
     this.route.paramMap.pipe(
       map(
         (params) => params.get('link')
@@ -29,7 +32,7 @@ export class CourseJoinComponent implements OnInit {
         course => this.courseApiService.joinCourse(course.id)
       )
     ).subscribe(
-      course => this.router.navigate(["/"], {queryParams: {course_id: course.id}, replaceUrl: true}),
+      course => this.router.navigate(["/"], {queryParams: {course_id: course.id, user_redirect: userRedirect}, replaceUrl: true}),
     );
   }
 }

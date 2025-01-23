@@ -41,22 +41,27 @@ describe("RenderStringService", () => {
     expect(
       service.renderString(
         "http://{{IP}}:{{PORT['8888']}}/?token={{PASSWORD}}",
-        ports, "USERNAME", "PASSWORD", "IP_ADDRESS"),
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER_REDIRECT"),
     ).toEqual("http://IP_ADDRESS:8888/?token=PASSWORD");
     expect(
       service.renderString(
         "http://{{HOST['8889']}}/?token={{PASSWORD}}",
-        ports, "USERNAME", "PASSWORD", "IP_ADDRESS"),
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER_REDIRECT"),
     ).toEqual("HOST est uniquement pour les ports de type HTTP");
     expect(
       service.renderString(
         "http://{{HOST['8890']}}/?token={{PASSWORD}}",
-        ports, "USERNAME", "PASSWORD", "IP_ADDRESS"),
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER_REDIRECT"),
     ).toEqual("https://generated-hostname.mydocker.com/?token=PASSWORD");
     expect(
       service.renderString(
         "http://{{HOST['8888']}}/?token={{PASSWORD}}",
-        ports, "USERNAME", "PASSWORD", "IP_ADDRESS"),
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER_REDIRECT"),
     ).toEqual("https://hostname.com/?token=PASSWORD");
+    expect(
+      service.renderString(
+        "http://{{HOST['8888']}}/{{USER_REDIRECT}}?token={{PASSWORD}}",
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER_REDIRECT"),
+    ).toEqual("https://hostname.com/USER_REDIRECT?token=PASSWORD");
   });
 });

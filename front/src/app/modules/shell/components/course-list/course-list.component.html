@@ -59,6 +59,7 @@
             [session]="element.sessions[0]"
             [launch]="element.sessions[0].id === launchSessionId"
             [course]="element"
+            [userRedirect]="element.id === courseId? userRedirect: undefined"
           ></app-course-detail>
         </mat-expansion-panel>
       </div>
