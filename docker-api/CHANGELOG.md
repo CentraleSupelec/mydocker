@@ -7,8 +7,10 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 
 ### Added
+- Send container swarm state
+- Add timestamp to container logs
 - Add docker environment to deploy / dev the application
-- Add Docker Host customizable
+- Add Docker Host configuration
 
 ## 2.17.7
 ### Added

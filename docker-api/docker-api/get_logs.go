@@ -12,7 +12,9 @@ func (s *server) GetLogs(ctx context.Context, request *pb.LogRequest) (*pb.LogRe
 	if err != nil {
 		return nil, err
 	}
-	reader, err := s.dockerClient.ServiceLogs(ctx, service.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
+	reader, err := s.dockerClient.ServiceLogs(ctx, service.ID, types.ContainerLogsOptions{
+		ShowStdout: true, ShowStderr: true, Follow: true, Timestamps: c.LogsTimestamps, Details: c.LogsDetails,
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -75,6 +75,8 @@ type config struct {
 	CaddyTlsKeyPath         string
 	CaddyStreamCloseDelay   string
 	StudentVolumeSize       int
+	LogsTimestamps          bool
+	LogsDetails             bool
 }
 
 type dockerConfig struct {
@@ -401,6 +403,8 @@ func main() {
 	viper.SetDefault("CaddyTlsKeyPath", "/etc/ssl/caddy_reverse_proxy/key.pem")
 	viper.SetDefault("CaddyStreamCloseDelay", "4h")
 	viper.SetDefault("ContainerStatusInterval", "1s")
+	viper.SetDefault("LogsTimestamps", true)
+	viper.SetDefault("LogsDetails", false)
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Panicf("Failed to find config file: %v", err)
