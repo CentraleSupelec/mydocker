@@ -25,15 +25,12 @@ public class NodeIPRequestService {
                             .setUserID(userId)
                             .build()
             ).getIPAddress();
-             logger.debug(String.format(
-                     "Retrieved IP Address for user '%s' / course '%s' : '%s'",
-                     userId, courseId, nodeIP
-             ));
+             logger.debug("Retrieved IP Address for user '{}' / course '{}' : '{}'", userId, courseId, nodeIP);
         } catch (StatusRuntimeException e) {
-            logger.warn(String.format(
-                    "Could not fetch IP Address for user '%s' / course '%s' (%d) : %s",
+            logger.warn(
+                    "Could not fetch IP Address for user '{}' / course '{}' ({}) : {}",
                     userId, courseId, e.getStatus().getCode().value(), e.getStatus().getDescription()
-                    ));
+            );
         }
         return nodeIP;
     }

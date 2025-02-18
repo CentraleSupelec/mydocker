@@ -42,18 +42,14 @@ public class MyUserDetailsService implements UserDetailsService {
 
     public User findUser(String username, String email) throws UserUpsertException {
         if (username == null) {
-            logger.debug(String.format("username is null, searching only for email '%s'", email));
+            logger.debug("username is null, searching only for email '{}'", email);
             List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
-            logger.debug(String.format("Found %d users with email '%s'", usersWithCorrectEmail.size(), email));
+            logger.debug("Found {} users with email '{}'", usersWithCorrectEmail.size(), email);
             if (usersWithCorrectEmail.size() > 1) {
                 throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
             }
             Optional<User> userWithEmailAsUsername = userRepository.findByEnabledTrueAndUsername(email);
-            logger.debug(String.format(
-                    "Found user with username '%s': %s",
-                    email,
-                    userWithEmailAsUsername.orElse(null)
-            ));
+            logger.debug("Found user with username '{}': {}", email, userWithEmailAsUsername.orElse(null));
             if (
                     userWithEmailAsUsername.isPresent()
                             && usersWithCorrectEmail.size() == 1
@@ -80,19 +76,13 @@ public class MyUserDetailsService implements UserDetailsService {
             return user;
         }
         Optional<User> userWithCorrectUsername = userRepository.findByEnabledTrueAndUsername(username);
-        logger.debug(String.format(
-                "User with correct username '%s' : %s ", username,userWithCorrectUsername.orElse(null)
-        ));
+        logger.debug("User with correct username '{}' : {} ", username, userWithCorrectUsername.orElse(null));
         Optional<User> userWithEmailAsUsername = userRepository.findByEnabledTrueAndUsername(email);
-        logger.debug(String.format(
-                "User with email as username '%s' : %s ", email, userWithEmailAsUsername.orElse(null)
-        ));
+        logger.debug("User with email as username '{}' : {} ", email, userWithEmailAsUsername.orElse(null));
         List<User> usersWithUsernameAsEmail = userRepository.findByEnabledTrueAndEmail(username);
-        logger.debug(String.format(
-                "Found %d users with username '%s' as email", usersWithUsernameAsEmail.size(), email
-        ));
+        logger.debug("Found {} users with username '{}' as email", usersWithUsernameAsEmail.size(), email);
         List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
-        logger.debug(String.format("Found %d users with email '%s'", usersWithCorrectEmail.size(), email));
+        logger.debug("Found {} users with email '{}'", usersWithCorrectEmail.size(), email);
         if (usersWithCorrectEmail.size() > 1) {
             throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
         }
@@ -104,7 +94,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 if (user.equals(userWithCorrectUsername.get())) {
                     return;
                 }
-                logger.debug(String.format("Disabling user with email as username %s ", user));
+                logger.debug("Disabling user with email as username {} ", user);
                 user.setEnabled(false);
                 if (StringUtils.isBlank(user.getEmail())) {
                     user.setEmail(email);
@@ -121,7 +111,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 if (user.equals(userWithCorrectUsername.get())) {
                     return;
                 }
-                logger.debug(String.format("Disabling user with correct email %s ", user));
+                logger.debug("Disabling user with correct email {} ", user);
                 user.setEnabled(false);
                 if (StringUtils.isBlank(user.getEmail())) {
                     user.setEmail(email);
@@ -138,7 +128,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 if (user.equals(userWithCorrectUsername.get())) {
                     return;
                 }
-                logger.debug(String.format("Disabling user with username as email %s ", user));
+                logger.debug("Disabling user with username as email {} ", user);
                 user.setEnabled(false);
                 if (StringUtils.isBlank(user.getEmail())) {
                     user.setEmail(email);
@@ -153,7 +143,7 @@ public class MyUserDetailsService implements UserDetailsService {
             });
             User user = userWithCorrectUsername.get();
             user.setEmail(email);
-            logger.debug(String.format("Found user with username '%s': %s", username, user));
+            logger.debug("Found user with username '{}': {}", username, user);
             return user;
         }
         HashSet<User> usersInDb = new HashSet<>();
@@ -175,13 +165,13 @@ public class MyUserDetailsService implements UserDetailsService {
         }
         if (usersWithCorrectEmail.size() == 1) {
             User user = usersWithCorrectEmail.get(0);
-            logger.debug(String.format("Updating username for user %s to %s ", user, username));
+            logger.debug("Updating username for user {} to {} ", user, username);
             user.setUsername(username);
             return user;
         }
         if (usersWithUsernameAsEmail.size() == 1) {
             User user = usersWithUsernameAsEmail.get(0);
-            logger.debug(String.format("Updating username for user %s to %s ", user, username));
+            logger.debug("Updating username for user {} to {} ", user, username);
             user.setUsername(username);
             return user;
         }

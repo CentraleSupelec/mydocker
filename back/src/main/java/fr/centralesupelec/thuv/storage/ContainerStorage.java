@@ -30,7 +30,7 @@ public class ContainerStorage {
 
     public void addContainer(ContainerDto containerDto, String userId, String courseId) {
         String key = generateKey(userId, courseId);
-        logger.debug(String.format("Adding container %s to storage: %s", key, containerDto));
+        logger.debug("Adding container {} to storage: {}", key, containerDto);
         this.containers.put(key, containerDto);
         LogAction logAction = switch (containerDto.getStatus()) {
             case OK -> LogAction.ENVIRONMENT_CREATED_OK;
@@ -61,15 +61,15 @@ public class ContainerStorage {
         Optional<ContainerDto> optContainer = Optional.ofNullable(this.containers.getOrDefault(key, null));
         optContainer.ifPresent(containerDto -> {
             containerDto.setState(this.containersStates.get(key));
+            if (
+                    containerDto.getStatus().equals(ContainerStatusDto.OK)
+                            || containerDto.getStatus().equals(ContainerStatusDto.KO)
+            ) {
+                logger.debug("Removing container {} from storage", key);
+                this.containers.remove(key);
+                this.containersStates.remove(key);
+            }
         });
-        if (optContainer.isPresent() && (
-                optContainer.get().getStatus().equals(ContainerStatusDto.OK)
-                        || optContainer.get().getStatus().equals(ContainerStatusDto.KO))
-        ) {
-            logger.debug(String.format("Removing container %s from storage", key));
-            this.containers.remove(key);
-            this.containersStates.remove(key);
-        }
 
         return optContainer;
     }

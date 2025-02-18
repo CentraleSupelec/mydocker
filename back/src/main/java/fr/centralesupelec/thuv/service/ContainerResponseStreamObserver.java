@@ -33,12 +33,12 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
     public void onNext(ContainerResponse containerResponse) {
         ContainerDto containerDto = mapContainerResponseToContainer(containerResponse);
         saveUserPasswordInDb(containerResponse);
-        logger.debug(String.format(
-                "ContainerResponse received for courseId %s / userId %s ; containerDto is %s",
+        logger.debug(
+                "ContainerResponse received for courseId {} / userId {} ; containerDto is {}",
                 containerResponse.getCourseID(),
                 containerResponse.getUserID(),
                 containerDto
-        ));
+        );
         containerStorage.addContainer(containerDto, containerResponse.getUserID(), containerResponse.getCourseID());
         containerStatusConfigureService.configureContainerStatus(
                 containerResponse.getCourseID(),

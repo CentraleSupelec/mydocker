@@ -41,7 +41,7 @@ public class InitAutoscalingService {
                                 )
                 )
                 .build();
-        logger.debug(String.format("Initializing autoscaling config %s", request));
+        logger.debug("Initializing autoscaling config {}", request);
         InitAutoscalingResponse initAutoscalingResponse = asyncStub.initAutoscaling(request);
         if (!initAutoscalingResponse.getError().isEmpty()) {
             throw new Exception(initAutoscalingResponse.getError());

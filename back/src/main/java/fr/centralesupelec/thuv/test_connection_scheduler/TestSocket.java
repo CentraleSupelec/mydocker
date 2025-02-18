@@ -49,7 +49,7 @@ public class TestSocket {
     }
 
     public boolean isHttpsAlive(String hostname, int timeoutInSecond) {
-        logger.debug(String.format("Test HTTP connection for host '%s'", hostname));
+        logger.debug("Test HTTP connection for host '{}'", hostname);
         try {
             HttpRequest request = HttpRequest
                     .newBuilder()

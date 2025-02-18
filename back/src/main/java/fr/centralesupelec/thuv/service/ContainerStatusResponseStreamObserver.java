@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class ContainerStatusResponseStreamObserver implements StreamObserver<ContainerStatusResponse> {
+    public static final String NO_SUITABLE_NODE = "no suitable node";
     private final Logger logger = LoggerFactory.getLogger(ContainerStatusResponseStreamObserver.class);
     private final ContainerStorage containerStorage;
     // Not final to avoid circular dependency
@@ -28,13 +29,13 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
         ContainerDto containerDto = containerStorage.getContainer(
                 containerStatusResponse.getUserID(), containerStatusResponse.getCourseID()
         ).orElse(null);
-        logger.debug(String.format(
-                "ContainerStatusResponse received for courseId %s / userId %s / admin %s ; containerDto is %s",
+        logger.debug(
+                "ContainerStatusResponse received for courseId {} / userId {} / admin {} ; containerDto is {}",
                 containerStatusResponse.getCourseID(),
                 containerStatusResponse.getUserID(),
                 containerStatusResponse.getIsAdmin(),
                 containerDto
-        ));
+        );
         if (containerDto == null) {
             return;
         }
@@ -59,7 +60,7 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
                 }
             }
             case PENDING -> {
-                if (containerStatusResponse.getErrorMessage().contains("no suitable node")) {
+                if (containerStatusResponse.getErrorMessage().contains(NO_SUITABLE_NODE)) {
                     containerTestConnectionTaskScheduler.addContainerScheduledDto(
                             new ContainerScheduledDto()
                                     .setContainerDto(containerDto)

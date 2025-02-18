@@ -39,7 +39,7 @@ public class ContainerTestConnectionTaskScheduler {
         LocalDateTime secondsAgo = LocalDateTime.now().minusSeconds(
                 containerTestParameterConfiguration.getTimeInSecondBetweenTwoConnectionsTry()
         );
-        logger.debug("ContainerScheduledDtos before executing : " + containerScheduledDtos);
+        logger.debug("ContainerScheduledDtos before executing : {}", containerScheduledDtos);
         Set<ContainerScheduledDto> toRemove = containerScheduledDtos
                 .stream()
                 .filter(
@@ -74,13 +74,13 @@ public class ContainerTestConnectionTaskScheduler {
                                     );
                         }
                 );
-        logger.debug("ContainerScheduledDtos after executing : " + containerScheduledDtos);
+        logger.debug("ContainerScheduledDtos after executing : {}", containerScheduledDtos);
     }
 
     public void addContainerScheduledDto(ContainerScheduledDto containerScheduledDto) {
-        logger.debug("ContainerScheduledDtos before adding : " + containerScheduledDtos);
-        logger.debug("Adding dto: " + containerScheduledDto);
+        logger.debug("ContainerScheduledDtos before adding : {}", containerScheduledDtos);
+        logger.debug("Adding dto: {}", containerScheduledDto);
         containerScheduledDtos.add(containerScheduledDto);
-        logger.debug("ContainerScheduledDtos after adding : " + containerScheduledDtos);
+        logger.debug("ContainerScheduledDtos after adding : {}", containerScheduledDtos);
     }
 }

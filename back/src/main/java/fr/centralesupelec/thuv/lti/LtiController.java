@@ -59,7 +59,7 @@ public class LtiController {
                 openidConfiguration, OpenIdConfigurationDto.class
         );
         assert openIdConfiguration != null;
-        logger.debug(String.format("Fetched openIdConfiguration %s", openIdConfiguration));
+        logger.debug("Fetched openIdConfiguration {}", openIdConfiguration);
 
         if (this.toolDeploymentRepository.findByIss(openIdConfiguration.getIssuer()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A deployment for this platform already exists");

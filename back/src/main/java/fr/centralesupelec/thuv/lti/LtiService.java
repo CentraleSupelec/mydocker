@@ -102,7 +102,7 @@ public class LtiService {
         String registrationResponse = ltiRestTemplate.postForObject(
                 json.getRegistrationEndpoint(), payload, String.class
         );
-        logger.debug(String.format("Registered with response %s", registrationResponse));
+        logger.debug("Registered with response {}", registrationResponse);
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(registrationResponse);
@@ -131,8 +131,8 @@ public class LtiService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Audience invalid");
             }
             UrlJwkProvider provider = new UrlJwkProvider(new URL(toolDeployment.getJwksUri()));
-            logger.debug(String.format("Keys from URL '%s': %s", toolDeployment.getJwksUri(), provider.getAll()));
-            logger.debug(String.format("Retrieving key of id '%s'", jwt.getKeyId()));
+            logger.debug("Keys from URL '{}': {}", toolDeployment.getJwksUri(), provider.getAll());
+            logger.debug("Retrieving key of id '{}'", jwt.getKeyId());
             Jwk jwk = provider.get(jwt.getKeyId());
             Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
             JWTVerifier verifier = JWT.require(algorithm).build();

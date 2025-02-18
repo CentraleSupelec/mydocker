@@ -39,11 +39,7 @@ public class GrpcClient {
                                 CallOptions callOptions,
                                 Channel channel
                         ) {
-                            logger.debug(String.format(
-                                    "%s  / %s",
-                                    methodDescriptor.getFullMethodName(),
-                                    callOptions.toString()
-                            ));
+                            logger.debug("{}  / {}", methodDescriptor.getFullMethodName(), callOptions.toString());
                             return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
                                     channel.newCall(methodDescriptor, callOptions)
                             ) {

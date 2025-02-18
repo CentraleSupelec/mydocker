@@ -1,5 +1,7 @@
 package fr.centralesupelec.thuv.test_connection_scheduler;
 
+import static fr.centralesupelec.thuv.service.ContainerStatusResponseStreamObserver.NO_SUITABLE_NODE;
+
 import fr.centralesupelec.gRPC.ContainerStatusRequest;
 import fr.centralesupelec.thuv.model.ConnectionType;
 import fr.centralesupelec.thuv.service.ContainerStatusConfigureService;
@@ -35,7 +37,7 @@ public class ContainerTestConnectionTask implements Runnable {
         // If it never pops, the TestConnectionTask will mark the container status as KO.
         if (
                 StringUtils.isNotBlank(containerScheduledDto.getContainerDto().getCreationError())
-                        && !containerScheduledDto.getContainerDto().getCreationError().contains("no suitable node")
+                        && !containerScheduledDto.getContainerDto().getCreationError().contains(NO_SUITABLE_NODE)
         ) {
             containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
             containerStorage.addContainer(

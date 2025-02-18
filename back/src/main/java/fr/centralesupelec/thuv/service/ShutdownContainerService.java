@@ -56,12 +56,12 @@ public class ShutdownContainerService {
                     );
                     shutdownContainer.ifPresent(container -> container.setIsShutdown(true));
                 } else {
-                    logger.debug(String.format(
-                            "Error while shutdowning for course %s and student %s : %s",
+                    logger.debug(
+                            "Error while shutdowning for course {} and student {} : {}",
                             shutdownContainerResponse.getCourseID(),
                             shutdownContainerResponse.getUserID(),
                             shutdownContainerResponse.getError()
-                            ));
+                    );
                     Optional<ShutdownContainerDto> shutdownContainer = shutdownStatusStorage.getContainer(
                             shutdownContainerResponse.getUserID(),
                             shutdownContainerResponse.getCourseID()
