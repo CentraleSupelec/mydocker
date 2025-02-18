@@ -87,6 +87,7 @@ func (s *containerStatusService) sendContainerStatus() {
 			CourseID: containerInfo.courseId,
 			IsAdmin:  containerInfo.isAdmin,
 			State: pb.ContainerStatusResponse_State(
+				// Use uppercase because `new` is a reserved keyword in java but `NEW` is not
 				pb.ContainerStatusResponse_State_value[strings.ToUpper(string(desiredTask.Status.State))]),
 			ErrorMessage: errorMessage,
 		}

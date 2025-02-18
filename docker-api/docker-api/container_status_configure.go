@@ -8,11 +8,13 @@ import (
 func configureContainerStatus(in <-chan *pb.ContainerStatusRequest, containersToWatch map[string]bool) {
 	logger := log.WithFields(log.Fields{"service": "containerStatusConfigure"})
 	for request := range in {
-		logger.Debug("Received container status request",
-			"user_id", request.GetUserID(),
-			"course_id", request.GetCourseID(),
-			"is_admin", request.GetIsAdmin(),
-			"action", request.GetAction())
+		logger.WithFields(
+			log.Fields{
+				"user_id":   request.GetUserID(),
+				"course_id": request.GetCourseID(),
+				"is_admin":  request.GetIsAdmin(),
+				"action":    request.GetAction(),
+			}).Debug("Received container status request")
 		var containerName string
 		if request.GetIsAdmin() {
 			containerName = createAdminContainerName(request.GetCourseID())
@@ -21,14 +23,18 @@ func configureContainerStatus(in <-chan *pb.ContainerStatusRequest, containersTo
 		}
 		if request.GetAction() == pb.ContainerStatusRequest_on {
 			containersToWatch[containerName] = true
-			logger.Info("Started watching container",
-				"container", containerName,
-				"is_admin", request.GetIsAdmin())
+			logger.WithFields(
+				log.Fields{
+					"container": containerName,
+					"is_admin":  request.GetIsAdmin(),
+				}).Info("Started watching container")
 		} else if request.GetAction() == pb.ContainerStatusRequest_off {
 			delete(containersToWatch, containerName)
-			logger.Info("Stopped watching container",
-				"container", containerName,
-				"is_admin", request.GetIsAdmin())
+			logger.WithFields(
+				log.Fields{
+					"container": containerName,
+					"is_admin":  request.GetIsAdmin(),
+				}).Info("Stopped watching container")
 		}
 	}
 }
