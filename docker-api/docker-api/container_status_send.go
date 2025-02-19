@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
@@ -45,38 +46,52 @@ func setupContainerStatusCron(out chan<- *pb.ContainerStatusResponse, containers
 }
 
 func (s *containerStatusService) sendContainerStatus() {
-	for containerName, _ := range s.containersToWatch {
+	for containerName := range s.containersToWatch {
 		s.logger.Debugf("Checking status for container: %s", containerName)
 
 		tasks, err := s.dockerClient.TaskList(context.TODO(), types.TaskListOptions{Filters: filters.NewArgs(filters.KeyValuePair{Key: "service", Value: containerName})})
 		if err != nil {
 			s.logger.Errorf("Error fetching task list for container %s: %v", containerName, err)
+			if matched, _ := regexp.MatchString(`service .* not found`, err.Error()); matched {
+				delete(s.containersToWatch, containerName)
+			}
 			continue
 		}
 		s.logger.Debugf("Fetched %d tasks for container %s", len(tasks), containerName)
 		failed := 0
 		var desiredTask *swarm.Task
+		var tasksByDesiredState = make(map[swarm.TaskState][]*swarm.Task)
 		for _, task := range tasks {
+			tasksByDesiredState[task.DesiredState] = append(tasksByDesiredState[task.DesiredState], &task)
 			if task.Status.State == swarm.TaskStateFailed {
 				failed += 1
 			}
-			if task.DesiredState == swarm.TaskStateRunning || task.DesiredState == swarm.TaskStateReady {
-				if desiredTask != nil {
-					s.logger.Errorf("Multiple tasks running for service %s", containerName)
-				}
-				desiredTask = &task
-			}
+		}
+		if len(tasksByDesiredState[swarm.TaskStateRunning]) > 0 {
+			desiredTask = tasksByDesiredState[swarm.TaskStateRunning][0]
+		} else if len(tasksByDesiredState[swarm.TaskStateReady]) > 0 {
+			desiredTask = tasksByDesiredState[swarm.TaskStateReady][0]
+		} else if len(tasksByDesiredState[swarm.TaskStateShutdown]) > 0 {
+			desiredTask = tasksByDesiredState[swarm.TaskStateShutdown][0]
 		}
 		s.logger.Infof("Container %s has %d failed tasks", containerName, failed)
-
+		if desiredTask == nil {
+			s.logger.Errorf("No task found for container %s", containerName)
+			continue
+		}
 		containerInfo, err := parseContainerName(containerName)
 		if err != nil {
 			s.logger.Errorf("Error parsing container name %s: %v", containerName, err)
 			continue
 		}
 		errorMessage := ""
-		if failed > 0 && desiredTask.Status.Err == "" {
-			errorMessage = fmt.Sprintf("service has %d failed tasks and is unstable", failed)
+		if desiredTask.Status.Err == "" {
+			if desiredTask.Status.State == swarm.TaskStateComplete {
+				errorMessage = "service has completed"
+			}
+			if failed > 0 {
+				errorMessage = fmt.Sprintf("service has %d failed tasks and is unstable", failed)
+			}
 		} else {
 			errorMessage = desiredTask.Status.Err
 		}
