@@ -211,7 +211,7 @@ func getJson(url string, target interface{}, catch404 bool) error {
 	if err != nil {
 		return err
 	}
-	dump, _ := httputil.DumpResponse(r, true)
+	dump, err := httputil.DumpResponse(r, true)
 	log.Tracef("GET Response for %s : %s", url, dump)
 	if err != nil {
 		return err

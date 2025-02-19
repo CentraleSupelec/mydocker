@@ -114,8 +114,8 @@ func (s *scaleUpService) checkPendingServices() (map[string]int64, map[string]in
 	ctx := context.TODO()
 	tasks, err := s.dockerClient.TaskList(ctx, types.TaskListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{
-			"desired-state",
-			string(swarm.TaskStateRunning),
+			Key:   "desired-state",
+			Value: string(swarm.TaskStateRunning),
 		}),
 	})
 	if err != nil {

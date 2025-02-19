@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ceph/go-ceph/rados"
 	"github.com/ceph/go-ceph/rbd"
@@ -94,7 +95,7 @@ func (d *rbdDriver) rbdImageExists(imageName string) (error, bool) {
 	defer img.Close()
 
 	if err != nil {
-		if err == rbd.RbdErrorNotFound {
+		if errors.Is(err, rbd.RbdErrorNotFound) {
 			return nil, false
 		}
 		return err, false
@@ -114,7 +115,6 @@ func (d *rbdDriver) createRbdImage(imageName string, size uint32) error {
 		return fmt.Errorf("unable to find mkfs.(%s): %s", fstype, err)
 	}
 
-
 	// create the image
 	var sizeInBytes uint64
 	sizeInBytes = uint64(size) * 1024 * 1024
@@ -122,7 +122,6 @@ func (d *rbdDriver) createRbdImage(imageName string, size uint32) error {
 	if err != nil {
 		return err
 	}
-
 
 	// map to kernel to let initialize fs
 	err = d.mapImage(imageName)
@@ -133,13 +132,12 @@ func (d *rbdDriver) createRbdImage(imageName string, size uint32) error {
 
 	// make the filesystem (give it some time)
 	device := d.getTheDevice(imageName)
-	_, err = shWithTimeout(5 * time.Minute, mkfs, mkfsOptions, device)
+	_, err = shWithTimeout(5*time.Minute, mkfs, mkfsOptions, device)
 	if err != nil {
 		_ = d.unmapImage(imageName)
 		defer d.removeRbdImage(imageName)
 		return err
 	}
-
 
 	// leave the image unmaped
 	defer d.unmapImage(imageName)
@@ -154,7 +152,6 @@ func (d *rbdDriver) mapImage(imageName string) error {
 
 	return err
 }
-
 
 func (d *rbdDriver) unmapImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=rbd unmap", imageName)
@@ -174,7 +171,6 @@ func (d *rbdDriver) unmapImage(imageName string) error {
 	return nil
 }
 
-
 func (d *rbdDriver) removeRbdImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=remove rbd image", imageName)
 
@@ -182,7 +178,6 @@ func (d *rbdDriver) removeRbdImage(imageName string) error {
 
 	return rbdImage.Remove()
 }
-
 
 // rbdsh will call rbd with the given command arguments, also adding config, user and pool flags
 func (d *rbdDriver) rbdsh(command string, args ...string) (string, error) {
@@ -192,24 +187,22 @@ func (d *rbdDriver) rbdsh(command string, args ...string) (string, error) {
 	return shWithDefaultTimeout("rbd", args...)
 }
 
-
 // returns the aliased device under device_map_root
 func (d *rbdDriver) getTheDevice(imageName string) string {
 	return filepath.Join("/dev/rbd", c.CephPool, imageName)
 }
 
 type CreateRbdImageWorkerResponse struct {
-	err 		error
-	imageName 	string
+	err         error
+	imageName   string
 	workerIndex int
 }
 
 type CreateRbdImageWorkerRequest struct {
-	imageName 	string
-	size 		uint32
+	imageName   string
+	size        uint32
 	workerIndex int
 }
-
 
 func CreateRbdImageWorker(in <-chan CreateRbdImageWorkerRequest, out chan<- CreateRbdImageWorkerResponse) {
 	driver := &rbdDriver{}

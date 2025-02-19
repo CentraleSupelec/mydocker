@@ -12,21 +12,21 @@ import (
 	"testing"
 )
 
-type testingClient struct {
+type autoscaleDownTestingClient struct {
 	mock.Mock
-	deployUtilsDockerClient
+	scaleDownDockerClient
 }
 
-func (t *testingClient) NodeList(ctx context.Context, options tasksTypes.NodeListOptions) ([]swarm.Node, error) {
+func (t *autoscaleDownTestingClient) NodeList(ctx context.Context, options tasksTypes.NodeListOptions) ([]swarm.Node, error) {
 	args := t.Called(ctx, options)
 	return args.Get(0).([]swarm.Node), args.Error(1)
 }
 
-func (t *testingClient) NodeRemove(context.Context, string, tasksTypes.NodeRemoveOptions) error {
+func (t *autoscaleDownTestingClient) NodeRemove(context.Context, string, tasksTypes.NodeRemoveOptions) error {
 	panic("implement me")
 }
 
-func (t *testingClient) TaskList(ctx context.Context, options tasksTypes.TaskListOptions) ([]swarm.Task, error) {
+func (t *autoscaleDownTestingClient) TaskList(ctx context.Context, options tasksTypes.TaskListOptions) ([]swarm.Task, error) {
 	args := t.Called(ctx, options)
 	return args.Get(0).([]swarm.Task), args.Error(1)
 }
@@ -51,7 +51,7 @@ func (suite *AutoscaleDownTestSuite) TestZeroManualOneScaledWithServiceZeroIdle(
 	/*
 		Si 0 manuel + 1 autoscalé, avec service sur le autoscalé, 0 idle demandé => pas de suppression
 	*/
-	stubClient := new(testingClient)
+	stubClient := new(autoscaleDownTestingClient)
 	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{
 		{
 			ID:          "autoscaled-node-1",
@@ -118,7 +118,7 @@ func (suite *AutoscaleDownTestSuite) TestOneManualZeroScaledZeroIdle() {
 	/*
 		Si 1 manuel + 0 autoscalé, sans service, 0 idle demandé => pas de suppression
 	*/
-	stubClient := new(testingClient)
+	stubClient := new(autoscaleDownTestingClient)
 	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{
 		{
 			ID:          "manual-node",
@@ -181,7 +181,7 @@ func (suite *AutoscaleDownTestSuite) TestOneManualWithServiceOneScaledZeroIdle()
 	/*
 		Si 1 manuel + 1 autoscalé, avec service sur le manuel, 0 idle demandé => suppression du autoscalé
 	*/
-	stubClient := new(testingClient)
+	stubClient := new(autoscaleDownTestingClient)
 
 	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{
 		{
@@ -267,7 +267,7 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledWithServiceZeroIdleDe
 	/*
 		Si 1 manuel + 1 autoscalé, avec service sur le scaled, 0 idle demandé, config par défaut => pas de suppression
 	*/
-	stubClient := new(testingClient)
+	stubClient := new(autoscaleDownTestingClient)
 
 	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{
 		{
@@ -353,7 +353,7 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledWithServiceZeroIdleFo
 		Si 1 manuel + 1 autoscalé, avec service sur le scaled, 0 idle demandé, config de removal => suppression du scaled
 	*/
 	c.ScaleDownRemoveNonEmpty = true
-	stubClient := new(testingClient)
+	stubClient := new(autoscaleDownTestingClient)
 
 	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{
 		{
@@ -440,7 +440,7 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledZeroIdle() {
 		Si 1 manuel + 1 autoscalé, sans service, 0 idle demandé => suppression du autoscalé
 	*/
 	c.ScaleDownRemoveNonEmpty = true
-	stubClient := new(testingClient)
+	stubClient := new(autoscaleDownTestingClient)
 
 	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{
 		{
