@@ -28,7 +28,7 @@
         </app-save-state>
         <div fxLayout="column" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="container?.status === 'OK'">
           <p class="information">
-            En cas de problème ou si le cours ne répond pas, vous pouvez éteindre cet environnement et en demander un nouveau.
+            En cas de problème ou si l'environnement ne répond pas, vous pouvez l'éteindre et en demander un nouveau.
           </p>
           <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
             Éteindre l'environnement
@@ -45,6 +45,11 @@
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'pending'">
     <mat-progress-bar mode="buffer" [value]="step"></mat-progress-bar>
     <p style="margin-top: 10px">{{ stepMessage }}</p>
+    <div style="margin-top: 30px">
+      <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
+        Éteindre l'environnement
+      </button>
+    </div>
   </div>
 
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_shutdown'">
@@ -60,7 +65,7 @@
       </button>
     </ng-template>
     <ng-template #elseBlock>
-      <strong>Il n'est pas possible de demander un environnement avant l'heure de début du cours</strong>
+      <strong>Il n'est pas possible de demander un environnement avant l'heure de début de la session</strong>
     </ng-template>
   </div>
 </div>

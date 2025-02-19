@@ -246,6 +246,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   deleteEnv() {
+    this.stopInitPolling$.next();
     this.containerApiService.shutdownContainer(this.sessionCourseOrCourse?.id).subscribe(() => {
       this.startShutdownPolling();
     });

@@ -44,7 +44,7 @@ export const ContainerSwarmStateMessages = {
   [ContainerSwarmState.PREPARING]: 'Téléchargement de l\'environnement sur le noeud',
   [ContainerSwarmState.READY]: 'Environnement prêt à démarrer',
   [ContainerSwarmState.STARTING]: 'Initialisation en cours',
-  [ContainerSwarmState.RUNNING]: 'En cours d\'exécution',
+  [ContainerSwarmState.RUNNING]: 'En attente de l’interface',
   [ContainerSwarmState.COMPLETE]: 'Environnement terminé',
   [ContainerSwarmState.FAILED]: 'Échec de l\'environnement',
   [ContainerSwarmState.SHUTDOWN]: 'Arrêt en cours',
