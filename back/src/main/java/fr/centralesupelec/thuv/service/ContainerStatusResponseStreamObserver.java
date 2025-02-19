@@ -40,7 +40,7 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
             return;
         }
         switch (containerStatusResponse.getState()) {
-            case FAILED, REJECTED, ORPHANED, SHUTDOWN -> {
+            case FAILED, REJECTED, ORPHANED, SHUTDOWN, COMPLETE -> {
                 containerDto.setStatus(ContainerStatusDto.KO);
                 containerStatusConfigureService.configureContainerStatus(
                         containerStatusResponse.getCourseID(),
