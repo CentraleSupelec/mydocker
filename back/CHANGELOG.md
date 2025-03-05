@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Add docker environment to deploy / dev the application
+
 ## 2.30.2
 ### Changed
 - Added 502 to the list of error codes

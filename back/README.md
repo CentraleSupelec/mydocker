@@ -40,6 +40,9 @@ If you need to customize the config, use a Spring profile `dev` :
 3. You can now compile the .jar file : `./mvnw package`, and it builds in `target/thuv.jar`.
 4. Run `java -Dspring.profiles.active=dev -jar target/thuv.jar`
 
+### Running the app with docker
+1. Execute `docker-compose up -d` to start containers.
+
 ### Make the first user an admin
 1. Once both back-end and front-end apps are running, visit 'http://localhost:4200'
 2. Connect with default user : username is `casuser` and password is `Mellon`

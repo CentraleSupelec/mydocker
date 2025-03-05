@@ -1,6 +1,26 @@
 version: "3.8"
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - $PWD:/app:rw
+      - maven-cache:/root/.m2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thuv
+      GO_APP_ADDRESS: host.docker.internal
+      APP_CAS_RSCURL: http://cas:8443/cas/p3/serviceValidate
+      SPRING_MAIL_HOST: mailhog
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - cas
+
   postgres:
     image: postgres:14-alpine
     ports:
@@ -10,7 +30,7 @@ services:
       POSTGRES_PASSWORD: password
       TEST_DB: thuvtest
     volumes:
-      - $PWD/docker/setup.sh:/docker-entrypoint-initdb.d/setup.sh
+      - $PWD/docker/files/setup.sh:/docker-entrypoint-initdb.d/setup.sh
       - db-data:/var/lib/postgresql/data
 
   cas:
@@ -20,7 +40,7 @@ services:
       CAS_LOGOUT_FOLLOW_SERVICE_REDIRECTS: "true"
       SERVER_SSL_ENABLED: "false"
     volumes:
-      - $PWD/docker/cas-service-1.json:/tmp/cas/cas-service-1.json
+      - $PWD/docker/files/cas-service-1.json:/tmp/cas/cas-service-1.json
     ports:
       - "9443:8443"
 
@@ -33,3 +53,4 @@ services:
 
 volumes:
   db-data:
+  maven-cache:
