@@ -1,0 +1,18 @@
+window['MY_DOCKER_APP_CONSTANTS'] = {
+  "back_url": "http://${API_HOST}:${API_PORT}/",
+  "front_url": "http://localhost:4200",
+  "cas": {
+    "login_url": "http://${CAS_HOST}:${CAS_PORT}/cas/login",
+    "logout_url": "http://${CAS_HOST}:${CAS_PORT}/cas/logout",
+  },
+  "deployment_enabled": true,
+  "default_storage_backend": "LOCAL",
+  "oidc_idps": [
+    {"idp_hint": "microsoft-oidc", "title": "CONNEXION ÉTUDIANTS PARIS-SACLAY"},
+    {"idp_hint": "satosa", "title": "CONNEXION VIA FÉDÉRATION RENATER", "tooltip": "Pour enseignants et étudiants d'autres universités"}
+  ],
+  "oidc_client_id": "mydocker-local",
+  "oidc_authority": "https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod",
+  "oidc_scope": "openid profile email edu",
+  // "auto_login": "OIDC",
+};

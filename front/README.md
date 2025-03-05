@@ -25,6 +25,12 @@ For a dev server, run :
 ```
 npm run start
 ```
+
+For a dockerized dev server, run :
+```shell
+docker-compose up -d
+```
+
 Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
