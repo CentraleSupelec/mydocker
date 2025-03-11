@@ -1,34 +1,18 @@
 version: '3.8'
 services:
-  caddy_server:
+  caddy:
     image: lucaslorentz/caddy-docker-proxy:ci-alpine
-    labels:
-      caddy_controlled_server:
+    deploy:
+      replicas: 1
     ports:
       - 80:80
       - 443:443
-    environment:
-      - CADDY_DOCKER_MODE=server
-      - CADDY_CONTROLLER_NETWORK=10.200.200.0/24
-    networks:
-      - caddy-overlay
-      - caddy-controller
-    deploy:
-      replicas: 1
-
-  caddy_controller:
-    image: lucaslorentz/caddy-docker-proxy:ci-alpine
-    environment:
-      - CADDY_DOCKER_MODE=controller
-      - CADDY_CONTROLLER_NETWORK=10.200.200.0/24
+      - 2019:2019
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - caddy-overlay
-      - caddy-controller
 
 networks:
   caddy-overlay:
-    external: true
-  caddy-controller:
     external: true

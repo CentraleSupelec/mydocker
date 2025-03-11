@@ -1,9 +1,0 @@
-version: '3.8'
-
-services:
-  app:
-    environment:
-      - SSH_AUTH_SOCK=${SSH_AUTH_SOCK}
-    volumes:
-      - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}:ro
-      - "~/.ssh/known_hosts:/root/.ssh/known_hosts:ro"
