@@ -7,6 +7,12 @@ export interface IOIDC_IDP {
   tooltip?: string;
 }
 
+export interface IInformation {
+  name?: string;
+  title?: string;
+  url?: string;
+}
+
 export interface IAppConfig {
   back_url: string;
   front_url: string;
@@ -21,6 +27,7 @@ export interface IAppConfig {
   oidc_client_id?: string;
   oidc_authority?: string;
   oidc_scope?: string;
+  information?: Array<IInformation>;
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -42,5 +49,6 @@ export function appConstantFactory(): IAppConfig {
     oidc_client_id: appConstants.oidc_client_id,
     oidc_authority: appConstants.oidc_authority,
     oidc_scope: appConstants.oidc_scope,
+    information: appConstants.information,
   };
 }

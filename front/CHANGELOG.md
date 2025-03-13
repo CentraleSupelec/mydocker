@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.28.1
+### Added
+- Add a information and contact button on the login page
+- Add size of the login page card dynamically change depending on the number of elements
 
 ## 2.28.0
 ### Added

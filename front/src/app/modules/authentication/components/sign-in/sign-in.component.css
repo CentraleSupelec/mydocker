@@ -9,14 +9,13 @@
 
 .card {
   background-color: #FFFFFF;
-  height: 41vh;
-  width: 41vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
   border-radius: 4px 4px 0 0;
   box-shadow: 8px 3px 5px RGBA(0, 0, 0, 0.14);
+  text-align: center;
 }
 
 .card img {
@@ -33,4 +32,24 @@
 
 .card h2 {
   margin: 0;
+}
+
+.card div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.branding {
+  gap: 1vh;
+}
+
+.login-buttons {
+  gap: 1.5vh;
+}
+
+.info-links {
+  margin: 0.5vh 0;
+  gap: 0.5vh;
 }

@@ -15,4 +15,8 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
   "oidc_authority": "https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod",
   "oidc_scope": "openid profile email edu",
   // "auto_login": "OIDC",
+  "information": [
+    {"name": "help", "title": "Informations sur le service", "url": "https://nthiery.github.io/mydocker-upsaclay-doc/"},
+    {"name": "support_mail", "title": "Contacter le support", "url": "mailto:mydocker-upsaclay-request@listes.centralesupelec.fr"},
+  ],
 };

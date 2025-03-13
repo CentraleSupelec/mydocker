@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from "@angular/core";
-import { APP_CONFIG, IAppConfig } from "../../../../app-config";
+import { APP_CONFIG, IAppConfig, IInformation } from "../../../../app-config";
 import { ActivatedRoute } from "@angular/router";
 import { NavigationService } from "../../../utils/services/navigation.service";
 import { OidcSecurityService } from "angular-auth-oidc-client";
@@ -15,8 +15,10 @@ import { skipWhile } from "rxjs/operators";
 export class SignInComponent implements OnInit {
   private redirectTo: string = "/";
   showButtons= false;
+  showInformation = false;
   isCasLoginEnabled = false;
   isOIDCLoginEnabled = false;
+  information!: Array<IInformation>;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
@@ -32,6 +34,8 @@ export class SignInComponent implements OnInit {
     this.showButtons = this.config.auto_login !== TokenOrigin.CAS
       && this.config.auto_login !== TokenOrigin.OIDC
       && (this.isOIDCLoginEnabled || this.isCasLoginEnabled);
+    this.information = this.config.information || [];
+    this.showInformation = this.information && this.information.length > 0;
     this.route.queryParamMap
       .pipe(
         // To avoid handling paramMap when it has not been initialized. See https://github.com/angular/angular/issues/12157#issuecomment-756379506
@@ -56,6 +60,13 @@ export class SignInComponent implements OnInit {
         }
       }
     );
+  }
+
+  get containerDimension(): string {
+    const itemCount = (this.isCasLoginEnabled ? 1 : 0)
+      + (this.config.oidc_idps?.length || 0)
+      + (this.information?.length || 0);
+    return (35 + itemCount * 5) + 'vh';
   }
 
   loginOIDC(hint?: string) {
