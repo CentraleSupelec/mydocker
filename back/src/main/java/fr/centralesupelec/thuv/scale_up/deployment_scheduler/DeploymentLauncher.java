@@ -39,6 +39,14 @@ public class DeploymentLauncher implements Runnable {
     private final InitAutoscalingService initAutoscalingService;
 
     private static GrpcWorkerDto mapToGrpcDto(OVHRegionWorker ovhRegionWorker) {
+        String[] courseIds = ovhRegionWorker.getLaunchDeployment().getSessionsToLaunch()
+                .stream()
+                .map(session -> String.valueOf(session.getCourse().getId()))
+                .collect(Collectors.toSet())
+                .toArray(new String[0])
+        ;
+        logger.info("Course Ids linked to ovh worker : %v" + courseIds);
+
         return new GrpcWorkerDto()
                 .setCount(ovhRegionWorker.getCount())
                 .setFlavor(ovhRegionWorker.getRessource().getType())
@@ -48,7 +56,9 @@ public class DeploymentLauncher implements Runnable {
                         ovhRegionWorker.getComputeType() == null
                                 ? null
                                 : ovhRegionWorker.getComputeType().getTechnicalName()
-                );
+                )
+                .setCourseIds(courseIds)
+        ;
     }
 
     public void launchDeployment() throws JsonProcessingException {
@@ -59,18 +69,13 @@ public class DeploymentLauncher implements Runnable {
         }
 
         LocalDateTime now = LocalDateTime.now();
+
         // Get worker region to launch / clean
         List<OVHRegionWorker> ovhRegionWorkers =
                 ovhRegionWorkerRepository
-                        .findOVHRegionWorkerByLaunchDeploymentStartDateTimeBeforeAndCleanDeploymentStartDateTimeAfter(
+                        .findOVHRegionWorkerByLaunchDeploymentStartDateTimeBeforeAndCleanDeploymentStartDateTimeAfterOrCleanDeploymentIsNull(
                                 now, now
                         );
-        ovhRegionWorkers.addAll(
-                ovhRegionWorkerRepository
-                    .findOVHRegionWorkerByLaunchDeploymentStartDateTimeBeforeAndCleanDeploymentIsNull(
-                            now
-                    )
-        );
 
         // Find last deployment
         List<Deployment> deployments = deploymentRepository.findByStartDateTimeBeforeAndStatusOrderByStartDateTimeDesc(
@@ -187,7 +192,11 @@ public class DeploymentLauncher implements Runnable {
                 )
                 .setRegion(
                         ovhRegionWorker.getRegion().getRegion()
-                );
+                )
+                .addAllCourseIds(ovhRegionWorker.getLaunchDeployment().getSessionsToLaunch()
+                        .stream().map(session -> session.getCourse().getId().toString()).collect(Collectors.toSet())
+                )
+                ;
         if (ovhRegionWorker.getComputeType() != null) {
             workerBuilder.setOwner(ovhRegionWorker.getComputeType().getTechnicalName());
         }

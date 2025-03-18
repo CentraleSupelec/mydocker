@@ -9,4 +9,5 @@ public class GrpcWorkerDto {
     private String imageId;
     private String region;
     private String owner;
+    private String[] courseIds;
 }

@@ -17,10 +17,10 @@ class TestSocketTest {
         ReflectionTestUtils.setField(testSocket, "disableSslValidation", false);
         ReflectionTestUtils.setField(testSocket, "errorCodes", List.of(404, 410, 503));
         assertTrue(testSocket.isHttpsAlive("badssl.com", timeout));
-        assertTrue(testSocket.isHttpsAlive("httpstat.us/401", timeout));
-        assertFalse(testSocket.isHttpsAlive("httpstat.us/404", timeout));
-        assertFalse(testSocket.isHttpsAlive("httpstat.us/410", timeout));
-        assertFalse(testSocket.isHttpsAlive("httpstat.us/503", timeout));
+        assertTrue(testSocket.isHttpsAlive("httpstatuses.maor.io/401", timeout));
+        assertFalse(testSocket.isHttpsAlive("httpstatuses.maor.io/404", timeout));
+        assertFalse(testSocket.isHttpsAlive("httpstatuses.maor.io/410", timeout));
+        assertFalse(testSocket.isHttpsAlive("httpstatuses.maor.io/503", timeout));
         assertFalse(testSocket.isHttpsAlive("expired.badssl.com", timeout));
         assertFalse(testSocket.isHttpsAlive("wrong.host.badssl.com", timeout));
     }
@@ -33,8 +33,8 @@ class TestSocketTest {
         assertTrue(testSocket.isHttpsAlive("badssl.com", timeout));
         assertTrue(testSocket.isHttpsAlive("expired.badssl.com", timeout));
         assertTrue(testSocket.isHttpsAlive("wrong.host.badssl.com", timeout));
-        assertTrue(testSocket.isHttpsAlive("httpstat.us/404", timeout));
-        assertFalse(testSocket.isHttpsAlive("httpstat.us/410", timeout));
-        assertFalse(testSocket.isHttpsAlive("httpstat.us/503", timeout));
+        assertTrue(testSocket.isHttpsAlive("httpstatuses.maor.io/404", timeout));
+        assertFalse(testSocket.isHttpsAlive("httpstatuses.maor.io/410", timeout));
+        assertFalse(testSocket.isHttpsAlive("httpstatuses.maor.io/503", timeout));
     }
 }

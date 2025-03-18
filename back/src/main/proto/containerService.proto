@@ -226,6 +226,7 @@ message Worker {
     string imageId = 3;
     uint32 count = 4;
     string owner = 5;
+    repeated string courseIds = 6;
 }
 
 message DeployRequest {
