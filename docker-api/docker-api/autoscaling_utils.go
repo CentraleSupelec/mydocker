@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -91,11 +92,22 @@ func (a *AutoscalingUtils) buildConfigFromExistingInfra() (*TerraformConfig, err
 					Name:            instance.Attributes["name"].AttributeString,
 					Region:          instance.Attributes["region"].AttributeString,
 					Owner:           instance.Attributes["metadata"].AttributeMap["owner"].AttributeString,
+					Labels:          extractLabels(instance.Attributes["metadata"].AttributeMap["labels"]),
 				}
 			}
 		}
 	}
 	return terraformConfig, nil
+}
+
+func extractLabels(attr Attribute) []string {
+	labelsStr := attr.AttributeString
+
+	if labelsStr == "" {
+		return []string{}
+	}
+
+	return strings.Split(labelsStr, ",")
 }
 
 type scaleUpOwner struct {

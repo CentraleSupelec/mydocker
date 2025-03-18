@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
+
 	"github.com/docker/docker/api/types"
 	containerTypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
-	"io"
-	"io/ioutil"
 )
 
 type dockerUtilsDockerClient interface {

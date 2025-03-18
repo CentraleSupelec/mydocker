@@ -127,6 +127,12 @@ func (s *scaleUpService) checkPendingServices() (map[string]int64, map[string]in
 			s.logger.Debugf("Skipping task %s for service %s because it has no resource reservations", listedTask.ID, listedTask.ServiceID)
 			continue
 		}
+
+		// Tasks that have dedicated workers are not compatible with autoscaling
+		if !findStringInListCaseInsensitive("node.labels.shared-pool==true", listedTask.Spec.Placement.Constraints) {
+			continue
+		}
+
 		for _, resource := range listedTask.Spec.Resources.Reservations.GenericResources {
 			if resource.DiscreteResourceSpec.Kind == "gpu" {
 				gpuCount += resource.DiscreteResourceSpec.Value
@@ -155,7 +161,15 @@ func retrieveExistingGpus() (map[string]int64, error) {
 		if resource.Type == "openstack_compute_instance_v2" {
 			for _, instance := range resource.Instances {
 				owner := instance.Attributes["metadata"].AttributeMap["owner"].AttributeString
-				gpus[owner] += 1
+				labels := instance.Attributes["metadata"].AttributeMap["labels"]
+				var extractedLabels = extractLabels(labels)
+				log.Debugf("Resource <%s> - instance labels : %v", resource.Name, extractedLabels)
+
+				if findStringInListCaseInsensitive("shared-pool", extractedLabels) {
+					gpus[owner] += 1
+				} else {
+					log.Error("Instance is not labeled shared. This should not happen.")
+				}
 			}
 		}
 	}
@@ -223,6 +237,7 @@ func (s *scaleUpService) createTerraformConfig(missingGpus map[string]int64) (*T
 				Name:            name,
 				Region:          region.Region,
 				Owner:           owner,
+				Labels:          []string{"shared-pool"},
 			}
 		}
 	}

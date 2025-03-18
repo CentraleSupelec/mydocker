@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"time"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
 	containerTypes "github.com/docker/docker/api/types/container"
@@ -10,22 +13,21 @@ import (
 	networkTypes "github.com/docker/docker/api/types/network"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"time"
 )
 
 type TerraformWorkerConfig struct {
-	Count           uint32 `json:"count"`
-	InstanceImageId string `json:"instance_image_id"`
+	Count           uint32   `json:"count"`
+	InstanceImageId string   `json:"instance_image_id"`
+	Labels          []string `json:"labels"`
 }
 
 type TerraformConfig struct {
-	InstancePrefix   string                                                 `json:"instance_prefix"`
-	CephServiceName  string                                                 `json:"ceph_service_name"`
-	Env              string                                                 `json:"env"`
-	NbWorkerByRegion map[string]map[string]map[string]TerraformWorkerConfig `json:"nb_worker_by_region"`
-	StateName        string                                                 `json:"-"`
-	NamedWorkers     map[string]TerraformNamedWorker                        `json:"named_workers"`
+	InstancePrefix   string                                                   `json:"instance_prefix"`
+	CephServiceName  string                                                   `json:"ceph_service_name"`
+	Env              string                                                   `json:"env"`
+	NbWorkerByRegion map[string]map[string]map[string][]TerraformWorkerConfig `json:"nb_worker_by_region"`
+	StateName        string                                                   `json:"-"`
+	NamedWorkers     map[string]TerraformNamedWorker                          `json:"named_workers"`
 }
 
 func NewTerraformConfig(stateName string) *TerraformConfig {
@@ -33,7 +35,7 @@ func NewTerraformConfig(stateName string) *TerraformConfig {
 		InstancePrefix:   "tf-auto-deploy",
 		CephServiceName:  c.CephServiceName,
 		Env:              c.Environment,
-		NbWorkerByRegion: make(map[string]map[string]map[string]TerraformWorkerConfig),
+		NbWorkerByRegion: make(map[string]map[string]map[string][]TerraformWorkerConfig),
 		NamedWorkers:     make(map[string]TerraformNamedWorker),
 		StateName:        "tfstate.tf",
 	}
@@ -44,11 +46,12 @@ func NewTerraformConfig(stateName string) *TerraformConfig {
 }
 
 type TerraformNamedWorker struct {
-	InstanceImageId string `json:"instance_image_id"`
-	InstanceType    string `json:"instance_type"`
-	Name            string `json:"name"`
-	Region          string `json:"region"`
-	Owner           string `json:"owner"`
+	InstanceImageId string   `json:"instance_image_id"`
+	InstanceType    string   `json:"instance_type"`
+	Name            string   `json:"name"`
+	Region          string   `json:"region"`
+	Owner           string   `json:"owner"`
+	Labels          []string `json:"labels"`
 }
 
 const DeployContainerName string = "deploy_container"

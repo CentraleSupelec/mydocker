@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -19,24 +20,49 @@ func (s *server) DeployInfra(request *pb.DeployRequest, responseStream pb.Contai
 	for _, w := range request.Workers {
 		_, exist := terraformConfig.NbWorkerByRegion[w.Region]
 		if !exist {
-			terraformConfig.NbWorkerByRegion[w.Region] = make(map[string]map[string]TerraformWorkerConfig)
+			terraformConfig.NbWorkerByRegion[w.Region] = make(map[string]map[string][]TerraformWorkerConfig)
 		}
 		flavor, exist := terraformConfig.NbWorkerByRegion[w.Region][w.Flavor]
 		if !exist {
-			terraformConfig.NbWorkerByRegion[w.Region][w.Flavor] = make(map[string]TerraformWorkerConfig)
+			terraformConfig.NbWorkerByRegion[w.Region][w.Flavor] = make(map[string][]TerraformWorkerConfig)
 			flavor = terraformConfig.NbWorkerByRegion[w.Region][w.Flavor]
 		}
 		ownerWorkers, exist := flavor[w.Owner]
+		labels := []string{}
+
+		log.Infof("Adding course id labels %v", w.GetCourseIds())
+		for _, courseId := range w.GetCourseIds() {
+			log.Info("Adding course id label ", courseId)
+			labels = append(labels, fmt.Sprintf("courseId-%s", courseId))
+		}
+
 		if exist {
-			flavor[w.Owner] = TerraformWorkerConfig{
-				Count:           ownerWorkers.Count + w.Count,
-				InstanceImageId: w.ImageId,
+			var foundWorkerWithSameLabels = false
+			for index, ownerWorker := range ownerWorkers {
+				if sameUniqueElements(ownerWorker.Labels, labels) {
+					foundWorkerWithSameLabels = true
+					log.Info("Found worker with same labels")
+
+					flavor[w.Owner][index].Count = flavor[w.Owner][index].Count + w.Count
+					break
+				}
+			}
+			if !foundWorkerWithSameLabels {
+				log.Info("Worker with same labels not found")
+				newWorker := TerraformWorkerConfig{
+					Count:           w.Count,
+					InstanceImageId: w.ImageId,
+					Labels:          labels,
+				}
+				flavor[w.Owner] = append(flavor[w.Owner], newWorker)
 			}
 		} else {
-			flavor[w.Owner] = TerraformWorkerConfig{
+			newWorker := TerraformWorkerConfig{
 				Count:           w.Count,
 				InstanceImageId: w.ImageId,
+				Labels:          labels,
 			}
+			flavor[w.Owner] = []TerraformWorkerConfig{newWorker}
 		}
 	}
 
@@ -94,4 +120,26 @@ func sendData(response *pb.DeployResponse, responseStream pb.ContainerService_De
 		log.Errorf("Got an error while responding to deploy infra #%s: %s", response.Id, err)
 	}
 	return err
+}
+
+func sameUniqueElements(a, b []string) bool {
+	setA := make(map[string]struct{})
+	setB := make(map[string]struct{})
+
+	for _, v := range a {
+		setA[v] = struct{}{}
+	}
+	for _, v := range b {
+		setB[v] = struct{}{}
+	}
+
+	if len(setA) != len(setB) {
+		return false
+	}
+	for k := range setA {
+		if _, ok := setB[k]; !ok {
+			return false
+		}
+	}
+	return true
 }
