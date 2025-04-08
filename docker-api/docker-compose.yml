@@ -3,54 +3,19 @@ version: '3.8'
 services:
   app:
     build:
-      context: ./docker
-    working_dir: /usr/src/app/docker-api
+      context: .
+      dockerfile: docker/Dockerfile
     volumes:
-      - ".:/usr/src/app"
-      - "/var/run/docker.sock:/var/run/docker.sock"
       - "gocache:/go/pkg/mod"
+      - "$PWD:/app:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     ports:
       - "50000:50000"
 # Used to debug with delve
       - "2345:2345"
-    command:
-      - "bash"
-      - "-c"
-      - "go build -i -tags luminous && ./docker-api -config-path=.."
-# Replace the line above with the line below to debug with delve
-#      - "go get github.com/go-delve/delve/cmd/dlv@v1.7.3 && /go/bin/dlv debug --headless --listen=0.0.0.0:2345 --api-version=2 --accept-multiclient --build-flags='-i -tags luminous' -- -config-path=.."
+# Uncomment the two lines below to debug with delve
+    # command:
+    #  - "go get github.com/go-delve/delve/cmd/dlv@v1.7.3 && /go/bin/dlv debug --headless --listen=0.0.0.0:2345 --api-version=2 --accept-multiclient --build-flags='-i -tags luminous' -- -config-path=.."
 
-  caddy_server:
-    image: lucaslorentz/caddy-docker-proxy:ci-alpine
-    labels:
-      caddy_controlled_server:
-    ports:
-      - 80:80
-      - 443:443
-    environment:
-      - CADDY_DOCKER_MODE=server
-      - CADDY_CONTROLLER_NETWORK=10.200.200.0/24
-    networks:
-      - caddy-overlay
-      - caddy-controller
-    deploy:
-      replicas: 1
-
-  caddy_controller:
-    image: lucaslorentz/caddy-docker-proxy:ci-alpine
-    environment:
-      - CADDY_DOCKER_MODE=controller
-      - CADDY_CONTROLLER_NETWORK=10.200.200.0/24
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - caddy-overlay
-      - caddy-controller
 volumes:
   gocache:
-
-networks:
-  caddy-overlay:
-    external: true
-  caddy-controller:
-    external: true
