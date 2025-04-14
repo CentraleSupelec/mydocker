@@ -5,11 +5,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
-
-### Added
-- Add docker environment to deploy / dev the application
-- Add Docker Host customizable
-
 ## 2.17.7
 ### Added
 - SYS_PTRACE capability to created containers

@@ -10,7 +10,6 @@ require (
 	github.com/containerd/containerd v1.4.3 // indirect
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/derekparker/trie v0.0.0-20200317170641-1fdf38b7b0e9 // indirect
-	github.com/docker/cli v20.10.2+incompatible
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v20.10.3+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect

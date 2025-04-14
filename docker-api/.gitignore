@@ -119,3 +119,6 @@ Temporary Items
 
 docker-api/docker-api
 config.yml
+
+**tmp
+.env

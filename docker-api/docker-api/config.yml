@@ -1,5 +1,3 @@
-# DockerConfig:
-#   host: "ssh://user@host.fr"
 Port: 50000
 Worker: 30
 PortThreshold: 75
