@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -73,6 +74,9 @@ type dockerImageBuilderDockerClient interface {
 	NodeInspectWithRaw(ctx context.Context, nodeID string) (swarm.Node, []byte, error)
 
 	TaskLogs(ctx context.Context, taskID string, options types.ContainerLogsOptions) (io.ReadCloser, error)
+
+	CopyToContainer(ctx context.Context, container string, dstPath string, content io.Reader, options types.CopyToContainerOptions) error
+	ContainerList(ctx context.Context, options types.ContainerListOptions) ([]types.Container, error)
 }
 
 func newDockerImageBuilder(dockerClient dockerImageBuilderDockerClient, dockerUtils DockerUtilsInterface) *DockerImageBuilder {
@@ -217,9 +221,10 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 	if err != nil {
 		log.Errorf("failed to remove service %s after building an image", service.ID)
 	}
+
 	err = d.dockerClient.VolumeRemove(ctx, volumeName, true)
 	if err != nil {
-		log.Errorf("failed to remove volume %s after building an image", volumeName)
+		log.Errorf("failed to remove volume %s after building an image: %v", volumeName, err)
 	}
 	if taskError != "" {
 		return fmt.Errorf("failed to build image: %s", taskError)
@@ -228,6 +233,55 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 	}
 
 	return nil
+}
+
+func (d *DockerImageBuilder) copyLocalDirToContainer(containerID, localDir, destPath string) error {
+	buf := new(bytes.Buffer)
+	tw := tar.NewWriter(buf)
+
+	err := filepath.Walk(localDir, func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(localDir, filePath)
+		if err != nil {
+			return err
+		}
+
+		header := &tar.Header{
+			Name: filepath.Join(destPath, relPath),
+			Mode: int64(info.Mode()),
+			Size: info.Size(),
+		}
+		if err := tw.WriteHeader(header); err != nil {
+			return err
+		}
+
+		f, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		if _, err := io.Copy(tw, f); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := tw.Close(); err != nil {
+		return err
+	}
+
+	copyOpts := types.CopyToContainerOptions{}
+	return d.dockerClient.CopyToContainer(context.Background(), containerID, "/", bytes.NewReader(buf.Bytes()), copyOpts)
 }
 
 func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte, dockerfile string, wrapperScript string) (string, error) {
@@ -282,12 +336,6 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 		CapAdd: []string{"SYS_PTRACE"},
 		Mounts: []mount.Mount{
 			{
-				Type:     mount.TypeBind,
-				Source:   buildFilesPath,
-				Target:   "/tmp/source",
-				ReadOnly: true,
-			},
-			{
 				Type:   mount.TypeVolume,
 				Source: volumeName,
 				Target: "/tmp/dest",
@@ -308,6 +356,20 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 	copyContainer, err := d.dockerClient.ContainerCreate(context.TODO(), contConfig, hostConfig, nil, nil, "copy_volume_"+buildId)
 	if err != nil {
 		return "", err
+	}
+
+	if c.DockerConfig.Host != "" {
+		err = d.copyLocalDirToContainer(copyContainer.ID, buildFilesPath, "/tmp/source")
+		if err != nil {
+			return "", err
+		}
+	} else {
+		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
+			Type:     mount.TypeBind,
+			Source:   buildFilesPath,
+			Target:   "/tmp/source",
+			ReadOnly: true,
+		})
 	}
 
 	err = d.dockerClient.ContainerStart(context.TODO(), copyContainer.ID, types.ContainerStartOptions{})

@@ -14,14 +14,21 @@ import (
 
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 
+	"net/http"
+
+	"github.com/docker/cli/cli/connhelper"
+
 	"github.com/docker/docker/client"
 	"google.golang.org/grpc"
 
 	"github.com/Workiva/go-datastructures/queue"
 	log "github.com/sirupsen/logrus"
+	"fmt"
+	"strings"
 )
 
 type config struct {
+	DockerConfig            dockerConfig
 	AdminImage              string
 	Port                    int
 	Worker                  int
@@ -67,6 +74,10 @@ type config struct {
 	CaddyTlsKeyPath         string
 	CaddyStreamCloseDelay   string
 	StudentVolumeSize       int
+}
+
+type dockerConfig struct {
+	Host string
 }
 
 type registryCredential struct {
@@ -289,6 +300,44 @@ func (s *server) ShutdownContainer(stream pb.ContainerService_ShutdownContainerS
 	return nil
 }
 
+func NewDockerClient(dockerConfig dockerConfig) (*client.Client, error) {
+	dockerHost := dockerConfig.Host
+	if dockerHost != "" {
+		if (!strings.HasPrefix(dockerHost, "ssh://")) {
+			return nil, fmt.Errorf("only ssh hosts are allowed, got: %s", dockerHost)
+		}
+		helper, err := connhelper.GetConnectionHelper(dockerHost)
+		if err != nil {
+			return nil, err
+		}
+
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				DialContext: helper.Dialer,
+			},
+		}
+
+		var clientOpts []client.Opt
+
+		clientOpts = append(clientOpts,
+			client.WithHTTPClient(httpClient),
+			client.WithHost(helper.Host),
+			client.WithDialContext(helper.Dialer),
+			client.WithVersion("1.44"),
+		)
+		cli, err := client.NewClientWithOpts(clientOpts...)
+		if err != nil {
+			return nil, err
+		}
+		return cli, nil
+	}
+	cli, err := client.NewClientWithOpts(client.WithVersion("1.44"))
+	if err != nil {
+		return nil, err
+	}
+	return cli, nil
+}
+
 func main() {
 	configPath := flag.String(
 		"config-path",
@@ -332,9 +381,9 @@ func main() {
 	log.SetLevel(level)
 
 	//docker client
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.44"))
+	cli, err := NewDockerClient(c.DockerConfig)
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Erreur de connexion à Docker: %s", err)
 	}
 
 	// chan for port and launch port worker
