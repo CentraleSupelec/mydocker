@@ -5,14 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
 ### Added
 - Add container swarm state retrieval
+- Add docker environment to deploy / dev the application
 
 ### Fixed
 - Do not log user disabling if user is not disabled because it is the one we found earlier
-
-### Added
-- Add docker environment to deploy / dev the application
+- increase test http timeout
 
 ## 2.30.2
 ### Changed
