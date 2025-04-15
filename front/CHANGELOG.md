@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add a information and contact button on the login page
 - Add size of the login page card dynamically change depending on the number of elements
+- Add message with link to doc when no courses
 
 ## 2.28.0
 ### Added
