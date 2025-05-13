@@ -5,6 +5,7 @@ import (
 	"bufio"
 	b64 "encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -190,13 +191,13 @@ type containerInfo struct {
 
 func parseContainerName(containerName string) (*containerInfo, error) {
 	split := strings.Split(containerName, "-")
-	if split[len(split)-1] == "admin" {
-        courseId := strings.Join(split[:len(split)-1], "-") // Combine toutes les parties sauf "admin"
-        return &containerInfo{userId: "", courseId: courseId, isAdmin: true}, nil
-    }
-	userId := split[0]
-    courseId := strings.Join(split[1:], "-") // Combine toutes les parties sauf la première
-    return &containerInfo{userId: userId, courseId: courseId, isAdmin: false}, nil
+	if len(split) != 2 {
+		return nil, errors.New("Invalid container name")
+	}
+	if split[1] == "admin" {
+		return &containerInfo{userId: "", courseId: split[0], isAdmin: true}, nil
+	}
+	return &containerInfo{userId: split[0], courseId: split[1], isAdmin: false}, nil
 }
 
 func createStudentVolumeName(userId string) string {

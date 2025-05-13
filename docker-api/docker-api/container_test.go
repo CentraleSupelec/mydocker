@@ -46,7 +46,8 @@ func TestGetOrCreateContainer(t *testing.T) {
 	}
 
 	ports := queue.New(c.PortSize)
-	go portsWorker(ports, cli)
+	ctx := context.Background()
+	go portsWorker(ctx, ports, cli)
 
 	go getOrCreateContainer(in, out, cli, ports, createRbdImageIn, createRbdImageOut, 0)
 

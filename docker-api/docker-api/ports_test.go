@@ -31,12 +31,13 @@ func TestPortsWorker(t *testing.T) {
 		PortSize:      150,
 		PortMin:       10000,
 		PortMax:       15000,
+		PortWorkerInterval: "1ms", // Fast interval for testing
 	}
 	if err != nil {
 		log.Panic(err)
 	}
 	ports := queue.New(c.PortSize)
-	go portsWorker(ports, cli)
+	go portsWorker(context.Background(), ports, cli)
 
 	for i := c.PortMin; i <= c.PortMax; i++ {
 		portsArray, _ := ports.Get(1)

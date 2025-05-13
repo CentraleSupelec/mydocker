@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io"
 	"math/rand"
@@ -36,6 +37,7 @@ type config struct {
 	PortSize                int64
 	PortMin                 uint32
 	PortMax                 uint32
+	PortWorkerInterval      string
 	DefaultNanoCPUsLimit    int64
 	DefaultMemoryBytesLimit int64
 	BuildRegistryAddress    string
@@ -379,6 +381,13 @@ func NewDockerClient(dockerConfig dockerConfig) (*client.Client, error) {
 }
 
 func main() {
+	if c.Environment == "dev" {
+        log.Println("Enabling pprof for profiling")
+        go func() {
+            log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+        }()
+    }
+
 	configPath := flag.String(
 		"config-path",
 		"",
@@ -403,6 +412,7 @@ func main() {
 	viper.SetDefault("CaddyTlsKeyPath", "/etc/ssl/caddy_reverse_proxy/key.pem")
 	viper.SetDefault("CaddyStreamCloseDelay", "4h")
 	viper.SetDefault("ContainerStatusInterval", "1s")
+	viper.SetDefault("PortWorkerInterval", "5s")
 	viper.SetDefault("LogsTimestamps", true)
 	viper.SetDefault("LogsDetails", false)
 	if err := viper.ReadInConfig(); err != nil {
@@ -431,7 +441,8 @@ func main() {
 
 	// chan for port and launch port worker
 	ports := queue.New(c.PortSize)
-	go portsWorker(ports, cli)
+	ctx := context.Background()
+	go portsWorker(ctx, ports, cli)
 
 	// create cron job
 	cronS := gocron.NewScheduler(time.UTC)
