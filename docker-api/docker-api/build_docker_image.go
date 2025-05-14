@@ -353,6 +353,15 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 		return "", err
 	}
 
+	if c.DockerConfig.Host == "" {
+		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
+			Type:     mount.TypeBind,
+			Source:   buildFilesPath,
+			Target:   "/tmp/source",
+			ReadOnly: true,
+		})
+	}
+
 	copyContainer, err := d.dockerClient.ContainerCreate(context.TODO(), contConfig, hostConfig, nil, nil, "copy_volume_"+buildId)
 	if err != nil {
 		return "", err
@@ -363,13 +372,6 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 		if err != nil {
 			return "", err
 		}
-	} else {
-		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
-			Type:     mount.TypeBind,
-			Source:   buildFilesPath,
-			Target:   "/tmp/source",
-			ReadOnly: true,
-		})
 	}
 
 	err = d.dockerClient.ContainerStart(context.TODO(), copyContainer.ID, types.ContainerStartOptions{})

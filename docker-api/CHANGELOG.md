@@ -6,6 +6,10 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
+## 2.18.1
+### Fixed
+- Fix build docker image with kaniko
+
 ## 2.18.0
 ### Added
 - Send container swarm state
