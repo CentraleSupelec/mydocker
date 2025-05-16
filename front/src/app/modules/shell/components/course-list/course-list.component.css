@@ -19,12 +19,3 @@
 .session-container:last-child {
   padding-bottom: 10px;
 }
-
-.center-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 45vh;
-}

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnInit } from "@angular/core";
+import { AfterViewInit, Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ISession } from "../../interfaces/session";
 import { IBasicCourseWithSession } from "../../interfaces/course";
@@ -6,7 +6,6 @@ import { FormControl } from "@angular/forms";
 import { filter, map, mergeMap, switchMap, take, tap } from "rxjs/operators";
 import { AdminCoursesApiService } from "src/app/modules/admin-course/services/admin-courses-api.service";
 import { ComputeTypesApiService } from "src/app/modules/compute-type/services/compute-types-api.service";
-import { APP_CONFIG, IAppConfig } from "src/app/app-config";
 
 
 @Component({
@@ -22,11 +21,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   launchSessionId: number | null = null;
   courseId: number | undefined = undefined;
   userRedirect: string | undefined = undefined;
-  documentationUrl: string | undefined = undefined;
-  showInformationMessage: boolean = false;
 
   constructor(
-    @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly adminCoursesApiService: AdminCoursesApiService,
@@ -34,10 +30,6 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    const helpInfo = this.config.information?.find((info) => info.name === "help");
-    this.documentationUrl = helpInfo?.url || "https://example.com/documentation";
-    this.showInformationMessage = !!helpInfo;
-
     this.route.data
     .pipe(
       mergeMap((routeData) => {
