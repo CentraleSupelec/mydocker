@@ -32,7 +32,7 @@
       </div>
     </mat-accordion>
 
-    <div *ngIf="(sessionByDate | keyvalue).length === 0">
+    <div *ngIf="(sessionByDate | keyvalue).length === 0" class="session-container center-message">
       <h3>Aucune session à venir</h3>
     </div>
   </mat-tab>
@@ -64,5 +64,12 @@
         </mat-expansion-panel>
       </div>
     </mat-accordion>
+    <div *ngIf="courses && courses.length === 0" class="session-container center-message">
+      <h3>Aucun cours disponible</h3>
+      <p *ngIf="showInformationMessage">
+        L'historique des environnements auxquels vous avez accédés est actuellement vide.
+        Vous trouverez dans notre <a mat-button color="primary" [href]="documentationUrl" target="_blank">documentation</a> des propositions d'environnements génériques mis à votre disposition.
+      </p>
+    </div>
   </mat-tab>
 </mat-tab-group>
