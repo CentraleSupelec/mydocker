@@ -110,3 +110,33 @@ func TestCommandToParts(t *testing.T) {
 	expected = []string{"c", `-v="h"`}
 	validateCommand(t, parts, expected)
 }
+
+func TestParseContainerName(t *testing.T) {
+	// Test case 1: Normal user container
+	info, err := parseContainerName("user123-course456")
+	assert.NoError(t, err)
+	assert.Equal(t, "user123", info.userId)
+	assert.Equal(t, "course456", info.courseId)
+	assert.False(t, info.isAdmin)
+
+	// Test case 2: Admin container
+	info, err = parseContainerName("course456-admin")
+	assert.NoError(t, err)
+	assert.Equal(t, "", info.userId)
+	assert.Equal(t, "course456", info.courseId)
+	assert.True(t, info.isAdmin)
+
+	// Test case 3: Course ID with hyphens
+	info, err = parseContainerName("user123-complex-course-name")
+	assert.NoError(t, err)
+	assert.Equal(t, "user123", info.userId)
+	assert.Equal(t, "complex-course-name", info.courseId)
+	assert.False(t, info.isAdmin)
+
+	// Test case 4: Admin container with hyphens in course name
+	info, err = parseContainerName("complex-course-name-admin")
+	assert.NoError(t, err)
+	assert.Equal(t, "", info.userId)
+	assert.Equal(t, "complex-course-name", info.courseId)
+	assert.True(t, info.isAdmin)
+}
