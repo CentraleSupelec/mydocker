@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 2.31.1
+### Added
+- Add shutdown endpoint for DockerImageTestController
+
 ## 2.31.0
 ### Added
 - Add container swarm state retrieval
