@@ -34,6 +34,7 @@ export class DockerImageDetailComponent implements OnInit {
   loading = true;
   refresh$ = new Subject<void>();
   testContainer: IContainer | null = null;
+  containerState: 'loading' | 'ready' | 'creation_error' | 'shutdown_error' | 'shutting_down' | null = null;
 
   private readonly stopPolling$: Subject<void> = new Subject<void>();
   private readonly stopContainerPolling$: Subject<void> = new Subject<void>();
@@ -85,12 +86,13 @@ export class DockerImageDetailComponent implements OnInit {
     )
   }
 
-  testBuild(element: IDockerImageBuild) {
+  testBuild(element: IDockerImageBuild): void {
     // stop precedent polling if exist
     this.stopContainerPolling$.next();
     this.testContainer = null;
     this.expandedElement = this.expandedElement === element ? null : element;
     if (this.expandedElement) {
+      this.containerState = 'loading';
       this.dockerImageApiService.initTestDockerImageBuild(element.id)
         .pipe(
           mergeMap(() => interval(3000)),
@@ -99,11 +101,23 @@ export class DockerImageDetailComponent implements OnInit {
         ).subscribe(
         container => {
           if(container) {
-            this.testContainer = container;
-            this.stopContainerPolling$.next();
+            if (container.status === 'OK') {
+              this.testContainer = container;
+              this.containerState = 'ready';
+              this.stopContainerPolling$.next();
+            } else if (container.status === 'KO') {
+              this.containerState = 'creation_error';
+              this.stopContainerPolling$.next();
+            }
           }
+        },
+        error => {
+          this.containerState = 'creation_error';
+          this.stopContainerPolling$.next();
         }
       )
+    } else {
+      this.containerState = null;
     }
   }
 
@@ -123,5 +137,32 @@ export class DockerImageDetailComponent implements OnInit {
     this.dockerImageApiService.getLogs(element.id).subscribe(
       logs => this.openLogsDialogService.openDialog(logs)
     );
+  }
+
+  deleteEnv(element: IDockerImageBuild): void {
+    this.containerState = 'shutting_down';
+    this.dockerImageApiService.shutdownTestContainer(element.id)
+      .pipe(
+        mergeMap(() => interval(1000)),
+        mergeMap(() => this.dockerImageApiService.getShutdownStatus(element.id)),
+        takeUntil(this.stopContainerPolling$)
+      )
+      .subscribe(
+        (status) => {
+          if (status.isShutdown) {
+            this.testContainer = null;
+            this.containerState = null;
+            this.expandedElement = null;
+            this.stopContainerPolling$.next();
+          } else if (status.error) {
+            this.containerState = 'shutdown_error';
+            this.stopContainerPolling$.next();
+          }
+        },
+        () => {
+          this.containerState = 'shutdown_error';
+          this.stopContainerPolling$.next();
+        }
+      );
   }
 }

@@ -93,20 +93,42 @@
           <mat-icon>playlist_add_check</mat-icon>
         </button>
       </div>
-      <div *ngIf="testContainer !== null; then thenBlock else elseBlock"></div>
-
-      <ng-template #thenBlock>
-        <app-display-container
-          [container]="testContainer"
-        ></app-display-container>
-      </ng-template>
-
-      <ng-template #elseBlock>
-        <div fxLayout="column" fxLayoutAlign="center center" fxFill>
+      <div [ngSwitch]="containerState">
+        <div *ngSwitchCase="'loading'" fxLayout="column" fxLayoutAlign="center center" fxFill>
           <mat-spinner></mat-spinner>
-          <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+          <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès...</p>
+          <p style="margin-top: 5px; font-size: 0.9em; color: #666;">Cette opération peut prendre plusieurs minutes</p>
         </div>
-      </ng-template>
+
+        <div *ngSwitchCase="'ready'">
+          <app-display-container
+            [container]="testContainer"
+          ></app-display-container>
+          <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="15px" style="margin: 15px 0 30px 0;">
+            <button mat-raised-button color="warn" (click)="deleteEnv(expandedElement!)" *ngIf="expandedElement">
+              Éteindre l'environnement
+            </button>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="'shutting_down'" fxLayout="column" fxLayoutAlign="center center" fxFill>
+          <mat-spinner></mat-spinner>
+          <p style="margin-top: 10px">Extinction de l'environnement en cours...</p>
+          <p style="margin-top: 5px; font-size: 0.9em; color: #666;">Cette opération peut prendre quelques instants</p>
+        </div>
+
+        <div *ngSwitchCase="'creation_error'" fxLayout="column" fxLayoutAlign="center center" fxFill>
+          <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error_outline</mat-icon>
+          <p style="margin-top: 10px">Une erreur est survenue lors de l'initialisation du conteneur</p>
+          <p style="margin-top: 5px; font-size: 0.9em;">Veuillez réessayer ou contacter un administrateur si le problème persiste</p>
+        </div>
+
+        <div *ngSwitchCase="'shutdown_error'" fxLayout="column" fxLayoutAlign="center center" fxFill>
+          <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error_outline</mat-icon>
+          <p style="margin-top: 10px">Une erreur est survenue lors de l'extinction du conteneur</p>
+          <p style="margin-top: 5px; font-size: 0.9em;">L'environnement est peut-être déjà éteint. Si le problème persiste, veuillez contacter un administrateur.</p>
+        </div>
+      </div>
     </mat-cell>
   </ng-container>
 

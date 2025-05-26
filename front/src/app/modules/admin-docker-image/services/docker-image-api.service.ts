@@ -7,6 +7,7 @@ import { IDockerImageBuild } from "../interfaces/docker-image-build";
 import { IPort } from "../../ports-form/interfaces/port";
 import { IContainer } from "../../shell/interfaces/container";
 import { IPageResponse } from "../../utils/page";
+import { IShutdownStatus } from "../interfaces/shutdown-status";
 
 @Injectable({
   providedIn: 'root'
@@ -79,6 +80,14 @@ export class DockerImageApiService {
       observe: 'body',
       responseType: 'text'
     })
+  }
+
+  shutdownTestContainer(id: number): Observable<void> {
+    return this.httClient.post<void>(`${this.config.back_url}images/build/${id}/shutdown`, {});
+  }
+
+  getShutdownStatus(buildId: number): Observable<IShutdownStatus> {
+    return this.httClient.get<IShutdownStatus>(`${this.config.back_url}images/build/${buildId}/shutdown`);
   }
 
   private createFormData(image: IUpdateDockerImage): FormData {
