@@ -63,5 +63,25 @@ describe("RenderStringService", () => {
         "http://{{HOST['8888']}}/{{USER_REDIRECT}}?token={{PASSWORD}}",
         ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER_REDIRECT"),
     ).toEqual("https://hostname.com/USER_REDIRECT?token=PASSWORD");
+    expect(
+      service.renderString(
+        "http://{{HOST['8888']}}/{{USER-REDIRECT}}?token={{PASSWORD}}",
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "USER-REDIRECT"),
+    ).toEqual("https://hostname.com/USER-REDIRECT?token=PASSWORD");
+    expect(
+      service.renderString(
+        "http://{{HOST['8888']}}/{{USER_REDIRECT:?}}token={{PASSWORD}}",
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", ""),
+    ).toEqual("https://hostname.com/?token=PASSWORD");
+    expect(
+      service.renderString(
+        "{{USER_REDIRECT:git-pull?repo=https%3A%2F%2Fexample.com%2Fsome%2Frepo&urlpath=lab/tree%2FmyFolder%26urlpath%3Dlab%2Ftree%2FmyFolder%2Freadme.md&branch=main}}",
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", ""),
+      ).toEqual("git-pull?repo=https%3A%2F%2Fexample.com%2Fsome%2Frepo&urlpath=lab/tree%2FmyFolder%26urlpath%3Dlab%2Ftree%2FmyFolder%2Freadme.md&branch=main");
+    expect(
+      service.renderString(
+        "{{USER_REDIRECT:git-pull?repo=https%3A%2F%2Fexample.com%2Fsome%2Frepo&urlpath=lab/tree%2FmyFolder%26urlpath%3Dlab%2Ftree%2FmyFolder%2Freadme.md&branch=main}}",
+        ports, "USERNAME", "PASSWORD", "IP_ADDRESS", "myRedirect"),
+      ).toEqual("myRedirect");
   });
 });

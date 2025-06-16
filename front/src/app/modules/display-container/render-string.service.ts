@@ -11,39 +11,61 @@ class WrongPortType extends Error {
 })
 export class RenderStringService {
 
-  private readonly regex = /{{([a-zA-Z\[\]'0-9_]+)}}/g;
+  private readonly regex = /{{([^{}]+)}}/g;
   private readonly portRegex = /PORT\['([0-9]+)']/;
   private readonly hostRegex = /HOST\['([0-9]+)']/;
+
+  private readonly defaultValueEnabled = new Set<string>([
+    'USER_REDIRECT',
+    'USER-REDIRECT',
+  ]);
 
   renderString(stringToRender: string, ports: IContainerPort[], username: string, password: string, ip: string, userRedirect: string) {
     try {
       let returnHostname = false;
       const replaced = stringToRender.replace(this.regex, (_: string, group: string) => {
-        switch (group) {
-          case 'IP':
-            return ip
-          case 'USERNAME':
-            return username;
-          case 'PASSWORD':
-            return password
-          case 'USER_REDIRECT':
-            return decodeURI(userRedirect)
-        }
-        const matchPort = group.match(this.portRegex);
-        if (matchPort !== null) {
-          const matchingContainerPort = ports.find(p => String(p.mapPort) === matchPort[1])
-          return matchingContainerPort ? String(matchingContainerPort.portMapTo) : ''
-        }
-        const matchHost = group.match(this.hostRegex);
-        if (matchHost !== null) {
-          const matchingContainerPort = ports.find(p => String(p.mapPort) === matchHost[1])
-          if (matchingContainerPort?.connectionType !== ConnectionType.HTTP) {
-            throw new WrongPortType();
+        const [placeholder, defaultValue] = group.split(":", 2);
+        let replacement = '';
+
+        switch (true) {
+          case placeholder === 'IP':
+            replacement = ip;
+            break;
+          case placeholder === 'USERNAME':
+            replacement = username;
+            break;
+          case placeholder === 'PASSWORD':
+            replacement = password;
+            break;
+          case placeholder === 'USER_REDIRECT':
+          case placeholder === 'USER-REDIRECT':
+            replacement = userRedirect ? decodeURI(userRedirect) : '';
+            break;
+          case this.portRegex.test(placeholder): {
+            const matchPort = placeholder.match(this.portRegex)!;
+            const matchingContainerPort = ports.find(p => String(p.mapPort) === matchPort[1]);
+            replacement = matchingContainerPort ? String(matchingContainerPort.portMapTo) : '';
+            break;
           }
-          returnHostname = true;
-          return matchingContainerPort.hostname ?? 'generated-hostname.mydocker.com';
+          case this.hostRegex.test(placeholder): {
+            const matchHost = placeholder.match(this.hostRegex)!;
+            const matchingContainerPort = ports.find(p => String(p.mapPort) === matchHost[1]);
+            if (matchingContainerPort?.connectionType !== ConnectionType.HTTP) {
+              throw new WrongPortType();
+            }
+            returnHostname = true;
+            replacement = matchingContainerPort?.hostname ?? 'generated-hostname.mydocker.com';
+            break;
+          }
+          default:
+            replacement = '';
         }
-        return '';
+
+        if (replacement === '' && defaultValue !== undefined && this.defaultValueEnabled.has(placeholder)) {
+          replacement = defaultValue;
+        }
+
+        return replacement;
       });
       return returnHostname ? replaced.replace(/^http:\/\//, 'https://') : replaced;
     } catch (error) {

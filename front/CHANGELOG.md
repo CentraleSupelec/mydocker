@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.28.3
+### Added
+- Support of hyphenated placeholder `USER-REDIRECT` in URL templates.
+- Allow default value syntax for `USER_REDIRECT` / `USER-REDIRECT` (e.g. `{{USER_REDIRECT:?}}` or `{{USER_REDIRECT:myDefault}}`) which is used when no redirect string is provided.
+
 ## 2.28.2
 ### Fixed
 - Improve test environment loader in build image section to stop only when container is available.
