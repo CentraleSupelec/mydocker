@@ -22,6 +22,7 @@ export class DefaultCourseFormValuesService {
       allowStudentToSubmit: obj?.allowStudentToSubmit ?? false,
 
       displayOptions: obj?.displayOptions ?? {},
+      visible: obj?.visible ?? false,
       useStudentVolume: obj?.useStudentVolume ?? false,
       studentVolumePath: obj?.studentVolumePath ?? null,
     };

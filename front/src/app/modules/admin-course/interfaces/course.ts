@@ -31,6 +31,8 @@ export interface IAdminCourseBase {
   useStudentVolume: boolean;
   studentVolumePath: string | null;
 
+  visible: boolean;
+
   displayOptions: ICourseDisplay;
 
   shutdownAfterMinutes: number;
