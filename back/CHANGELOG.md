@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## 2.31.4
+### Added
+- New `visible` flag on `Course` entity and related DTOs; Liquibase migration added.
+
+### Changed
+- Reading permissions and course search now allow teachers to access courses marked as `visible`.
+
 ## 2.31.3
 ### Fixed
 - Mark container status as **KO** as soon as a `creationError` is detected either in the initial `ContainerResponse` or in subsequent `ContainerStatusResponse` messages. This prevents environments from remaining stuck in `PENDING` when their creation has already failed.

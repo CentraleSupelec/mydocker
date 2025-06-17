@@ -47,5 +47,8 @@ public class AdminCourseBaseDto {
     private Boolean allowStudentToSubmit = false;
 
     @NotNull
+    private Boolean visible = false;
+
+    @NotNull
     private HashMap<String, Object> displayOptions = new HashMap<>();
 }

@@ -68,6 +68,9 @@ public class UpdateCourseMapper {
                 .setWorkdirPath(
                         dto.getWorkdirPath()
                 )
+                .setVisible(
+                        dto.getVisible()
+                )
                 .setShutdownAfterMinutes(
                         dto.getShutdownAfterMinutes()
                 )

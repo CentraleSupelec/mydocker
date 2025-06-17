@@ -40,6 +40,9 @@ public class CoursePermissionService {
         );
         return principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
                 || course.getCreator().getId().equals(user.getId())
+                || (course.getVisible() && principal.getAuthorities()
+                        .stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_TEACHER")))
                 || hasPermissionForCourse(
                         Arrays.asList(Permission.Type.view, Permission.Type.edit), course, user
                 );

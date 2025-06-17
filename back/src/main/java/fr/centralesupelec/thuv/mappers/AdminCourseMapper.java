@@ -62,6 +62,7 @@ public class AdminCourseMapper {
                 )
                 .setUseStudentVolume(course.getUseStudentVolume())
                 .setStudentVolumePath(course.getStudentVolumePath())
+                .setVisible(course.getVisible())
                 ;
 
         try {

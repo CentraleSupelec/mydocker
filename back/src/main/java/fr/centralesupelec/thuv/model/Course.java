@@ -124,4 +124,8 @@ public class Course {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "course")
     @EqualsAndHashCode.Exclude
     private Set<CoursePermission> permissions;
+
+    @NotNull
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean visible = false;
 }

@@ -1,0 +1,14 @@
+databaseChangeLog:
+- changeSet:
+    id: 1716500000000-1
+    author: agarden (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            defaultValueBoolean: false
+            name: visible
+            type: BOOLEAN
+        tableName: courses

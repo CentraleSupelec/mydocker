@@ -23,7 +23,8 @@ public class CourseSearchSpecifications {
                         root.get(Course_.STATUS).in(statuses),
                         cb.or(
                                 cb.equal(root.get(Course_.CREATOR), user),
-                                cb.equal(permission.get(Permission_.USER), user)
+                                cb.equal(permission.get(Permission_.USER), user),
+                                cb.isTrue(root.get(Course_.VISIBLE))
                         )
                     )
             );
@@ -42,7 +43,8 @@ public class CourseSearchSpecifications {
                             root.get(Course_.STATUS).in(statuses),
                             cb.or(
                                     cb.equal(root.get(Course_.CREATOR), user),
-                                    cb.equal(permission.get(Permission_.USER), user)
+                                    cb.equal(permission.get(Permission_.USER), user),
+                                    cb.isTrue(root.get(Course_.VISIBLE))
                             ),
                             cb.like(cb.lower(root.get(Course_.TITLE)), ("%" + title + "%").toLowerCase())
                     )

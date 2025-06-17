@@ -15,6 +15,8 @@ public class AdminCourseDto extends AdminCourseBaseDto {
     private Long updatedOn;
     private Long createdOn;
 
+    private Boolean visible;
+
     private String link;
     @NotEmpty
     @Valid
