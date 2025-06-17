@@ -4,3 +4,8 @@
   grid-row: 2;
   align-items: center;
 }
+
+fieldset[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}

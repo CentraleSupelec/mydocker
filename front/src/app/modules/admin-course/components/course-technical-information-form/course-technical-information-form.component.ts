@@ -65,7 +65,6 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       studentVolumePath: null,
 
       displayOptions: formBuilder.control({}),
-      visible: false,
     });
   }
 

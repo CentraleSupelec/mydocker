@@ -25,6 +25,15 @@
   <p>
     <mat-checkbox formControlName="automaticShutdown">Activer l'extinction automatique</mat-checkbox>
   </p>
+  <p>
+    <mat-checkbox formControlName="visible">
+      Rendre le cours visible pour tous les enseignants
+    </mat-checkbox>
+  </p>
+  <div *ngIf="formGroup.enabled && formGroup.get('visible')?.value" class="info-banner" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="8px">
+    <mat-icon color="warn">info</mat-icon>
+    <span>En rendant ce cours visible, l'image Docker utilisée sera accessible en lecture seule à tous les enseignants.</span>
+  </div>
   <div *ngIf="formGroup.get('automaticShutdown')?.value">
     <p><em>Après une certaine durée (définie ci-dessous), l'environnement de l'étudiant est automatiquement éteint. Tant que l'extinction n'est pas amorcée, l'étudiant peut relancer le compteur pour retarder l'extinction.</em></p>
     <p>

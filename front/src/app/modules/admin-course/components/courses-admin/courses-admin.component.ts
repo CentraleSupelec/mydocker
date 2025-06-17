@@ -10,6 +10,7 @@ import { SnackNotificationService } from '../../../utils/snack-notification/snac
 import { ConfirmDialogService } from '../../../utils/confirm-dialog/confirm-dialog.service';
 import { APP_CONFIG, IAppConfig } from '../../../../app-config';
 import { GenerateJoinLinkPipe } from "../../../utils/generate-join-link.pipe";
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-courses-admin',
@@ -30,7 +31,8 @@ export class CoursesAdminComponent {
     private readonly dialogConfirmService: ConfirmDialogService,
     @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly generateJoinLinkPipe: GenerateJoinLinkPipe,
-    ) { }
+    private readonly router: Router
+  ) { }
 
   private adminContainerPolling(element: IAdminCourse, forceRecreate: boolean) {
     this.adminContainerApiService.initGetContainer(element.id, forceRecreate)
@@ -83,6 +85,17 @@ export class CoursesAdminComponent {
         }
       }
     )
+  }
+
+  duplicate(course: IAdminCourse, event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.router.navigate(['/admin/courses', 'new'], {
+      state: {
+        prefill: course,
+      }
+    });
   }
 
 }

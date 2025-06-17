@@ -92,6 +92,7 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
         sessions: obj?.sessions || [],
         shutdownAfterMinutes: obj?.shutdownAfterMinutes,
         warnShutdownMinutes: obj?.warnShutdownMinutes,
+        visible: obj?.visible ?? false,
       },
       technical: DefaultCourseFormValuesService.getTechnicalValues(
         obj, this.defaultComputeTypeId,

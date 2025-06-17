@@ -33,7 +33,7 @@ import { NgxPermissionsService } from "ngx-permissions";
 })
 export class SessionsFormComponent implements OnInit, ControlValueAccessor, Validator {
   @Input() sessionsById?: ISessionsById;
-  @Input() canEdit?: boolean;
+  @Input() canEdit: boolean = true;
   readonly sessionsFormArray: FormArray;
 
   private propagateChange = (_: IAdminSession[]) => {};

@@ -46,6 +46,13 @@
     >
       <mat-icon>edit</mat-icon>
     </a>
+    <a
+      mat-icon-button
+      (click)="duplicate(element, $event)"
+      matTooltip="Dupliquer le cours"
+    >
+      <mat-icon>control_point_duplicate</mat-icon>
+    </a>
   </ng-template>
   <ng-template #elseBlock>
     <a
@@ -63,6 +70,13 @@
       *ngIf="element.visible"
     >
       <mat-icon>visibility</mat-icon>
+    </a>
+    <a
+      mat-icon-button
+      (click)="duplicate(element, $event)"
+      matTooltip="Dupliquer le cours"
+    >
+      <mat-icon>control_point_duplicate</mat-icon>
     </a>
   </ng-template>
 </ng-template>

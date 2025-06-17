@@ -34,6 +34,15 @@ export class CourseNewComponent implements OnInit {
         this.computeTypes = d.computeTypes;
       }
     )
+
+    const prefill: IAdminCourse | undefined = history.state?.prefill;
+    if (prefill) {
+      const { id, sessions, status, visible, creator, createdOn, updatedOn, link, ...clone } = prefill as any;
+      this.courseForm.setValue({
+        ...clone,
+        sessions: [],
+      });
+    }
   }
 
   submit() {

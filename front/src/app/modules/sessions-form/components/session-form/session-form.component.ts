@@ -1,4 +1,4 @@
-import {Component, forwardRef, Input, OnInit} from '@angular/core';
+import {Component, forwardRef, Input, OnInit, OnChanges, SimpleChanges} from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -27,7 +27,8 @@ import { IAdminSession } from "../../interfaces/admin-session";
     },
   ]
 })
-export class SessionFormComponent implements OnInit, ControlValueAccessor, Validator {
+export class SessionFormComponent implements OnInit, OnChanges, ControlValueAccessor, Validator {
+  @Input() canEdit: boolean = true;
   readonly sessionFormGroup: FormGroup;
 
   private propagateChange = (_: IAdminSession) => {};
@@ -47,8 +48,18 @@ export class SessionFormComponent implements OnInit, ControlValueAccessor, Valid
   ngOnInit(): void {
     this.sessionFormGroup.valueChanges
       .subscribe(
-        v => this.propagateChange(v)
+        (v: any) => this.propagateChange(v)
       );
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['canEdit']) {
+      if (!this.canEdit) {
+        this.sessionFormGroup.disable();
+      } else {
+        this.sessionFormGroup.enable();
+      }
+    }
   }
 
   registerOnChange(fn: any): void {

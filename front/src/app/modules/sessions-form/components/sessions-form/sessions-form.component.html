@@ -5,6 +5,7 @@
   <div fxLayout="row" fxLayout.lt-md="column" fxFlexFill fxLayoutAlign="space-between center" fxLayoutGap.lt-md="20px">
     <app-session-form
       [formControl]="$any(control)"
+      [canEdit]="canEdit"
     ></app-session-form>
     <div *ngIf="config.deployment_enabled">
       <ng-container *ngIf="isDeploymentFullyScheduled(control); then thenBlock; else elseBlock"></ng-container>
@@ -21,16 +22,17 @@
       <ng-template #elseBlock>
         <div fxLayout="column" fxLayoutAlign="space-between center">
           <mat-icon
+            *ngIf="canEdit"
             [matTooltip]="formatDeploymentTooltip(control)"
             style="color: red"
           >error
           </mat-icon>
-          <p class="mat-caption">Déploiement manquant</p>
-          <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>Demander les déploiements<br />pour l'environnement</a>
+          <p class="mat-caption" *ngIf="canEdit">Déploiement manquant</p>
+          <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link" [disabled]="!canEdit"><mat-icon>mail</mat-icon>Demander les déploiements<br />pour l'environnement</a>
         </div>
       </ng-template>
     </div>
-    <button mat-icon-button [disabled]="control.disabled" (click)="remove(index)" [matTooltip]="'Supprimer cette session'">
+    <button mat-icon-button [disabled]="control.disabled || !canEdit" (click)="remove(index)" [matTooltip]="'Supprimer cette session'">
       <mat-icon>delete</mat-icon>
     </button>
   </div>
