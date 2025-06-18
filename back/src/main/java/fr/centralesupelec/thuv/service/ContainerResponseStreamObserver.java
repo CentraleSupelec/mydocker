@@ -80,7 +80,11 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
         // Need to change it if different auth method
         containerDto.setPassword(containerResponse.getUserPassword().getPassword());
         containerDto.setUsername(containerResponse.getUserPassword().getUsername());
-        containerDto.setCreationError(containerResponse.getError());
+        String error = containerResponse.getError();
+        containerDto.setCreationError(error);
+        if (error != null && !error.isBlank()) {
+            containerDto.setStatus(fr.centralesupelec.thuv.dtos.ContainerStatusDto.KO);
+        }
         containerDto.getErrorParams().putAll(containerResponse.getErrorParamsMap());
         containerDto.setDeletionTime(containerResponse.getDeletionTime());
         containerDto.setNeedsNewGpu(course.isPresent() && course.get().getComputeType().isGpu());
