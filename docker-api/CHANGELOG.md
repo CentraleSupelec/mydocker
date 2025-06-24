@@ -5,15 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
-- Add labels to resources that have been reserved by course sessions
 
-## 2.18.2
-### Fixed
-- Container name parser for test container
+## 2.18.4
+### Added
+- Add labels to resources that have been reserved by course sessions
 
 ## 2.18.3
 ### Added
 - Improve CPU usage due to portsWorker function infinit loop & mutex
+
+## 2.18.2
+### Fixed
+- Container name parser for test container
 
 ## 2.18.1
 ### Fixed
