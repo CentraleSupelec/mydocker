@@ -65,6 +65,14 @@ export class CourseDisplayUrlComponent implements OnInit, ControlValueAccessor, 
     })
   }
 
+  setDisabledState(isDisabled: boolean): void {
+    if (isDisabled) {
+      this.formGroup.disable();
+    } else {
+      this.formGroup.enable();
+    }
+  }
+
   renderString(url: string): string {
     return this.renderStringService.renderString(
       url, this.ports, 'USERNAME', 'PASSWORD', 'IP_ADDRESS', 'USER_REDIRECT'

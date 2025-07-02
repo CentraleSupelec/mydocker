@@ -33,7 +33,6 @@ import { NgxPermissionsService } from "ngx-permissions";
 })
 export class SessionsFormComponent implements OnInit, ControlValueAccessor, Validator {
   @Input() sessionsById?: ISessionsById;
-  @Input() canEdit: boolean = true;
   readonly sessionsFormArray: FormArray;
 
   private propagateChange = (_: IAdminSession[]) => {};
@@ -48,6 +47,7 @@ Je souhaite modifier les sessions de l'environnement ${window.location.href} . V
   readonly askDeploymentEmailLink = `mailto:${this.emailAddress}?subject=${encodeURIComponent(this.askDeploymentSubject)}&body=${encodeURIComponent(this.askDeploymentBody)}`;
   readonly askSessionChangeEmailLink = `mailto:${this.emailAddress}?subject=${encodeURIComponent(this.askSessionChangeSubject)}&body=${encodeURIComponent(this.askSessionChangeBody)}`;
   private isAdmin = false;
+  isDisabled = false;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
@@ -100,7 +100,7 @@ Je souhaite modifier les sessions de l'environnement ${window.location.href} . V
 
   private disableSessionControls(): void {
     this.sessionsFormArray.controls.forEach(control => {
-      if (this.isSessionDisabled(control)) {
+      if (this.isSessionDisabled(control) || this.sessionsFormArray.disabled) {
         control.disable();
       } else {
         control.enable();
@@ -122,6 +122,7 @@ Je souhaite modifier les sessions de l'environnement ${window.location.href} . V
 
   setDisabledState(isDisabled: boolean): void {
     if (isDisabled) {
+      this.isDisabled = true;
       this.sessionsFormArray.disable();
     } else {
       this.sessionsFormArray.enable();
