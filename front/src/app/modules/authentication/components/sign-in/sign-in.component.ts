@@ -19,6 +19,7 @@ export class SignInComponent implements OnInit {
   isCasLoginEnabled = false;
   isOIDCLoginEnabled = false;
   information!: Array<IInformation>;
+  appName: string | undefined = undefined;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
@@ -35,6 +36,7 @@ export class SignInComponent implements OnInit {
       && this.config.auto_login !== TokenOrigin.OIDC
       && (this.isOIDCLoginEnabled || this.isCasLoginEnabled);
     this.information = this.config.information || [];
+    this.appName = this.config.app_name;
     this.showInformation = this.information && this.information.length > 0;
     this.route.queryParamMap
       .pipe(

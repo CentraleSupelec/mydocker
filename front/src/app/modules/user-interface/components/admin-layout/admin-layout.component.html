@@ -2,7 +2,18 @@
   <button mat-icon-button (click)="sidenav.toggle()">
     <mat-icon>menu</mat-icon>
   </button>
-  <span routerLink="/admin" style="cursor: pointer">MyDocker</span>
+  <div>
+    <span routerLink="/admin" style="cursor: pointer">{{ appName }}</span>
+    <ng-container *ngFor="let element of information">
+      <a
+        [href]="element.url"
+        target="_blank"
+        style="color: inherit; text-decoration: none;margin-left: 20px;"
+        class="mat-body">
+        {{ element.title }}
+      </a>
+    </ng-container>
+  </div>
   <span class="spacer"></span>
   <span class="mat-body" [matTooltip]="userInfo">{{ email }}</span>
   <button

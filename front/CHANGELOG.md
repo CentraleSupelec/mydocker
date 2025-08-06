@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Added app name variable
+- Added documentation link in the header
+
 ## 2.28.4
 ### Added
 - "Visible to all teachers" option in the General Information step with a warning banner.

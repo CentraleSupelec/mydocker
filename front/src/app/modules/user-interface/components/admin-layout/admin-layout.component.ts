@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
-import {APP_CONFIG, IAppConfig} from "../../../../app-config";
+import {APP_CONFIG, IAppConfig, IInformation} from "../../../../app-config";
 import {AuthService} from "../../../authentication/services/auth.service";
 import {APP_MODE, AppModeService} from "../../../utils/services/app-mode.service";
 import {BehaviorSubject} from "rxjs";
@@ -12,6 +12,8 @@ import { TokenService } from "../../../authentication/services/token.service";
 export class AdminLayoutComponent implements OnInit {
   userInfo = '';
   email = '';
+  appName: string | undefined = '';
+  information: IInformation[] | undefined = [];
 
   courseRoute = new BehaviorSubject<string>('/admin/courses');
   constructor(
@@ -32,6 +34,9 @@ export class AdminLayoutComponent implements OnInit {
         }
       });
       this.email = this.tokenService.getToken()?.decodedToken?.email ?? '';
+      this.appName = this.config.app_name;
+      this.information = this.config.information;
+      console.log(this.information)
       this.userInfo = `
         Username: ${this.tokenService.getToken()?.decodedToken.sub}
         Email: ${this.tokenService.getToken()?.decodedToken.email}

@@ -28,6 +28,7 @@ export interface IAppConfig {
   oidc_authority?: string;
   oidc_scope?: string;
   information?: Array<IInformation>;
+  app_name?: string
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -50,5 +51,6 @@ export function appConstantFactory(): IAppConfig {
     oidc_authority: appConstants.oidc_authority,
     oidc_scope: appConstants.oidc_scope,
     information: appConstants.information,
+    app_name: appConstants.app_name
   };
 }
