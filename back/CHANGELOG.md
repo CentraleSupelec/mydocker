@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Decode course search parameter
+- Search by creator with search parameter
+
 ## 2.31.4
 ### Added
 - New `visible` flag on `Course` entity and related DTOs; Liquibase migration added.

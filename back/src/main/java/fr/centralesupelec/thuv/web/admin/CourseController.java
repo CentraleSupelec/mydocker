@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController("adminCourseController")
@@ -49,10 +51,11 @@ public class CourseController {
             @RequestParam(value = "status") @NotNull List<CourseStatus> status,
             final Pageable pageable
     ) {
+        String decodedSearch = URLDecoder.decode(search, StandardCharsets.UTF_8);
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        return courseListService.getViewableCourse(user, search, status, pageable)
+        return courseListService.getViewableCourse(user, decodedSearch, status, pageable)
                 .map(adminCourseMapper::convertToDto);
     }
 

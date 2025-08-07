@@ -20,7 +20,7 @@ public class CourseListService {
 
     public Page<Course> getViewableCourse(User user, String search, List<CourseStatus> status, Pageable pageable) {
         if (user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"))) {
-            return courseRepository.findAllByTitleContainingIgnoreCaseAndStatusIn(search, status, pageable);
+            return courseRepository.searchCoursesByTitleOrCreatorName(search, status, pageable);
         }
 
         if (StringUtils.isEmpty(search)) {
