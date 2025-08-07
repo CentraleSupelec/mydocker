@@ -20,6 +20,7 @@ public class SessionWithCourseMapper {
                                 courseSession.getCourse()
                         )
                 )
+                .setTitle(courseSession.getTitle())
                 .setDestroyContainerAfterEndTime(
                         courseSession.getDestroyContainerAfterEndTime()
                 )

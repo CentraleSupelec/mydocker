@@ -20,6 +20,8 @@ public class CourseSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String title;
+
     @NotNull
     private LocalDateTime startDateTime;
 

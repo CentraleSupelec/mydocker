@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Decode course search parameter
 - Search by creator with search parameter
+- Added title to sessions
 
 ## 2.31.4
 ### Added
