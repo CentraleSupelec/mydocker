@@ -24,6 +24,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   userRedirect: string | undefined = undefined;
   documentationUrl: string | undefined = undefined;
   showInformationMessage: boolean = false;
+  errorMessage: string | null = null;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
@@ -85,8 +86,23 @@ export class CourseListComponent implements OnInit, AfterViewInit {
         if(queryParamMap.has('session_id')) {
           this.selectSessionId = parseInt(<string>queryParamMap.get('session_id'));
         }
+
+        if(queryParamMap.has('error_message')) {
+          this.errorMessage = queryParamMap.get('error_message');
+          const currentParams: { [key: string]: string | null } = { ...queryParamMap.keys.reduce((acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}) };
+          delete currentParams['error_message'];
+          
+          this.router.navigate([], {
+            queryParams: currentParams,
+            replaceUrl: true
+          });
+        }
       }
     )
+  }
+
+  dismiss() {
+    this.errorMessage = null;
   }
 
   ngAfterViewInit() {

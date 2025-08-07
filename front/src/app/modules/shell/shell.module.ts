@@ -25,6 +25,7 @@ import { SaveStateComponent } from './components/save-state/save-state.component
 import { CourseDetailComponent } from './components/course-detail/course-detail.component';
 import { MatDividerModule } from "@angular/material/divider";
 import { MatTabsModule } from "@angular/material/tabs";
+import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { LogDialogModule } from "../log-dialog/log-dialog.module";
 import { CountdownComponent } from './components/countdown/countdown.component';
@@ -60,6 +61,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
         MatSnackBarModule,
         MatDividerModule,
         MatTabsModule,
+        MatCardModule,
         MatTooltipModule,
         LogDialogModule,
         MatProgressBarModule,
