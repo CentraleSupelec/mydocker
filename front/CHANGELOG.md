@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Student home page layout
+- Keep only the environment's user redirect buttons if the URL has user redirect parameter
 
 ## 2.28.4
 ### Added

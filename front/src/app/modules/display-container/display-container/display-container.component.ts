@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { ContainerSwarmState, ContainerSwarmStateMessages, IContainer } from "../../shell/interfaces/container";
 import { ClipboardSnackService } from "../../utils/snack-notification/clipboard-snack.service";
-import { ICourseDisplay } from "../../admin-course/interfaces/course-display";
+import { ICourseDisplay, IHttpPortDisplay, IPortDisplay } from "../../admin-course/interfaces/course-display";
 import { IContainerPort } from "../../shell/interfaces/container-port";
 
 
@@ -25,6 +25,16 @@ export class DisplayContainerComponent {
     if (text) {
       this.clipboardSnackService.copyWithNotification(text);
     }
+  }
+
+  showCustomDisplay(customDisplay: IPortDisplay): boolean {
+    if (undefined !== this.userRedirect 
+      && 'USER_REDIRECT' !== this.userRedirect
+      && -1 == (customDisplay as IHttpPortDisplay).url.search('USER_REDIRECT')
+      && -1 == (customDisplay as IHttpPortDisplay).url.search('USER-REDIRECT')) {
+        return false;
+    }
+    return true;
   }
 
   shouldDisplay(containerPort: IContainerPort): boolean {
