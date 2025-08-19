@@ -7,6 +7,7 @@ import fr.centralesupelec.thuv.dtos.SessionUpdateDto;
 import fr.centralesupelec.thuv.dtos.UserCourseDto;
 import fr.centralesupelec.thuv.dtos.UserCourseWithSessionDto;
 import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.model.UserCourse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +28,12 @@ public class UserCourseMapper {
         return dto;
     }
 
-    public UserCourseWithSessionDto convertToDtoWihSession(Course course) {
+    public UserCourseWithSessionDto convertToDtoWihSession(UserCourse userCourse) {
         UserCourseWithSessionDto dto = new UserCourseWithSessionDto();
-        applyToDto(course, dto);
+        dto.setCreatedAt(userCourse.getCreatedAt()).setLastStartDate(userCourse.getLastStartDate());
+        applyToDto(userCourse.getCourse(), dto);
         dto.setSessions(
-                course.getSessions()
+                userCourse.getCourse().getSessions()
                     .stream()
                     .map(sessionMapper::convertToUpdateDto)
                     .sorted(Comparator.comparingLong(SessionUpdateDto::getStartDateTime))

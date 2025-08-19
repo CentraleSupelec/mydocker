@@ -8,6 +8,7 @@ import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.CourseRepository;
+import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +30,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/courses")
 public class CourseController {
     private final UserRepository userRepository;
+    private final UserCourseRepository userCourseRepository;
     private final CourseRepository courseRepository;
     private final UserCourseMapper userCourseMapper;
 
     @Autowired
     public CourseController(
             UserRepository userRepository,
+            UserCourseRepository userCourseRepository,
             CourseRepository courseRepository,
             UserCourseMapper userCourseMapper
     ) {
         this.userRepository = userRepository;
+        this.userCourseRepository = userCourseRepository;
         this.courseRepository = courseRepository;
         this.userCourseMapper = userCourseMapper;
     }
@@ -51,10 +55,11 @@ public class CourseController {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        List<Course> listCourse = courseRepository.findByUserCoursesUserAndStatusInOrderById(
+        List<UserCourse> listUserCourses = userCourseRepository
+            .findByUserAndCourseStatusInOrderByCourseId(
                 user, Arrays.asList(CourseStatus.DRAFT, CourseStatus.TEST, CourseStatus.READY)
         );
-        return listCourse.stream()
+        return listUserCourses.stream()
                 .map(userCourseMapper::convertToDtoWihSession)
                 .collect(Collectors.toList());
     }

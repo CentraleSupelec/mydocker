@@ -26,6 +26,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -53,6 +54,9 @@ public class ContainerController {
     ) {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
+        );
+        userCourseRepository.findByUserIdAndCourseId(
+                user.getId(), courseSession.getCourse().getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now())
         );
         ContainerRequest containerRequest = containerRequestCreatorService.createRequest(
                 courseSession, user, forceRecreate
