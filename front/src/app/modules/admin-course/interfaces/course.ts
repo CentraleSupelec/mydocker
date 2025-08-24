@@ -37,10 +37,14 @@ export interface IAdminCourseBase {
 
   shutdownAfterMinutes: number;
   warnShutdownMinutes: number;
+
+  externalAccess: boolean;
+  externalAccessExpirationDate: string;
 }
 
 export interface IAdminCourse extends IAdminCourseBase {
   id: number;
+  uuid: string;
   creator: string;
 
   updatedOn: number;

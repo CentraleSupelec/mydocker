@@ -19,5 +19,6 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
     {"name": "help", "title": "Documentation", "url": "https://nthiery.github.io/mydocker-upsaclay-doc/"},
     {"name": "support_mail", "title": "Contacter le support", "url": "mailto:mydocker-upsaclay-request@listes.centralesupelec.fr"},
   ],
-  "app_name": "MyDocker"
+  "app_name": "MyDocker",
+  "magic_link_expiration_in_minutes": 15
 };

@@ -29,6 +29,7 @@ export interface IAppConfig {
   oidc_scope?: string;
   information?: Array<IInformation>;
   app_name?: string
+  magic_link_expiration_in_minutes?: number
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -51,6 +52,7 @@ export function appConstantFactory(): IAppConfig {
     oidc_authority: appConstants.oidc_authority,
     oidc_scope: appConstants.oidc_scope,
     information: appConstants.information,
-    app_name: appConstants.app_name
+    app_name: appConstants.app_name,
+    magic_link_expiration_in_minutes: appConstants.magic_link_expiration_in_minutes
   };
 }

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added app name variable
 - Added documentation link in the header
 - Added session title
+- Possibilty to activate external accounts to access a course by asking for a magic link
 
 ### Fixed
 - Encode search string in courses search
