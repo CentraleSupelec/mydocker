@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Search by creator with search parameter
 - Added title to sessions
 - Added createdAt and lastStartDate to user courses + Migration script to prefill lastStartDate
+- Handle external access by magic link to courses for which the option is activated
 
 ## 2.31.4
 ### Added

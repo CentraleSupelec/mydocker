@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class ContainerTestConnectionTaskScheduler {
     private static final Logger logger = LoggerFactory.getLogger(ContainerTestConnectionTaskScheduler.class);
     private final ContainerStorage containerStorage;
-    private final TaskExecutor taskExecutor;
+    private final TaskExecutor applicationTaskExecutor;
     private final ContainerTestParameterConfiguration containerTestParameterConfiguration;
     private final NodeIPRequestService nodeIPRequestService;
     private final TestSocket testSocket;
@@ -60,7 +60,7 @@ public class ContainerTestConnectionTaskScheduler {
                 .forEach(
                         c -> {
                             logger.debug("Current dto: " + c);
-                            taskExecutor
+                            applicationTaskExecutor
                                     .execute(
                                             new ContainerTestConnectionTask(
                                                     containerStorage,

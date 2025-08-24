@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.3</version>
+        <version>3.5.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -31,8 +31,8 @@
         <java.version>17</java.version>
         <diffChangeLogFile>src/main/resources/db/changelog/master.xml</diffChangeLogFile>
         <log4j2.version>2.15.0</log4j2.version>
-        <liquibase.version>4.19.0</liquibase.version>
-        <liquibase-hibernate6.version>4.19.0</liquibase-hibernate6.version>
+        <liquibase.version>4.28.0</liquibase.version>
+        <liquibase-hibernate6.version>4.28.0</liquibase-hibernate6.version>
         <grpc.version>1.53.0</grpc.version>
     </properties>
 
@@ -330,7 +330,7 @@
                     <dependency>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-starter-data-jpa</artifactId>
-                        <version>3.0.3</version>
+                        <version>3.5.5</version>
                     </dependency>
                     <dependency>
                         <groupId>jakarta.validation</groupId>

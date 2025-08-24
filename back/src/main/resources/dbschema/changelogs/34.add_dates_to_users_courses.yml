@@ -52,7 +52,6 @@ databaseChangeLog:
           sql: |
             UPDATE users_courses uc
             SET created_at = COALESCE(sub.created_at, DATE '2022-10-01')
-
             FROM (
               SELECT
                 uc.user_id,
