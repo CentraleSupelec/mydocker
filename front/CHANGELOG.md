@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Upgraded Angular from v13 to v14
+
+### Added
+- Lexical WYSIWYG editor to edit course description field
+
+## 2.28.5
 ### Added
 - Added app name variable
 - Added documentation link in the header

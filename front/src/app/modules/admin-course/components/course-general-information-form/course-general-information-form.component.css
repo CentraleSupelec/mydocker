@@ -3,3 +3,13 @@
     padding: 8px 0 6px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.42);
 }
+
+.description-wrapper mat-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 4px;
+}
+
+.description-wrapper mat-label.invalid {
+  color: red;
+}

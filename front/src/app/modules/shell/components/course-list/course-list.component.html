@@ -10,7 +10,7 @@
 <h1 class="mat-display-2">Environnements</h1>
 <div *ngIf="planified && planified.length > 0">
   <h2 class="mat-display-1" >
-    <span matTooltip="Retrouvez ici vos activités prévues dans moins d’une semaine" matTooltipPosition="above">Planifiés</span> 
+    <span matTooltip="Retrouvez ici vos activités prévues dans moins d’une semaine" matTooltipPosition="above">Planifiés</span>
   </h2>
   <div
     *ngFor="let element of planified"
@@ -37,9 +37,7 @@
         [course]="element"
         [userRedirect]="element.id === courseId? userRedirect: undefined"
       ></app-course-detail>
-      <div>
-        {{ element.description }}
-      </div>
+      <div style="margin-top: 20px;" [innerHTML]="element.description"></div>
     </mat-expansion-panel>
   </div>
 </div>
@@ -70,9 +68,7 @@
         [course]="element"
         [userRedirect]="element.id === courseId? userRedirect: undefined"
       ></app-course-detail>
-      <div>
-        {{ element.description }}
-      </div>
+      <div style="margin-top: 20px;" [innerHTML]="element.description"></div>
     </mat-expansion-panel>
   </div>
 </div>

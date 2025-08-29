@@ -6,6 +6,7 @@ import {
   FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR,
   ValidationErrors,
   Validator,
+  ValidatorFn,
   Validators
 } from "@angular/forms";
 import { Subject } from "rxjs";
@@ -47,7 +48,7 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
   ) {
     this.formGroup = formBuilder.group({
       title: ['', [Validators.required, Validators.pattern('^[^/]+$')]],
-      description: ['', Validators.required],
+      description: ['', [Validators.required, this.notEmptyHtmlValidator()]],
       sessions: [[]],
       automaticShutdown: [false],
       visible: false,
@@ -61,6 +62,14 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
     }, {
       validators: CourseGeneralInformationFormComponent.validateShutdownSettings
     });
+  }
+
+  private notEmptyHtmlValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const value = control.value ?? '';
+      const stripped = value.replace(/<[^>]*>/g, '').trim();
+      return stripped ? null : { emptyHtml: true };
+    };
   }
 
   private static computeTotalDuration(hours?: number | '', minutes?: number | ''): number {
@@ -162,5 +171,11 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
 
   copyMagicLink() {
     this.clipboardSnackService.copyWithNotification(this.getMagicLink());
+  }
+
+  hasRequiredValidator(controlName: string): boolean {
+    const control = this.formGroup.get(controlName);
+    if (!control || !control.validator) return false;
+    return control.hasValidator(Validators.required);
   }
 }

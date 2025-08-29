@@ -1,9 +1,9 @@
 download_dependencies:
-  image: node:14.15.4
+  image: node:22.19.0
   stage: download_dependencies
   interruptible: true
   script:
-    - npm ci
+    - npm ci --legacy-peer-deps
   artifacts:
     expire_in: 1 hour
     paths:

@@ -36,7 +36,6 @@ export class AdminLayoutComponent implements OnInit {
       this.email = this.tokenService.getToken()?.decodedToken?.email ?? '';
       this.appName = this.config.app_name;
       this.information = this.config.information;
-      console.log(this.information)
       this.userInfo = `
         Username: ${this.tokenService.getToken()?.decodedToken.sub}
         Email: ${this.tokenService.getToken()?.decodedToken.email}

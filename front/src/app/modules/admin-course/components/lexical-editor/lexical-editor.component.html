@@ -1,0 +1,117 @@
+<div class="lexical-editor-toolbar">
+    <button mat-icon-button (click)="format('bold')" [class.active]="toolbarState.isBold" [disabled]="toolbarState.isMarkdown">
+        <mat-icon> format_bold</mat-icon>
+    </button>
+    <button mat-icon-button (click)="format('italic')" [class.active]="toolbarState.isItalic" [disabled]="toolbarState.isMarkdown">
+        <mat-icon> format_italic</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="format('underline')" [class.active]="toolbarState.isUnderline" [disabled]="toolbarState.isMarkdown">
+        <mat-icon> format_underlined</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="format('code')" [class.active]="toolbarState.isCode" [disabled]="toolbarState.isMarkdown">
+        <mat-icon> code</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="format('strikethrough')" [class.active]="toolbarState.isStrikethrough" [disabled]="toolbarState.isMarkdown">
+        <mat-icon> format_strikethrough</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="openImageDialog()" [disabled]="toolbarState.isMarkdown">
+        <mat-icon>image</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="openLinkDialog()" [class.active]="toolbarState.isLink" [disabled]="toolbarState.isMarkdown">
+        <mat-icon>link</mat-icon>
+    </button>
+
+    <button mat-button [matMenuTriggerFor]="menu" [disabled]="toolbarState.isMarkdown">
+        <div class="block-type-trigger">
+            <ng-container *ngIf="toolbarState.blockType === 'paragraph'">
+                <mat-icon>format_align_left</mat-icon>
+                <span class="block-type-label">Normal</span>
+            </ng-container>
+
+            <ng-container *ngIf="toolbarState.blockType === 'quote'">
+                <mat-icon>format_quote</mat-icon>
+                <span class="block-type-label">Quote</span>
+            </ng-container>
+
+            <ng-container *ngIf="toolbarState.blockType === 'bullet'">
+                <mat-icon>format_list_bulleted</mat-icon>
+                <span class="block-type-label">Bulleted List</span>
+            </ng-container>
+
+            <ng-container *ngIf="toolbarState.blockType === 'number'">
+                <mat-icon>format_list_numbered</mat-icon>
+                <span class="block-type-label">Numbered List</span>
+            </ng-container>
+
+            <ng-container *ngIf="toolbarState.blockType === 'check'">
+                <mat-icon>check_box</mat-icon>
+                <span class="block-type-label">Checklist</span>
+            </ng-container>
+
+            <ng-container *ngIf="toolbarState.blockType === 'code'">
+                <mat-icon>code</mat-icon>
+                <span class="block-type-label">Code Block</span>
+            </ng-container>
+
+            <span *ngIf="toolbarState.blockType === 'h1'" class="block-type-label">H1 Heading 1</span>
+            <span *ngIf="toolbarState.blockType === 'h2'" class="block-type-label">H2 Heading 2</span>
+            <span *ngIf="toolbarState.blockType === 'h3'" class="block-type-label">H3 Heading 3</span>
+
+            <mat-icon class="dropdown-arrow">arrow_drop_down</mat-icon>
+        </div>
+    </button>
+
+    <button mat-icon-button (click)="handleMarkdownToggle()" [class.active]="toolbarState.isMarkdown">
+        <img src="../../../../../assets/markdown.png" alt="Toggle Markdown" width="30px">
+    </button>
+
+    <mat-menu #menu="matMenu" class="lexical-editor-menu">
+        <button mat-menu-item (click)="formatQuote(); $event.stopPropagation()"
+            [class.active]="toolbarState.blockType === 'quote'">
+            <mat-icon>format_quote</mat-icon>
+            Quote
+        </button>
+
+        <button mat-menu-item *ngFor="let level of headingLevels"
+            (click)="formatHeading(level); $event.stopPropagation()" [class.active]="toolbarState.blockType === level">
+            {{ level | uppercase }} Heading {{ level.replace('h', '')}}
+        </button>
+
+        <button mat-menu-item (click)="formatParagraph(); $event.stopPropagation()"
+            [class.active]="toolbarState.blockType === 'paragraph'">
+            <mat-icon>format_align_left</mat-icon>
+            Normal
+        </button>
+
+        <button mat-menu-item (click)="formatBulletList(); $event.stopPropagation()"
+            [class.active]="toolbarState.blockType === 'bullet'">
+            <mat-icon>format_list_bulleted</mat-icon>
+            Bulleted List
+        </button>
+
+        <button mat-menu-item (click)="formatNumberedList(); $event.stopPropagation()"
+            [class.active]="toolbarState.blockType === 'number'">
+            <mat-icon>format_list_numbered</mat-icon>
+            Numbered List
+        </button>
+
+        <button mat-menu-item (click)="formatCheckList(); $event.stopPropagation()"
+            [class.active]="toolbarState.blockType === 'check'">
+            <mat-icon>check_box</mat-icon>
+            Checklist
+        </button>
+
+        <button mat-menu-item (click)="formatCode(); $event.stopPropagation()"
+            [class.active]="toolbarState.blockType === 'code'">
+            <mat-icon>code</mat-icon>
+            Code Block
+        </button>
+    </mat-menu>
+</div>
+<div #editorContainer class="editor-container" [class.invalid]="!isValid && isTouched"
+    (keydown)="onEditorKeydown($event)"></div>

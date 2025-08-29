@@ -4,7 +4,7 @@ import { DockerImageCreateComponent } from './docker-image-create.component';
 import { AdminDockerImageModule } from "../../admin-docker-image.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
-import { MonacoEditorModule } from "ngx-monaco-editor";
+import { MonacoEditorModule } from "ngx-monaco-editor-v2";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxPermissionsModule } from "ngx-permissions";
 

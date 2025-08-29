@@ -1,0 +1,78 @@
+.dialog {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  width: 360px;
+  font-family: Arial, sans-serif;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.dialog-header .close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.dialog-body label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: -0.3rem;
+}
+
+.dialog-body input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.dialog-body input:focus {
+  border-color: #0077ff;
+  outline: none;
+}
+
+.dialog-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dialog-footer .confirm {
+  background: #f0f0f0;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.dialog-footer .confirm:not(:disabled):hover {
+  background: #0077ff;
+  color: #fff;
+}
+
+.dialog-footer .confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

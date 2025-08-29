@@ -11,7 +11,7 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import { UtilsModule } from "../utils/utils.module";
 import { DockerImageBuildStatusComponent } from './components/docker-image-build-status/docker-image-build-status.component';
 import { DockerImageEditComponent } from './components/docker-image-edit/docker-image-edit.component';
-import { MonacoEditorModule } from "ngx-monaco-editor";
+import { MonacoEditorModule } from "ngx-monaco-editor-v2";
 import { DockerImageFormComponent } from './components/docker-image-form/docker-image-form.component';
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";

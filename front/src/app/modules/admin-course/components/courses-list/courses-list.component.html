@@ -52,7 +52,7 @@
 
   <ng-container matColumnDef="description">
     <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.description | truncate:30 }} </mat-cell>
+    <mat-cell *matCellDef="let element"> {{ element.description | removeMarkdown | truncate:30 }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">

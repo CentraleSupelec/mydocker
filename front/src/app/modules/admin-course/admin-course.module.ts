@@ -47,6 +47,10 @@ import { CoursesAdminComponent } from './components/courses-admin/courses-admin.
 import { ComputeTypeModule } from '../compute-type/compute-type.module';
 import { GenerateJoinLinkPipe } from "../utils/generate-join-link.pipe";
 import { GenerateMagicLinkPipe } from '../utils/generate-magic-link.pipe';
+import { LexicalEditorComponent } from './components/lexical-editor/lexical-editor.component';
+import { MatMenuModule } from '@angular/material/menu';
+import { LexicalLinkPopupComponent } from './components/lexical-link-popup/lexical-link-popup.component';
+import { LexicalImagePopupComponent } from './components/lexical-image-popup/lexical-image-popup.component';
 
 
 @NgModule({
@@ -65,12 +69,16 @@ import { GenerateMagicLinkPipe } from '../utils/generate-magic-link.pipe';
     CourseDisplayUrlComponent,
     CourseIconStatusComponent,
     CoursesAdminComponent,
+    LexicalEditorComponent,
+    LexicalLinkPopupComponent,
+    LexicalImagePopupComponent
   ],
   imports: [
     CommonModule,
     AdminCourseRoutingModule,
     MatTableModule,
     MatButtonModule,
+    MatMenuModule,
     MatIconModule,
     FlexModule,
     MatTooltipModule,

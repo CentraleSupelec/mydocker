@@ -12,7 +12,7 @@ import { NgxPermissionsModule } from "ngx-permissions";
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { SnackNotificationModule } from "./modules/utils/snack-notification/snack-notification.module";
 import { ProgressBarModule } from "./modules/utils/progress-bar/progress-bar.module";
-import { MonacoEditorModule, NgxMonacoEditorConfig } from "ngx-monaco-editor";
+import { MonacoEditorModule, NgxMonacoEditorConfig } from "ngx-monaco-editor-v2";
 import { registerLocaleData } from "@angular/common";
 import { MatDateFnsModule } from "@angular/material-date-fns-adapter";
 import localeFr from '@angular/common/locales/fr';

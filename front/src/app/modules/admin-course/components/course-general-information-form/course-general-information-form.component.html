@@ -6,10 +6,10 @@
       Le titre ne doit pas contenir de /
     </mat-error>
   </mat-form-field>
-  <mat-form-field>
-    <mat-label>Description</mat-label>
-    <textarea matInput formControlName="description"></textarea>
-  </mat-form-field>
+  <div style="margin-bottom: 20px;" class="description-wrapper">
+    <mat-label [class.invalid]="!formGroup.get('description')?.valid">Description <span *ngIf="hasRequiredValidator('description')" class="required">*</span></mat-label>
+    <app-lexical-editor formControlName="description" [isValid]="formGroup.get('description')?.valid"></app-lexical-editor>
+  </div>
   <mat-form-field>
     <mat-label>Statut du cours</mat-label>
     <mat-select formControlName="status">

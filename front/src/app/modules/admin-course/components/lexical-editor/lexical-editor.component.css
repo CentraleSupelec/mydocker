@@ -1,0 +1,152 @@
+.editor-container {
+    min-height: 150px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    overflow-y: auto;
+}
+.editor-container:focus {
+  outline: none;
+  border-color: #3f51b5;
+  box-shadow: 0 0 2px #3f51b5;
+}
+
+.lexical-underline {
+  text-decoration: underline;
+}
+
+.lexical-strike {
+  text-decoration: line-through;
+}
+
+.lexical-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: rgba(0,0,0,0.05);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.quote-node {
+  border-left: 3px solid #ccc;
+  margin: 8px 0;
+  padding-left: 8px;
+  font-style: italic;
+}
+
+.lexical-editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px 12px 0px 0px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  gap: 4px;
+}
+
+.lexical-editor-toolbar button.mat-icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  padding: 0;
+}
+
+.lexical-editor-toolbar button.mat-icon-button mat-icon {
+  font-size: 20px;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+}
+
+.lexical-editor-toolbar button.mat-icon-button:hover {
+  background-color: #f1f3f4;
+}
+
+.lexical-editor-toolbar button.mat-icon-button.active {
+  background-color: #e0e0e0;
+  color: #000;
+}
+
+.lexical-editor-menu .mat-menu-content {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.lexical-editor-menu button.mat-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 36px;
+  padding: 4px 12px;
+  text-transform: none;
+}
+
+.lexical-editor-menu button.mat-menu-item mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.block-type-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 120px;
+  justify-content: space-between;
+  text-transform: none;
+}
+
+.lexical-editor-menu button.mat-menu-item.active {
+  background-color: #e0e0e0;
+  font-weight: 500;
+  color: #000;
+}
+
+.icon-label-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.block-type-trigger mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.block-type-label {
+  font-size: 14px;
+}
+
+.dropdown-arrow {
+  font-size: 18px;
+  opacity: 0.6;
+}
+
+.link-editor-popup {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+
+.link-editor-popup input {
+  width: 180px;
+  border: none;
+  outline: none;
+}

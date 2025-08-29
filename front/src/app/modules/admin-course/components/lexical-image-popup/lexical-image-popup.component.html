@@ -1,0 +1,18 @@
+<div class="dialog">
+  <div class="dialog-header">
+    <h3>Insertion d'image</h3>
+    <button class="icon close" (click)="onCancel()">✕</button>
+  </div>
+
+  <div class="dialog-body">
+    <label>URL de l'image</label>
+    <input [(ngModel)]="data.link" type="text"/>
+
+    <label>Texte alternatif</label>
+    <input [(ngModel)]="data.alt" type="text"/>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="confirm" [disabled]="!data.link || !data.alt" [mat-dialog-close]="data">Confirmer</button>
+  </div>
+</div>

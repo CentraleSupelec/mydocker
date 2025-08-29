@@ -1,0 +1,7 @@
+<div class="dialog">
+  <div class="input-wrapper">
+    <input [(ngModel)]="link" type="text" placeholder="https://" />
+    <button class="icon" (click)="onCancel()">✕</button>
+    <button class="icon" [mat-dialog-close]="link">✓</button>
+  </div>
+</div>

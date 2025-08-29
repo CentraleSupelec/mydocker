@@ -35,3 +35,52 @@ body {
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+
+/* For lexical elements in editor or in html view elsewhere */
+.editor-list-ul li {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.editor-list-ul li[role="checkbox"] {
+  list-style: none;
+  position: relative;
+  padding-left: 0px;
+  margin-bottom: 4px;
+}
+
+.editor-list-ul li[role="checkbox"]::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border: 2px solid #888;
+  border-radius: 4px;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.editor-list-ul li[role="checkbox"][aria-checked="true"]::after {
+  content: '✔';
+  position: absolute;
+  left: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #0b79d0;
+}
+
+.editor-nested-listitem {
+  list-style-type: none !important;
+}
+
+.editor-list-ol {
+  padding-left: 61px;
+}
+
+.editor-container.invalid {
+  border-color: red;
+}
