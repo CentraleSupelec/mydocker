@@ -1,4 +1,4 @@
-image: golang:1.15
+image: golang:1.25
 
 .go_template: &go_template
   stage: build
@@ -35,7 +35,7 @@ test:
   <<: *go_template
   script:
     - cd docker-api
-    - go build -tags luminous
+    - go build -buildvcs=false -tags luminous
 
 build_uploaded_artifacts:
   <<: *build_artifacts_definition

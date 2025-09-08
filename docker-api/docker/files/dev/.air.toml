@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
   args_bin = ["-config-path=docker-api"]
   bin = "./tmp/main"
-  cmd = "go build -i -tags luminous -o ./tmp/main ./docker-api"
+  cmd = "go build -buildvcs=false -tags luminous -o ./tmp/main ./docker-api"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
