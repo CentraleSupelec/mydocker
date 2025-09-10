@@ -20,7 +20,7 @@
   </div>
   <mat-form-field>
     <mat-label>Role</mat-label>
-    <mat-select formControlName="role">
+    <mat-select multiple formControlName="roles">
       <mat-option value="{{ v[1] }}" *ngFor="let v of roles">{{ v[0] }}</mat-option>
     </mat-select>
   </mat-form-field>

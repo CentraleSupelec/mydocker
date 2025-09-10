@@ -19,7 +19,7 @@ export class UsersListComponent implements OnInit {
   query: string = '';
   roles: string[] = ['ROLE_TEACHER', 'ROLE_ADMIN'];
   readonly availableRoles = Object.entries(Roles)
-  displayedColumns = ['role', 'username', 'name', 'lastname', 'email', 'enabled', 'action'];
+  displayedColumns = ['roles', 'username', 'name', 'lastname', 'email', 'enabled', 'action'];
 
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator | undefined;
   @ViewChild(MatSort, {static: true}) sort: MatSort | undefined;

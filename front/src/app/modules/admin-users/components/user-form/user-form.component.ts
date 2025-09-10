@@ -42,7 +42,7 @@ export class UserFormComponent implements OnInit, OnDestroy, ControlValueAccesso
       lastname: ['', Validators.required],
       email: ['', [Validators.email, Validators.required]],
       enabled: [true],
-      role: 'ROLE_TEACHER'
+      roles: [['ROLE_TEACHER']]
     })
   }
 
@@ -79,7 +79,7 @@ export class UserFormComponent implements OnInit, OnDestroy, ControlValueAccesso
       lastname: obj?.lastname || '',
       email: obj?.email || '',
       enabled: obj?.enabled ?? true,
-      role: obj?.role || 'ROLE_TEACHER'
+      roles: obj?.roles || ['ROLE_TEACHER']
     })
   }
 

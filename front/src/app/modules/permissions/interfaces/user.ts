@@ -6,5 +6,5 @@ export interface IUpdateUser {
   email: string;
   name: string;
   lastname: string;
-  role: string;
+  roles: string[];
 }

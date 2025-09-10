@@ -21,16 +21,16 @@
 <br><br>
 
 <mat-table [dataSource]="users" class="mat-elevation-z3" matSort matSortDisableClear>
-  <ng-container matColumnDef="role">
+  <ng-container matColumnDef="roles">
     <mat-header-cell *matHeaderCellDef fxFlex="70px" fxLayoutAlign="center center">
     </mat-header-cell>
     <mat-cell *matCellDef="let element" fxFlex="70px" fxLayoutAlign="center center">
-      <div *ngIf="element.role === 'ROLE_ADMIN'; then admin else teacher"></div>
+      <div *ngIf="element.roles.includes('ROLE_ADMIN'); then admin else people"></div>
       <ng-template #admin>
         <mat-icon matTooltip="Administrateur">verified_user</mat-icon>
       </ng-template>
-      <ng-template #teacher>
-        <mat-icon matTooltip="Professeur">people</mat-icon>
+      <ng-template #people>
+        <mat-icon [matTooltip]="element.roles.includes('ROLE_TEACHER') ? 'Professeur': 'Élève'">people</mat-icon>
       </ng-template>
     </mat-cell>
   </ng-container>

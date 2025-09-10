@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Changed
+- Handle multiple roles for users
+
+## 2.28.6
+### Changed
 - Upgraded Angular from v13 to v14
 - Retry getting container status if an error is encountered
 
