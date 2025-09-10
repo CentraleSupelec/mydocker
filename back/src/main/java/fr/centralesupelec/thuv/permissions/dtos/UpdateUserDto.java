@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
+import java.util.Collection;
+
 @Data
 public class UpdateUserDto {
     @Email
@@ -15,7 +17,6 @@ public class UpdateUserDto {
     private String name;
     @NotEmpty
     private String lastname;
-    @Pattern(regexp = "ROLE_TEACHER|ROLE_ADMIN")
-    private String role;
+    private Collection<@Pattern(regexp = "ROLE_USER|ROLE_TEACHER|ROLE_ADMIN") String> roles;
     private Boolean enabled;
 }

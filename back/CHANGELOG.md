@@ -6,8 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Changed
+- User role in user dto is now roles to reflect the entity user having multiple roles eventually
+
+## 2.31.7
+### Changed
 - Description field from VARCHAR to TEXT
 - Wrapped existing descriptions in <p>...</p>
+
+## 2.31.6
+### Fixed
+- Handling PENDING status when there is a no suitable node creation error
 
 ## 2.31.5
 ### Added

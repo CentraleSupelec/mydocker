@@ -2,6 +2,8 @@ package fr.centralesupelec.thuv.permissions.dtos;
 
 import lombok.Data;
 
+import java.util.Collection;
+
 @Data
 public class UserDto {
     private Long id;
@@ -9,6 +11,6 @@ public class UserDto {
     private String username;
     private String name;
     private String lastname;
-    private String role;
+    private Collection<String> roles;
     private Boolean enabled;
 }

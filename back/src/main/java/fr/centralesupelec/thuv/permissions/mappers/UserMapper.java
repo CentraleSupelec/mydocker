@@ -32,8 +32,10 @@ public class UserMapper {
                 .setEnabled(
                         user.getEnabled()
                 )
-                .setRole(
-                        user.getRoles().stream().findAny().orElseGet(Role::new).getName()
+                .setRoles(
+                        user.getRoles().stream()
+                                .map(Role::getName)
+                                .toList()
                 );
     }
 
@@ -55,10 +57,10 @@ public class UserMapper {
             user.setEnabled(updateUserDto.getEnabled());
         }
         user.getRoles().clear();
-        user.getRoles().add(
-            roleRepository.getByName(
-                    updateUserDto.getRole()
-            )
+        user.getRoles().addAll(
+                updateUserDto.getRoles().stream()
+                        .map(roleRepository::getByName)
+                        .toList()
         );
     }
 }
