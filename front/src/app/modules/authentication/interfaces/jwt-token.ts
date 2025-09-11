@@ -17,5 +17,4 @@ export enum TokenOrigin {
   CAS = 'CAS',
   LTI = 'LTI',
   OIDC = 'OIDC',
-  MAGIC_LINK = 'MAGIC_LINK'
 }

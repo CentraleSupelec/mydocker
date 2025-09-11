@@ -7,7 +7,6 @@ export interface IAdminSession extends IAdminUpdateSession {
 
 export interface IAdminUpdateSession {
   id: number;
-  title: string;
   startDateTime: number;
   endDateTime: number;
   blockContainerCreationBeforeStartTime: boolean;

@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from "@angular/router";
-import { catchError, map } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { mergeMap } from "rxjs/operators";
 import { UserCourseApiService } from "../../services/user-course-api.service";
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-course-join',
@@ -27,34 +26,13 @@ export class CourseJoinComponent implements OnInit {
         (params) => params.get('link')
       ),
       mergeMap(
-        link => this.courseApiService.getCourseInformationByLink(link).pipe(
-          catchError(err => {
-            if (err.status === 404) {
-              this.router.navigate(['/'], {
-                queryParams: {
-                  error_message: "L’environnement demandé n’est pas disponible."
-                },
-                replaceUrl: true 
-              });
-              return of(null);
-            }
-            throw err;
-          })
-        )
+        link => this.courseApiService.getCourseInformationByLink(link)
       ),
-      mergeMap(course => {
-          if (!course) {
-            return of(null);
-          }
-          return this.courseApiService.joinCourse(course.id)
-        }
+      mergeMap(
+        course => this.courseApiService.joinCourse(course.id)
       )
     ).subscribe(
-      course => {
-        if (course) {
-          this.router.navigate(["/"], {queryParams: {course_id: course.id, user_redirect: userRedirect}, replaceUrl: true})
-        }
-      },
+      course => this.router.navigate(["/"], {queryParams: {course_id: course.id, user_redirect: userRedirect}, replaceUrl: true}),
     );
   }
 }

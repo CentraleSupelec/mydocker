@@ -8,31 +8,11 @@
       <h2>Bienvenue sur {{appName}} !</h2>
     </div>
 
-    <mat-card *ngIf="errorMessage" class="alert-banner" style="margin-bottom: 40px;">
-      <div class="alert-content">
-        <span>{{ errorMessage }}</span>
-        <button mat-icon-button (click)="dismiss()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-    </mat-card>
-
     <div class="intro">
-      <p *ngIf="!isMagicLink">Connectez-vous avec vos identifiants afin d’accéder à vos activités en ligne</p>
-      <p *ngIf="isMagicLink">Entrez votre adresse email pour recevoir un lien de connexion :</p>
+      <p>Connectez-vous avec vos identifiants afin d’accéder à vos activités en ligne</p>
     </div>
 
-    <div class="magic-link-form" *ngIf="isMagicLink">
-      <form (ngSubmit)="sendMagicLink()">
-        <mat-form-field appearance="outline" style="width:100%;">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" [(ngModel)]="email" name="email" required>
-        </mat-form-field>
-        <button mat-flat-button color="primary" type="submit">Envoyer le lien de connexion</button>
-      </form>
-    </div>
-
-    <div class="login-buttons" *ngIf="!isMagicLink">
+    <div class="login-buttons">
       <button *ngIf="isCasLoginEnabled" mat-flat-button color="primary" (click)="redirectToCas()">CONNEXION AVEC LE CAS</button>
       <ng-container *ngIf="isOIDCLoginEnabled">
         <button
@@ -46,10 +26,6 @@
         </button>
       </ng-container>
     </div>
-
-    <div class="intro" *ngIf="emailSent">
-      <p>Un email vous a été envoyé. Consulter votre email et cliquer sur le lien fourni pour accéder au cours. Le lien expirera dans {{ magicLinkExpirationInMinutes }} {{ magicLinkExpirationInMinutes === 1 ? 'minute': 'minutes' }}</p>
-    </div>    
 
     <div class="info-links" *ngIf="showInformation">
       <a

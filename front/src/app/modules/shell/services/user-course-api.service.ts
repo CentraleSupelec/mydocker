@@ -30,8 +30,4 @@ export class UserCourseApiService {
   joinCourse(courseId: number): Observable<IBasicCourse> {
     return this.httpClient.put<IBasicCourse>(`${this.config.back_url}courses/${courseId}/join`, null);
   }
-
-  getIsExternalAccessActivated(courseUuid: string): Observable<boolean> {
-    return this.httpClient.get<boolean>(`${this.config.back_url}courses/${courseUuid}/externalAccess`);
-  }
 }

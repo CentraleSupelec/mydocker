@@ -16,14 +16,14 @@ import { APP_CONFIG, IAppConfig } from "src/app/app-config";
 })
 export class CourseListComponent implements OnInit, AfterViewInit {
   selectSessionId: number | null = null;
-  planified: IBasicCourseWithSession[] = [];
-  past: IBasicCourseWithSession[] = [];
-  launchSessionId: number | undefined = undefined;
+  sessionByDate: {[date: number]: ISession[]} = {};
+  courses: IBasicCourseWithSession[] = [];
+  selectedTab = new FormControl(0);
+  launchSessionId: number | null = null;
   courseId: number | undefined = undefined;
   userRedirect: string | undefined = undefined;
   documentationUrl: string | undefined = undefined;
   showInformationMessage: boolean = false;
-  errorMessage: string | null = null;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
@@ -41,40 +41,30 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     this.route.data
     .pipe(
       mergeMap((routeData) => {
-        this.planified = routeData.courses?.map(((course: IBasicCourseWithSession) => {
-            const startOfToday = new Date()
-            startOfToday.setHours(0, 0, 0, 0);
+        this.courses = routeData.courses?.map(((course: IBasicCourseWithSession) => {
+          const futureSessions = course.sessions.filter(session => session.endDateTime > Date.now());
+          course.sessions = futureSessions.length > 0? futureSessions: course.sessions.slice(-1)
+          return course;
+        }));
 
-            return {
-              ...course,
-              sessions: course.sessions.filter(session => session.startDateTime >= startOfToday.valueOf())
-            };
-          }))
-          .filter((course: IBasicCourseWithSession) => course.sessions?.length > 0);
-        this.past = routeData.courses?.map(((course: IBasicCourseWithSession) => {
-            const startOfToday = new Date()
-            startOfToday.setHours(0, 0, 0, 0);
-            return {
-              ...course,
-              sessions: course.sessions.filter(session =>
-                session.startDateTime < startOfToday.valueOf()
-              )
-            };
-          }))
-          .filter((course: IBasicCourseWithSession) => course.sessions?.length > 0)
-          .sort((a: IBasicCourseWithSession, b: IBasicCourseWithSession) => 
-            (b.lastStartDate ? new Date(b.lastStartDate).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0)) 
-            - (a.lastStartDate ? new Date(a.lastStartDate).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0)));
+        routeData.sessions.forEach(
+          (session: ISession) => {
+            const date = new Date(session.startDateTime);
+            date.setHours(0, 0, 0);
+            const timestamp = date.getTime();
+            if (timestamp in this.sessionByDate) {
+              this.sessionByDate[timestamp].push(session)
+            } else {
+              this.sessionByDate[timestamp] = [session]
+            }
+          });
         return this.route.queryParamMap;
       }),
       take(1),
       map((queryParamMap) => {
         if (queryParamMap.has("course_id")) {
           this.courseId = parseInt(<string>queryParamMap.get("course_id"));
-          let sessionId = this.planified.find((course) => course.id === this.courseId)?.sessions[0].id;
-          if (undefined === sessionId) {
-            sessionId = this.past.find((course) => course.id === this.courseId)?.sessions[0].id;
-          }
+          const sessionId = this.courses.find((course) => course.id === this.courseId)?.sessions[0].id;
           if (sessionId) {
             this.selectSessionId = sessionId;
             this.adminCoursesApiService.getCourse(this.courseId).pipe(
@@ -85,6 +75,9 @@ export class CourseListComponent implements OnInit, AfterViewInit {
           }
         }
         this.userRedirect = queryParamMap.get("user_redirect") ?? undefined;
+        if (Object.keys(this.sessionByDate).length === 0 || queryParamMap.has("course_id")) {
+          this.selectedTab.setValue(1);
+        }
       })
     ).subscribe();
     this.route.queryParamMap.subscribe(
@@ -92,23 +85,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
         if(queryParamMap.has('session_id')) {
           this.selectSessionId = parseInt(<string>queryParamMap.get('session_id'));
         }
-
-        if(queryParamMap.has('error_message')) {
-          this.errorMessage = queryParamMap.get('error_message');
-          const currentParams: { [key: string]: string | null } = { ...queryParamMap.keys.reduce((acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}) };
-          delete currentParams['error_message'];
-          
-          this.router.navigate([], {
-            queryParams: currentParams,
-            replaceUrl: true
-          });
-        }
       }
     )
-  }
-
-  dismiss() {
-    this.errorMessage = null;
   }
 
   ngAfterViewInit() {
@@ -118,7 +96,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     // mandatory to compute the right offset only when all accordions are initialized (and closed)
     setTimeout(() => {
       document.getElementById(this.getSessionHtmlId(
-        this.selectSessionId
+        this.selectedTab.value, this.selectSessionId
       ))?.scrollIntoView();
     }, 0);
   }
@@ -149,22 +127,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getSessionHtmlId(sessionId: number | null): string {
-    return `session-${sessionId}`;
-  }
-
-  getDaysUntil(date: number | string): string {
-    if (null === date) {
-      return ''
-    }
-    const startDate = new Date(date);
-    const now = new Date();
-    const diffTimeInDays = (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-    const absDiffTimeInDays = Math.abs(diffTimeInDays);
-    const prefix = diffTimeInDays >= 0 ? "Dans": "Il y'a"
-    if (absDiffTimeInDays < 1) {
-      return `${prefix} moins de 24 heures`
-    }
-    return `${prefix} ${Math.floor(absDiffTimeInDays)} ${absDiffTimeInDays < 2 ? 'jour': 'jours'}`;
+  getSessionHtmlId(tab: number, sessionId: number | null): string {
+    return `session-${tab}-${sessionId}`;
   }
 }

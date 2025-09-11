@@ -46,7 +46,6 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { CoursesAdminComponent } from './components/courses-admin/courses-admin.component';
 import { ComputeTypeModule } from '../compute-type/compute-type.module';
 import { GenerateJoinLinkPipe } from "../utils/generate-join-link.pipe";
-import { GenerateMagicLinkPipe } from '../utils/generate-magic-link.pipe';
 
 
 @NgModule({
@@ -106,7 +105,6 @@ import { GenerateMagicLinkPipe } from '../utils/generate-magic-link.pipe';
       useFactory: appConstantFactory
     },
     GenerateJoinLinkPipe,
-    GenerateMagicLinkPipe
   ],
   exports: [
     CoursesListComponent

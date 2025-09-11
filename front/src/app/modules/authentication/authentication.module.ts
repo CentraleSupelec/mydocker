@@ -14,12 +14,6 @@ import { UtilsModule } from "../utils/utils.module";
 import { AuthModule, LogLevel, StsConfigLoader, StsConfigStaticLoader } from "angular-auth-oidc-client";
 import { APP_CONFIG, IAppConfig } from "../../app-config";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
-
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 
 const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
   function(): Promise<any> {
@@ -54,12 +48,6 @@ const generateAuthConfiguration = (appConfig: IAppConfig) => {
     NgxPermissionsModule,
     HttpClientModule,
     UtilsModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatIconModule,
     AuthModule.forRoot({
       loader: {
         provide: StsConfigLoader,

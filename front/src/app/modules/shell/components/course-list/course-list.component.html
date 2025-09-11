@@ -1,86 +1,75 @@
-<mat-card *ngIf="errorMessage" class="alert-banner" style="margin-bottom: 40px;">
-  <div class="alert-content">
-    <span>{{ errorMessage }}</span>
-    <button mat-icon-button (click)="dismiss()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
-</mat-card>
+<h1 class="mat-display-1">Mes activités</h1>
 
-<h1 class="mat-display-2">Environnements</h1>
-<div *ngIf="planified && planified.length > 0">
-  <h2 class="mat-display-1" >
-    <span matTooltip="Retrouvez ici vos activités prévues dans moins d’une semaine" matTooltipPosition="above">Planifiés</span> 
-  </h2>
-  <div
-    *ngFor="let element of planified"
-    class="session-container"
-    [id]="getSessionHtmlId(element.sessions[0].id)"
-  >
-    <mat-expansion-panel
-      *ngIf="element.sessions && element.sessions.length > 0"
-      [expanded]="element.sessions[0].id === selectSessionId"
-      style="margin-top: 30px;"
-    >
-      <mat-expansion-panel-header>
-        <mat-panel-title class="panel-title" fxLayout="row" fxLayoutAlign="space-between center">
-          <b>{{ element.title }}</b>
-          <div>
-            <span [matTooltip]="(element.sessions?.[0]?.startDateTime | date : 'dd/MM/yyyy à HH\'h\'mm') || ''" [matTooltipPosition]="'above'">{{ getDaysUntil(element.sessions[0].startDateTime) }}</span>
-            <span *ngIf="element.sessions[0].title">: {{ element.sessions[0].title }}</span>
-          </div>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <app-course-detail
-        [session]="element.sessions[0]"
-        [launch]="element.sessions[0].id === launchSessionId"
-        [course]="element"
-        [userRedirect]="element.id === courseId? userRedirect: undefined"
-      ></app-course-detail>
-      <div>
-        {{ element.description }}
+<mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedTab.value" (selectedIndexChange)="selectedTab.setValue($event)">
+  <mat-tab label="Mes prochaines activités">
+    <mat-accordion>
+      <div *ngFor="let element of sessionByDate | keyvalue" class="session-container">
+        <h1 class="session-date">{{ element.key | date: 'd MMMM y' }}</h1>
+        <mat-expansion-panel
+          *ngFor="let session of element.value"
+          (afterExpand)="afterExpand(session)"
+          (afterCollapse)="afterCollapse(session)"
+          [expanded]="session.id === selectSessionId"
+          [id]="getSessionHtmlId(0, session.id)"
+        >
+          <mat-expansion-panel-header>
+            <mat-panel-title class="panel-title">
+              <div fxLayout="row" fxLayoutGap="15px" fxLayoutAlign="start center">
+                <span
+                  *ngIf="(session.startDateTime | date : 'HH:mm') !== '00:00'"
+                >
+                  {{ session.startDateTime | date : 'HH:mm' }}
+                </span>
+                <span>{{ session.course.title }}</span>
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <app-course-detail
+            [session]="session"
+            [course]="session.course"
+          ></app-course-detail>
+        </mat-expansion-panel>
       </div>
-    </mat-expansion-panel>
-  </div>
-</div>
+    </mat-accordion>
 
-<div *ngIf="past && past.length > 0" style="margin-top: 50px;">
-  <h2 class="mat-display-1" >Utilisés précédemment</h2>
-  <div
-    *ngFor="let element of past"
-    class="session-container"
-    [id]="getSessionHtmlId(element.sessions[0].id)"
-  >
-    <mat-expansion-panel
-      *ngIf="element.sessions && element.sessions.length > 0"
-      [expanded]="element.sessions[0].id === selectSessionId"
-      style="margin-top: 30px;"
-    >
-      <mat-expansion-panel-header>
-        <mat-panel-title class="panel-title" fxLayout="row" fxLayoutAlign="space-between center">
-          <b>{{ element.title }}</b>
-          <div>
-            <span [matTooltip]="(element.lastStartDate ?? element.createdAt | date : 'dd/MM/yyyy à HH\'h\'mm') || ''" [matTooltipPosition]="'above'">{{ getDaysUntil(element.lastStartDate ?? element.createdAt) }}</span>
-          </div>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <app-course-detail
-        [session]="element.sessions[0]"
-        [launch]="element.sessions[0].id === launchSessionId"
-        [course]="element"
-        [userRedirect]="element.id === courseId? userRedirect: undefined"
-      ></app-course-detail>
-      <div>
-        {{ element.description }}
+    <div *ngIf="(sessionByDate | keyvalue).length === 0" class="session-container center-message">
+      <h3>Aucune session à venir</h3>
+    </div>
+  </mat-tab>
+  <mat-tab label="Tous mes cours">
+    <mat-accordion>
+      <div
+        *ngFor="let element of courses"
+        class="session-container"
+        [id]="getSessionHtmlId(1, element.sessions[0].id)"
+      >
+        <h2 class="session-date">{{ element.title }}</h2>
+        <mat-expansion-panel
+          *ngIf="element.sessions.length > 0"
+          [expanded]="element.sessions[0].id === selectSessionId"
+        >
+          <mat-expansion-panel-header>
+            <mat-panel-title class="panel-title">
+              <div fxLayout="row" fxLayoutGap="15px" fxLayoutAlign="start center">
+                <span>{{ element.sessions[0].startDateTime | date : 'le d MMMM y à HH:mm' }}</span>
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <app-course-detail
+            [session]="element.sessions[0]"
+            [launch]="element.sessions[0].id === launchSessionId"
+            [course]="element"
+            [userRedirect]="element.id === courseId? userRedirect: undefined"
+          ></app-course-detail>
+        </mat-expansion-panel>
       </div>
-    </mat-expansion-panel>
-  </div>
-</div>
-
-<div *ngIf="planified && planified.length === 0 && past && past.length === 0" class="session-container center-message">
-  <h3>Aucun cours disponible</h3>
-  <p *ngIf="showInformationMessage">
-    L'historique des environnements auxquels vous avez accédés est actuellement vide.
-    Vous trouverez dans notre <a mat-button color="primary" [href]="documentationUrl" target="_blank">documentation</a> des propositions d'environnements génériques mis à votre disposition.
-  </p>
-</div>
+    </mat-accordion>
+    <div *ngIf="courses && courses.length === 0" class="session-container center-message">
+      <h3>Aucun cours disponible</h3>
+      <p *ngIf="showInformationMessage">
+        L'historique des environnements auxquels vous avez accédés est actuellement vide.
+        Vous trouverez dans notre <a mat-button color="primary" [href]="documentationUrl" target="_blank">documentation</a> des propositions d'environnements génériques mis à votre disposition.
+      </p>
+    </div>
+  </mat-tab>
+</mat-tab-group>

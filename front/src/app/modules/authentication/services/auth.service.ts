@@ -36,11 +36,6 @@ export class AuthService {
             this.oidcSecurityService.logoffLocal();
           }
           break;
-        case TokenOrigin.MAGIC_LINK:
-          localStorage.removeItem("access_token");
-          sessionStorage.removeItem("access_token");
-          this.router.navigate(['/login']);
-          break;
       }
     }
   }

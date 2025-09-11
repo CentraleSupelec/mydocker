@@ -32,11 +32,6 @@
     <mat-cell *matCellDef="let element"> {{ element.course.title }} </mat-cell>
   </ng-container>
 
-  <ng-container matColumnDef="sessionTitle">
-    <mat-header-cell *matHeaderCellDef>Titre de la session</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.title }} </mat-cell>
-  </ng-container>
-
   <ng-container matColumnDef="startDateTime">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Début de la session</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.startDateTime | date: 'le dd/MM/y à HH:mm' }} </mat-cell>

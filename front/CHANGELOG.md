@@ -8,16 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Added app name variable
 - Added documentation link in the header
-- Added session title
-- Possibilty to activate external accounts to access a course by asking for a magic link
-
-### Fixed
-- Encode search string in courses search
-- Redirect to homepage and show error message if join token is invalid
-
-### Changed
-- Student home page layout
-- Keep only the environment's user redirect buttons if the URL has user redirect parameter
 
 ## 2.28.4
 ### Added
