@@ -1,3 +1,12 @@
+<mat-card *ngIf="errorMessage" class="alert-banner" style="margin-bottom: 40px;">
+  <div class="alert-content">
+    <span>{{ errorMessage }}</span>
+    <button mat-icon-button (click)="dismiss()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</mat-card>
+
 <h1 class="mat-display-1">Mes activités</h1>
 
 <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedTab.value" (selectedIndexChange)="selectedTab.setValue($event)">

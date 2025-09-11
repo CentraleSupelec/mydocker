@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Encode search string in courses search
+- Redirect to homepage and show error message if join token is invalid
 
 ## 2.28.4
 ### Added
