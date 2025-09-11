@@ -53,3 +53,16 @@
   margin: 0.5vh 0;
   gap: 0.5vh;
 }
+
+.alert-banner {
+  background-color: #f8d7da;
+  color: #721c24;
+  margin: 1rem;
+}
+
+.alert-banner .alert-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row !important;
+}

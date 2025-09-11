@@ -12,6 +12,9 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { CourseStatus } from "../../interfaces/course";
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
+import { addDays } from 'date-fns';
+import { ClipboardSnackService } from 'src/app/modules/utils/snack-notification/clipboard-snack.service';
+import { GenerateMagicLinkPipe } from 'src/app/modules/utils/generate-magic-link.pipe';
 
 @Component({
   selector: 'app-course-general-information-form',
@@ -32,12 +35,15 @@ import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 })
 export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
   @Input() sessionsById?: ISessionsById;
+  @Input() courseUuid?: string;
   readonly formGroup: FormGroup;
   private destroy$ = new Subject<void>();
   readonly courseStatus = Object.entries(CourseStatus);
 
   constructor(
-    formBuilder: FormBuilder
+    formBuilder: FormBuilder,
+    private readonly clipboardSnackService: ClipboardSnackService,
+    private readonly generateMagicLinkPipe: GenerateMagicLinkPipe,
   ) {
     this.formGroup = formBuilder.group({
       title: ['', [Validators.required, Validators.pattern('^[^/]+$')]],
@@ -45,6 +51,8 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
       sessions: [[]],
       automaticShutdown: [false],
       visible: false,
+      externalAccess: false,
+      externalAccessExpirationDate: [],
       shutdownAfterHours: [],
       shutdownAfterMinutesRemainder: [],
       warnShutdownHours: [],
@@ -88,11 +96,15 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
            warnShutdownMinutesRemainder,
            warnShutdownHours,
            automaticShutdown,
+           externalAccess,
+           externalAccessExpirationDate,
            ...v
          }) => {
           return this.propagateChange({
             shutdownAfterMinutes: automaticShutdown ? CourseGeneralInformationFormComponent.computeTotalDuration(shutdownAfterHours, shutdownAfterMinutesRemainder) : 0,
             warnShutdownMinutes: automaticShutdown ? CourseGeneralInformationFormComponent.computeTotalDuration(warnShutdownHours, warnShutdownMinutesRemainder) : 0,
+            externalAccess,
+            externalAccessExpirationDate: externalAccess ? externalAccessExpirationDate : null,
             ...v,
           });
         }
@@ -133,6 +145,8 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
       status: obj?.status || CourseStatus.DRAFT,
       automaticShutdown: obj?.shutdownAfterMinutes > 0,
       visible: obj?.visible ?? false,
+      externalAccess: obj?.externalAccess ?? false,
+      externalAccessExpirationDate: obj?.externalAccessExpirationDate || addDays((new Date()), 7).getTime(),
       shutdownAfterHours: obj?.shutdownAfterMinutes ? Math.floor(obj?.shutdownAfterMinutes / 60) : '',
       shutdownAfterMinutesRemainder: obj?.shutdownAfterMinutes ? obj?.shutdownAfterMinutes % 60 : '',
       warnShutdownHours: obj?.warnShutdownMinutes ? Math.floor(obj?.warnShutdownMinutes / 60) : '',
@@ -141,4 +155,12 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
   }
 
   private propagateChange = (_: any) => {}
+
+  getMagicLink(): string {
+    return this.generateMagicLinkPipe.transform(this.courseUuid)
+  }
+
+  copyMagicLink() {
+    this.clipboardSnackService.copyWithNotification(this.getMagicLink());
+  }
 }

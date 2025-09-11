@@ -4,6 +4,7 @@ import { ISession } from "./session";
 
 export interface IBasicCourse {
   id: number;
+  uuid: string;
   title: string;
   description: string;
   creator: string;
@@ -15,6 +16,8 @@ export interface IBasicCourse {
   warnShutdownMinutes?: number;
   lastStartDate: string;
   createdAt: string
+  externalAccess: boolean;
+  externalAccessExpirationDate: string;
 }
 
 export interface IBasicCourseWithSession extends IBasicCourse {

@@ -9,6 +9,7 @@ import { NavigationService } from "../../../utils/services/navigation.service";
 import { AuthModule } from "angular-auth-oidc-client";
 import { RouterTestingModule } from "@angular/router/testing";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { NgxPermissionsModule } from "ngx-permissions";
 
 describe('SignInComponent', () => {
   let component: SignInComponent;
@@ -33,7 +34,11 @@ describe('SignInComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            queryParamMap: queryParamMap
+            queryParamMap: queryParamMap,
+            snapshot: {
+              data: {},
+              paramMap: convertToParamMap({})
+            }
           }
         },
         {
@@ -46,6 +51,7 @@ describe('SignInComponent', () => {
         RouterTestingModule,
         MatTooltipModule,
         AuthModule.forRoot({}),
+        NgxPermissionsModule.forRoot()
       ]
     })
     .compileComponents();

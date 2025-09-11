@@ -28,6 +28,11 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'course/:courseUuid/magic-link',
+    component: SignInComponent,
+    data: { isMagicLink: true }
+  },
+  {
     path: 'admin',
     component: AdminLayoutComponent,
     canActivate: [AuthGuard, NgxPermissionsGuard],

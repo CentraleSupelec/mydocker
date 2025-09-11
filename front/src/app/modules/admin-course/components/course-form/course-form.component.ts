@@ -42,6 +42,7 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
   defaultComputeTypeId?: number;
   @Input() computeTypes?: Array<IComputeType>;
   @Input() sessionsById?: ISessionsById;
+  @Input() courseUuid?: string;
 
   constructor(
     formBuilder: FormBuilder,
@@ -90,6 +91,8 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
         description: obj?.description || '',
         status: obj?.status || CourseStatus.DRAFT,
         sessions: obj?.sessions || [],
+        externalAccess: obj?.externalAccess ?? false,
+        externalAccessExpirationDate: obj?.externalAccessExpirationDate || null,
         shutdownAfterMinutes: obj?.shutdownAfterMinutes,
         warnShutdownMinutes: obj?.warnShutdownMinutes,
         visible: obj?.visible ?? false,

@@ -34,6 +34,30 @@
     <mat-icon color="warn">info</mat-icon>
     <span>En rendant ce cours visible, l'image Docker utilisée sera accessible en lecture seule à tous les enseignants.</span>
   </div>
+  <p>
+    <mat-checkbox formControlName="externalAccess">
+      Activer l’accès extérieur
+    </mat-checkbox>
+  </p>
+
+  <div *ngIf="formGroup.enabled && formGroup.get('externalAccess')?.value">
+    <div fxLayout="row" fxLayoutAlign="start center" style="padding-bottom: 20px;">
+      <div class="mat-input-disabled-look">{{courseUuid|generateMagicLink}}</div>
+      <button mat-icon-button matSuffix (click)="copyMagicLink()" matTooltip="Copier le lien">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </div>
+    <div class="info-banner" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="8px">
+      <div class="grid">
+        <span>Date de fin de validité de l’accès extérieur</span>
+        <app-datetime-picker
+          formControlName="externalAccessExpirationDate"
+        >
+        </app-datetime-picker>
+      </div>
+  </div>
+  </div>
+
   <div *ngIf="formGroup.get('automaticShutdown')?.value">
     <p><em>Après une certaine durée (définie ci-dessous), l'environnement de l'étudiant est automatiquement éteint. Tant que l'extinction n'est pas amorcée, l'étudiant peut relancer le compteur pour retarder l'extinction.</em></p>
     <p>

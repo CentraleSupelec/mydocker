@@ -1,0 +1,5 @@
+.mat-input-disabled-look {
+    color: rgba(0, 0, 0, 0.38);
+    padding: 8px 0 6px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42);
+}
