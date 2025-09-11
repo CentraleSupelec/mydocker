@@ -9,15 +9,19 @@
       [ipAddress]="container?.ip"
       [shouldDisplay]="shouldDisplay(containerPort)"
     ></app-display-container-port>
-    <app-display-custom-container-port
+    <ng-container
       *ngFor="let customDisplay of displayOptions?.customPortsDisplay"
-      [customDisplay]="customDisplay"
-      [password]="container?.password"
-      [username]="container?.username"
-      [containerPorts]="container?.ports"
-      [ipAddress]="container?.ip"
-      [userRedirect]="userRedirect"
-    ></app-display-custom-container-port>
+    >
+      <app-display-custom-container-port
+        *ngIf="showCustomDisplay(customDisplay)"
+        [customDisplay]="customDisplay"
+        [password]="container?.password"
+        [username]="container?.username"
+        [containerPorts]="container?.ports"
+        [ipAddress]="container?.ip"
+        [userRedirect]="userRedirect"
+      ></app-display-custom-container-port>
+    </ng-container>
   </div>
 
   <div fxLayout="column">
