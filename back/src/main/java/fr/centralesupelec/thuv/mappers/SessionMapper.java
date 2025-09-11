@@ -28,7 +28,6 @@ public class SessionMapper {
                 .setId(
                         courseSession.getId()
                 )
-                .setTitle(courseSession.getTitle())
                 .setStartDateTime(
                         courseSession.getStartDateTime().atZone(zoneId).toInstant().toEpochMilli()
                 )
@@ -82,7 +81,6 @@ public class SessionMapper {
                 .setId(
                         courseSession.getId()
                 )
-                .setTitle(courseSession.getTitle())
                 .setStartDateTime(
                         courseSession.getStartDateTime().atZone(zoneId).toInstant().toEpochMilli()
                 )
@@ -109,7 +107,6 @@ public class SessionMapper {
             courseSession = new CourseSession();
         }
         return courseSession
-                .setTitle(courseSessionDto.getTitle())
                 .setStartDateTime(
                         Instant.ofEpochMilli(courseSessionDto.getStartDateTime()).atZone(zoneId).toLocalDateTime()
                 )

@@ -1,7 +1,6 @@
 package fr.centralesupelec.thuv.activity_logging.model;
 
 public enum LogAction {
-    USER_LOGIN_MAGIC_LINK,
     USER_LOGIN_LTI,
     USER_LOGIN_CAS,
     USER_LOGIN_OIDC,

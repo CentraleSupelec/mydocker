@@ -43,7 +43,6 @@ public class CourseSessionWithResourceMapper {
                 .setId(
                         courseSession.getId()
                 )
-                .setTitle(courseSession.getTitle())
                 .setStudentNumber(
                         courseSession.getStudentNumber()
                 )

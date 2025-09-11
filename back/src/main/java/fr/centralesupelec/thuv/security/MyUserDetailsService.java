@@ -187,15 +187,9 @@ public class MyUserDetailsService implements UserDetailsService {
         } catch (Exception e) {
             user = new User();
         }
-        return fillUserInformation(user, username, email, name, lastName);
-    }
-
-    public User fillUserInformation(User user, String username, String email, String name, String lastName) {
-        Optional.ofNullable(name).ifPresent(user::setName);
-        Optional.ofNullable(lastName).ifPresent(user::setLastname);
-        Optional.ofNullable(username).ifPresent(user::setUsername);
-        Optional.ofNullable(email).ifPresent(user::setEmail);
-
+        // Update with latest informations
+        user.setName(name);
+        user.setLastname(lastName);
         if (user.getRoles().isEmpty()) {
             List<Role> roles = new ArrayList<>();
             // Role should always exist as it is initiated at app start

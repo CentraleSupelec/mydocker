@@ -14,7 +14,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
@@ -24,9 +23,6 @@ public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID uuid = UUID.randomUUID();
 
     @NotBlank
     private String title;
@@ -132,9 +128,4 @@ public class Course {
     @NotNull
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean visible = false;
-
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean externalAccess = false;
-
-    private LocalDateTime externalAccessExpirationDate;
 }

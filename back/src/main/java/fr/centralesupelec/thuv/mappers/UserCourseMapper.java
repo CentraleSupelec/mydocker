@@ -7,11 +7,9 @@ import fr.centralesupelec.thuv.dtos.SessionUpdateDto;
 import fr.centralesupelec.thuv.dtos.UserCourseDto;
 import fr.centralesupelec.thuv.dtos.UserCourseWithSessionDto;
 import fr.centralesupelec.thuv.model.Course;
-import fr.centralesupelec.thuv.model.UserCourse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -22,7 +20,6 @@ public class UserCourseMapper {
     private final PortsMapper portsMapper;
     private final ObjectMapper objectMapper;
     private final SessionMapper sessionMapper;
-    private final ZoneId zoneId;
 
     public UserCourseDto convertToDto(Course course) {
         UserCourseDto dto = new UserCourseDto();
@@ -30,12 +27,11 @@ public class UserCourseMapper {
         return dto;
     }
 
-    public UserCourseWithSessionDto convertToDtoWihSession(UserCourse userCourse) {
+    public UserCourseWithSessionDto convertToDtoWihSession(Course course) {
         UserCourseWithSessionDto dto = new UserCourseWithSessionDto();
-        dto.setCreatedAt(userCourse.getCreatedAt()).setLastStartDate(userCourse.getLastStartDate());
-        applyToDto(userCourse.getCourse(), dto);
+        applyToDto(course, dto);
         dto.setSessions(
-                userCourse.getCourse().getSessions()
+                course.getSessions()
                     .stream()
                     .map(sessionMapper::convertToUpdateDto)
                     .sorted(Comparator.comparingLong(SessionUpdateDto::getStartDateTime))
@@ -48,14 +44,7 @@ public class UserCourseMapper {
         dto
                 .setStudentWorkIsSaved(course.isSaveStudentWork())
                 .setId(course.getId())
-                .setUuid(course.getUuid())
                 .setTitle(course.getTitle())
-                .setExternalAccess(course.isExternalAccess())
-                .setExternalAccessExpirationDate(
-                    course.getExternalAccessExpirationDate() == null
-                        ? null
-                        : course.getExternalAccessExpirationDate().atZone(zoneId).toInstant().toEpochMilli()
-                )
                 .setDescription(course.getDescription())
                 .setCreator(course.getCreator().getLastname())
                 .setAllowStudentToSubmit(

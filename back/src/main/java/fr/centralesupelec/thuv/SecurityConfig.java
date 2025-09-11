@@ -6,12 +6,9 @@ import fr.centralesupelec.thuv.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.authentication.ott.JdbcOneTimeTokenService;
-import org.springframework.security.authentication.ott.OneTimeTokenService;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,9 +36,6 @@ public class SecurityConfig {
     @Autowired
     private AuthenticationEntryPoint unauthorizedHandler;
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
-
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
@@ -64,12 +58,6 @@ public class SecurityConfig {
         expressionHandler.setRoleHierarchy(roleHierarchy());
         return expressionHandler;
     }
-
-    @Bean
-    public OneTimeTokenService oneTimeTokenService() {
-        return new JdbcOneTimeTokenService(jdbcTemplate);
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -89,7 +77,6 @@ public class SecurityConfig {
                         .requestMatchers(LAUNCH_PATH).permitAll()
                         .requestMatchers(INIT_PATH).permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/courses/*/externalAccess").permitAll()
                         .anyRequest()
                         .authenticated()
                 )

@@ -37,9 +37,4 @@
     <include file="changelogs/30.rename_mydocker_variables.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/31.add-username.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/32.add_course_visible.yml" relativeToChangelogFile="true"/>
-    <include file="changelogs/33.add_title_to_course_sessions.yml" relativeToChangelogFile="true"/>
-    <include file="changelogs/34.add_dates_to_users_courses.yml" relativeToChangelogFile="true"/>
-    <include file="changelogs/35.add_external_access_to_courses.yml" relativeToChangelogFile="true"/>
-    <include file="changelogs/36.add_one_time_tokens.yml" relativeToChangelogFile="true"/>
-    <include file="changelogs/37.add_uuid_to_courses.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

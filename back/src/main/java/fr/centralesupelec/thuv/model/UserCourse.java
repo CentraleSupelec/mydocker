@@ -1,11 +1,9 @@
 package fr.centralesupelec.thuv.model;
 
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -16,11 +14,6 @@ public class UserCourse implements Serializable {
     private UserCoursePK id = new UserCoursePK();
 
     private Date savedAt;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    private LocalDateTime lastStartDate;
 
     private String lastSaveError;
 

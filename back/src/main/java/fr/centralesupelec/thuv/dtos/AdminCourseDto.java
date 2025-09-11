@@ -6,13 +6,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AdminCourseDto extends AdminCourseBaseDto {
     private Long id;
-    private UUID uuid;
     private String creator;
     private Long updatedOn;
     private Long createdOn;

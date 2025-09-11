@@ -33,7 +33,6 @@ public class AdminCourseMapper {
                 )
                 .setCreator(course.getCreator().getName() + " " + course.getCreator().getLastname())
                 .setId(course.getId())
-                .setUuid(course.getUuid())
                 .setUpdatedOn(
                         course.getUpdatedOn().atZone(zoneId).toInstant().toEpochMilli()
                 )
@@ -50,12 +49,6 @@ public class AdminCourseMapper {
                 .setWorkdirSize(course.getWorkdirSize())
                 .setWorkdirPath(course.getWorkdirPath())
                 .setTitle(course.getTitle())
-                .setExternalAccess(course.isExternalAccess())
-                .setExternalAccessExpirationDate(
-                        course.getExternalAccessExpirationDate() == null
-                            ? null
-                            : course.getExternalAccessExpirationDate().atZone(zoneId).toInstant().toEpochMilli()
-                )
                 .setDescription(course.getDescription())
                 .setAllowStudentToSubmit(course.isAllowStudentToSubmit())
                 .setStatus(course.getStatus())

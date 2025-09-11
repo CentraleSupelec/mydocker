@@ -8,11 +8,9 @@ import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.CourseRepository;
-import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,13 +18,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -34,19 +29,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/courses")
 public class CourseController {
     private final UserRepository userRepository;
-    private final UserCourseRepository userCourseRepository;
     private final CourseRepository courseRepository;
     private final UserCourseMapper userCourseMapper;
 
     @Autowired
     public CourseController(
             UserRepository userRepository,
-            UserCourseRepository userCourseRepository,
             CourseRepository courseRepository,
             UserCourseMapper userCourseMapper
     ) {
         this.userRepository = userRepository;
-        this.userCourseRepository = userCourseRepository;
         this.courseRepository = courseRepository;
         this.userCourseMapper = userCourseMapper;
     }
@@ -59,11 +51,10 @@ public class CourseController {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        List<UserCourse> listUserCourses = userCourseRepository
-            .findByUserAndCourseStatusInOrderByCourseId(
+        List<Course> listCourse = courseRepository.findByUserCoursesUserAndStatusInOrderById(
                 user, Arrays.asList(CourseStatus.DRAFT, CourseStatus.TEST, CourseStatus.READY)
         );
-        return listUserCourses.stream()
+        return listCourse.stream()
                 .map(userCourseMapper::convertToDtoWihSession)
                 .collect(Collectors.toList());
     }
@@ -114,16 +105,5 @@ public class CourseController {
             );
         }
         return listCourses;
-    }
-
-    @RequestMapping(value = "/{courseUuid}/externalAccess", method = RequestMethod.GET)
-    public Boolean externalAccess(
-            @PathVariable("courseUuid") UUID courseUuid
-    ) {
-        Course course = courseRepository.findByUuid(courseUuid)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
-
-        return course.isExternalAccess()
-                && course.getExternalAccessExpirationDate().isAfter(LocalDateTime.now());
     }
 }

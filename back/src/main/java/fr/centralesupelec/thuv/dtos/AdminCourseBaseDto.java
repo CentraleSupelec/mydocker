@@ -51,9 +51,4 @@ public class AdminCourseBaseDto {
 
     @NotNull
     private HashMap<String, Object> displayOptions = new HashMap<>();
-
-    @NotNull
-    private boolean externalAccess = false;
-
-    private Long externalAccessExpirationDate;
 }
