@@ -3,6 +3,13 @@
     fxLayout="column" fxFlexFill
   >
     <mat-form-field>
+      <mat-label>Titre</mat-label>
+      <input matInput formControlName="title">
+      <mat-error *ngIf="sessionFormGroup?.get('title')?.hasError('pattern')">
+        Le titre ne doit pas contenir de /
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field>
       <mat-label>Nombre d'étudiants</mat-label>
       <input matInput formControlName="studentNumber" type="number">
     </mat-form-field>

@@ -19,7 +19,7 @@ interface ISessionWithResourcesList extends ISessionWithResources {
 })
 export class SessionWithResourceListComponent implements OnInit, OnDestroy {
   sessions: MatTableDataSource<ISessionWithResourcesList> = new MatTableDataSource<ISessionWithResourcesList>();
-  displayedColumns = ['hasResource', 'title', 'startDateTime', 'endDateTime', 'action'];
+  displayedColumns = ['hasResource', 'title', 'sessionTitle', 'startDateTime', 'endDateTime', 'action'];
   readonly formControl: FormControl;
   private readonly destroy$: Subject<void> = new Subject();
 

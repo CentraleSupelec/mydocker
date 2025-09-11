@@ -36,6 +36,7 @@ export class SessionFormComponent implements OnInit, ControlValueAccessor, Valid
   ) {
     this.sessionFormGroup = formBuilder.group({
       id: null,
+      title: null,
       startDateTime: [null, Validators.required],
       endDateTime: [null, Validators.required],
       blockContainerCreationBeforeStartTime: null,
@@ -68,6 +69,7 @@ export class SessionFormComponent implements OnInit, ControlValueAccessor, Valid
   writeValue(obj: IAdminSession): void {
     this.sessionFormGroup.patchValue({
       id: obj?.id || null,
+      title: obj?.title || null,
       startDateTime: obj?.startDateTime || null,
       endDateTime: obj?.endDateTime || null,
       blockContainerCreationBeforeStartTime: obj?.blockContainerCreationBeforeStartTime ?? false,

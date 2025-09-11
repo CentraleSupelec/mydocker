@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Added app name variable
 - Added documentation link in the header
+- Added session title
 
 ### Fixed
 - Encode search string in courses search
