@@ -2,6 +2,7 @@ package fr.centralesupelec.thuv.dtos;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,6 +15,8 @@ public class UserCourseDto {
     private List<PortDto> ports;
     private Boolean studentWorkIsSaved;
     private Boolean allowStudentToSubmit;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastStartDate;
     private HashMap<String, Object> displayOptions = new HashMap<>();
     private int shutdownAfterMinutes = 0;
     private int warnShutdownMinutes = 0;

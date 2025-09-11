@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -78,10 +79,11 @@ public class User {
                 .filter(userCourse -> userCourse.getCourse().equals(course))
                 .findFirst();
         if (userCourseOptional.isPresent()) {
+            userCourseOptional.get().setLastStartDate(LocalDateTime.now());
             return;
         }
         UserCourse userCourse = new UserCourse();
-        userCourse.setCourse(course);
+        userCourse.setCourse(course).setLastStartDate(LocalDateTime.now());
         this.addUserCourse(userCourse);
     }
 
