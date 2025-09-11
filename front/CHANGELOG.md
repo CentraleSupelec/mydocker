@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added app name variable
 - Added documentation link in the header
 
+### Fixed
+- Encode search string in courses search
+
 ## 2.28.4
 ### Added
 - "Visible to all teachers" option in the General Information step with a warning banner.

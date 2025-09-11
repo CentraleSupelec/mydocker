@@ -26,7 +26,7 @@ export class AdminCoursesApiService {
       .append('size', limit ? limit.toString() : '')
       .append('page', page? page.toString(): '')
       .append('sort', `${sort},${direction}`)
-      .append('search', search)
+      .append('search', encodeURIComponent(search))
       .append('status', status.join(', '))
     return this.httClient.get<IPageResponse<IAdminCourse>>(`${this.config.back_url}admin/courses/`, {
       params: params
