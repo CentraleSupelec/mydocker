@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
 @Transactional
@@ -42,4 +44,6 @@ public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecif
     @Modifying
     @Query("delete from Course c where c.id=?1")
     void deleteQueryById(Long id);
+
+    Optional<Course> findByUuid(UUID uuid);
 }

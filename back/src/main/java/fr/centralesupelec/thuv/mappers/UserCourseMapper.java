@@ -11,6 +11,7 @@ import fr.centralesupelec.thuv.model.UserCourse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class UserCourseMapper {
     private final PortsMapper portsMapper;
     private final ObjectMapper objectMapper;
     private final SessionMapper sessionMapper;
+    private final ZoneId zoneId;
 
     public UserCourseDto convertToDto(Course course) {
         UserCourseDto dto = new UserCourseDto();
@@ -46,7 +48,14 @@ public class UserCourseMapper {
         dto
                 .setStudentWorkIsSaved(course.isSaveStudentWork())
                 .setId(course.getId())
+                .setUuid(course.getUuid())
                 .setTitle(course.getTitle())
+                .setExternalAccess(course.isExternalAccess())
+                .setExternalAccessExpirationDate(
+                    course.getExternalAccessExpirationDate() == null
+                        ? null
+                        : course.getExternalAccessExpirationDate().atZone(zoneId).toInstant().toEpochMilli()
+                )
                 .setDescription(course.getDescription())
                 .setCreator(course.getCreator().getLastname())
                 .setAllowStudentToSubmit(

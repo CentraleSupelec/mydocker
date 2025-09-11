@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ public class UpdateCourseMapper {
     private final SessionMapper sessionMapper;
     private final ObjectMapper objectMapper;
     private final ComputeTypeRepository computeTypeRepository;
+    private final ZoneId zoneId;
 
 
     public void updateChanges(Course course, AdminUpdateCourseDto dto) {
@@ -43,6 +46,12 @@ public class UpdateCourseMapper {
                 )
                 .setTitle(
                         dto.getTitle()
+                )
+                .setExternalAccess(dto.isExternalAccess())
+                .setExternalAccessExpirationDate(
+                        dto.getExternalAccessExpirationDate() == null
+                                ? null 
+                                : Instant.ofEpochMilli(dto.getExternalAccessExpirationDate()).atZone(zoneId).toLocalDateTime()
                 )
                 .setDockerImage(
                         dto.getDockerImage()
