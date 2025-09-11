@@ -13,6 +13,8 @@ export interface IBasicCourse {
   displayOptions: ICourseDisplay;
   shutdownAfterMinutes?: number;
   warnShutdownMinutes?: number;
+  lastStartDate: string;
+  createdAt: string
 }
 
 export interface IBasicCourseWithSession extends IBasicCourse {
