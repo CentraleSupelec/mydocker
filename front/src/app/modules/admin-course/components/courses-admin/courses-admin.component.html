@@ -19,26 +19,12 @@
       >play_circle_filled</mat-icon>
     </a>
   </ng-container>
-  <ng-container *ngxPermissionsOnly="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']">
-    <button
-      mat-icon-button
-      (click)="askAdminContainer($event, element)"
-      matTooltip="Accéder aux travaux des étudiants"
-      *ngIf="element?.saveStudentWork && element?.allowStudentToSubmit"
-    >
-      <mat-icon class="material-symbols-outlined">home_storage</mat-icon>
-    </button>
-  </ng-container>
+
   <button mat-icon-button (click)="copyLink($event, element.link)" matTooltip="Copier le lien d'invitation">
     <mat-icon>content_copy</mat-icon>
   </button>
-  <ng-template
-    [ngxPermissionsOnly]="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']"
-    [ngxPermissionsOnlyThen]="thenBlock"
-    [ngxPermissionsOnlyElse]="elseBlock"
-  >
-  </ng-template>
-  <ng-template #thenBlock>
+
+  <ng-container *ngxPermissionsOnly="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']">
     <a
       mat-icon-button
       [routerLink]="[element.id, 'edit']"
@@ -46,38 +32,69 @@
     >
       <mat-icon>edit</mat-icon>
     </a>
-    <a
-      mat-icon-button
+  </ng-container>
+  
+  <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Plus d'actions">
+      <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu">
+    <div class="course-admin-action-menu">
+      <ng-template
+        [ngxPermissionsOnly]="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']"
+        [ngxPermissionsOnlyThen]="thenBlock"
+        [ngxPermissionsOnlyElse]="elseBlock"
+      >
+      </ng-template>
+    </div>
+  </mat-menu>
+
+  <ng-template #thenBlock>
+    <button
+      mat-menu-item
+      matTooltip="Accéder aux travaux des étudiants"
+      (click)="askAdminContainer($event, element)"
+      *ngIf="element?.saveStudentWork && element?.allowStudentToSubmit"
+    >
+      <mat-icon class="material-symbols-outlined">home_storage</mat-icon>
+      <span>Accéder aux travaux des étudiants</span>
+    </button>
+    <button
+      mat-menu-item
       (click)="duplicate(element, $event)"
       matTooltip="Dupliquer le cours"
     >
       <mat-icon>control_point_duplicate</mat-icon>
-    </a>
+      <span>Dupliquer le cours</span>
+    </button>
   </ng-template>
   <ng-template #elseBlock>
-    <a
-      mat-icon-button
+    <button
+      mat-menu-item
       [routerLink]="[element.id, 'edit']"
       matTooltip="Voir le cours"
       *ngxPermissionsOnly="['course.' + element.id + '.view']"
     >
       <mat-icon>visibility</mat-icon>
-    </a>
-    <a
-      mat-icon-button
+      <span>Voir le cours</span>
+    </button>
+    <button
+      mat-menu-item
       [routerLink]="[element.id, 'edit']"
       matTooltip="Voir le cours"
       *ngIf="element.visible"
     >
       <mat-icon>visibility</mat-icon>
-    </a>
-    <a
-      mat-icon-button
+      <span>Voir le cours</span>
+    </button>
+    <button
+      mat-menu-item
       (click)="duplicate(element, $event)"
       matTooltip="Dupliquer le cours"
     >
       <mat-icon>control_point_duplicate</mat-icon>
-    </a>
+      <span>Dupliquer le cours</span>
+    </button>
   </ng-template>
 </ng-template>
 

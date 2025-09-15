@@ -37,7 +37,9 @@
   </ng-container>
   <ng-container matColumnDef="title">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Nom du cours</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.title }} </mat-cell>
+    <mat-cell *matCellDef="let element">
+      <span [matTooltip]="element.description | removeMarkdown | truncate:200" [matTooltipPosition]="'above'">{{ element.title }}</span>
+    </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="creator">
@@ -48,11 +50,6 @@
   <ng-container matColumnDef="createdOn">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Date de création</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.createdOn | date : 'd MMMM y' }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="description">
-    <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.description | removeMarkdown | truncate:30 }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">
