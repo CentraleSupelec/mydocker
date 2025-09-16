@@ -3,12 +3,14 @@ package fr.centralesupelec.thuv.service;
 import fr.centralesupelec.gRPC.ContainerResponse;
 import fr.centralesupelec.gRPC.ContainerStatusRequest;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
+import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.mappers.GrpcResponsePortToContainerPortDtoMapper;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import io.grpc.stub.StreamObserver;
+import io.micrometer.common.util.StringUtils;
 import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -40,11 +42,14 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
                 containerDto
         );
         containerStorage.addContainer(containerDto, containerResponse.getUserID(), containerResponse.getCourseID());
-        containerStatusConfigureService.configureContainerStatus(
+
+        if (!containerDto.getStatus().equals(ContainerStatusDto.KO)) {
+            containerStatusConfigureService.configureContainerStatus(
                 containerResponse.getCourseID(),
                 containerResponse.getUserID(),
                 ContainerStatusRequest.Action.on
-        );
+            );
+        }
     }
 
     @Override
@@ -80,11 +85,11 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
         // Need to change it if different auth method
         containerDto.setPassword(containerResponse.getUserPassword().getPassword());
         containerDto.setUsername(containerResponse.getUserPassword().getUsername());
-        String error = containerResponse.getError();
-        containerDto.setCreationError(error);
-        if (error != null && !error.isBlank()) {
-            containerDto.setStatus(fr.centralesupelec.thuv.dtos.ContainerStatusDto.KO);
+        containerDto.setCreationError(containerResponse.getError());
+        if (StringUtils.isNotBlank(containerResponse.getError())) {
+            containerDto.setStatus(ContainerStatusDto.KO);
         }
+        containerDto.setCreationError(containerResponse.getError());
         containerDto.getErrorParams().putAll(containerResponse.getErrorParamsMap());
         containerDto.setDeletionTime(containerResponse.getDeletionTime());
         containerDto.setNeedsNewGpu(course.isPresent() && course.get().getComputeType().isGpu());

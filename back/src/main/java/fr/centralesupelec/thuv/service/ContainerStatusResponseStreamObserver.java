@@ -80,9 +80,6 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
         );
         if (!StringUtils.isBlank(containerStatusResponse.getErrorMessage())) {
             containerDto.setCreationError(containerStatusResponse.getErrorMessage());
-            if (containerDto.getStatus() != ContainerStatusDto.KO) {
-                containerDto.setStatus(ContainerStatusDto.KO);
-            }
         }
     }
 

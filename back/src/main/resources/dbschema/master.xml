@@ -42,5 +42,4 @@
     <include file="changelogs/35.add_external_access_to_courses.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/36.add_one_time_tokens.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/37.add_uuid_to_courses.yml" relativeToChangelogFile="true"/>
-    <include file="changelogs/38.change_course_description_to_text.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
