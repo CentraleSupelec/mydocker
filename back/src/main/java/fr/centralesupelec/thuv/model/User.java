@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -72,20 +71,6 @@ public class User {
         cascade = { CascadeType.REMOVE }
     )
     private Set<Course> createdCourses = new HashSet<>();
-
-    public void addCourse(Course course) {
-        Optional<UserCourse> userCourseOptional = this.userCourses
-                .stream()
-                .filter(userCourse -> userCourse.getCourse().equals(course))
-                .findFirst();
-        if (userCourseOptional.isPresent()) {
-            userCourseOptional.get().setLastStartDate(LocalDateTime.now());
-            return;
-        }
-        UserCourse userCourse = new UserCourse();
-        userCourse.setCourse(course).setLastStartDate(LocalDateTime.now());
-        this.addUserCourse(userCourse);
-    }
 
     public void removeCourse(Course course) {
         Optional<UserCourse> userCourseOptional = this.userCourses

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @RestController
@@ -44,6 +45,7 @@ public class ContainerController {
     private final ShutdownContainerService shutdownContainerService;
     private final ShutdownStatusStorage shutdownStatusStorage;
     private final DelayDeletionService delayDeletionService;
+    private final ZoneId zoneId;
 
     @PostMapping(value = "/initGetContainer/{sessionId}")
     @PreAuthorize("@userCoursePermissionService.canAskContainer(#courseSession)")
@@ -56,7 +58,7 @@ public class ContainerController {
                 principal.getUserId()
         );
         userCourseRepository.findByUserIdAndCourseId(
-                user.getId(), courseSession.getCourse().getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now())
+                user.getId(), courseSession.getCourse().getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now(zoneId))
         );
         ContainerRequest containerRequest = containerRequestCreatorService.createRequest(
                 courseSession, user, forceRecreate

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Changed
 - User role in user dto is now roles to reflect the entity user having multiple roles eventually
+- Ignore recent lastStartDate and fetch the previous one for user courses dto
 
 ## 2.31.7
 ### Changed

@@ -11,6 +11,7 @@ import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
+import fr.centralesupelec.thuv.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,18 +38,21 @@ public class CourseController {
     private final UserCourseRepository userCourseRepository;
     private final CourseRepository courseRepository;
     private final UserCourseMapper userCourseMapper;
+    private final UserService userService;
 
     @Autowired
     public CourseController(
             UserRepository userRepository,
             UserCourseRepository userCourseRepository,
             CourseRepository courseRepository,
-            UserCourseMapper userCourseMapper
+            UserCourseMapper userCourseMapper,
+            UserService userService
     ) {
         this.userRepository = userRepository;
         this.userCourseRepository = userCourseRepository;
         this.courseRepository = courseRepository;
         this.userCourseMapper = userCourseMapper;
+        this.userService = userService;
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -91,7 +95,7 @@ public class CourseController {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        user.addCourse(course);
+        userService.addCourseToUser(course, user);
         userRepository.save(user);
         return userCourseMapper.convertToDto(course);
     }
