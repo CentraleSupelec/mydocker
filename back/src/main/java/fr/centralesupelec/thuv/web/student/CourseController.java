@@ -120,6 +120,14 @@ public class CourseController {
         return listCourses;
     }
 
+    @PreAuthorize("hasRole('USER')")
+    @RequestMapping(value = "/{courseId}/isGpu", method = RequestMethod.GET)
+    public Boolean isGpu(
+        @PathVariable("courseId") Course course
+    ) {
+        return course.getComputeType().isGpu();
+    }
+
     @RequestMapping(value = "/{courseUuid}/externalAccess", method = RequestMethod.GET)
     public Boolean externalAccess(
             @PathVariable("courseUuid") UUID courseUuid
