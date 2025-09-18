@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Handle multiple roles for users
 - Course list layout
 
+### Fixed
+- Use dedicated endpoint accessible by students to know if a course needs GPU or not, instead of using on admin endpoint.
+
 ## 2.28.6
 ### Changed
 - Upgraded Angular from v13 to v14

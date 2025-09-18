@@ -34,4 +34,8 @@ export class UserCourseApiService {
   getIsExternalAccessActivated(courseUuid: string): Observable<boolean> {
     return this.httpClient.get<boolean>(`${this.config.back_url}courses/${courseUuid}/externalAccess`);
   }
+
+  getIsGpu(courseId: number): Observable<boolean> {
+    return this.httpClient.get<boolean>(`${this.config.back_url}courses/${courseId}/isGpu`);
+  }
 }

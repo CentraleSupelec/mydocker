@@ -4,9 +4,8 @@ import { ISession } from "../../interfaces/session";
 import { IBasicCourseWithSession } from "../../interfaces/course";
 import { FormControl } from "@angular/forms";
 import { filter, map, mergeMap, switchMap, take, tap } from "rxjs/operators";
-import { AdminCoursesApiService } from "src/app/modules/admin-course/services/admin-courses-api.service";
-import { ComputeTypesApiService } from "src/app/modules/compute-type/services/compute-types-api.service";
 import { APP_CONFIG, IAppConfig } from "src/app/app-config";
+import { UserCourseApiService } from "../../services/user-course-api.service";
 
 
 @Component({
@@ -29,8 +28,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly adminCoursesApiService: AdminCoursesApiService,
-    private readonly computeTypesApiService: ComputeTypesApiService,
+    private readonly userCourseApiService: UserCourseApiService,
   ) {}
 
   ngOnInit(): void {
@@ -62,8 +60,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
             };
           }))
           .filter((course: IBasicCourseWithSession) => course.sessions?.length > 0)
-          .sort((a: IBasicCourseWithSession, b: IBasicCourseWithSession) => 
-            (b.lastStartDate ? new Date(b.lastStartDate).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0)) 
+          .sort((a: IBasicCourseWithSession, b: IBasicCourseWithSession) =>
+            (b.lastStartDate ? new Date(b.lastStartDate).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0))
             - (a.lastStartDate ? new Date(a.lastStartDate).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0)));
         return this.route.queryParamMap;
       }),
@@ -77,9 +75,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
           }
           if (sessionId) {
             this.selectSessionId = sessionId;
-            this.adminCoursesApiService.getCourse(this.courseId).pipe(
-              switchMap(course => this.computeTypesApiService.getComputeType(course.computeTypeId)),
-              filter(computeType => !computeType.gpu),
+            this.userCourseApiService.getIsGpu(this.courseId).pipe(
+              filter(isGpu => !isGpu),
               tap(() => this.launchSessionId = sessionId)
             ).subscribe();
           }
@@ -97,7 +94,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
           this.errorMessage = queryParamMap.get('error_message');
           const currentParams: { [key: string]: string | null } = { ...queryParamMap.keys.reduce((acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}) };
           delete currentParams['error_message'];
-          
+
           this.router.navigate([], {
             queryParams: currentParams,
             replaceUrl: true
