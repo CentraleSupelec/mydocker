@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { interval, Subject } from "rxjs";
+import { interval, of, Subject } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
-import { mergeMap, takeUntil } from "rxjs/operators";
+import { catchError, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 import {
   ContainerStatus,
   ContainerSwarmState,
@@ -30,6 +30,11 @@ const ContainerSwarmStateOrder = [
   ContainerSwarmState.RUNNING,
 ];
 
+interface IPolling {
+  container: IContainer | null;
+  recovered: boolean;
+}
+
 @Component({
   selector: 'app-shell-access',
   templateUrl: './shell-access.component.html',
@@ -47,6 +52,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' = 'ask';
   step: number = 0;
   stepMessage: string = '';
+  recovering = false;
 
   private readonly stopInitPolling$: Subject<void> = new Subject<void>();
   private readonly stopShutdownPolling$: Subject<void> = new Subject<void>();
@@ -109,9 +115,35 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     this.state = 'loading_init';
     interval(3000).pipe(
       takeUntil(this.stopInitPolling$),
-      mergeMap(() => this.containerApiService.getContainer(this.sessionCourseOrCourse?.id))
-    ).subscribe(
-      container => {
+      switchMap(() => {
+        if (this.recovering) {
+          return this.containerApiService.initGetContainer(this.session?.id, false).pipe(
+            map(() => ({ container: null, recovered: true } as  IPolling)),
+            catchError(err => {
+              console.error('Error intializing container:', err);
+              return of({ container: null, recovered: false } as  IPolling);
+            })
+          );
+        } else {
+          return this.containerApiService.getContainer(this.sessionCourseOrCourse?.id).pipe(
+            map(container => ({ container, recovered: false } as  IPolling)),
+            catchError(err => {
+              console.error('Error fetching container:', err);
+              this.recovering = true;
+              return of({ container: null, recovered: false } as  IPolling);
+            })
+          );
+        }
+      })
+    )
+    .subscribe(
+      (pollingResult: IPolling) => {
+        let container = pollingResult.container
+        if (pollingResult.recovered && this.recovering) {
+          this.recovering = false;
+          return;
+        }
+
         if (container) {
           this.container = container;
           const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);

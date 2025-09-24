@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Changed
 - Upgraded Angular from v13 to v14
+- Retry getting container status if an error is encountered
 
 ### Added
 - Lexical WYSIWYG editor to edit course description field
