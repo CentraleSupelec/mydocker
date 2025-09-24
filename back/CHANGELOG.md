@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Description field from VARCHAR to TEXT
+- Wrapped existing descriptions in <p>...</p>
+
+## 2.31.5
 ### Added
 - Decode course search parameter
 - Search by creator with search parameter

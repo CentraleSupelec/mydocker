@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20250908-01
+      author: mohamedalibarka
+      changes:
+        - modifyDataType:
+            tableName: courses
+            columnName: description
+            newDataType: TEXT
+  - changeSet:
+      id: 20250908-02
+      author: mohamedalibarka
+      sql:
+        - |
+          UPDATE courses
+          SET description = CONCAT('<p>', description, '</p>')
+          WHERE description IS NOT NULL;
