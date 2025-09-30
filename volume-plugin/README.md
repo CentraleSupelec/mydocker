@@ -6,6 +6,12 @@ How to develop
 
 Run `make all` to build the plugin and install it, then `make enable` to enable it.
 
+You can select arm64 plateform :
+
+```bash
+make PLATFORM=linux/arm64 all
+```
+
 
 How to use
 ----------
