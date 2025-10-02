@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
@@ -23,6 +24,7 @@ type containerStatusService struct {
 	logger            *log.Entry
 	containersToWatch map[string]bool
 	out               chan<- *pb.ContainerStatusResponse
+	containersToWatchMutex sync.RWMutex
 }
 
 func newContainerStatusService(dockerClient containerStatusDockerClient, logger *log.Entry, containersToWatch map[string]bool, out chan<- *pb.ContainerStatusResponse) containerStatusService {
@@ -34,26 +36,32 @@ func newContainerStatusService(dockerClient containerStatusDockerClient, logger 
 	}
 }
 
-func setupContainerStatusCron(out chan<- *pb.ContainerStatusResponse, containersToWatch map[string]bool, dockerClient containerStatusDockerClient, cronScheduler *gocron.Scheduler) error {
-	tag := "containerStatus"
-	logger := log.WithFields(log.Fields{"service": tag})
-	service := newContainerStatusService(dockerClient, logger, containersToWatch, out)
-	_, err := cronScheduler.Every(c.ContainerStatusInterval).Tag(tag).Do(service.sendContainerStatus)
-	if err != nil {
-		return err
-	}
-	return nil
+func setupContainerStatusCron(service *containerStatusService, cronScheduler *gocron.Scheduler) error {
+    tag := "containerStatus"
+    _, err := cronScheduler.Every(c.ContainerStatusInterval).Tag(tag).Do(service.sendContainerStatus)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 func (s *containerStatusService) sendContainerStatus() {
+	s.containersToWatchMutex.RLock()
+	containerNames := make([]string, 0, len(s.containersToWatch))
 	for containerName := range s.containersToWatch {
+		containerNames = append(containerNames, containerName)
+	}
+	s.containersToWatchMutex.RUnlock()
+	for _, containerName := range containerNames {
 		s.logger.Debugf("Checking status for container: %s", containerName)
 
 		tasks, err := s.dockerClient.TaskList(context.TODO(), types.TaskListOptions{Filters: filters.NewArgs(filters.KeyValuePair{Key: "service", Value: containerName})})
 		if err != nil {
 			s.logger.Errorf("Error fetching task list for container %s: %v", containerName, err)
 			if matched, _ := regexp.MatchString(`service .* not found`, err.Error()); matched {
+				s.containersToWatchMutex.Lock()
 				delete(s.containersToWatch, containerName)
+				s.containersToWatchMutex.Unlock()
 			}
 			continue
 		}

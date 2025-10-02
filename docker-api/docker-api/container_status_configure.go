@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func configureContainerStatus(in <-chan *pb.ContainerStatusRequest, containersToWatch map[string]bool) {
+func configureContainerStatus(in <-chan *pb.ContainerStatusRequest, service *containerStatusService) {
 	logger := log.WithFields(log.Fields{"service": "containerStatusConfigure"})
 	for request := range in {
 		logger.WithFields(
@@ -21,20 +21,22 @@ func configureContainerStatus(in <-chan *pb.ContainerStatusRequest, containersTo
 		} else {
 			containerName = createContainerName(request.GetUserID(), request.GetCourseID())
 		}
+	service.containersToWatchMutex.Lock()
 		if request.GetAction() == pb.ContainerStatusRequest_on {
-			containersToWatch[containerName] = true
+			service.containersToWatch[containerName] = true
 			logger.WithFields(
 				log.Fields{
 					"container": containerName,
 					"is_admin":  request.GetIsAdmin(),
 				}).Info("Started watching container")
 		} else if request.GetAction() == pb.ContainerStatusRequest_off {
-			delete(containersToWatch, containerName)
+			delete(service.containersToWatch, containerName)
 			logger.WithFields(
 				log.Fields{
 					"container": containerName,
 					"is_admin":  request.GetIsAdmin(),
 				}).Info("Stopped watching container")
 		}
+	service.containersToWatchMutex.Unlock()
 	}
 }

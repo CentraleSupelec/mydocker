@@ -137,6 +137,55 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusCompletedTask() {
 	assert.Contains(suite.T(), response.ErrorMessage, "completed")
 }
 
+func (suite *ContainerStatusSendTestSuite) TestConcurrentAccessContainersToWatch() {
+	stubClient := new(containerStatusSendTestClient)
+	logger := log.New()
+	logger.SetLevel(log.DebugLevel)
+	out := make(chan *pb.ContainerStatusResponse, 10)
+	service := &containerStatusService{
+		dockerClient:      stubClient,
+		logger:            log.NewEntry(logger),
+		containersToWatch: map[string]bool{},
+		out:               out,
+	}
+
+	// Simule 10 goroutines qui ajoutent/suppriment et 5 qui lisent la map
+	done := make(chan struct{})
+	for i := 0; i < 10; i++ {
+		go func(idx int) {
+			name := fmt.Sprintf("container-%d", idx)
+			for j := 0; j < 100; j++ {
+				service.containersToWatchMutex.Lock()
+				service.containersToWatch[name] = true
+				delete(service.containersToWatch, name)
+				service.containersToWatchMutex.Unlock()
+			}
+			done <- struct{}{}
+		}(i)
+	}
+	for i := 0; i < 5; i++ {
+		go func() {
+			for j := 0; j < 100; j++ {
+				service.containersToWatchMutex.RLock()
+				_ = len(service.containersToWatch)
+				for k := range service.containersToWatch {
+					_ = k
+				}
+				service.containersToWatchMutex.RUnlock()
+			}
+			done <- struct{}{}
+		}()
+	}
+	// Attend la fin de toutes les goroutines
+	for i := 0; i < 15; i++ {
+		<-done
+	}
+	// Vérifie qu'aucune panique ou erreur de concurrence n'est survenue
+	service.containersToWatchMutex.RLock()
+	assert.Equal(suite.T(), 0, len(service.containersToWatch), "Map should be empty after concurrent access")
+	service.containersToWatchMutex.RUnlock()
+}
+
 func TestContainerStatusSendTestSuite(t *testing.T) {
 	suite.Run(t, new(ContainerStatusSendTestSuite))
 }

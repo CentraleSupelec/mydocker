@@ -234,9 +234,16 @@ func (s *server) GetContainerStatus(stream pb.ContainerService_GetContainerStatu
 
 	containersToWatch := map[string]bool{}
 
+	service := newContainerStatusService(
+		s.dockerClient,
+		log.WithFields(log.Fields{"service": "containerStatus"}),
+		containersToWatch,
+		out,
+	)
+
 	// Create Go worker
-	go configureContainerStatus(in, containersToWatch)
-	go setupContainerStatusCron(out, containersToWatch, s.dockerClient, s.cronScheduler)
+	go configureContainerStatus(in, &service)
+	go setupContainerStatusCron(&service, s.cronScheduler)
 
 	go func() {
 		for {

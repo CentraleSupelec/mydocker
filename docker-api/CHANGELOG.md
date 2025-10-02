@@ -6,6 +6,10 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
+## 2.18.5
+### Fixed
+- Fix concurrent map access with mutex protection in containerStatusService
+
 ## 2.18.4
 ### Added
 - Add labels to resources that have been reserved by course sessions
