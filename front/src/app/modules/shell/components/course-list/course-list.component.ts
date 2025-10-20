@@ -158,7 +158,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     const now = new Date();
     const diffTimeInDays = (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     const absDiffTimeInDays = Math.abs(diffTimeInDays);
-    const prefix = diffTimeInDays >= 0 ? "Dans": "Il y'a"
+    const prefix = diffTimeInDays >= 0 ? "Dans": "Il y a"
     if (absDiffTimeInDays < 1) {
       return `${prefix} moins de 24 heures`
     }
