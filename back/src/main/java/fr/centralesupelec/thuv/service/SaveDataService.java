@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.annotation.PostConstruct;
 
 import java.util.Date;
 import java.util.Optional;
@@ -33,8 +32,7 @@ public class SaveDataService {
         this.userCourseRepository = userCourseRepository;
     }
 
-    @PostConstruct
-    public void init() {
+    private void establishConnection() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
 
         this.saveDataRequestStreamObserver = asyncStub.saveData(new StreamObserver<>() {
@@ -78,6 +76,7 @@ public class SaveDataService {
     public void sendSaveData(SaveDataRequest request) {
         try {
             lock.lock();
+            establishConnection();
             saveDataRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC

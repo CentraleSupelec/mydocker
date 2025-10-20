@@ -2,9 +2,9 @@ package fr.centralesupelec.thuv.service;
 
 import fr.centralesupelec.gRPC.ContainerStatusRequest;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
+import fr.centralesupelec.gRPC.containerServiceGrpc.containerServiceStub;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +21,8 @@ public class ContainerStatusConfigureService {
     private final ReentrantLock lock = new ReentrantLock();
     private final ContainerStatusResponseStreamObserver containerStatusResponseStreamObserver;
 
-    @PostConstruct
-    public void init() {
-        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
+    private void establishConnection() {
+        containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         containerStatusResponseStreamObserver.setContainerStatusConfigureService(this);
         this.containerStatusRequestStreamObserver = asyncStub.getContainerStatus(containerStatusResponseStreamObserver);
     }
@@ -36,6 +35,7 @@ public class ContainerStatusConfigureService {
                 .build();
         try {
             lock.lock();
+            establishConnection();
             containerStatusRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             logger.error("Error configuring container status.\n Please restart the go API then this service.");
