@@ -17,6 +17,7 @@ type dockerUtilsDockerClient interface {
 	ContainerWait(ctx context.Context, container string, condition containerTypes.WaitCondition) (<-chan containerTypes.ContainerWaitOKBody, <-chan error)
 	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
 	TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error)
+	NodeList(ctx context.Context, options types.NodeListOptions) ([]swarm.Node, error)
 }
 
 type DockerUtilsInterface interface {
@@ -108,4 +109,22 @@ func (d *DockerUtils) getRunningTaskNodeId(ctx context.Context, userId string, c
 		}
 	}
 	return "", fmt.Errorf("among %d tasks for service %s, none found with a success state. States : %v", len(tasks), serviceName, states)
+}
+
+func (d *DockerUtils) nodeWithCourseIdLabelExists(ctx context.Context, courseId string) (bool, error) {
+
+	allNodes, err := d.dockerClient.NodeList(ctx, types.NodeListOptions{})
+
+	if err != nil {
+		return false, err
+	}
+
+	labelKey := fmt.Sprintf("courseId-%s", courseId)
+	for _, node := range allNodes {
+		if val, ok := node.Spec.Labels[labelKey]; ok && val == "true" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

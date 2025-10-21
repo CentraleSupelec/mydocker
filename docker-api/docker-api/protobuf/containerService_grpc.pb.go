@@ -30,6 +30,7 @@ const (
 	ContainerService_InitAutoscaling_FullMethodName    = "/fr.centralesupelec.gRPC.containerService/initAutoscaling"
 	ContainerService_GetNodeIP_FullMethodName          = "/fr.centralesupelec.gRPC.containerService/getNodeIP"
 	ContainerService_GetContainerStatus_FullMethodName = "/fr.centralesupelec.gRPC.containerService/getContainerStatus"
+	ContainerService_GetCourseInfra_FullMethodName     = "/fr.centralesupelec.gRPC.containerService/getCourseInfra"
 )
 
 // ContainerServiceClient is the client API for ContainerService service.
@@ -47,6 +48,7 @@ type ContainerServiceClient interface {
 	InitAutoscaling(ctx context.Context, in *InitAutoscalingRequest, opts ...grpc.CallOption) (*InitAutoscalingResponse, error)
 	GetNodeIP(ctx context.Context, in *NodeIPRequest, opts ...grpc.CallOption) (*NodeIPResponse, error)
 	GetContainerStatus(ctx context.Context, opts ...grpc.CallOption) (ContainerService_GetContainerStatusClient, error)
+	GetCourseInfra(ctx context.Context, in *CourseInfraRequest, opts ...grpc.CallOption) (*CourseInfraResponse, error)
 }
 
 type containerServiceClient struct {
@@ -311,6 +313,15 @@ func (x *containerServiceGetContainerStatusClient) Recv() (*ContainerStatusRespo
 	return m, nil
 }
 
+func (c *containerServiceClient) GetCourseInfra(ctx context.Context, in *CourseInfraRequest, opts ...grpc.CallOption) (*CourseInfraResponse, error) {
+	out := new(CourseInfraResponse)
+	err := c.cc.Invoke(ctx, ContainerService_GetCourseInfra_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContainerServiceServer is the server API for ContainerService service.
 // All implementations must embed UnimplementedContainerServiceServer
 // for forward compatibility
@@ -326,6 +337,7 @@ type ContainerServiceServer interface {
 	InitAutoscaling(context.Context, *InitAutoscalingRequest) (*InitAutoscalingResponse, error)
 	GetNodeIP(context.Context, *NodeIPRequest) (*NodeIPResponse, error)
 	GetContainerStatus(ContainerService_GetContainerStatusServer) error
+	GetCourseInfra(context.Context, *CourseInfraRequest) (*CourseInfraResponse, error)
 	mustEmbedUnimplementedContainerServiceServer()
 }
 
@@ -365,6 +377,9 @@ func (UnimplementedContainerServiceServer) GetNodeIP(context.Context, *NodeIPReq
 }
 func (UnimplementedContainerServiceServer) GetContainerStatus(ContainerService_GetContainerStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetContainerStatus not implemented")
+}
+func (UnimplementedContainerServiceServer) GetCourseInfra(context.Context, *CourseInfraRequest) (*CourseInfraResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCourseInfra not implemented")
 }
 func (UnimplementedContainerServiceServer) mustEmbedUnimplementedContainerServiceServer() {}
 
@@ -628,6 +643,24 @@ func (x *containerServiceGetContainerStatusServer) Recv() (*ContainerStatusReque
 	return m, nil
 }
 
+func _ContainerService_GetCourseInfra_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CourseInfraRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServiceServer).GetCourseInfra(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContainerService_GetCourseInfra_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServiceServer).GetCourseInfra(ctx, req.(*CourseInfraRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ContainerService_ServiceDesc is the grpc.ServiceDesc for ContainerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -650,6 +683,10 @@ var ContainerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getNodeIP",
 			Handler:    _ContainerService_GetNodeIP_Handler,
+		},
+		{
+			MethodName: "getCourseInfra",
+			Handler:    _ContainerService_GetCourseInfra_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
