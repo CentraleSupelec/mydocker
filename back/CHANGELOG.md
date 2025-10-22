@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Create a new stub each time we need to define a StreamObserver instead of just in the init so that if the go restarts, no need to restart the back app
+- Handle deployments with no sessions attached
 
 ## 2.31.9
 ### Fixed
