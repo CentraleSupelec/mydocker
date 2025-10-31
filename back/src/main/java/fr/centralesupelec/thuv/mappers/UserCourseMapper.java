@@ -46,7 +46,8 @@ public class UserCourseMapper {
         UserCourseWithSessionDto dto = new UserCourseWithSessionDto();
         dto.setCreatedAt(userCourse.getCreatedAt());
 
-        if (userCourse.getLastStartDate().isAfter(LocalDateTime.now(zoneId).minusSeconds(ignoreRecentLastStartDateInSeconds))) {
+        LocalDateTime lastStartDate = userCourse.getLastStartDate();
+        if (lastStartDate != null && lastStartDate.isAfter(LocalDateTime.now(zoneId).minusSeconds(ignoreRecentLastStartDateInSeconds))) {
             Optional<ActivityLogRecord> latestLogRecordOptional = logRecordRepository
                 .findFirstByUserIdAndModelIdAndModelNameAndActionInAndCreatedOnBeforeOrderByCreatedOnDesc(
                     userCourse.getUser().getId(),
@@ -58,10 +59,10 @@ public class UserCourseMapper {
             latestLogRecordOptional.ifPresentOrElse(
                 latestLogRecord -> 
                     dto.setLastStartDate(latestLogRecord.getCreatedOn().atZone(ZoneId.systemDefault()).withZoneSameInstant(zoneId).toLocalDateTime()),
-                () -> dto.setLastStartDate(userCourse.getLastStartDate())
+                () -> dto.setLastStartDate(lastStartDate)
             );
         } else {
-            dto.setLastStartDate(userCourse.getLastStartDate());
+            dto.setLastStartDate(lastStartDate);
         }
 
         applyToDto(userCourse.getCourse(), dto);
