@@ -20,29 +20,34 @@ type containerStatusDockerClient interface {
 }
 
 type containerStatusService struct {
-	dockerClient      containerStatusDockerClient
-	logger            *log.Entry
-	containersToWatch map[string]bool
-	out               chan<- *pb.ContainerStatusResponse
-	containersToWatchMutex sync.RWMutex
+	dockerClient           containerStatusDockerClient
+	logger                 *log.Entry
+	containersToWatch      map[string]bool
+	out                    *chan *pb.ContainerStatusResponse
+	containersToWatchMutex *sync.RWMutex
 }
 
-func newContainerStatusService(dockerClient containerStatusDockerClient, logger *log.Entry, containersToWatch map[string]bool, out chan<- *pb.ContainerStatusResponse) containerStatusService {
+func newContainerStatusService(dockerClient containerStatusDockerClient, logger *log.Entry, containersToWatch map[string]bool, containersToWatchMutex *sync.RWMutex, out *chan *pb.ContainerStatusResponse) containerStatusService {
 	return containerStatusService{
-		dockerClient:      dockerClient,
-		logger:            logger,
-		containersToWatch: containersToWatch,
-		out:               out,
+		dockerClient:           dockerClient,
+		logger:                 logger,
+		containersToWatch:      containersToWatch,
+		containersToWatchMutex: containersToWatchMutex,
+		out:                    out,
 	}
 }
 
 func setupContainerStatusCron(service *containerStatusService, cronScheduler *gocron.Scheduler) error {
-    tag := "containerStatus"
-    _, err := cronScheduler.Every(c.ContainerStatusInterval).Tag(tag).Do(service.sendContainerStatus)
-    if err != nil {
-        return err
-    }
-    return nil
+	tag := "containerStatus"
+	jobs, _ := cronScheduler.FindJobsByTag(tag)
+
+	if len(jobs) == 0 {
+		_, err := cronScheduler.Every(c.ContainerStatusInterval).Tag(tag).Do(service.sendContainerStatus)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *containerStatusService) sendContainerStatus() {
@@ -114,6 +119,6 @@ func (s *containerStatusService) sendContainerStatus() {
 				pb.ContainerStatusResponse_State_value[strings.ToUpper(string(desiredTask.Status.State))]),
 			ErrorMessage: errorMessage,
 		}
-		s.out <- response
+		*s.out <- response
 	}
 }

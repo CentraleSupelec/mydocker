@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
+	"testing"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	tasksTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
@@ -10,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type containerStatusSendTestClient struct {
@@ -54,7 +56,8 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusIsFetchedSuccessfu
 	logger.SetLevel(log.DebugLevel)
 
 	out := make(chan *pb.ContainerStatusResponse, 1)
-	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, out)
+	containersToWatchMutex := sync.RWMutex{}
+	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, &containersToWatchMutex, &out)
 	service.sendContainerStatus()
 
 	response := <-out
@@ -70,7 +73,8 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusFetchFails() {
 	logger.SetLevel(log.DebugLevel)
 
 	out := make(chan *pb.ContainerStatusResponse, 1)
-	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, out)
+	containersToWatchMutex := sync.RWMutex{}
+	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, &containersToWatchMutex, &out)
 	service.sendContainerStatus()
 
 	assert.Empty(suite.T(), out)
@@ -94,7 +98,8 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusHasFailedTasks() {
 	logger.SetLevel(log.DebugLevel)
 
 	out := make(chan *pb.ContainerStatusResponse, 1)
-	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, out)
+	containersToWatchMutex := sync.RWMutex{}
+	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, &containersToWatchMutex, &out)
 	service.sendContainerStatus()
 
 	response := <-out
@@ -110,7 +115,8 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusNoTasksFound() {
 	logger.SetLevel(log.DebugLevel)
 
 	out := make(chan *pb.ContainerStatusResponse, 1)
-	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, out)
+	containersToWatchMutex := sync.RWMutex{}
+	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, &containersToWatchMutex, &out)
 	service.sendContainerStatus()
 
 	assert.Empty(suite.T(), out)
@@ -129,7 +135,8 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusCompletedTask() {
 	logger.SetLevel(log.DebugLevel)
 
 	out := make(chan *pb.ContainerStatusResponse, 1)
-	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, out)
+	containersToWatchMutex := sync.RWMutex{}
+	service := newContainerStatusService(stubClient, log.NewEntry(logger), map[string]bool{"test-container": true}, &containersToWatchMutex, &out)
 	service.sendContainerStatus()
 
 	response := <-out
@@ -142,11 +149,13 @@ func (suite *ContainerStatusSendTestSuite) TestConcurrentAccessContainersToWatch
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 	out := make(chan *pb.ContainerStatusResponse, 10)
+	containersToWatchMutex := sync.RWMutex{}
 	service := &containerStatusService{
-		dockerClient:      stubClient,
-		logger:            log.NewEntry(logger),
-		containersToWatch: map[string]bool{},
-		out:               out,
+		dockerClient:           stubClient,
+		logger:                 log.NewEntry(logger),
+		containersToWatch:      map[string]bool{},
+		out:                    &out,
+		containersToWatchMutex: &containersToWatchMutex,
 	}
 
 	// Simule 10 goroutines qui ajoutent/suppriment et 5 qui lisent la map

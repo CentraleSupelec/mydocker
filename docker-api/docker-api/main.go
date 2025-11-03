@@ -8,6 +8,7 @@ import (
 	"net"
 	_ "net/http/pprof"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -22,10 +23,11 @@ import (
 	"github.com/docker/docker/client"
 	"google.golang.org/grpc"
 
-	"github.com/Workiva/go-datastructures/queue"
-	log "github.com/sirupsen/logrus"
 	"fmt"
 	"strings"
+
+	"github.com/Workiva/go-datastructures/queue"
+	log "github.com/sirupsen/logrus"
 )
 
 type config struct {
@@ -99,7 +101,10 @@ type server struct {
 	dockerClient *client.Client
 	ports        *queue.Queue
 	pb.UnimplementedContainerServiceServer
-	cronScheduler *gocron.Scheduler
+	cronScheduler              *gocron.Scheduler
+	containersToWatch          map[string]bool
+	containersToWatchMutex     sync.RWMutex
+	containerStatusResponseOut chan *pb.ContainerStatusResponse
 }
 
 func init() {
@@ -229,16 +234,20 @@ func (s *server) GetAdminContainer(stream pb.ContainerService_GetAdminContainerS
 
 func (s *server) GetContainerStatus(stream pb.ContainerService_GetContainerStatusServer) error {
 	// chan for input request and response
-	in, out := make(chan *pb.ContainerStatusRequest), make(chan *pb.ContainerStatusResponse)
+	in := make(chan *pb.ContainerStatusRequest)
+	s.containerStatusResponseOut = make(chan *pb.ContainerStatusResponse)
 	done := make(chan struct{})
 
-	containersToWatch := map[string]bool{}
+	if s.containersToWatch == nil {
+		s.containersToWatch = make(map[string]bool)
+	}
 
 	service := newContainerStatusService(
 		s.dockerClient,
 		log.WithFields(log.Fields{"service": "containerStatus"}),
-		containersToWatch,
-		out,
+		s.containersToWatch,
+		&s.containersToWatchMutex,
+		&s.containerStatusResponseOut,
 	)
 
 	// Create Go worker
@@ -248,7 +257,7 @@ func (s *server) GetContainerStatus(stream pb.ContainerService_GetContainerStatu
 	go func() {
 		for {
 			select {
-			case data := <-out:
+			case data := <-s.containerStatusResponseOut:
 				_ = stream.Send(data)
 			case <-done:
 				return
@@ -352,7 +361,7 @@ func (s *server) ShutdownContainer(stream pb.ContainerService_ShutdownContainerS
 func NewDockerClient(dockerConfig dockerConfig) (*client.Client, error) {
 	dockerHost := dockerConfig.Host
 	if dockerHost != "" {
-		if (!strings.HasPrefix(dockerHost, "ssh://")) {
+		if !strings.HasPrefix(dockerHost, "ssh://") {
 			return nil, fmt.Errorf("only ssh hosts are allowed, got: %s", dockerHost)
 		}
 		helper, err := connhelper.GetConnectionHelper(dockerHost)
@@ -389,11 +398,11 @@ func NewDockerClient(dockerConfig dockerConfig) (*client.Client, error) {
 
 func main() {
 	if c.Environment == "dev" {
-        log.Println("Enabling pprof for profiling")
-        go func() {
-            log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
-        }()
-    }
+		log.Println("Enabling pprof for profiling")
+		go func() {
+			log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+		}()
+	}
 
 	configPath := flag.String(
 		"config-path",
