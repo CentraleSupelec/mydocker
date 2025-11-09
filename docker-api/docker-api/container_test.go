@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 
 	"github.com/Workiva/go-datastructures/queue"
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
@@ -317,6 +321,189 @@ func (suite *ContainerTestSuite) TestCanCreateStudentVolumeUnknown() {
 	suite.NotNil(err)
 	suite.Equal(false, result)
 	stubClient.AssertExpectations(suite.T())
+}
+
+func (suite *ContainerTestSuite) TestBuildSmartChmodCommandsNonRecursive() {
+	tmpDir, err := os.MkdirTemp("", "chmodtest-nr-*")
+	suite.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	jupyterDir := filepath.Join(tmpDir, ".local", "share", "jupyter")
+	testDir := filepath.Join(jupyterDir, "test")
+	suite.Require().NoError(os.MkdirAll(testDir, 0o555))
+
+	files := map[string]os.FileMode{
+		filepath.Join(jupyterDir, "exec.py"):    0o555,
+		filepath.Join(jupyterDir, "no_exec.py"): 0o444,
+		filepath.Join(testDir, "exec.py"):       0o555,
+		filepath.Join(testDir, "no_exec.py"):    0o444,
+	}
+	for path, mode := range files {
+		suite.Require().NoError(os.WriteFile(path, []byte("print('hi')"), mode))
+	}
+
+	mode := uint32(777)
+	pattern := "*/.local/share/jupyter"
+
+	cmds := buildChmodCommandsToApplyExecuteOnlyToFolders(tmpDir, pattern, mode, false)
+	for _, cmd := range cmds {
+		suite.Require().NoError(exec.Command("bash", "-c", cmd).Run(), cmd)
+	}
+
+	info, err := os.Stat(jupyterDir)
+	suite.Require().NoError(err)
+	suite.Equal(os.FileMode(0o777), info.Mode().Perm(), "jupyter dir should be 777")
+
+	info, _ = os.Stat(filepath.Join(jupyterDir, "exec.py"))
+	suite.Equal(os.FileMode(0o555), info.Mode().Perm(), "exec.py unchanged in non-recursive")
+	info, _ = os.Stat(filepath.Join(jupyterDir, "no_exec.py"))
+	suite.Equal(os.FileMode(0o444), info.Mode().Perm(), "no_exec.py unchanged in non-recursive")
+
+	info, _ = os.Stat(testDir)
+	suite.Equal(os.FileMode(0o555), info.Mode().Perm(), "testDir unchanged in non-recursive")
+}
+
+func (suite *ContainerTestSuite) TestBuildSmartChmodCommandsRecursive() {
+	tmpDir, err := os.MkdirTemp("", "chmodtest-r-*")
+	suite.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	jupyterDir := filepath.Join(tmpDir, ".local", "share", "jupyter")
+	testDir := filepath.Join(jupyterDir, "test")
+	suite.Require().NoError(os.MkdirAll(testDir, 0o555))
+
+	files := map[string]os.FileMode{
+		filepath.Join(jupyterDir, "exec.py"):    0o555,
+		filepath.Join(jupyterDir, "no_exec.py"): 0o444,
+		filepath.Join(testDir, "exec.py"):       0o555,
+		filepath.Join(testDir, "no_exec.py"):    0o444,
+	}
+	for path, mode := range files {
+		suite.Require().NoError(os.WriteFile(path, []byte("print('hi')"), mode))
+	}
+
+	mode := uint32(777)
+	pattern := "*/.local/share/jupyter"
+
+	cmds := buildChmodCommandsToApplyExecuteOnlyToFolders(tmpDir, pattern, mode, true)
+	for _, cmd := range cmds {
+		suite.Require().NoError(exec.Command("bash", "-c", cmd).Run(), cmd)
+	}
+
+	checks := map[string]os.FileMode{
+		jupyterDir:                              0o777,
+		filepath.Join(jupyterDir, "exec.py"):    0o777,
+		filepath.Join(jupyterDir, "no_exec.py"): 0o666,
+		testDir:                                 0o777,
+		filepath.Join(testDir, "exec.py"):       0o777,
+		filepath.Join(testDir, "no_exec.py"):    0o666,
+	}
+
+	for path, expectedPerm := range checks {
+		info, err := os.Stat(path)
+		suite.Require().NoError(err)
+		suite.Equal(expectedPerm, info.Mode().Perm(), "path: %s", path)
+	}
+}
+
+func (suite *ContainerTestSuite) TestBuildSmartChmodCommandsWithFolderPatternNonRecursive() {
+	tmpDir, err := os.MkdirTemp("", "chmodtest2-nr-*")
+	suite.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	parentDir := filepath.Join(tmpDir, "folder")
+	testDir := filepath.Join(parentDir, "test")
+	innerFolder := filepath.Join(testDir, "folder")
+
+	for _, dir := range []string{parentDir, testDir, innerFolder} {
+		suite.Require().NoError(os.MkdirAll(dir, 0o555))
+	}
+
+	files := map[string]os.FileMode{
+		filepath.Join(parentDir, "exec.py"):      0o555,
+		filepath.Join(parentDir, "no_exec.py"):   0o444,
+		filepath.Join(testDir, "exec.py"):        0o555,
+		filepath.Join(testDir, "no_exec.py"):     0o444,
+		filepath.Join(innerFolder, "exec.py"):    0o555,
+		filepath.Join(innerFolder, "no_exec.py"): 0o444,
+	}
+	for path, mode := range files {
+		suite.Require().NoError(os.WriteFile(path, []byte("print('hi')"), mode))
+	}
+
+	mode := uint32(777)
+	pattern := "*/folder"
+
+	cmds := buildChmodCommandsToApplyExecuteOnlyToFolders(tmpDir, pattern, mode, false)
+	for _, cmd := range cmds {
+		suite.Require().NoError(exec.Command("bash", "-c", cmd).Run(), cmd)
+	}
+
+	info, _ := os.Stat(parentDir)
+	suite.Equal(os.FileMode(0o777), info.Mode().Perm(), "parentDir should be 777")
+
+	info, _ = os.Stat(testDir)
+	suite.Equal(os.FileMode(0o555), info.Mode().Perm(), "testDir unchanged in non-recursive")
+
+	info, _ = os.Stat(innerFolder)
+	suite.Equal(os.FileMode(0o777), info.Mode().Perm(), "innerFolder should be 777")
+
+	for path, expected := range files {
+		info, _ := os.Stat(path)
+		suite.Equal(expected, info.Mode().Perm(), "file unchanged in non-recursive: %s", path)
+	}
+}
+
+func (suite *ContainerTestSuite) TestBuildSmartChmodCommandsWithFolderPatternRecursive() {
+	tmpDir, err := os.MkdirTemp("", "chmodtest2-r-*")
+	suite.Require().NoError(err)
+	defer os.RemoveAll(tmpDir)
+
+	parentDir := filepath.Join(tmpDir, "folder")
+	testDir := filepath.Join(parentDir, "test")
+	innerFolder := filepath.Join(testDir, "folder")
+
+	for _, dir := range []string{parentDir, testDir, innerFolder} {
+		suite.Require().NoError(os.MkdirAll(dir, 0o555))
+	}
+
+	files := map[string]os.FileMode{
+		filepath.Join(parentDir, "exec.py"):      0o555,
+		filepath.Join(parentDir, "no_exec.py"):   0o444,
+		filepath.Join(testDir, "exec.py"):        0o555,
+		filepath.Join(testDir, "no_exec.py"):     0o444,
+		filepath.Join(innerFolder, "exec.py"):    0o555,
+		filepath.Join(innerFolder, "no_exec.py"): 0o444,
+	}
+	for path, mode := range files {
+		suite.Require().NoError(os.WriteFile(path, []byte("print('hi')"), mode))
+	}
+
+	mode := uint32(777)
+	pattern := "*/folder"
+
+	cmds := buildChmodCommandsToApplyExecuteOnlyToFolders(tmpDir, pattern, mode, true)
+	for _, cmd := range cmds {
+		suite.Require().NoError(exec.Command("bash", "-c", cmd).Run(), cmd)
+	}
+
+	checks := map[string]os.FileMode{
+		parentDir:                                0o777,
+		filepath.Join(parentDir, "exec.py"):      0o777,
+		filepath.Join(parentDir, "no_exec.py"):   0o666,
+		testDir:                                  0o777,
+		filepath.Join(testDir, "exec.py"):        0o777,
+		filepath.Join(testDir, "no_exec.py"):     0o666,
+		innerFolder:                              0o777,
+		filepath.Join(innerFolder, "exec.py"):    0o777,
+		filepath.Join(innerFolder, "no_exec.py"): 0o666,
+	}
+
+	for path, expected := range checks {
+		info, err := os.Stat(path)
+		suite.Require().NoError(err)
+		suite.Equal(expected, info.Mode().Perm(), "path: %s", path)
+	}
 }
 
 func TestContainerSuite(t *testing.T) {

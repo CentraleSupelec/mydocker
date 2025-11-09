@@ -102,6 +102,13 @@ message Label {
     string value = 2;
 }
 
+message Path {
+    string value = 1;
+    bool recursive = 2;
+    uint32 permissions = 3;
+    bool changeOwner = 4;
+}
+
 message ContainerRequestOptions {
     bool forceRecreate = 1;
     AuthenticationKeyOption authenticationKey = 2;
@@ -122,6 +129,8 @@ message ContainerRequestOptions {
     bool useStudentVolume = 12;
     string studentVolumePath = 13;
     StorageBackend storageBackend = 14;
+    repeated Path paths = 15;
+    string uid = 16;
 }
 
 message ContainerRequest {

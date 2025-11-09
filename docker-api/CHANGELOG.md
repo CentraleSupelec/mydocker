@@ -7,6 +7,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 ### Added
 - Check if a node with a courseId label exists
+- Change permissions of passed paths before starting the container
 
 ### Fixed
 - Add shared-pool label if a worker has no course ids

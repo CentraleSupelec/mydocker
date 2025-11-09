@@ -473,8 +473,111 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 				},
 			})
 		}
+
 		if request.Options.UseStudentVolume {
 			if res, err := canCreateStudentVolume(dockerClient, request); res {
+				if 0 != len(request.Options.GetPaths()) {
+					paths := request.Options.GetPaths()
+					targetUID := request.Options.GetUid()
+
+					cmdParts := []string{}
+					chmodCmdParts := []string{}
+
+					for _, p := range paths {
+						recursiveFlag := ""
+
+						if p.GetRecursive() {
+							recursiveFlag = "-R"
+						}
+
+						chmodCmdParts = buildChmodCommandsToApplyExecuteOnlyToFolders(request.Options.StudentVolumePath, p.GetValue(), p.GetPermissions(), p.Recursive)
+
+						cmdParts = append(cmdParts, chmodCmdParts...)
+
+						if p.ChangeOwner && "" != targetUID {
+							cmdParts = append(cmdParts,
+								fmt.Sprintf(
+									"find %s -type d -wholename \"%s\" -exec chown %s %s: {} \\;",
+									request.Options.StudentVolumePath,
+									p.GetValue(),
+									recursiveFlag,
+									targetUID,
+								),
+							)
+						}
+					}
+
+					fullCmd := strings.Join(cmdParts, " && ")
+					log.Debugln("Full Command :", fullCmd)
+
+					serviceSpec := swarm.ServiceSpec{
+						Annotations: swarm.Annotations{
+							Name: fmt.Sprintf("volume-init-%s", name),
+						},
+						TaskTemplate: swarm.TaskSpec{
+							ContainerSpec: &swarm.ContainerSpec{
+								Image:   "alpine:3.22.2",
+								Command: []string{"sh", "-c", fullCmd},
+								User:    "root",
+								Mounts: []mount.Mount{
+									{
+										Type:   mount.TypeVolume,
+										Source: createStudentVolumeName(request.UserID),
+										Target: request.Options.StudentVolumePath,
+										VolumeOptions: &mount.VolumeOptions{
+											DriverConfig: &mount.Driver{
+												Name: "centralesupelec/mydockervolume",
+												Options: map[string]string{
+													"size":        fmt.Sprintf("%d", c.StudentVolumeSize),
+													"mkfsOptions": "-O ^mmp",
+												},
+											},
+										},
+									},
+								},
+							},
+							RestartPolicy: &swarm.RestartPolicy{
+								Condition: swarm.RestartPolicyConditionNone,
+							},
+						},
+					}
+
+					resp, err := dockerClient.ServiceCreate(context.TODO(), serviceSpec, types.ServiceCreateOptions{})
+					if err != nil {
+						return err
+					}
+
+					for {
+						tasks, err := dockerClient.TaskList(context.TODO(), types.TaskListOptions{
+							Filters: filters.NewArgs(
+								filters.KeyValuePair{Key: "service", Value: resp.ID},
+							),
+						})
+						if err != nil {
+							return err
+						}
+
+						if len(tasks) == 0 {
+							time.Sleep(100 * time.Millisecond)
+							continue
+						}
+
+						task := tasks[0]
+						switch task.Status.State {
+						case swarm.TaskStateComplete:
+							goto Done
+						case swarm.TaskStateFailed, swarm.TaskStateRejected:
+							return fmt.Errorf("volume init service failed: %s", task.Status.Err)
+						}
+
+						time.Sleep(100 * time.Millisecond)
+					}
+				Done:
+					if err := dockerClient.ServiceRemove(context.TODO(), resp.ID); err != nil {
+						fmt.Errorf("Failed to remove service %s: %v", resp.ID, err)
+					}
+				}
+
 				mounts = append(mounts, mount.Mount{
 					Type:   mount.TypeVolume,
 					Source: createStudentVolumeName(request.UserID),
@@ -606,6 +709,37 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 
 type createStudentVolumeDockerClient interface {
 	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
+}
+
+func buildChmodCommandsToApplyExecuteOnlyToFolders(basePath, pattern string, mode uint32, recursive bool) []string {
+	modeStr := fmt.Sprintf("%03d", mode)
+	fileModeStr := stripExecBits(modeStr)
+
+	var cmds []string
+	if recursive {
+		cmdExecFiles := fmt.Sprintf(`find %s -path "%s*" -type f -perm /a=x -exec chmod %s {} \;`, basePath, pattern, modeStr)
+		cmdFiles := fmt.Sprintf(`find %s -path "%s*" -type f ! -perm /a=x -exec chmod %s {} \;`, basePath, pattern, fileModeStr)
+		cmdDirs := fmt.Sprintf(`find %s -path "%s*" -type d -exec chmod %s {} \;`, basePath, pattern, modeStr)
+		cmds = []string{cmdExecFiles, cmdFiles, cmdDirs}
+	} else {
+		cmdDir := fmt.Sprintf(`find %s -type d -wholename "%s" -exec chmod %s {} \;`, basePath, pattern, modeStr)
+		cmds = []string{cmdDir}
+	}
+
+	return cmds
+}
+
+func stripExecBits(mode string) string {
+	if len(mode) != 3 {
+		return mode
+	}
+	result := ""
+	for _, c := range mode {
+		n := int(c - '0')
+		n &^= 1
+		result += fmt.Sprintf("%d", n)
+	}
+	return result
 }
 
 func canCreateStudentVolume(dockerClient createStudentVolumeDockerClient, request *pb.ContainerRequest) (bool, error) {
