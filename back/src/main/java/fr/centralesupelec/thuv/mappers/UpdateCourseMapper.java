@@ -97,6 +97,7 @@ public class UpdateCourseMapper {
                             .collect(Collectors.toSet())
                 )
                 .setUseStudentVolume(dto.getUseStudentVolume())
+                .setUid(dto.getUid())
                 .setStudentVolumePath(dto.getStudentVolumePath())
         ;
 

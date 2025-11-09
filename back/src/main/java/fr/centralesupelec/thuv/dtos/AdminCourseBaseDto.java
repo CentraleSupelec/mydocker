@@ -56,4 +56,5 @@ public class AdminCourseBaseDto {
     private boolean externalAccess = false;
 
     private Long externalAccessExpirationDate;
+    private String uid;
 }
