@@ -24,6 +24,7 @@ export class DefaultCourseFormValuesService {
       displayOptions: obj?.displayOptions ?? {},
       useStudentVolume: obj?.useStudentVolume ?? false,
       studentVolumePath: obj?.studentVolumePath ?? null,
+      uid: obj?.uid ?? null
     };
   }
 }
