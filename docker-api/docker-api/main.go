@@ -81,6 +81,7 @@ type config struct {
 	StudentVolumeSize       int
 	LogsTimestamps          bool
 	LogsDetails             bool
+	Monolithic              bool
 }
 
 type dockerConfig struct {
@@ -431,6 +432,7 @@ func main() {
 	viper.SetDefault("PortWorkerInterval", "5s")
 	viper.SetDefault("LogsTimestamps", true)
 	viper.SetDefault("LogsDetails", false)
+	viper.SetDefault("Monolithic", true)
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Panicf("Failed to find config file: %v", err)

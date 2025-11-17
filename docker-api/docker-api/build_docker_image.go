@@ -134,7 +134,7 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 	ctx := context.Background()
 	var constraints []string
 
-	if c.Environment != "dev" {
+	if !c.Monolithic {
 		constraints = append(constraints, "node.role==worker")
 	}
 

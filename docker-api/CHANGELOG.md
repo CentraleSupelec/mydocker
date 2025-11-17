@@ -8,6 +8,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ### Added
 - Check if a node with a courseId label exists
 - Change permissions of passed paths before starting the container
+- Monolithic variable to determine whether to add node==worker constraint + determine which node ip to return
 
 ### Fixed
 - Add shared-pool label if a worker has no course ids

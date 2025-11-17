@@ -45,3 +45,4 @@ ReverseProxyUrl: localhost
 CaddyOverlayNetwork: caddy-overlay
 CaddyTlsInternal: true
 ContainerStatusInterval: "1s"
+Monolithic: true
