@@ -30,7 +30,6 @@ export interface IAdminCourseBase {
   allowStudentToSubmit: boolean;
   useStudentVolume: boolean;
   studentVolumePath: string | null;
-  uid: string | null;
 
   visible: boolean;
 

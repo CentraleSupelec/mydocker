@@ -5,14 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
-### Added
-- UID in course
-
-## 2.28.8
-### Fixed
-- Fixed typo
-
-## 2.28.7
 ### Changed
 - Handle multiple roles for users
 - Course list layout

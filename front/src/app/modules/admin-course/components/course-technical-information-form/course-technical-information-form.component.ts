@@ -63,7 +63,6 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       allowStudentToSubmit: false,
       useStudentVolume: false,
       studentVolumePath: null,
-      uid: null,
 
       displayOptions: formBuilder.control({}),
     });
@@ -136,7 +135,6 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       this.courseTechnicalForm.get('studentVolumePath')?.clearValidators();
     }
     this.courseTechnicalForm.get('studentVolumePath')?.updateValueAndValidity();
-    this.courseTechnicalForm.get('uid')?.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {
