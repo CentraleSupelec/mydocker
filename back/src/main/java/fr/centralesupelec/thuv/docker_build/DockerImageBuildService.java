@@ -11,6 +11,7 @@ import fr.centralesupelec.thuv.docker_build.repository.DockerImageBuildRepositor
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.sentry.Sentry;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,8 @@ public class DockerImageBuildService {
         this.dockerImageBuildRepository = dockerImageBuildRepository;
     }
 
-    private void establishConnection() {
+    @PostConstruct
+    public void init() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         this.dockerImageRequestStreamObserver = asyncStub.buildDockerImage(new StreamObserver<>() {
 
@@ -106,7 +108,7 @@ public class DockerImageBuildService {
                     )
             );
         }
-        establishConnection();
+
         dockerImageRequestStreamObserver.onNext(
                 builder.build()
         );

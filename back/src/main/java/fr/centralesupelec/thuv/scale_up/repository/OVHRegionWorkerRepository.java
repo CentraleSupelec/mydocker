@@ -28,9 +28,9 @@ public interface OVHRegionWorkerRepository extends JpaRepository<OVHRegionWorker
         SELECT DISTINCT w FROM OVHRegionWorker w
         JOIN FETCH w.launchDeployment ld
         LEFT JOIN FETCH w.cleanDeployment cd
-        LEFT JOIN FETCH ld.sessionsToLaunch s
-        LEFT JOIN FETCH ld.workersToLaunch
-        LEFT JOIN FETCH s.course c
+        JOIN FETCH ld.sessionsToLaunch s
+        JOIN FETCH ld.workersToLaunch
+        JOIN FETCH s.course c
         WHERE ld.startDateTime <= :launchDeploymentStartDateTime 
                 AND (w.cleanDeployment IS NULL OR cd.startDateTime >= :cleanDeploymentStartDateTime)
     """)
