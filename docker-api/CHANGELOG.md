@@ -8,13 +8,9 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ### Added
 - Check if a node with a courseId label exists
 
-### Fixed
-- Add shared-pool label if a worker has no course ids
-
 ## 2.18.5
 ### Fixed
 - Fix concurrent map access with mutex protection in containerStatusService
-
 
 ## 2.18.4
 ### Added
