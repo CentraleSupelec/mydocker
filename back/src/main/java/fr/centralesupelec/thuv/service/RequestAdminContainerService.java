@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.annotation.PostConstruct;
 
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,8 +39,7 @@ public class RequestAdminContainerService {
         this.grpcResponsePortToContainerPortDtoMapper = grpcResponsePortToContainerPortDtoMapper;
     }
 
-    @PostConstruct
-    public void init() {
+    private void establishConnection() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         this.adminContainerRequestStreamObserver = asyncStub.getAdminContainer(new StreamObserver<>() {
 
@@ -66,10 +64,10 @@ public class RequestAdminContainerService {
             }
         });
     }
-
     public void requestContainer(AdminContainerRequest request) {
         try {
             lock.lock();
+            establishConnection();
             adminContainerRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC

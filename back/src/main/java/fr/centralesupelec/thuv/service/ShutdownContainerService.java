@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.annotation.PostConstruct;
 
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
@@ -41,8 +40,7 @@ public class ShutdownContainerService {
         this.activityLogger = activityLogger;
     }
 
-    @PostConstruct
-    public void init() {
+    private void establishConnection() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
 
         this.shutdownContainerRequestStreamObserver = asyncStub.shutdownContainer(new StreamObserver<>() {
@@ -95,6 +93,7 @@ public class ShutdownContainerService {
                 .build();
         try {
             lock.lock();
+            establishConnection();
             shutdownContainerRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC

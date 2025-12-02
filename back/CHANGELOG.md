@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Determine whether to put courseId-<courseId> or shared-pool label on containers based on if there is a node in the swarm that has the courseId label
 
+### Fixed
+- Create a new stub each time we need to define a StreamObserver instead of just in the init so that if the go restarts, no need to restart the back app
+
 ## 2.31.9
 ### Fixed
 - Fixed infinite loader bug when accessing courses via magic link (null lastStartDate)
