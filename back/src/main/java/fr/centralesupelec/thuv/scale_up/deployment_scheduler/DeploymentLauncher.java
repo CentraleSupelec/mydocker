@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,7 @@ public class DeploymentLauncher implements Runnable {
                 .collect(Collectors.toSet())
                 .toArray(new String[0])
         ;
-        logger.info("Course Ids linked to ovh worker : %v" + courseIds);
+        logger.info("Course Ids linked to ovh worker : {}", Arrays.toString(courseIds));
 
         return new GrpcWorkerDto()
                 .setCount(ovhRegionWorker.getCount())
