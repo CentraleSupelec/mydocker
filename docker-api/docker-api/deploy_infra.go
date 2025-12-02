@@ -30,10 +30,14 @@ func (s *server) DeployInfra(request *pb.DeployRequest, responseStream pb.Contai
 		ownerWorkers, exist := flavor[w.Owner]
 		labels := []string{}
 
-		log.Infof("Adding course id labels %v", w.GetCourseIds())
-		for _, courseId := range w.GetCourseIds() {
-			log.Info("Adding course id label ", courseId)
-			labels = append(labels, fmt.Sprintf("courseId-%s", courseId))
+		if len(w.GetCourseIds()) == 0 {
+			log.Infof("Adding shared-pool label - region : %s, flavor : %s, owner: %s", w.GetRegion(), w.GetFlavor(), w.GetOwner())
+			labels = append(labels, "shared-pool")
+		} else {
+			for _, courseId := range w.GetCourseIds() {
+				log.Infof("Adding course id label for course %s - region : %s, flavor : %s, owner: %s", courseId, w.GetRegion(), w.GetFlavor(), w.GetOwner())
+				labels = append(labels, fmt.Sprintf("courseId-%s", courseId))
+			}
 		}
 
 		if exist {
