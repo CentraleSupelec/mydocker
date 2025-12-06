@@ -10,6 +10,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.annotation.PostConstruct;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -32,7 +33,8 @@ public class RequestContainerService {
         this.activityLogger = activityLogger;
     }
 
-    private void establishConnection() {
+    @PostConstruct
+    public void init() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         this.containerRequestStreamObserver = asyncStub.getContainer(this.containerResponseStreamObserver);
     }
@@ -47,7 +49,6 @@ public class RequestContainerService {
                     request.getCourseID()
             );
             lock.lock();
-            establishConnection();
             containerRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC

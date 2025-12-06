@@ -15,7 +15,6 @@ service containerService {
     rpc initAutoscaling(InitAutoscalingRequest) returns (InitAutoscalingResponse);
     rpc getNodeIP(NodeIPRequest) returns (NodeIPResponse);
     rpc getContainerStatus(stream ContainerStatusRequest) returns (stream ContainerStatusResponse);
-    rpc getCourseInfra(CourseInfraRequest) returns (CourseInfraResponse);
 };
 
 message NodeIPRequest {
@@ -296,12 +295,4 @@ message ContainerStatusResponse {
     }
     State state = 4;
     string errorMessage = 5;
-}
-
-message CourseInfraRequest {
-    string courseID = 1;
-}
-
-message CourseInfraResponse {
-    bool nodeWithCourseIdLabelExists = 1;
 }
