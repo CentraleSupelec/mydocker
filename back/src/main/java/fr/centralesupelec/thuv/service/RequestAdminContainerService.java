@@ -7,6 +7,7 @@ import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.mappers.GrpcResponsePortToContainerPortDtoMapper;
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.sentry.Sentry;
@@ -28,6 +29,7 @@ public class RequestAdminContainerService {
     private StreamObserver<AdminContainerRequest> adminContainerRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
     private final GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper;
+    private boolean shouldInitializeStub = true;
 
     @Autowired
     public RequestAdminContainerService(
@@ -42,9 +44,12 @@ public class RequestAdminContainerService {
 
     @PostConstruct
     public void init() {
+        createNewStubIfNeeded();
+    }
+
+    public void createNewStub() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         this.adminContainerRequestStreamObserver = asyncStub.getAdminContainer(new StreamObserver<>() {
-
             public void onNext(AdminContainerResponse adminContainerResponse) {
                 ContainerDto containerDto = mapContainerResponseToContainer(adminContainerResponse);
                 containerDto.setStatus(ContainerStatusDto.OK);
@@ -53,23 +58,55 @@ public class RequestAdminContainerService {
                         Long.valueOf(adminContainerResponse.getCourseID())
                 );
             }
-
+        
             public void onError(Throwable throwable) {
                 logger.error("Error requesting a container.\n Please restart the go API then this service.");
+                shouldInitializeStub = true;
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
                 Sentry.captureMessage("Unable to obtain the container");
             }
-
+        
             public void onCompleted() {
             }
         });
     }
 
+    public void createNewStubIfNeeded() {
+        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
+        if (!shouldInitializeStub) {
+            return;
+        }
+        ConnectivityState state = channel.getState(true);
+        logger.debug("Channel state : " + state);
+
+        if (ConnectivityState.READY == state) {
+            createNewStub();
+            shouldInitializeStub = false;
+            return;
+        }
+
+        ConnectivityState updatedState = channel.getState(true);
+        logger.debug("Update channel state :" + updatedState);
+
+        if (ConnectivityState.CONNECTING == updatedState) {
+            channel.notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
+                ConnectivityState newState = channel.getState(false);
+                logger.debug("Channel state changed from CONNECTING to : " + newState);
+        
+                if (ConnectivityState.READY == newState) {
+                    createNewStub();
+                    shouldInitializeStub = false;
+                }
+            });
+        }
+    }
+
     public void requestContainer(AdminContainerRequest request) {
         try {
             lock.lock();
+            createNewStubIfNeeded();
             adminContainerRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC
