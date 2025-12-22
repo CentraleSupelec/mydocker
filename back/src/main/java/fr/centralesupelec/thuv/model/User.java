@@ -72,19 +72,6 @@ public class User {
     )
     private Set<Course> createdCourses = new HashSet<>();
 
-    public void addCourse(Course course) {
-        Optional<UserCourse> userCourseOptional = this.userCourses
-                .stream()
-                .filter(userCourse -> userCourse.getCourse().equals(course))
-                .findFirst();
-        if (userCourseOptional.isPresent()) {
-            return;
-        }
-        UserCourse userCourse = new UserCourse();
-        userCourse.setCourse(course);
-        this.addUserCourse(userCourse);
-    }
-
     public void removeCourse(Course course) {
         Optional<UserCourse> userCourseOptional = this.userCourses
                 .stream()
