@@ -4,14 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.30.7
+## Unreleased
 ### Added
-- New optional configuration key `support_email`. When a CAS or OIDC sign-in fails, the user is sent back to the sign-in page, without automatic sign-in, with a message asking to contact that address, or IT support in general when the key is not set
-### Changed
-- The course image picker lists the 50 images most recently built, newest first, each with the date of its latest build. Needs back 2.35.5
-### Fixed
-- A failed OIDC sign-in, such as a stale or replayed callback, now shows the sign-in error message instead of failing silently on `/loginAccept`
-- An environment whose task is running but whose connection test has not passed yet now keeps its progress display. It used to switch to the "could not start" panel and stop checking, so the panel stayed until the page was reloaded even though the environment came up a moment later
+- Handle different clusters
 
 ## 2.30.6
 ### Added
@@ -28,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 2.30.4
 ### Fixed
 - The Docker image is built from package-lock.json. It was built with npm install, which ignores the lockfile and re-resolves every version range on build day, so two builds of the same release could ship different dependency trees. One such resolution produced an image whose Angular build failed while the container kept answering, and the site served 404 with every health check green
+
 
 ## 2.30.3
 ### Changed

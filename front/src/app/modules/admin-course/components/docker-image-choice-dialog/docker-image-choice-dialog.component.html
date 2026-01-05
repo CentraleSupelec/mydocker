@@ -7,7 +7,6 @@
       <input type="text"
              aria-label="Image docker"
              matInput
-             [placeholder]="'admin.courses.edit.technical_info.docker_image.placeholder' | translate"
              [formControl]="control"
              [matAutocomplete]="auto"
       >
@@ -17,7 +16,7 @@
         (optionSelected)="dockerImageSelected($event.option.value)"
       >
         <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-          {{ optionLabel(option) }}
+          {{ option.name }}
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
@@ -27,7 +26,7 @@
         <mat-select-trigger>
           {{
             chosenDockerImageBuild ?
-              chosenDockerImageBuild.id + ' | ' + (chosenDockerImageBuild.updatedOn | translatedDate: 'd MMM y':'HH:mm':true): ''
+              chosenDockerImageBuild.id + (chosenDockerImageBuild.cluster ? ' @ ' + getClusterName(chosenDockerImageBuild.cluster) : '') + ' | ' + (chosenDockerImageBuild.updatedOn | translatedDate: 'd MMM y':'HH:mm':true): ''
           }}
         </mat-select-trigger>
         <mat-option *ngFor="let option of dockerImageBuilds" [value]="option">
@@ -36,7 +35,7 @@
               [status]="option.status"
             ></app-docker-image-build-status>
             <span>
-              {{ option.id }} | {{ option.updatedOn | translatedDate: 'd MMM y':'HH:mm':true }}</span>
+              {{ option.id }} {{ option.cluster ? '@ ' + getClusterName(option.cluster) : '' }} | {{ option.updatedOn | translatedDate: 'd MMM y':'HH:mm':true }}</span>
           </div>
         </mat-option>
       </mat-select>

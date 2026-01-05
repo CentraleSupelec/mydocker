@@ -1,3 +1,4 @@
+import { ICluster } from '../../cluster/interfaces/cluster';
 import { IResourceRegions } from '../../sessions-resources/interfaces/session-with-resources';
 
 export interface IOvhRegion {
@@ -19,6 +20,7 @@ export interface IComputeType {
   autoscalingResourcesRegions: Array<IResourceRegions>;
   manualNodesCount: number;
   storageBackend: IStorageBackend;
+  cluster?: ICluster
 }
 
 export interface IComputeTypeUpdateDto {
@@ -30,4 +32,5 @@ export interface IComputeTypeUpdateDto {
   minIdleNodesCount: number;
   maxNodesCount: number;
   manualNodesCount: number;
+  cluster: number
 }

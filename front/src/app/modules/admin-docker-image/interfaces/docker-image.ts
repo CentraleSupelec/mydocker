@@ -12,7 +12,6 @@ export interface IDockerImage {
   creator: string;
   visible: boolean;
   createdOn: number;
-  lastBuildOn: number | null;
 }
 
 export interface IUpdateDockerImage {
@@ -26,4 +25,8 @@ export interface IUpdateDockerImage {
 
 export interface ICreationDockerImage extends IUpdateDockerImage {
   name: string;
+}
+
+export interface IDockerImageBuildRequest {
+  clusterId: number
 }

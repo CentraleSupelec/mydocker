@@ -43,7 +43,6 @@ export interface IAppConfig {
   oidc_client_id?: string;
   oidc_authority?: string;
   oidc_scope?: string;
-  support_email?: string;
   information?: Array<IInformation>;
   app_name?: string
   magic_link_expiration_in_minutes?: number,
@@ -70,7 +69,6 @@ export function appConstantFactory(): IAppConfig {
     oidc_client_id: appConstants.oidc_client_id,
     oidc_authority: appConstants.oidc_authority,
     oidc_scope: appConstants.oidc_scope,
-    support_email: appConstants.support_email,
     information: appConstants.information,
     app_name: appConstants.app_name,
     magic_link_expiration_in_minutes: appConstants.magic_link_expiration_in_minutes,

@@ -1,5 +1,4 @@
-import { Component, Inject } from '@angular/core';
-import { formatDate } from "@angular/common";
+import { Component, Inject, Input, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { IDockerImage } from "../../../admin-docker-image/interfaces/docker-image";
 import { map, startWith } from "rxjs/operators";
@@ -8,10 +7,16 @@ import { FormBuilder, FormControl } from "@angular/forms";
 import { DockerImageApiService } from "../../../admin-docker-image/services/docker-image-api.service";
 import { IDockerImageBuild } from "../../../admin-docker-image/interfaces/docker-image-build";
 import { mergeMap } from "rxjs/operators";
+import { ActivatedRoute } from '@angular/router';
+import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 export interface DockerImageChoiceDialogReturnData {
   dockerImage: IDockerImage;
   dockerImageBuild: IDockerImageBuild;
+}
+
+export interface DockerImageChoiceDialogInputData {
+  clusters: ICluster[];
 }
 
 @Component({
@@ -32,7 +37,9 @@ export class DockerImageChoiceDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<DockerImageChoiceDialogComponent>,
     private readonly dockerImageApiService: DockerImageApiService,
+    private readonly activatedRoute: ActivatedRoute,
     formBuilder: FormBuilder,
+    @Inject(MAT_DIALOG_DATA) public data: DockerImageChoiceDialogInputData
   ) {
     this.control = formBuilder.control('');
     this.filteredOptions = this.control.valueChanges
@@ -48,8 +55,12 @@ export class DockerImageChoiceDialogComponent {
       );
   }
 
+  getClusterName(id: number) {
+    return this.data.clusters?.find(cluster => cluster.id == id)?.name;
+  }
+
   private _filter(value: string): Observable<IDockerImage[]> {
-    return this.dockerImageApiService.getDockerImages(value, 0, 50, 'lastBuildOn', 'desc')
+    return this.dockerImageApiService.getDockerImages(value, 0, 10, undefined, undefined)
       .pipe(
         map(v => v.content)
       );
@@ -57,15 +68,6 @@ export class DockerImageChoiceDialogComponent {
 
   displayFn(dockerImage: IDockerImage): string {
     return dockerImage.name;
-  }
-
-  // Option line only: the input keeps the bare name through displayFn.
-  // The format is numeric, so en-US (always registered) gives dd/MM/yyyy in the browser's time zone.
-  optionLabel(dockerImage: IDockerImage): string {
-    if (dockerImage.lastBuildOn == null) {
-      return dockerImage.name;
-    }
-    return `${dockerImage.name} - ${formatDate(dockerImage.lastBuildOn, 'dd/MM/yyyy', 'en-US')}`;
   }
 
   dockerImageSelected(dockerImage: IDockerImage) {

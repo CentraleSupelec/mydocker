@@ -83,8 +83,7 @@
             "choice": "Choix d'une image docker",
             "build": "Choix du build",
             "confirm": "Confirmer",
-            "cancel": "Annuler",
-            "placeholder": "Tapez pour rechercher une image"
+            "cancel": "Annuler"
           },
           "ports": {
             "label" : "Ports",
@@ -321,6 +320,7 @@
             "label": "Date de déploiement",
             "selected_sessions": "Sessions sélectionnées"
           },
+          "cluster": "Cluster",
           "resource_allocation": {
             "label": "Allocation des ressources",
             "resource_to_clean": "Ressource à nettoyer",
@@ -347,6 +347,7 @@
         "instances": "instances"
       },
       "deployment_status": {
+        "cluster": "Cluster",
         "nav_label": "Statuts des déploiements",
         "title": "Liste des déploiements effectués",
         "breadcrumb": "Statuts des déploiements",
@@ -406,6 +407,7 @@
           "technical_identifier": "Identifiant technique",
           "gpu": "Utilisable pour des tâches avec GPU",
           "storage_backend": "Stockage de fichiers",
+          "cluster": "Cluster",
           "success": "Le type de charge a bien été mis à jour",
           "error":"Erreur lors de la sauvegarde du type de charge",
           "save":"Sauvegarder les changements",
@@ -452,6 +454,44 @@
           "slug": "Slug",
           "success": "Le contenu a bien été mis à jour",
           "error":"Erreur lors de la sauvegarde du contenu",
+          "save":"Sauvegarder les changements"
+        }
+      },
+      "clusters": {
+        "nav_label": "Clusters",
+        "title": "Administration des clusters",
+        "breadcrumb": "Clusters",
+        "create": "Créer",
+        "create_new": "Créer un nouveau cluster",
+        "create_submit": "Créer le cluster",
+        "create_breadcrumb": "Création d'un cluster",
+        "create_success":"Le cluster a bien été créé",
+        "create_error":"Erreur lors de la création du cluster",
+        "yes": "Oui",
+        "no": "Non",
+        "actions": {
+          "edit": "Éditer",
+          "delete": "Supprimer",
+          "delete_confirmation": "Souhaitez-vous vraiment supprimer le cluster \"{name}\" ?",
+          "delete_success": "Le cluster \"{name}\" a bien été supprimé",
+          "delete_error": "Impossible de supprimer le cluster \"{name}\""
+        },
+        "columns": {
+          "name": "Nom",
+          "go_adress": "Adresse Go",
+          "go_port": "Port du Go",
+          "deployment_enabled": "Déploiement activé ?"
+        },
+        "edit": {
+          "title": "Édition du cluster",
+          "breadcrumb": "Édition d'un cluster",
+          "name": "Nom",
+          "go_adress": "Adresse du Go",
+          "go_port": "Port du Go",
+          "deployment_enabled": "Déploiement activé",
+          "terraform_url": "URL de l'état terraform",
+          "success": "Le cluster a bien été mis à jour",
+          "error": "Erreur lors de la sauvegarde du cluster",
           "save":"Sauvegarder les changements"
         }
       }
@@ -619,8 +659,6 @@
     "magic_link_deactivated": "L'accès par lien de connexion est désactivé pour ce cours",
     "magic_link_error": "Impossible de vérifier l'accès pour ce cours",
     "magic_link_email_error": "Une erreur s'est produite lors de l'envoi de l'email",
-    "auth_error": "La connexion a échoué. Merci de contacter le support informatique à l'adresse {email}.",
-    "auth_error_no_address": "La connexion a échoué. Merci de contacter le support informatique.",
     "default_oidc": "CONNEXION AVEC VOTRE ÉTABLISSEMENT",
     "lti_refused": {
       "title": "Connexion LTI indisponible",

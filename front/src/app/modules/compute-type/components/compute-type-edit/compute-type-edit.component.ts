@@ -8,6 +8,7 @@ import {
 import { ComputeTypesApiService } from '../../services/compute-types-api.service';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
 import { TranslateService } from '@ngx-translate/core';
+import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-compute-type-edit',
@@ -18,6 +19,7 @@ export class ComputeTypeEditComponent implements OnInit {
 
   regions: string[] = [];
   ovhResources: IOvhResource[] = [];
+  clusters: ICluster[] = [];
   computeTypeForm: FormControl;
   computeType?: IComputeType;
 
@@ -34,6 +36,7 @@ export class ComputeTypeEditComponent implements OnInit {
       this.computeTypeForm.setValue({
         ...computeType,
         autoscalingResource: computeType?.autoscalingResource?.id || null,
+        cluster: computeType?.cluster?.id || null
       });
       this.computeType = computeType;
     })
@@ -45,6 +48,7 @@ export class ComputeTypeEditComponent implements OnInit {
       data => {
         this.regions = data.regions;
         this.ovhResources = data.resources;
+        this.clusters = data.clusters;
       }
     )
   }

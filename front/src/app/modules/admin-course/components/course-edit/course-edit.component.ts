@@ -10,6 +10,7 @@ import { CoursePermissionService } from "../../services/course-permission.servic
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 import { TranslateService } from '@ngx-translate/core';
+import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-course-edit',
@@ -21,6 +22,7 @@ export class CourseEditComponent implements OnInit {
   computeTypes?: Array<IComputeType>;
   readonly courseForm: FormControl;
   sessionsById: ISessionsById = {};
+  clusters: ICluster[] = [];
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -44,6 +46,7 @@ export class CourseEditComponent implements OnInit {
           this.sessionsById[session.id] = session;
         });
         this.computeTypes = d.computeTypes;
+        this.clusters = d.clusters;
         this.courseForm.setValue(this.course)
         this.coursePermissionService.hasEditPermission(this.course?.id).then(
           hasPermission => {

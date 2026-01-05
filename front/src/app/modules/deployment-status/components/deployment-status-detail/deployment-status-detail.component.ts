@@ -8,6 +8,8 @@ import { DeploymentStatusDetailDialogComponent } from "../deployment-status-deta
 import { MatPaginator } from "@angular/material/paginator";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute } from '@angular/router';
+import { IClusterBasicInformaion } from '../../../cluster/interfaces/cluster';
 
 @Component({
   templateUrl: './deployment-status-detail.component.html',
@@ -16,7 +18,8 @@ import { TranslateService } from '@ngx-translate/core';
 export class DeploymentStatusDetailComponent implements OnInit {
   deploymentsStatus: IDeploymentStatus[] = [];
   deploymentsSize: number | undefined;
-  displayedColumns = ['status', 'updatedOn', 'action'];
+  displayedColumns = ['status', 'updatedOn', 'cluster', 'action'];
+  readonly clusterNames = new Map<number, string>();
   polling = false;
   refresh$ = new Subject<void>();
 
@@ -27,10 +30,17 @@ export class DeploymentStatusDetailComponent implements OnInit {
     private readonly deploymentStatusApiService: DeploymentStatusApiService,
     private readonly matDialog: MatDialog,
     private readonly toasterService: ObservableSnackNotificationService,
-    private readonly translate: TranslateService
+    private readonly translate: TranslateService,
+    private readonly activatedRoute: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
+    this.activatedRoute.data.subscribe(data => {
+      const clusters: IClusterBasicInformaion[] = data.clusters;
+      this.clusterNames.clear();
+      clusters.forEach(cluster => this.clusterNames.set(cluster.id, cluster.name));
+    });
+
     if (this.paginator) {
       merge(
           this.refresh$,

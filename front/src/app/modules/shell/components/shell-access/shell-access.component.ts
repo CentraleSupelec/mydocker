@@ -170,13 +170,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  /**
-   * Only the back end's connection test says an environment answers; a running task does not.
-   * Accepting RUNNING with a PENDING status stopped the polling on the "could not start" panel,
-   * which never updated when the test passed a moment later.
-   */
   private isReady(container: IContainer): boolean {
-    return container.status === ContainerStatus.OK;
+    return container.status === ContainerStatus.OK
+      || (container.state === ContainerSwarmState.RUNNING && container.status !== ContainerStatus.CHECKING);
   }
 
   initGetContainer(forceRecreate: boolean = false, updateLastStartDate: boolean = true) {

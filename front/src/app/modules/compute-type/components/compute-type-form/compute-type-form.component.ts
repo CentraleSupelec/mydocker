@@ -14,6 +14,7 @@ import { IComputeType, IStorageBackend } from '../../interfaces/compute-type';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
+import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-compute-type-form',
@@ -35,6 +36,7 @@ import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resourc
 export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, OnDestroy, Validator {
   @Input() resources: IOvhResource[] = [];
   @Input() regions: string[] = [];
+  @Input() clusters: ICluster[] = [];
   computeTypeForm: FormGroup;
   private propagateChange = (_: IComputeType) => {};
   private destroy$: Subject<void> = new Subject<void>();
@@ -54,7 +56,8 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
       minIdleNodesCount: [null],
       maxNodesCount: [null],
       manualNodesCount: [null],
-      storageBackend: ['', Validators.required]
+      storageBackend: ['', Validators.required],
+      cluster: [null]
     });
   }
 
@@ -103,6 +106,7 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
       maxNodesCount: obj?.maxNodesCount == null ? null : obj?.maxNodesCount,
       manualNodesCount: obj?.manualNodesCount == null ? null : obj?.manualNodesCount,
       storageBackend: obj?.storageBackend || this.config.default_storage_backend,
+      cluster: obj?.cluster || null
     })
   }
 

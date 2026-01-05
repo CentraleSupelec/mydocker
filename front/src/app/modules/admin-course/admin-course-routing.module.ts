@@ -5,6 +5,7 @@ import { AdminCourseResolver } from "./resolvers/admin-course.resolver";
 import { CourseNewComponent } from "./components/course-new/course-new.component";
 import { CoursesAdminComponent } from './components/courses-admin/courses-admin.component';
 import { ComputeTypesResolver } from '../compute-type/resolvers/compute-types.resolver';
+import { ClustersResolver } from '../cluster/resolvers/clusters.resolver';
 
 const routes: Routes = [
   {
@@ -16,6 +17,7 @@ const routes: Routes = [
     component: CourseNewComponent,
     resolve: {
       computeTypes: ComputeTypesResolver,
+      clusters: ClustersResolver
     },
     data: {
       breadcrumb: 'admin.courses.create_breadcrumb',
@@ -27,6 +29,7 @@ const routes: Routes = [
     resolve: {
       course: AdminCourseResolver,
       computeTypes: ComputeTypesResolver,
+      clusters: ClustersResolver
     },
     data: {
       breadcrumb: 'admin.courses.edit.breadcrumb',
