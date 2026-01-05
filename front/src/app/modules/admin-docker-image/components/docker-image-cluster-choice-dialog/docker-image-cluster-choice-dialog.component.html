@@ -1,0 +1,31 @@
+<h1 mat-dialog-title>Choix de cluster pour le build</h1>
+
+<div mat-dialog-content>
+  <div fxLayout="column">
+    <mat-form-field>
+      <mat-label>Cluster</mat-label>
+      <mat-select (selectionChange)="this.chosenCluster = $event.value">
+        <mat-option *ngFor="let option of data.clusters" [value]="option">
+          <div fxLayout="row" fxLayoutGap="15px" fxLayoutAlign="start center">
+            <span>{{ option.name }} </span>
+          </div>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+<div mat-dialog-actions fxLayoutAlign="end center">
+  <button
+    (click)="closeAndReturnCluster()"
+    [disabled]="chosenCluster === null"
+    color="primary"
+    mat-raised-button
+    type="button"
+  >
+    Confirmer
+  </button>
+  <button type="button" mat-button color="primary" (click)="dialogRef.close(null)">
+    Annuler
+  </button>
+</div>

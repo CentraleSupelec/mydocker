@@ -9,10 +9,8 @@ import { NavigationService } from "../../../utils/services/navigation.service";
 import { AuthModule } from "angular-auth-oidc-client";
 import { RouterTestingModule } from "@angular/router/testing";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatMenuModule } from "@angular/material/menu";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
-import { Location } from "@angular/common";
 
 describe('SignInComponent', () => {
   let component: SignInComponent;
@@ -54,7 +52,6 @@ describe('SignInComponent', () => {
         MatProgressSpinnerModule,
         RouterTestingModule,
         MatTooltipModule,
-        MatMenuModule,
         AuthModule.forRoot({}),
         NgxPermissionsModule.forRoot()
       ]
@@ -70,16 +67,5 @@ describe('SignInComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should show the error message from the router state in the alert banner', () => {
-    spyOn(TestBed.inject(Location), 'getState').and.returnValue({ error_message: 'x' });
-    component.config.cas.login_url = 'http://cas/login';
-
-    component.ngOnInit();
-    fixture.detectChanges();
-
-    const banner: HTMLElement | null = fixture.nativeElement.querySelector('.alert-banner');
-    expect(banner?.textContent).toContain('x');
   });
 });

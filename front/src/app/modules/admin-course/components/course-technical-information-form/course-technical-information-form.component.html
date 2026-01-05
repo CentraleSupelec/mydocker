@@ -39,8 +39,8 @@
     <mat-form-field>
       <mat-label>{{ 'admin.courses.edit.technical_info.compute_type' | translate }}</mat-label>
       <mat-select formControlName="computeTypeId" [matTooltip]="'admin.courses.edit.technical_info.compute_type_tooltip' | translate">
-        <mat-option [value]="v.id" *ngFor="let v of computeTypes">
-          {{ v.displayName }}
+        <mat-option [disabled]="selectedImageClusterId !== null && selectedImageClusterId !== v.cluster?.id" [value]="v.id" *ngFor="let v of computeTypes">
+          {{ v.displayName }} {{ v.cluster?.name ? '@' : ''}} {{ v.cluster?.name }}
         </mat-option>
       </mat-select>
     </mat-form-field>

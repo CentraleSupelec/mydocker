@@ -7,13 +7,13 @@ import { ITerraformInstance } from "../interfaces/terraform-instance";
 @Injectable({
   providedIn: 'root'
 })
-export class TerraformStateResolver implements Resolve<ITerraformInstance[]> {
+export class TerraformStateResolver implements Resolve<Record<string, ITerraformInstance[]>> {
   constructor(
     private readonly terraformStateApiService: TerraformStateApiServiceService,
   ) {
   }
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ITerraformInstance[]> {
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Record<string, ITerraformInstance[]>> {
     return this.terraformStateApiService.getTerraformState();
   }
 }

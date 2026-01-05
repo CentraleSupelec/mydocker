@@ -15,8 +15,9 @@ interface IWorker {
   styleUrls: ['./display-terraform-state.component.css']
 })
 export class DisplayTerraformStateComponent implements OnInit {
-  workerByRegion: { [keys: string]: { [keys: string]: IWorker[] } } = {};
-  regions: string[] = [];
+  workerByClusterByRegion: { [keys: string] : { [keys: string]: { [keys: string]: IWorker[] } } } = {};
+  regionsByCluster: { [keys: string] : string[] } = {};
+  clusters: string[] = [];
 
   constructor(
     private readonly activatedRoute: ActivatedRoute
@@ -26,32 +27,36 @@ export class DisplayTerraformStateComponent implements OnInit {
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(
       data => {
-        data?.state?.forEach(
-          (i: ITerraformInstance) => {
-            if (!(i.attributes.region in this.workerByRegion)) {
-              this.workerByRegion[i.attributes.region] = {}
-              this.regions.push(i.attributes.region)
-            }
-            if (!(i.attributes.flavor_name in this.workerByRegion[i.attributes.region])) {
-              this.workerByRegion[i.attributes.region][i.attributes.flavor_name] = []
-            }
-            this.workerByRegion[i.attributes.region][i.attributes.flavor_name].push(
-              {
-                power_state: i.attributes.power_state,
-                flavor_name: i.attributes.flavor_name,
-                access_ip_v4: i.attributes.access_ip_v4,
-                owner: i.attributes.metadata?.owner,
+        (Object.entries(data?.state ?? {}) as [string, ITerraformInstance[]][])
+          .forEach(([cluster, instances]) => {
+            this.clusters.push(cluster);
+            this.regionsByCluster[cluster] = [];
+            this.workerByClusterByRegion[cluster] = {};
+            instances.forEach((i) => {
+              if (!(i.attributes.region in this.workerByClusterByRegion[cluster])) {
+                this.workerByClusterByRegion[cluster][i.attributes.region] = {}
+                this.regionsByCluster[cluster].push(i.attributes.region)
               }
-            )
-          }
-        )
+              if (!(i.attributes.flavor_name in this.workerByClusterByRegion[cluster][i.attributes.region])) {
+                this.workerByClusterByRegion[cluster][i.attributes.region][i.attributes.flavor_name] = []
+              }
+              this.workerByClusterByRegion[cluster][i.attributes.region][i.attributes.flavor_name].push(
+                {
+                  power_state: i.attributes.power_state,
+                  flavor_name: i.attributes.flavor_name,
+                  access_ip_v4: i.attributes.access_ip_v4,
+                  owner: i.attributes.metadata?.owner,
+                }
+              )
+            });
+        });
       }
     )
   }
 
-  flavorForRegion(region: string): string[] {
+  flavorForClusterAndRegion(cluster: string, region: string): string[] {
     return Object.keys(
-      this.workerByRegion[region]
+      this.workerByClusterByRegion[cluster][region]
     );
   }
 }

@@ -7,6 +7,7 @@ import { ComputeTypeEditComponent } from './components/compute-type-edit/compute
 import { ComputeTypeResolver } from './resolvers/compute-type.resolver';
 import { OvhResourceResolver } from '../sessions-resources/resolvers/ovh-resource.resolver';
 import { RegionsResolver } from '../regions/resolvers/regions.resolver';
+import { ClustersResolver } from '../cluster/resolvers/clusters.resolver';
 
 
 
@@ -25,6 +26,7 @@ const routes: Routes = [
     resolve: {
       resources: OvhResourceResolver,
       regions: RegionsResolver,
+      clusters: ClustersResolver
     },
     data: {
       breadcrumb: 'admin.resources_management.compute_types.create_breadcrumb',
@@ -36,6 +38,7 @@ const routes: Routes = [
     resolve: {
       resources: OvhResourceResolver,
       regions: RegionsResolver,
+      clusters: ClustersResolver,
       computeType: ComputeTypeResolver,
     },
     data: {

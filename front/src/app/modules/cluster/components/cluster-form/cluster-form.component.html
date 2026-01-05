@@ -1,0 +1,25 @@
+<mat-card class="form-container">
+  <mat-card-content>
+    <div fxLayout="column" [formGroup]="clusterForm">
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.clusters.edit.name' | translate }}</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.clusters.edit.go_adress' | translate }}</mat-label>
+        <input matInput formControlName="goAddress">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.clusters.edit.go_port' | translate }}</mat-label>
+        <input matInput formControlName="goPort">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.clusters.edit.terraform_url' | translate }}</mat-label>
+        <input matInput formControlName="terraformStateUrl">
+      </mat-form-field>
+      <mat-checkbox formControlName="deploymentEnabled">
+        {{ 'admin.resources_management.clusters.edit.deployment_enabled' | translate }}
+      </mat-checkbox>
+    </div>
+  </mat-card-content>
+</mat-card>
