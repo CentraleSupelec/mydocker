@@ -7,6 +7,10 @@ import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.mappers.GrpcResponsePortToContainerPortDtoMapper;
+import fr.centralesupelec.thuv.model.Cluster;
+import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.repository.ClusterRepository;
+import fr.centralesupelec.thuv.repository.CourseRepository;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
@@ -19,37 +23,52 @@ import jakarta.annotation.PostConstruct;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class RequestAdminContainerService {
     private static final Logger logger = LoggerFactory.getLogger(RequestAdminContainerService.class);
 
-    private final ManagedChannel channel;
+    private final Map<String, ManagedChannel> channels;
     private final ContainerStorage containerStorage;
     private StreamObserver<AdminContainerRequest> adminContainerRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
     private final GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper;
-    private boolean shouldInitializeStub = true;
+    private final CourseRepository courseRepository;
+    private final ClusterRepository clusterRepository;
+    private Map<String, Boolean> shouldInitializeStubMap = new HashMap<>();
 
     @Autowired
     public RequestAdminContainerService(
-            ManagedChannel channel,
+        Map<String, ManagedChannel> channels,
             ContainerStorage containerStorage,
-            GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper
+            GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper,
+            CourseRepository courseRepository,
+            ClusterRepository clusterRepository
     ) {
-        this.channel = channel;
+        this.channels = channels;
         this.containerStorage = containerStorage;
         this.grpcResponsePortToContainerPortDtoMapper = grpcResponsePortToContainerPortDtoMapper;
+        this.courseRepository = courseRepository;
+        this.clusterRepository = clusterRepository;
     }
 
     @PostConstruct
     public void init() {
-        createNewStubIfNeeded();
+        List<Cluster> clusters = clusterRepository.findAll();
+
+        for (Cluster cluster : clusters) {
+            shouldInitializeStubMap.put(cluster.getName(), true);
+            createNewStubIfNeeded(cluster);
+        }
     }
 
-    public void createNewStub() {
-        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
+    public void createNewStub(Cluster cluster) {
+        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
         this.adminContainerRequestStreamObserver = asyncStub.getAdminContainer(new StreamObserver<>() {
             public void onNext(AdminContainerResponse adminContainerResponse) {
                 ContainerDto containerDto = mapContainerResponseToContainer(adminContainerResponse);
@@ -62,7 +81,7 @@ public class RequestAdminContainerService {
         
             public void onError(Throwable throwable) {
                 logger.error("Error requesting a container.\n Please restart the go API then this service.");
-                shouldInitializeStub = true;
+                shouldInitializeStubMap.put(cluster.getName(), true);
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
@@ -74,17 +93,18 @@ public class RequestAdminContainerService {
         });
     }
 
-    public void createNewStubIfNeeded() {
-        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
-        if (!shouldInitializeStub) {
+    public void createNewStubIfNeeded(Cluster cluster) {
+        ManagedChannel channel = channels.get(cluster.getName());
+        logger.debug("shouldInitializeStub : " + shouldInitializeStubMap.get(cluster.getName()));
+        if (!shouldInitializeStubMap.get(cluster.getName())) {
             return;
         }
         ConnectivityState state = channel.getState(true);
         logger.debug("Channel state : " + state);
 
         if (ConnectivityState.READY == state) {
-            createNewStub();
-            shouldInitializeStub = false;
+            createNewStub(cluster);
+            shouldInitializeStubMap.put(cluster.getName(), false);
             return;
         }
 
@@ -97,8 +117,8 @@ public class RequestAdminContainerService {
                 logger.debug("Channel state changed from CONNECTING to : " + newState);
         
                 if (ConnectivityState.READY == newState) {
-                    createNewStub();
-                    shouldInitializeStub = false;
+                    createNewStub(cluster);
+                    shouldInitializeStubMap.put(cluster.getName(), false);
                 }
             });
         }
@@ -107,8 +127,11 @@ public class RequestAdminContainerService {
     public void requestContainer(AdminContainerRequest request) {
         try {
             lock.lock();
-            createNewStubIfNeeded();
-            adminContainerRequestStreamObserver.onNext(request);
+            Optional<Course> course = courseRepository.findById(Long.parseLong(request.getCourseID()));
+            if (course.isPresent()) {
+                createNewStubIfNeeded(course.get().getComputeType().getCluster());
+                adminContainerRequestStreamObserver.onNext(request);
+            }
         } catch (RuntimeException e) {
             // Cancel RPC
             adminContainerRequestStreamObserver.onError(e);

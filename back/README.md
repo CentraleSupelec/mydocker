@@ -60,6 +60,33 @@ If you need to customize the config, use a Spring profile `dev` :
     openssl rsa -traditional -pubout -in src/main/resources/private_key.pem -out src/main/resources/public_key.pem
 ```
 
+## Generate keys for Grpc connection (client)
+
+```shell
+# For MacOS / Ubuntu 21 and older / Debian 11 and older
+    # CA :
+        # If you already have a CA certificatte and key, copy them in src/main/resources/tls
+        # Else :
+        # Generate private key for CA
+        openssl genrsa -out src/main/resources/tls/ca.key 4096
+
+        # Generate self-signed certificate for CA (valid 10 years)
+        openssl req -x509 -new -nodes -key src/main/resources/tls/ca.key -sha256 -days 3650 -out src/main/resources/tls/ca.crt \
+            -subj "/CN=dev-ca"
+
+    # Client :
+        # Generate client private key
+        openssl genrsa -out src/main/resources/tls/client.key 2048
+
+        # Generate client CSR (Certificate Signing Request)
+        openssl req -new -key src/main/resources/tls/client.key -out src/main/resources/tls/client.csr \
+        -subj "/CN=java-backend"
+
+        # Sign client certificate with CA
+        openssl x509 -req -in src/main/resources/tls/client.csr -CA src/main/resources/tls/ca.crt -CAkey src/main/resources/tls/ca.key -CAcreateserial \
+        -out src/main/resources/tls/client.crt -days 365 -sha256
+```
+
 ## Migrations
 
 You need to compile with changes you made then run: `./mvnw liquibase:diff` to generate a changelog, then rename it and add it to the `master.xml` file.

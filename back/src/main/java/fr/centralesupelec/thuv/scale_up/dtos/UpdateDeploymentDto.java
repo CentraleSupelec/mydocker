@@ -24,4 +24,5 @@ public abstract class UpdateDeploymentDto {
     private Long startDateTime;
     private List<Long> sessions;
     private String description;
+    private Long cluster;
 }

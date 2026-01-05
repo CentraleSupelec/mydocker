@@ -34,6 +34,11 @@ test:
   before_script:
     - openssl genrsa -traditional -out src/main/resources/private_key.pem 4096
     - openssl rsa -traditional -pubout -in src/main/resources/private_key.pem -out src/main/resources/public_key.pem
+    - openssl genrsa -out src/main/resources/tls/ca.key 4096
+    - openssl req -x509 -new -nodes -key src/main/resources/tls/ca.key -sha256 -days 3650 -out src/main/resources/tls/ca.crt -subj "/CN=dev-ca"
+    - openssl genrsa -out src/main/resources/tls/client.key 2048
+    - openssl req -new -key src/main/resources/tls/client.key -out src/main/resources/tls/client.csr -subj "/CN=java-backend"
+    - openssl x509 -req -in src/main/resources/tls/client.csr -CA src/main/resources/tls/ca.crt -CAkey src/main/resources/tls/ca.key -CAcreateserial -out src/main/resources/tls/client.crt -days 365 -sha256
   script:
     - ./mvnw generate-sources
     - ./mvnw test || { [ "$DEBUG" = "true" ] && sleep 3600; }

@@ -3,22 +3,35 @@ package fr.centralesupelec.thuv.service;
 import fr.centralesupelec.gRPC.LogRequest;
 import fr.centralesupelec.gRPC.LogResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
-import io.grpc.Channel;
+import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.repository.CourseRepository;
+import io.grpc.ManagedChannel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class LogRequestService {
-    private final Channel channel;
+    private final Map<String, ManagedChannel> channels;
+    private final CourseRepository courseRepository;
 
     public LogResponse getLog(String userId, String courseId) {
-        containerServiceGrpc.containerServiceBlockingStub stub = containerServiceGrpc.newBlockingStub(channel);
-        return stub.getLogs(
-                LogRequest.newBuilder()
-                        .setCourseID(courseId)
-                        .setUserID(userId)
-                        .build()
-        );
+
+        Optional<Course> course = courseRepository.findById(Long.parseLong(courseId));
+        if (course.isPresent()) {
+            containerServiceGrpc.containerServiceBlockingStub stub = containerServiceGrpc.newBlockingStub(
+                channels.get(course.get().getComputeType().getCluster().getName())
+            );
+            return stub.getLogs(
+                    LogRequest.newBuilder()
+                            .setCourseID(courseId)
+                            .setUserID(userId)
+                            .build()
+            );
+        }
+        return null;
     }
 }
