@@ -122,3 +122,7 @@ config.yml
 
 **tmp
 .env
+*.crt
+*.key
+*.csr
+*.srl
