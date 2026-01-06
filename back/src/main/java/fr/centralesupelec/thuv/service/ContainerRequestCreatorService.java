@@ -5,10 +5,8 @@ import fr.centralesupelec.thuv.mappers.PortToGrpcRequestPortMapper;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.CourseSession;
-import fr.centralesupelec.thuv.model.Path;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
-import fr.centralesupelec.thuv.repository.PathRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +25,6 @@ public class ContainerRequestCreatorService {
         private final ContainerUtilsService containerUtilsService;
         private final ComputeTypeRepository computeTypeRepository;
         private final CourseInfraRequestService courseInfraRequestService;
-        private final PathRepository pathRepository;
 
     public ContainerRequest createRequest(CourseSession courseSession, User user, boolean forceRecreate) {
         Course course = courseSession.getCourse();
@@ -37,28 +34,6 @@ public class ContainerRequestCreatorService {
                 .setSaveStudentWork(course.isSaveStudentWork())
                 .setCommand(course.getCommand())
         ;
-        List<Path> paths = pathRepository.findAll();
-
-        builder
-                .addAllPaths(
-                        paths
-                                .stream()
-                                .map(
-                                        path ->
-                                                fr.centralesupelec.gRPC.Path
-                                                        .newBuilder()
-                                                        .setValue(path.getValue())
-                                                        .setRecursive(path.getRecursive())
-                                                        .setChangeOwner(path.getChangeOwner())
-                                                        .setPermissions(path.getPermissions())
-                                                        .build()
-                                )
-                        .collect(Collectors.toList())
-                );
-
-        if (null != course.getUid()) {
-                builder.setUid(course.getUid());
-        }        
 
         if (course.getComputeType().isGpu()) {
             String gpuResource = "gpu";
