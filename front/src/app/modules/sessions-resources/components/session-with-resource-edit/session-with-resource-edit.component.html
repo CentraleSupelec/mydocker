@@ -7,8 +7,9 @@
     <p><strong>Nombre d'élèves:</strong> {{ session?.studentNumber }}</p>
   </div>
   <br>
-  <div>
-    <strong>Description:</strong> {{ session.course.description }}
+  <div style="padding: 20px;">
+    <strong>Description:</strong>
+    <div style="margin-top: 20px;" [innerHTML]="session.course.description"></div>
   </div>
   <br>
   <div fxLayout="row" fxLayoutAlign="space-around center">
