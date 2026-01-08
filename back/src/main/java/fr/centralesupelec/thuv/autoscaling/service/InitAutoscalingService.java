@@ -24,10 +24,6 @@ public class InitAutoscalingService {
     private final ComputeTypeMapper computeTypeMapper;
     private boolean isAutoscalingInitialized = false;
 
-    public void setIsAutoscalingInitialized(Boolean isAutoscalingInitialized) {
-        this.isAutoscalingInitialized = isAutoscalingInitialized;
-    }
-
     public void sendInitRequest() throws Exception {
         containerServiceGrpc.containerServiceBlockingStub asyncStub = containerServiceGrpc.newBlockingStub(channel);
         List<ComputeType> computeTypes = computeTypeRepository.findAll();

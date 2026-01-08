@@ -5,7 +5,6 @@ import fr.centralesupelec.gRPC.SaveDataResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
-import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.sentry.Sentry;
@@ -27,7 +26,6 @@ public class SaveDataService {
     private final UserCourseRepository userCourseRepository;
     private StreamObserver<SaveDataRequest> saveDataRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
-    private boolean shouldInitializeStub = true;
 
     @Autowired
     public SaveDataService(ManagedChannel channel, UserCourseRepository userCourseRepository) {
@@ -37,12 +35,8 @@ public class SaveDataService {
 
     @PostConstruct
     public void init() {
-        createNewStubIfNeeded();
-    }
-
-    public void createNewStub() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
-        
+
         this.saveDataRequestStreamObserver = asyncStub.saveData(new StreamObserver<>() {
             public void onNext(SaveDataResponse saveDataResponse) {
                 logger.debug("Received response");
@@ -65,16 +59,15 @@ public class SaveDataService {
                 }
                 userCourseRepository.saveAndFlush(userCourse);
             }
-        
+
             public void onError(Throwable throwable) {
                 logger.error("Stream error");
-                shouldInitializeStub = true;
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
                 Sentry.captureMessage("Unable to save data");
             }
-        
+
             public void onCompleted() {
                 logger.debug("Completed");
 
@@ -82,40 +75,9 @@ public class SaveDataService {
         });
     }
 
-    public void createNewStubIfNeeded() {
-        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
-        if (!shouldInitializeStub) {
-            return;
-        }
-        ConnectivityState state = channel.getState(true);
-        logger.debug("Channel state : " + state);
-
-        if (ConnectivityState.READY == state) {
-            createNewStub();
-            shouldInitializeStub = false;
-            return;
-        }
-
-        ConnectivityState updatedState = channel.getState(true);
-        logger.debug("Update channel state :" + updatedState);
-
-        if (ConnectivityState.CONNECTING == updatedState) {
-            channel.notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
-                ConnectivityState newState = channel.getState(false);
-                logger.debug("Channel state changed from CONNECTING to : " + newState);
-        
-                if (ConnectivityState.READY == newState) {
-                    createNewStub();
-                    shouldInitializeStub = false;
-                }
-            });
-        }
-    }
-
     public void sendSaveData(SaveDataRequest request) {
         try {
             lock.lock();
-            createNewStubIfNeeded();
             saveDataRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC

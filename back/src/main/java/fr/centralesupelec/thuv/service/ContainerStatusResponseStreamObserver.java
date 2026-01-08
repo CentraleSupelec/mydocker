@@ -88,7 +88,6 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
         if (logger.isDebugEnabled()) {
             throwable.printStackTrace();
         }
-        containerStatusConfigureService.setShouldInitializeStub(true);
     }
 
     public void onCompleted() {

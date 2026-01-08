@@ -8,15 +8,14 @@ import fr.centralesupelec.thuv.storage.ShutdownStatusStorage;
 import fr.centralesupelec.gRPC.ShutdownContainerRequest;
 import fr.centralesupelec.gRPC.ShutdownContainerResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
-import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.sentry.Sentry;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.annotation.PostConstruct;
 
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,7 +29,6 @@ public class ShutdownContainerService {
     private StreamObserver<ShutdownContainerRequest> shutdownContainerRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
     private final ActivityLogger activityLogger;
-    private boolean shouldInitializeStub = true;
 
     @Autowired
     public ShutdownContainerService(
@@ -45,12 +43,8 @@ public class ShutdownContainerService {
 
     @PostConstruct
     public void init() {
-        createNewStubIfNeeded();
-    }
-
-    public void createNewStub() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
-        
+
         this.shutdownContainerRequestStreamObserver = asyncStub.shutdownContainer(new StreamObserver<>() {
             public void onNext(ShutdownContainerResponse shutdownContainerResponse) {
                 logger.debug("Received response");
@@ -75,52 +69,21 @@ public class ShutdownContainerService {
                     shutdownContainer.ifPresent(container -> container.setError(shutdownContainerResponse.getError()));
                 }
             }
-        
+
             public void onError(Throwable throwable) {
                 logger.error("Stream error");
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
-            
+
                 Sentry.captureMessage("Error in shutdown stream");
-                shouldInitializeStub = true;
             }
-        
+
             public void onCompleted() {
                 logger.debug("Completed");
-            
+
             }
         });
-    }
-
-    public void createNewStubIfNeeded() {
-        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
-        if (!shouldInitializeStub) {
-            return;
-        }
-        ConnectivityState state = channel.getState(true);
-        logger.debug("Channel state : " + state);
-
-        if (ConnectivityState.READY == state) {
-            createNewStub();
-            shouldInitializeStub = false;
-            return;
-        }
-
-        ConnectivityState updatedState = channel.getState(true);
-        logger.debug("Update channel state :" + updatedState);
-
-        if (ConnectivityState.CONNECTING == updatedState) {
-            channel.notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
-                ConnectivityState newState = channel.getState(false);
-                logger.debug("Channel state changed from CONNECTING to : " + newState);
-        
-                if (ConnectivityState.READY == newState) {
-                    createNewStub();
-                    shouldInitializeStub = false;
-                }
-            });
-        }
     }
 
     public void shutdownContainer(String userId, String courseId) {
@@ -132,7 +95,6 @@ public class ShutdownContainerService {
                 .build();
         try {
             lock.lock();
-            createNewStubIfNeeded();
             shutdownContainerRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC

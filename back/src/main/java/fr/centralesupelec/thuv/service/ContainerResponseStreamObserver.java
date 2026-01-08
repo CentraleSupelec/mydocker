@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.service;
 
 import fr.centralesupelec.gRPC.ContainerResponse;
 import fr.centralesupelec.gRPC.ContainerStatusRequest;
-import fr.centralesupelec.thuv.autoscaling.service.InitAutoscalingService;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.mappers.GrpcResponsePortToContainerPortDtoMapper;
@@ -31,8 +30,6 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
     private final CourseRepository courseRepository;
     private final ContainerStatusConfigureService containerStatusConfigureService;
     private final ContainerStorage containerStorage;
-    private RequestContainerService requestContainerService;
-    private final InitAutoscalingService initAutoscalingService;
 
     @Override
     public void onNext(ContainerResponse containerResponse) {
@@ -62,9 +59,6 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
             throwable.printStackTrace();
         }
         Sentry.captureMessage("Unable to obtain the container");
-        requestContainerService.setShouldInitializeStub(true);
-        // We need to resend a request to initialize autoscaling
-        initAutoscalingService.setIsAutoscalingInitialized(false);
     }
 
     @Override
@@ -122,9 +116,5 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
         } catch (NumberFormatException ignored) {
             return;
         }
-    }
-
-    public void setRequestContainerService(RequestContainerService requestContainerService) {
-        this.requestContainerService = requestContainerService;
     }
 }
