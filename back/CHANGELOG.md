@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added 
 - Route accessible for students to check if course requires GPU
 
+### Fixed
+- No lastStartDate update when joining course
+
 ### Changed
 - User role in user dto is now roles to reflect the entity user having multiple roles eventually
 - Ignore recent lastStartDate and fetch the previous one for user courses dto
