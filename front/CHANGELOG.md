@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - UID in course
+- Auto-redirect to /shell if already logged in
+- Filter ended sessions from planified section + sort planified sessions by start date
 
 ## 2.28.8
 ### Fixed

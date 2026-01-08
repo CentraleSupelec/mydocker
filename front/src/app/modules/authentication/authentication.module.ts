@@ -20,6 +20,7 @@ import { MatIconModule } from "@angular/material/icon";
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { LoginGuard } from './services/login.guard';
 
 const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
   function(): Promise<any> {
@@ -72,6 +73,7 @@ const generateAuthConfiguration = (appConfig: IAppConfig) => {
   providers: [
     AuthGuard,
     AutologinGuard,
+    LoginGuard,
     {
       provide: APP_INITIALIZER,
       useFactory: loadPermissionsOnStartupAppInitializerFactory,

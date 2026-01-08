@@ -6,11 +6,13 @@ import { LoginAcceptComponent } from "./modules/authentication/components/login-
 import { NgxPermissionsGuard } from "ngx-permissions";
 import { AdminLayoutComponent } from "./modules/user-interface/components/admin-layout/admin-layout.component";
 import { AutologinGuard } from './modules/authentication/services/autologin.guard';
+import { LoginGuard } from "./modules/authentication/services/login.guard";
 
 export const routes: Routes = [
   {
     path: 'login',
-    component: SignInComponent
+    component: SignInComponent,
+    canActivate: [LoginGuard]
   },
   {
     path: 'loginAccept',
