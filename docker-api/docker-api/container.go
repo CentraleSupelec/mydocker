@@ -60,110 +60,115 @@ func getOrCreateContainer(
 	createRbdImageOut <-chan CreateRbdImageWorkerResponse,
 	workerIndex int,
 ) {
-	for request := range in {
-		ip, err := getIPAdress(dockerClient)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		response := &pb.ContainerResponse{
-			UserID:    request.UserID,
-			CourseID:  request.CourseID,
-			Options:   request.Options,
-			IpAddress: ip,
-		}
-		mapPort := map[uint32]*pb.ResponsePort{}
-		for _, port := range request.Ports {
-			mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
-		}
-		name := createContainerName(request.UserID, request.CourseID)
-		if exist, id, imageId, userPassword, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
-			log.Debugf("Service %s already exists", name)
-			response.ImageID = imageId
-			response.AuthenticationMethod = userPassword
-			response.Ports = existingPorts
-			response.DeletionTime = deletionTime
-			if err != nil {
-				log.Error(err)
-				continue
-			}
+	nodes, nodes_err := dockerClient.NodeList(context.TODO(), types.NodeListOptions{})
+	if nodes_err == nil {
+		ip, ip_err := getIPAdress(nodes, c.Monolithic)
+		if ip_err == nil {
+			for request := range in {
+				response := &pb.ContainerResponse{
+					UserID:    request.UserID,
+					CourseID:  request.CourseID,
+					Options:   request.Options,
+					IpAddress: ip,
+				}
+				mapPort := map[uint32]*pb.ResponsePort{}
+				for _, port := range request.Ports {
+					mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
+				}
+				name := createContainerName(request.UserID, request.CourseID)
+				if exist, id, imageId, userPassword, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
+					log.Debugf("Service %s already exists", name)
+					response.ImageID = imageId
+					response.AuthenticationMethod = userPassword
+					response.Ports = existingPorts
+					response.DeletionTime = deletionTime
+					if err != nil {
+						log.Error(err)
+						continue
+					}
 
-			if shouldBeReplaced || (request.Options != nil && request.Options.ForceRecreate) {
-				err = deleteService(id, dockerClient)
+					if shouldBeReplaced || (request.Options != nil && request.Options.ForceRecreate) {
+						err = deleteService(id, dockerClient)
+						if err != nil {
+							log.Error(err)
+							continue
+						}
+					} else {
+						out <- response
+						continue
+					}
+				}
+				response.ImageID = request.ImageID
+				portsArray, err := ports.Get(int64(len(request.Ports)))
+				log.Debugf("Got available ports %v", portsArray)
 				if err != nil {
 					log.Error(err)
 					continue
 				}
-			} else {
-				out <- response
-				continue
-			}
-		}
-		response.ImageID = request.ImageID
-		portsArray, err := ports.Get(int64(len(request.Ports)))
-		log.Debugf("Got available ports %v", portsArray)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		response.Ports = make([]*pb.ResponsePort, len(request.Ports))
-		for index, value := range request.Ports {
-			response.Ports[index] = convertRequestPortToResponsePort(value)
-			response.Ports[index].MapTo = portsArray[index].(uint32)
-			if value.ConnexionType == "HTTP" {
-				response.Ports[index].Hostname = fmt.Sprintf("%s.%s", strings.ReplaceAll(namesgenerator.GetRandomName(0), "_", "-"), c.ReverseProxyUrl)
-			}
-		}
-
-		userPassword := &pb.UserPasswordMethod{
-			Username: namesgenerator.GetRandomName(0),
-			Password: randPassword(10),
-		}
-		if request.Options != nil && request.Options.UserPassword != nil {
-			userPassword = request.Options.UserPassword
-		}
-
-		response.AuthenticationMethod = &pb.ContainerResponse_UserPassword{
-			UserPassword: userPassword,
-		}
-
-		// Pre-create volume if needed
-		if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume && request.Options.StorageBackend.String() == string(RBD) {
-			createRbdImageIn <- CreateRbdImageWorkerRequest{
-				imageName:   name,
-				size:        request.Options.WorkdirSize,
-				workerIndex: workerIndex,
-			}
-			var createImageError error
-			select {
-			case r := <-createRbdImageOut:
-				if r.imageName == name {
-					createImageError = r.err
-					break
+				response.Ports = make([]*pb.ResponsePort, len(request.Ports))
+				for index, value := range request.Ports {
+					response.Ports[index] = convertRequestPortToResponsePort(value)
+					response.Ports[index].MapTo = portsArray[index].(uint32)
+					if value.ConnexionType == "HTTP" {
+						response.Ports[index].Hostname = fmt.Sprintf("%s.%s", strings.ReplaceAll(namesgenerator.GetRandomName(0), "_", "-"), c.ReverseProxyUrl)
+					}
 				}
-			case <-time.After(6 * time.Minute):
-				createImageError = fmt.Errorf("create rdb image timeout after 6 minutes")
-				break
-			}
-			if createImageError != nil {
-				log.Errorf("Failed to pre-create volume %s with error %s", name, createImageError)
-				continue
-			}
-		}
 
-		err = create(name, response, dockerClient, request)
-		if err != nil {
-			var visibleError *VisibleError
-			if errors.As(err, &visibleError) {
-				log.Warnf("%s , %v", err.Error(), err.(*VisibleError).Params())
-				response.Error = err.Error()
-				response.ErrorParams = err.(*VisibleError).Params()
-			} else {
-				log.Error(err)
-				continue
+				userPassword := &pb.UserPasswordMethod{
+					Username: namesgenerator.GetRandomName(0),
+					Password: randPassword(10),
+				}
+				if request.Options != nil && request.Options.UserPassword != nil {
+					userPassword = request.Options.UserPassword
+				}
+
+				response.AuthenticationMethod = &pb.ContainerResponse_UserPassword{
+					UserPassword: userPassword,
+				}
+
+				// Pre-create volume if needed
+				if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume && request.Options.StorageBackend.String() == string(RBD) {
+					createRbdImageIn <- CreateRbdImageWorkerRequest{
+						imageName:   name,
+						size:        request.Options.WorkdirSize,
+						workerIndex: workerIndex,
+					}
+					var createImageError error
+					select {
+					case r := <-createRbdImageOut:
+						if r.imageName == name {
+							createImageError = r.err
+							break
+						}
+					case <-time.After(6 * time.Minute):
+						createImageError = fmt.Errorf("create rdb image timeout after 6 minutes")
+						break
+					}
+					if createImageError != nil {
+						log.Errorf("Failed to pre-create volume %s with error %s", name, createImageError)
+						continue
+					}
+				}
+
+				err = create(name, response, dockerClient, request)
+				if err != nil {
+					var visibleError *VisibleError
+					if errors.As(err, &visibleError) {
+						log.Warnf("%s , %v", err.Error(), err.(*VisibleError).Params())
+						response.Error = err.Error()
+						response.ErrorParams = err.(*VisibleError).Params()
+					} else {
+						log.Error(err)
+						continue
+					}
+				}
+				out <- response
 			}
+		} else {
+			log.Error(ip_err)
 		}
-		out <- response
+	} else {
+		log.Error(nodes_err)
 	}
 }
 
@@ -185,59 +190,64 @@ func saveData(in <-chan *pb.SaveDataRequest, out chan<- *pb.SaveDataResponse, do
 }
 
 func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *pb.AdminContainerResponse, dockerClient *client.Client, ports *queue.Queue) {
-	for request := range in {
-		ip, err := getIPAdress(dockerClient)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		response := &pb.AdminContainerResponse{
-			CourseID:      request.CourseID,
-			UserName:      request.UserName,
-			ForceRecreate: request.ForceRecreate,
-			IpAddress:     ip,
-			CourseName:    request.CourseName,
-		}
-		name := createAdminContainerName(request.GetCourseID())
-		mapPort := map[uint32]*pb.ResponsePort{}
-		mapPort[request.Port.PortToMap] = convertRequestPortToResponsePort(request.Port)
-		if exist, id, _, userPassword, publishedPort, _, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
-			response.UserPassword = userPassword.UserPassword
-			response.Port = publishedPort[0]
-			if err != nil {
-				log.Error(err)
-				continue
-			}
+	nodes, nodes_err := dockerClient.NodeList(context.TODO(), types.NodeListOptions{})
+	if nodes_err == nil {
+		ip, ip_err := getIPAdress(nodes, c.Monolithic)
+		if ip_err == nil {
+			for request := range in {
+				response := &pb.AdminContainerResponse{
+					CourseID:      request.CourseID,
+					UserName:      request.UserName,
+					ForceRecreate: request.ForceRecreate,
+					IpAddress:     ip,
+					CourseName:    request.CourseName,
+				}
+				name := createAdminContainerName(request.GetCourseID())
+				mapPort := map[uint32]*pb.ResponsePort{}
+				mapPort[request.Port.PortToMap] = convertRequestPortToResponsePort(request.Port)
+				if exist, id, _, userPassword, publishedPort, _, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
+					response.UserPassword = userPassword.UserPassword
+					response.Port = publishedPort[0]
+					if err != nil {
+						log.Error(err)
+						continue
+					}
 
-			if shouldBeReplaced || request.ForceRecreate {
-				err = deleteService(id, dockerClient)
+					if shouldBeReplaced || request.ForceRecreate {
+						err = deleteService(id, dockerClient)
+						if err != nil {
+							log.Error(err)
+							continue
+						}
+					} else {
+						out <- response
+						continue
+					}
+				}
+				portsArray, err := ports.Get(1)
 				if err != nil {
 					log.Error(err)
 					continue
 				}
-			} else {
-				out <- response
-				continue
-			}
-		}
-		portsArray, err := ports.Get(1)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		response.Port = convertRequestPortToResponsePort(request.Port)
-		response.Port.MapTo = portsArray[0].(uint32)
+				response.Port = convertRequestPortToResponsePort(request.Port)
+				response.Port.MapTo = portsArray[0].(uint32)
 
-		response.UserPassword = &pb.UserPasswordMethod{
-			Username: request.GetUserName(),
-			Password: randPassword(10),
+				response.UserPassword = &pb.UserPasswordMethod{
+					Username: request.GetUserName(),
+					Password: randPassword(10),
+				}
+				err = createAdmin(name, response, dockerClient)
+				if err != nil {
+					log.Error(err)
+					continue
+				}
+				out <- response
+			}
+		} else {
+			log.Error(ip_err)
 		}
-		err = createAdmin(name, response, dockerClient)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		out <- response
+	} else {
+		log.Error(nodes_err)
 	}
 }
 
@@ -428,18 +438,17 @@ func exist(
 	}
 }
 
-func getIPAdress(dockerClient *client.Client) (string, error) {
-	nodes, err := dockerClient.NodeList(context.TODO(), types.NodeListOptions{})
-	if err != nil {
-		return "", err
-	}
+func getIPAdress(nodes []swarm.Node, monolithic bool) (string, error) {
 	for _, node := range nodes {
-		// Return the first active node
+		// Return the first active node (manager or worker based on if monolithic is true or false)
+		// NOTE : If swarm contains mutliple nodes that are all managers and has no workers, we should use monolithic = true even though
+		// it is not technically a monolithic setup
 		if node.Spec.Availability == swarm.NodeAvailabilityActive && node.Status.State == swarm.NodeStateReady {
-			if node.ManagerStatus != nil {
+			if monolithic && node.ManagerStatus != nil {
 				return strings.SplitN(node.ManagerStatus.Addr, ":", 2)[0], nil
+			} else if !monolithic && node.ManagerStatus == nil {
+				return node.Status.Addr, nil
 			}
-			return node.Status.Addr, nil
 		}
 	}
 	return "", errors.New("No active node found ... Return empty string")
@@ -659,7 +668,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 	}
 	var constraints []string
 
-	if c.Environment != "dev" {
+	if !c.Monolithic {
 		constraints = append(constraints, "node.role==worker")
 	}
 
