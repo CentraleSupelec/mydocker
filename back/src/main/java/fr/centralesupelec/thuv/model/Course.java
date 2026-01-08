@@ -137,4 +137,6 @@ public class Course {
     private boolean externalAccess = false;
 
     private LocalDateTime externalAccessExpirationDate;
+    
+    private String uid;
 }

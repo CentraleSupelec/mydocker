@@ -1,0 +1,48 @@
+databaseChangeLog:
+- changeSet:
+    id: 1762470829583-1
+    author: mohamedalibarka (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: pathsPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            defaultValueBoolean: false
+            name: change_owner
+            type: BOOLEAN
+        - column:
+            constraints:
+              nullable: false
+            name: permissions
+            type: INTEGER
+        - column:
+            constraints:
+              nullable: false
+            defaultValueBoolean: false
+            name: recursive
+            type: BOOLEAN
+        - column:
+            constraints:
+              nullable: false
+            name: value
+            type: VARCHAR(255)
+        tableName: paths
+- changeSet:
+    id: 1762470829583-2
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: uid
+            type: VARCHAR(255)
+        tableName: courses
