@@ -8,6 +8,7 @@ import fr.centralesupelec.thuv.docker_build.model.BuildStatus;
 import fr.centralesupelec.thuv.docker_build.model.DockerImage;
 import fr.centralesupelec.thuv.docker_build.model.DockerImageBuild;
 import fr.centralesupelec.thuv.docker_build.repository.DockerImageBuildRepository;
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.sentry.Sentry;
@@ -31,6 +32,8 @@ public class DockerImageBuildService {
     private final ManagedChannel channel;
     private final DockerImageBuildRepository dockerImageBuildRepository;
     private StreamObserver<DockerImageRequest> dockerImageRequestStreamObserver;
+    private boolean shouldInitializeStub = true;
+
     @Value("${context_save_path}")
     private String contextSavePath;
 
@@ -42,9 +45,12 @@ public class DockerImageBuildService {
 
     @PostConstruct
     public void init() {
+        createNewStubIfNeeded();
+    }
+
+    public void createNewStub() {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         this.dockerImageRequestStreamObserver = asyncStub.buildDockerImage(new StreamObserver<>() {
-
             public void onNext(DockerImageResponse dockerImageResponse) {
                 try {
                     logger.debug("Receive response " + dockerImageResponse.getBuildId());
@@ -74,14 +80,45 @@ public class DockerImageBuildService {
                     logger.error("Error while treating response " + e);
                 }
             }
-
+        
             public void onError(Throwable throwable) {
                 logger.error("Error on build docker image stream.\n Please restart the go API then this service.");
+                shouldInitializeStub = true;
                 Sentry.captureMessage("Error on build docker image stream.");
             }
-
+        
             public void onCompleted() {}
         });
+    }
+
+    public void createNewStubIfNeeded() {
+        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
+        if (!shouldInitializeStub) {
+            return;
+        }
+        ConnectivityState state = channel.getState(true);
+        logger.debug("Channel state : " + state);
+
+        if (ConnectivityState.READY == state) {
+            createNewStub();
+            shouldInitializeStub = false;
+            return;
+        }
+
+        ConnectivityState updatedState = channel.getState(true);
+        logger.debug("Update channel state :" + updatedState);
+
+        if (ConnectivityState.CONNECTING == updatedState) {
+            channel.notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
+                ConnectivityState newState = channel.getState(false);
+                logger.debug("Channel state changed from CONNECTING to : " + newState);
+        
+                if (ConnectivityState.READY == newState) {
+                    createNewStub();
+                    shouldInitializeStub = false;
+                }
+            });
+        }
     }
 
     public void requestDockerImageBuild(DockerImage dockerImage, DockerImageBuild dockerImageBuild) throws IOException {
@@ -108,7 +145,7 @@ public class DockerImageBuildService {
                     )
             );
         }
-
+        createNewStubIfNeeded();
         dockerImageRequestStreamObserver.onNext(
                 builder.build()
         );
