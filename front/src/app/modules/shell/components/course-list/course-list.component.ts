@@ -46,7 +46,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
 
             return {
               ...course,
-              sessions: course.sessions.filter(session => session.startDateTime >= startOfToday.valueOf() && session.endDateTime < now.valueOf())
+              sessions: course.sessions.filter(session => session.startDateTime >= startOfToday.valueOf() && session.endDateTime > now.valueOf())
             };
           }))
           .filter((course: IBasicCourseWithSession) => course.sessions?.length > 0)
