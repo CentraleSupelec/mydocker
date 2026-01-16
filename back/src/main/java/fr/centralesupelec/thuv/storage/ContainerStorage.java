@@ -6,11 +6,14 @@ import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.dtos.ContainerSwarmStateDto;
+import fr.centralesupelec.thuv.service.ContainerUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -19,19 +22,23 @@ public class ContainerStorage {
     private final ConcurrentHashMap<String, ContainerDto> containers;
     // Use distinct HashMaps to avoid concurrency writings to state/status
     private final ConcurrentHashMap<String, ContainerSwarmStateDto> containersStates;
+    private final ConcurrentHashMap<String, LocalDateTime> containerDtosLatestCreatedAt;
+    private static final ConcurrentHashMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
     private final ActivityLogger activityLogger;
 
     public ContainerStorage(ActivityLogger activityLogger) {
         this.containers = new ConcurrentHashMap<>();
         this.containersStates = new ConcurrentHashMap<>();
+        this.containerDtosLatestCreatedAt = new ConcurrentHashMap<>();
         this.activityLogger = activityLogger;
     }
 
 
     public void addContainer(ContainerDto containerDto, String userId, String courseId) {
-        String key = generateKey(userId, courseId);
+        String key = ContainerUtilsService.generateKey(userId, courseId);
         logger.debug("Adding container {} to storage: {}", key, containerDto);
         this.containers.put(key, containerDto);
+        this.containerDtosLatestCreatedAt.put(key, containerDto.getCreatedAt());
         LogAction logAction = switch (containerDto.getStatus()) {
             case OK -> LogAction.ENVIRONMENT_CREATED_OK;
             case KO -> LogAction.ENVIRONMENT_CREATED_KO;
@@ -47,7 +54,7 @@ public class ContainerStorage {
     }
 
     public void setContainerState(String userId, String courseId, ContainerSwarmStateDto state) {
-        String key = generateKey(userId, courseId);
+        String key = ContainerUtilsService.generateKey(userId, courseId);
         this.containersStates.put(key, state);
     }
 
@@ -57,7 +64,7 @@ public class ContainerStorage {
     }
 
     public Optional<ContainerDto> getContainer(String userId, String courseId) {
-        String key = generateKey(userId, courseId);
+        String key = ContainerUtilsService.generateKey(userId, courseId);
         Optional<ContainerDto> optContainer = Optional.ofNullable(this.containers.getOrDefault(key, null));
         optContainer.ifPresent(containerDto -> {
             containerDto.setState(this.containersStates.get(key));
@@ -74,15 +81,27 @@ public class ContainerStorage {
         return optContainer;
     }
 
+    public Optional<LocalDateTime> getContainerLatestCreatedAt(String userId, String courseId) {
+        String key = ContainerUtilsService.generateKey(userId, courseId);
+        return Optional.ofNullable(this.containerDtosLatestCreatedAt.getOrDefault(key, null));
+    }
+
     public Optional<ContainerDto> getAdminContainer(Long courseId) {
         String key = generateAdminKey(String.valueOf(courseId));
         return Optional.ofNullable(this.containers.getOrDefault(key, null));
     }
 
-    private String generateKey(String userId, String courseId) {
-        return userId + courseId;
-    }
     private String generateAdminKey(String courseId) {
         return String.format("%s-admin", courseId);
+    }
+
+    public static ReentrantLock getLock(String key) {
+        return locks.computeIfAbsent(key, k -> new ReentrantLock());
+    }
+
+    public static void removeLock(String key, ReentrantLock lock) {
+        if (!lock.hasQueuedThreads()) {
+            locks.remove(key, lock);
+        }
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -132,6 +133,7 @@ public class RequestAdminContainerService {
         containerDto.setPassword(containerResponse.getUserPassword().getPassword());
         containerDto.setUsername(containerResponse.getUserPassword().getUsername());
         containerDto.setNeedsNewGpu(false);
+        containerDto.setCreatedAt(LocalDateTime.now());
         return containerDto;
     }
 }

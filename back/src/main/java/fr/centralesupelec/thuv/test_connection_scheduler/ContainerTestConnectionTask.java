@@ -5,6 +5,7 @@ import static fr.centralesupelec.thuv.service.ContainerStatusResponseStreamObser
 import fr.centralesupelec.gRPC.ContainerStatusRequest;
 import fr.centralesupelec.thuv.model.ConnectionType;
 import fr.centralesupelec.thuv.service.ContainerStatusConfigureService;
+import fr.centralesupelec.thuv.service.ContainerUtilsService;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.dtos.ContainerPortDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
@@ -16,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 @RequiredArgsConstructor
 public class ContainerTestConnectionTask implements Runnable {
@@ -39,17 +42,19 @@ public class ContainerTestConnectionTask implements Runnable {
                 StringUtils.isNotBlank(containerScheduledDto.getContainerDto().getCreationError())
                         && !containerScheduledDto.getContainerDto().getCreationError().contains(NO_SUITABLE_NODE)
         ) {
-            containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
-            containerStorage.addContainer(
-                    containerScheduledDto.getContainerDto(),
-                    containerScheduledDto.getUserId(),
-                    containerScheduledDto.getCourseId()
-            );
-            containerStatusConfigureService.configureContainerStatus(
-                    containerScheduledDto.getCourseId(),
-                    containerScheduledDto.getUserId(),
-                    ContainerStatusRequest.Action.off
-            );
+                containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
+                runIfContainerDtoNotObsolete(() -> {
+                        containerStorage.addContainer(
+                                containerScheduledDto.getContainerDto(),
+                                containerScheduledDto.getUserId(),
+                                containerScheduledDto.getCourseId()
+                        );
+                        containerStatusConfigureService.configureContainerStatus(
+                                containerScheduledDto.getCourseId(),
+                                containerScheduledDto.getUserId(),
+                                ContainerStatusRequest.Action.off
+                        );
+                });
             return;
         }
         boolean succededConnection = testAllConnection();
@@ -65,22 +70,7 @@ public class ContainerTestConnectionTask implements Runnable {
                 containerScheduledDto.getContainerDto().setIp(nodeIP);
             }
             containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.OK);
-            containerStorage.addContainer(
-                    containerScheduledDto.getContainerDto(),
-                    containerScheduledDto.getUserId(),
-                    containerScheduledDto.getCourseId()
-            );
-            containerStatusConfigureService.configureContainerStatus(
-                    containerScheduledDto.getCourseId(),
-                    containerScheduledDto.getUserId(),
-                    ContainerStatusRequest.Action.off
-            );
-        } else {
-            if (containerScheduledDto.getNumberOfRetry() > maxConnectionRetry) {
-                logger.error("Could not connect to container with user id: '" + containerScheduledDto.getUserId()
-                        + "' and courseId: '" + containerScheduledDto.getCourseId() + "' after "
-                        + maxConnectionRetry + " retry");
-                containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
+            runIfContainerDtoNotObsolete(() -> {
                 containerStorage.addContainer(
                         containerScheduledDto.getContainerDto(),
                         containerScheduledDto.getUserId(),
@@ -91,6 +81,25 @@ public class ContainerTestConnectionTask implements Runnable {
                         containerScheduledDto.getUserId(),
                         ContainerStatusRequest.Action.off
                 );
+            });
+        } else {
+            if (containerScheduledDto.getNumberOfRetry() > maxConnectionRetry) {
+                logger.error("Could not connect to container with user id: '" + containerScheduledDto.getUserId()
+                        + "' and courseId: '" + containerScheduledDto.getCourseId() + "' after "
+                        + maxConnectionRetry + " retry");
+                containerScheduledDto.getContainerDto().setStatus(ContainerStatusDto.KO);
+                runIfContainerDtoNotObsolete(() -> {
+                        containerStorage.addContainer(
+                                containerScheduledDto.getContainerDto(),
+                                containerScheduledDto.getUserId(),
+                                containerScheduledDto.getCourseId()
+                        );
+                        containerStatusConfigureService.configureContainerStatus(
+                                containerScheduledDto.getCourseId(),
+                                containerScheduledDto.getUserId(),
+                                ContainerStatusRequest.Action.off
+                        );
+                });
             } else {
                 logger.debug(
                         "Reschedule connection try for container with user id: '" + containerScheduledDto.getUserId()
@@ -105,7 +114,9 @@ public class ContainerTestConnectionTask implements Runnable {
                         .setLastExecution(
                                 LocalDateTime.now()
                         );
-                containerTestConnectionTaskScheduler.addContainerScheduledDto(containerScheduledDto);
+                runIfContainerDtoNotObsolete(() -> {
+                        containerTestConnectionTaskScheduler.addContainerScheduledDto(containerScheduledDto);
+                });
             }
         }
     }
@@ -134,5 +145,33 @@ public class ContainerTestConnectionTask implements Runnable {
                 p.getPortMapTo(),
                 containerTestParameterConfiguration.getTimeInSecondBeforeConnectionTestTimeout()
         );
+    }
+
+    private boolean isContainerDtoObsolete() {
+        Optional<LocalDateTime> latestCreatedAt = containerStorage.getContainerLatestCreatedAt(
+                containerScheduledDto.getUserId(),
+                containerScheduledDto.getCourseId()
+        );
+        if (latestCreatedAt.isEmpty() || latestCreatedAt.get().isEqual(containerScheduledDto.getContainerDto().getCreatedAt())) {
+                return false;
+        }
+        return true;
+    }
+
+    public void runIfContainerDtoNotObsolete(Runnable action) {
+        String key = ContainerUtilsService.generateKey(containerScheduledDto.getUserId(), containerScheduledDto.getCourseId());
+        ReentrantLock lock = ContainerStorage.getLock(key);
+
+        lock.lock();
+        try {
+                logger.info(String.format("Lock obtained for key %s", key));
+                if (!isContainerDtoObsolete()) {
+                        logger.info(String.format("Running action"));
+                        action.run();
+                }
+        } finally {
+                lock.unlock();
+                ContainerStorage.removeLock(key, lock);
+        }
     }
 }
