@@ -66,13 +66,16 @@ public class TestSocket {
                     .send(request, HttpResponse.BodyHandlers.ofString());
             return !this.errorCodes.contains(response.statusCode());
         } catch (URISyntaxException e) {
-            logger.error(String.format("Unable to connect to %s : URI malformed", hostname), e);
+            logger.error(String.format("Unable to connect to %s : URI malformed", hostname));
+            logger.debug(e.getMessage());
             return false;
         } catch (IOException e) {
-            logger.error(String.format("Unable to connect to %s : I/O Exception", hostname), e);
+            logger.error(String.format("Unable to connect to %s : I/O Exception", hostname));
+            logger.debug(e.getMessage());
             return false;
         } catch (InterruptedException e) {
-            logger.error(String.format("Unable to connect to %s : Interruption / Timeout", hostname), e);
+            logger.error(String.format("Unable to connect to %s : Interruption / Timeout", hostname));
+            logger.debug(e.getMessage());
             return false;
         }
     }
