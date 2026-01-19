@@ -121,7 +121,7 @@ func (d *DockerUtils) nodeWithCourseIdLabelExists(ctx context.Context, courseId 
 
 	labelKey := fmt.Sprintf("courseId-%s", courseId)
 	for _, node := range allNodes {
-		if val, ok := node.Spec.Labels[labelKey]; ok && val == "true" {
+		if val, ok := node.Spec.Labels[labelKey]; ok && val == "true" && node.Status.State == swarm.NodeStateReady {
 			return true, nil
 		}
 	}

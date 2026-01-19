@@ -5,10 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## Fixed
+- Filter nodes that are down when checking if a node with course-id label exists
+
+## 2.18.9
+## Fixed
+- Get Node IP
+
+## 2.18.8
+### Added
+- Monolithic variable to determine whether to add node==worker constraint + determine which node ip to return
+
+## 2.18.7
+### Fixed
+- Container status cronjob
+
+## 2.18.6
 ### Added
 - Check if a node with a courseId label exists
 - Change permissions of passed paths before starting the container
-- Monolithic variable to determine whether to add node==worker constraint + determine which node ip to return
 
 ### Fixed
 - Add shared-pool label if a worker has no course ids
