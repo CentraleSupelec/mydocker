@@ -5,9 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
-### Fixed
-- Ports sent to the front can be outdated 
-
 ### Changed
 - Determine whether to put courseId-<courseId> or shared-pool label on containers based on if there is a node in the swarm that has the courseId label
 

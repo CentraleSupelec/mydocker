@@ -7,7 +7,6 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,5 +38,4 @@ public class ContainerDto {
     private Boolean needsNewGpu;
     private String creationError;
     private Map<String, String> errorParams = new HashMap<>();
-    LocalDateTime createdAt;
 }

@@ -18,9 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,20 +44,7 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
                 containerResponse.getUserID(),
                 containerDto
         );
-        String key = ContainerUtilsService.generateKey(containerResponse.getUserID(), containerResponse.getCourseID());
-        ReentrantLock lock = ContainerStorage.getLock(key);
-
-        lock.lock();
-        try {
-            containerStorage.addContainer(
-                containerDto,
-                containerResponse.getUserID(),
-                containerResponse.getCourseID()
-            );
-        } finally {
-            lock.unlock();
-            ContainerStorage.removeLock(key, lock);
-        }
+        containerStorage.addContainer(containerDto, containerResponse.getUserID(), containerResponse.getCourseID());
 
         if (!containerDto.getStatus().equals(ContainerStatusDto.KO)) {
             containerStatusConfigureService.configureContainerStatus(
@@ -114,7 +99,6 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
         containerDto.getErrorParams().putAll(containerResponse.getErrorParamsMap());
         containerDto.setDeletionTime(containerResponse.getDeletionTime());
         containerDto.setNeedsNewGpu(course.isPresent() && course.get().getComputeType().isGpu());
-        containerDto.setCreatedAt(LocalDateTime.now());
         return containerDto;
     }
 

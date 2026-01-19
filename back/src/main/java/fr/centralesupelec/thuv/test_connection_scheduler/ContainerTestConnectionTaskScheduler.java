@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.test_connection_scheduler;
 
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.service.ContainerStatusConfigureService;
-import fr.centralesupelec.thuv.service.ContainerUtilsService;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.test_connection_scheduler.dtos.ContainerScheduledDto;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +14,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,7 +29,7 @@ public class ContainerTestConnectionTaskScheduler {
     private final NodeIPRequestService nodeIPRequestService;
     private final TestSocket testSocket;
 
-    private final ConcurrentHashMap<String, ContainerScheduledDto> containerScheduledDtos = new ConcurrentHashMap<>();
+    private final Set<ContainerScheduledDto> containerScheduledDtos = Collections.synchronizedSet(new HashSet<>());
     @Setter
     private ContainerStatusConfigureService containerStatusConfigureService;
 
@@ -40,23 +40,22 @@ public class ContainerTestConnectionTaskScheduler {
                 containerTestParameterConfiguration.getTimeInSecondBetweenTwoConnectionsTry()
         );
         logger.debug("ContainerScheduledDtos before executing : {}", containerScheduledDtos);
-        containerScheduledDtos.values()
+        Set<ContainerScheduledDto> toRemove = containerScheduledDtos
                 .stream()
                 .filter(
                         c -> c.getContainerDto().getStatus() == ContainerStatusDto.KO
                 )
-                .forEach(c -> containerScheduledDtos.remove(ContainerUtilsService.generateKey(c.getUserId(), c.getCourseId())));
+                .collect(Collectors.toSet());
         // Example cases : container started so was marked in "CHECKING" status and test was scheduled,
         // but entrypoint script failed
-
-        Set<ContainerScheduledDto> toTest = containerScheduledDtos.values()
+        containerScheduledDtos.removeAll(toRemove);
+        Set<ContainerScheduledDto> toTest = containerScheduledDtos
                 .stream()
                 .filter(
                         c -> c.getLastExecution() == null || c.getLastExecution().isBefore(secondsAgo)
-                ).collect(Collectors.toSet());
-        
-        toTest.forEach(c -> containerScheduledDtos.remove(ContainerUtilsService.generateKey(c.getUserId(), c.getCourseId())));
-
+                )
+                .collect(Collectors.toSet());
+        containerScheduledDtos.removeAll(toTest);
         toTest
                 .forEach(
                         c -> {
@@ -81,14 +80,7 @@ public class ContainerTestConnectionTaskScheduler {
     public void addContainerScheduledDto(ContainerScheduledDto containerScheduledDto) {
         logger.debug("ContainerScheduledDtos before adding : {}", containerScheduledDtos);
         logger.debug("Adding dto: {}", containerScheduledDto);
-        containerScheduledDtos.put(
-                ContainerUtilsService.generateKey(containerScheduledDto.getUserId(), containerScheduledDto.getCourseId()),
-                containerScheduledDto
-        );
+        containerScheduledDtos.add(containerScheduledDto);
         logger.debug("ContainerScheduledDtos after adding : {}", containerScheduledDtos);
-    }
-
-    public boolean containerScheduledDtoExists(String key) {
-        return containerScheduledDtos.containsKey(key);
     }
 }

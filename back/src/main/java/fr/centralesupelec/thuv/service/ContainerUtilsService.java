@@ -13,10 +13,6 @@ public class ContainerUtilsService {
     private final ZoneId zoneId;
     private static final Long SecondsInAMinute = 60L;
 
-    public static String generateKey(String userId, String courseId) {
-        return userId + "-" + courseId;
-    }
-
     public Long computeDeletionTime(CourseSession courseSession) {
         long now = Instant.now().getEpochSecond();
         long postponableDeletionTime = now
