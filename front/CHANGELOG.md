@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Fixed
+- Planified sessions order
+
+## 2.28.11
+### Fixed
+- Planified sessions display condition
+
+## 2.28.10
+### Fixed
+- Planified sessions display condition
+
+## 2.28.9
 ### Added
 - UID in course
 - Auto-redirect to /shell if already logged in

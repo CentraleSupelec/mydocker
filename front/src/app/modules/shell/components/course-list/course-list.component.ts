@@ -40,7 +40,6 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     .pipe(
       mergeMap((routeData) => {
         this.planified = routeData.courses?.map(((course: IBasicCourseWithSession) => {
-            const now = new Date();
             const startOfToday = new Date();
             startOfToday.setHours(0, 0, 0, 0);
 
@@ -51,8 +50,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
           }))
           .filter((course: IBasicCourseWithSession) => course.sessions?.length > 0)
           .sort((a: IBasicCourseWithSession, b: IBasicCourseWithSession) =>
-            b.sessions.sort((a: ISession, b: ISession) => b.startDateTime - a.startDateTime)[0].startDateTime
-            - a.sessions.sort((a: ISession, b: ISession) => b.startDateTime - a.startDateTime)[0].startDateTime
+            a.sessions.sort((a: ISession, b: ISession) => a.startDateTime - b.startDateTime)[0].startDateTime
+            - b.sessions.sort((a: ISession, b: ISession) => a.startDateTime - b.startDateTime)[0].startDateTime
           )
         ;
         this.past = routeData.courses?.map(((course: IBasicCourseWithSession) => {
