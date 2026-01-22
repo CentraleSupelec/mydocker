@@ -60,7 +60,13 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
                 }
             }
             case PENDING -> {
-                if (containerStatusResponse.getErrorMessage().contains(NO_SUITABLE_NODE)) {
+                if (containerStatusResponse.getErrorMessage().contains(NO_SUITABLE_NODE)
+                    && !containerTestConnectionTaskScheduler.containerScheduledDtoExists(
+                        ContainerUtilsService.generateKey(
+                            containerStatusResponse.getUserID(),
+                            containerStatusResponse.getCourseID()
+                        ))
+                ) {
                     containerTestConnectionTaskScheduler.addContainerScheduledDto(
                             new ContainerScheduledDto()
                                     .setContainerDto(containerDto)

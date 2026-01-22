@@ -3,22 +3,30 @@ package fr.centralesupelec.thuv.dtos;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor
 public class ContainerDto {
     @Getter(AccessLevel.NONE)
     private Logger logger = LoggerFactory.getLogger(ContainerDto.class);
-    private String username;
-    private String password;
+    @EqualsAndHashCode.Include
+    private final String username;
+    @EqualsAndHashCode.Include
+    private final String password;
     private String ip;
-    private List<ContainerPortDto> ports;
+    @EqualsAndHashCode.Include
+    private final List<ContainerPortDto> ports;
     @NotNull
     private ContainerStatusDto status = ContainerStatusDto.PENDING;
     public ContainerDto setStatus(ContainerStatusDto status) {
@@ -38,4 +46,6 @@ public class ContainerDto {
     private Boolean needsNewGpu;
     private String creationError;
     private Map<String, String> errorParams = new HashMap<>();
+    @EqualsAndHashCode.Include
+    private final LocalDateTime createdAt;
 }

@@ -6,11 +6,13 @@ import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.dtos.ContainerSwarmStateDto;
+import fr.centralesupelec.thuv.service.ContainerUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.Optional;
 
 @Service
@@ -19,7 +21,13 @@ public class ContainerStorage {
     private final ConcurrentHashMap<String, ContainerDto> containers;
     // Use distinct HashMaps to avoid concurrency writings to state/status
     private final ConcurrentHashMap<String, ContainerSwarmStateDto> containersStates;
+    private final ConcurrentHashMap<String, LockEntry> locks = new ConcurrentHashMap<>();
     private final ActivityLogger activityLogger;
+
+    private static class LockEntry {
+        final ReentrantLock lock = new ReentrantLock();
+        int count = 0;
+    }
 
     public ContainerStorage(ActivityLogger activityLogger) {
         this.containers = new ConcurrentHashMap<>();
@@ -29,7 +37,7 @@ public class ContainerStorage {
 
 
     public void addContainer(ContainerDto containerDto, String userId, String courseId) {
-        String key = generateKey(userId, courseId);
+        String key = ContainerUtilsService.generateKey(userId, courseId);
         logger.debug("Adding container {} to storage: {}", key, containerDto);
         this.containers.put(key, containerDto);
         LogAction logAction = switch (containerDto.getStatus()) {
@@ -47,7 +55,7 @@ public class ContainerStorage {
     }
 
     public void setContainerState(String userId, String courseId, ContainerSwarmStateDto state) {
-        String key = generateKey(userId, courseId);
+        String key = ContainerUtilsService.generateKey(userId, courseId);
         this.containersStates.put(key, state);
     }
 
@@ -57,14 +65,20 @@ public class ContainerStorage {
     }
 
     public Optional<ContainerDto> getContainer(String userId, String courseId) {
-        String key = generateKey(userId, courseId);
+        return this.getContainer(userId, courseId, true);
+    }
+
+    public Optional<ContainerDto> getContainer(String userId, String courseId, Boolean removeIfNeeded) {
+
+        String key = ContainerUtilsService.generateKey(userId, courseId);
         Optional<ContainerDto> optContainer = Optional.ofNullable(this.containers.getOrDefault(key, null));
         optContainer.ifPresent(containerDto -> {
             containerDto.setState(this.containersStates.get(key));
-            if (
-                    containerDto.getStatus().equals(ContainerStatusDto.OK)
-                            || containerDto.getStatus().equals(ContainerStatusDto.KO)
-            ) {
+            if (removeIfNeeded
+                && (
+                containerDto.getStatus().equals(ContainerStatusDto.OK)
+                    || containerDto.getStatus().equals(ContainerStatusDto.KO)
+            )) {
                 logger.debug("Removing container {} from storage", key);
                 this.containers.remove(key);
                 this.containersStates.remove(key);
@@ -74,15 +88,36 @@ public class ContainerStorage {
         return optContainer;
     }
 
+
     public Optional<ContainerDto> getAdminContainer(Long courseId) {
         String key = generateAdminKey(String.valueOf(courseId));
         return Optional.ofNullable(this.containers.getOrDefault(key, null));
     }
 
-    private String generateKey(String userId, String courseId) {
-        return userId + courseId;
-    }
     private String generateAdminKey(String courseId) {
         return String.format("%s-admin", courseId);
+    }
+
+    public void lock(String key) {
+        locks.compute(key, (k, v) -> {
+            if (v == null) {
+                v = new LockEntry();
+            }
+            v.count++;
+            return v;
+        }).lock.lock();
+    }
+
+    public void unlock(String key) {
+        locks.compute(key, (k, v) -> {
+            if (v == null) {
+                return null;
+            }
+
+            v.lock.unlock();
+            v.count--;
+
+            return (v.count == 0) ? null : v;
+        });
     }
 }

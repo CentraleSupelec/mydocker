@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,17 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
                 containerResponse.getUserID(),
                 containerDto
         );
-        containerStorage.addContainer(containerDto, containerResponse.getUserID(), containerResponse.getCourseID());
+        String key = ContainerUtilsService.generateKey(containerResponse.getUserID(), containerResponse.getCourseID());
+        containerStorage.lock(key);
+        try {
+            containerStorage.addContainer(
+                containerDto,
+                containerResponse.getUserID(),
+                containerResponse.getCourseID()
+            );
+        } finally {
+            containerStorage.unlock(key);
+        }
 
         if (!containerDto.getStatus().equals(ContainerStatusDto.KO)) {
             containerStatusConfigureService.configureContainerStatus(
@@ -72,7 +83,15 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
     }
 
     private ContainerDto mapContainerResponseToContainer(ContainerResponse containerResponse) {
-        ContainerDto containerDto = new ContainerDto();
+        ContainerDto containerDto = new ContainerDto(
+            containerResponse.getUserPassword().getUsername(),
+            containerResponse.getUserPassword().getPassword(), 
+            containerResponse.getPortsList()
+                    .stream()
+                    .map(grpcResponsePortToContainerPortDtoMapper::convertToContainerPortDto)
+                    .collect(Collectors.toList()),
+            LocalDateTime.now()
+        );
         Optional<Course> course;
         try {
             course = courseRepository.findById(Long.parseLong(containerResponse.getCourseID()));
@@ -81,16 +100,8 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
         }
 
         containerDto.setIp(containerResponse.getIpAddress());
-        containerDto.setPorts(
-                containerResponse.getPortsList()
-                    .stream()
-                    .map(grpcResponsePortToContainerPortDtoMapper::convertToContainerPortDto)
-                    .collect(Collectors.toList())
-        );
 
         // Need to change it if different auth method
-        containerDto.setPassword(containerResponse.getUserPassword().getPassword());
-        containerDto.setUsername(containerResponse.getUserPassword().getUsername());
         containerDto.setCreationError(containerResponse.getError());
         if (StringUtils.isNotBlank(containerResponse.getError())) {
             containerDto.setStatus(ContainerStatusDto.KO);

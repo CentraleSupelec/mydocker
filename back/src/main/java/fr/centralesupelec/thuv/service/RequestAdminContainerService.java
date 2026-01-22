@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -118,19 +119,19 @@ public class RequestAdminContainerService {
     }
 
     private ContainerDto mapContainerResponseToContainer(AdminContainerResponse containerResponse) {
-        ContainerDto containerDto = new ContainerDto();
-        containerDto.setIp(containerResponse.getIpAddress());
-        containerDto.setPorts(
-                Collections.singletonList(
-                        grpcResponsePortToContainerPortDtoMapper.convertToContainerPortDto(
-                                containerResponse.getPort()
-                        )
+        ContainerDto containerDto = new ContainerDto(
+            containerResponse.getUserPassword().getUsername(),
+            containerResponse.getUserPassword().getPassword(),
+            Collections.singletonList(
+                grpcResponsePortToContainerPortDtoMapper.convertToContainerPortDto(
+                        containerResponse.getPort()
                 )
+            ),
+            LocalDateTime.now()
         );
+        containerDto.setIp(containerResponse.getIpAddress());
 
         // Need to change it if different auth method
-        containerDto.setPassword(containerResponse.getUserPassword().getPassword());
-        containerDto.setUsername(containerResponse.getUserPassword().getUsername());
         containerDto.setNeedsNewGpu(false);
         return containerDto;
     }
