@@ -37,6 +37,7 @@ const (
 	LOCAL                                      StorageBackend = "LOCAL"
 	RBD                                        StorageBackend = "RBD"
 	ON_FAILURE                                                = "on-failure"
+	MOUNT_TARGET                                              = "/student_volume"
 )
 
 type VisibleError struct {
@@ -493,7 +494,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 							recursiveFlag = "-R"
 						}
 
-						chmodCmdParts = buildChmodCommandsToApplyExecuteOnlyToFolders(request.Options.StudentVolumePath, p.GetValue(), p.GetPermissions(), p.Recursive)
+						chmodCmdParts = buildChmodCommandsToApplyExecuteOnlyToFolders(MOUNT_TARGET, p.GetValue(), p.GetPermissions(), p.Recursive)
 
 						cmdParts = append(cmdParts, chmodCmdParts...)
 
@@ -501,7 +502,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 							cmdParts = append(cmdParts,
 								fmt.Sprintf(
 									"find %s -type d -wholename \"%s\" -exec chown %s %s: {} \\;",
-									request.Options.StudentVolumePath,
+									MOUNT_TARGET,
 									p.GetValue(),
 									recursiveFlag,
 									targetUID,
@@ -526,7 +527,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 									{
 										Type:   mount.TypeVolume,
 										Source: createStudentVolumeName(request.UserID),
-										Target: request.Options.StudentVolumePath,
+										Target: MOUNT_TARGET,
 										VolumeOptions: &mount.VolumeOptions{
 											DriverConfig: &mount.Driver{
 												Name: "centralesupelec/mydockervolume",
