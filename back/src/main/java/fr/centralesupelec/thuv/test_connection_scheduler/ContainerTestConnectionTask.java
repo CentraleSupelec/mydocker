@@ -167,9 +167,9 @@ public class ContainerTestConnectionTask implements Runnable {
         String key = ContainerUtilsService.generateKey(containerScheduledDto.getUserId(), containerScheduledDto.getCourseId());
         containerStorage.lock(key);
         try {
-                logger.info(String.format("Lock obtained for key %s", key));
+                logger.debug(String.format("Lock obtained for key %s", key));
                 if (!isContainerDtoObsolete()) {
-                        logger.info(String.format("Running action"));
+                        logger.debug(String.format("Running action"));
                         action.run();
                 }
         } finally {
