@@ -8,6 +8,7 @@
       [username]="container?.username"
       [ipAddress]="container?.ip"
       [shouldDisplay]="shouldDisplay(containerPort)"
+      [autoClick]="autoClick"
     ></app-display-container-port>
     <ng-container
       *ngFor="let customDisplay of displayOptions?.customPortsDisplay"
@@ -20,6 +21,7 @@
         [containerPorts]="container?.ports"
         [ipAddress]="container?.ip"
         [userRedirect]="userRedirect"
+        [autoClick]="autoClick"
       ></app-display-custom-container-port>
     </ng-container>
   </div>

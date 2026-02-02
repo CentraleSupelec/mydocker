@@ -5,12 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.28.14
+### Added
+- Auto click connection button if certain conditions are met
+
+## 2.28.13
+### Fixed
+- Redirect to homepage on /loginAccept
+
+## 2.28.12
 ### Fixed
 - Planified sessions order
 
 ## 2.28.11
 ### Fixed
-- Planified sessions display condition
+- Missing planified sessions
 
 ## 2.28.10
 ### Fixed

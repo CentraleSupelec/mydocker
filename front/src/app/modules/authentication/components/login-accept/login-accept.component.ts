@@ -64,6 +64,7 @@ export class LoginAcceptComponent implements OnInit {
             })
           );
         }
+        this.router.navigate(["/"]);
         throw new Error("There is no ticket and no code in param map");
       }),
       mergeMap(token => this.tokenService.loadToken(token)),

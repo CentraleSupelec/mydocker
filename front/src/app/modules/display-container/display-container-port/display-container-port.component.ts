@@ -11,4 +11,5 @@ export class DisplayContainerPortComponent {
   @Input() username: string | undefined = '';
   @Input() ipAddress: string | undefined = '';
   @Input() shouldDisplay = true;
+  @Input() autoClick = false;
 }
