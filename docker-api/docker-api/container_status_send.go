@@ -74,9 +74,9 @@ func (s *containerStatusService) sendContainerStatus() {
 		failed := 0
 		var desiredTask *swarm.Task
 		var tasksByDesiredState = make(map[swarm.TaskState][]*swarm.Task)
-		for _, task := range tasks {
-			tasksByDesiredState[task.DesiredState] = append(tasksByDesiredState[task.DesiredState], &task)
-			if task.Status.State == swarm.TaskStateFailed {
+		for index, _ := range tasks {
+			tasksByDesiredState[tasks[index].DesiredState] = append(tasksByDesiredState[tasks[index].DesiredState], &tasks[index])
+			if tasks[index].Status.State == swarm.TaskStateFailed {
 				failed += 1
 			}
 		}

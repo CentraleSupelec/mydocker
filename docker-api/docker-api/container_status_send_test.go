@@ -92,6 +92,10 @@ func (suite *ContainerStatusSendTestSuite) TestContainerStatusHasFailedTasks() {
 			DesiredState: swarm.TaskStateReady,
 			Status:       swarm.TaskStatus{State: swarm.TaskStatePreparing},
 		},
+		{
+			DesiredState: swarm.TaskStateShutdown,
+			Status:       swarm.TaskStatus{State: swarm.TaskStateFailed},
+		},
 	}, nil))
 
 	logger := log.New()

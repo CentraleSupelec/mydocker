@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## Fixed
+- Bug in handling containers with failed tasks
+
+## 2.18.11
 ## Changed
 - Make the mount path of the student volume into the container that fixes permissions a fixed path instead of student volume path
 
