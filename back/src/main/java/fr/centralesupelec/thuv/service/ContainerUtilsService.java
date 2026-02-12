@@ -1,10 +1,11 @@
 package fr.centralesupelec.thuv.service;
 
-import fr.centralesupelec.thuv.model.CourseSession;
+import fr.centralesupelec.thuv.model.Course;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @RequiredArgsConstructor
@@ -17,27 +18,27 @@ public class ContainerUtilsService {
         return userId + "-" + courseId;
     }
 
-    public Long computeDeletionTime(CourseSession courseSession) {
+    public Long computeDeletionTime(Course course, LocalDateTime sessionEndTime, Boolean destroyContainerAfterEndTime) {
         long now = Instant.now().getEpochSecond();
         long postponableDeletionTime = now
-                + (courseSession.getCourse().getShutdownAfterMinutes()
+                + (course.getShutdownAfterMinutes()
                 * ContainerUtilsService.SecondsInAMinute);
-        long sessionDeletionTime = courseSession.getEndDateTime().atZone(zoneId).toEpochSecond();
+        long sessionDeletionTime = sessionEndTime.atZone(zoneId).toEpochSecond();
         if (
-                courseSession.getDestroyContainerAfterEndTime()
-                        && courseSession.getCourse().getShutdownAfterMinutes() == 0
+                destroyContainerAfterEndTime
+                        && course.getShutdownAfterMinutes() == 0
         ) {
             return sessionDeletionTime;
         }
         if (
-                !courseSession.getDestroyContainerAfterEndTime()
-                        && courseSession.getCourse().getShutdownAfterMinutes() > 0
+                !destroyContainerAfterEndTime
+                        && course.getShutdownAfterMinutes() > 0
         ) {
             return postponableDeletionTime;
         }
         if (
-                courseSession.getDestroyContainerAfterEndTime()
-                        && courseSession.getCourse().getShutdownAfterMinutes() > 0
+                destroyContainerAfterEndTime
+                        && course.getShutdownAfterMinutes() > 0
         ) {
             return Math.min(sessionDeletionTime, postponableDeletionTime);
         }

@@ -29,7 +29,11 @@ public class DelayDeletionService {
                 .newBlockingStub(this.channel);
 
         Metadata.Builder metadataBuilder = Metadata.newBuilder();
-        Long deletionTime = containerUtilsService.computeDeletionTime(courseSession);
+        Long deletionTime = containerUtilsService.computeDeletionTime(
+            courseSession.getCourse(),
+            courseSession.getEndDateTime(),
+            courseSession.getDestroyContainerAfterEndTime()
+        );
         if (deletionTime != null) {
             metadataBuilder.putTags("deleteAfter", "true");
             metadataBuilder.putTags("deletionTime", String.valueOf(deletionTime));

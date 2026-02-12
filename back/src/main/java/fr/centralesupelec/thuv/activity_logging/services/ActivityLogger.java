@@ -9,6 +9,7 @@ import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,8 +25,13 @@ public class ActivityLogger {
     }
 
     public void log(LogAction action, LogModelName logModelName, String modelId) {
-        MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        this.log(action, logModelName, modelId, principal.getUserId().toString());
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof MyUserDetails myUserDetails) {
+            this.log(action, logModelName, modelId, Long.toString(myUserDetails.getUserId()));
+        } else if (principal instanceof UserDetails userDetails) {
+            this.log(action, logModelName, modelId, userDetails);
+        }
     }
 
     @Transactional
@@ -39,6 +45,16 @@ public class ActivityLogger {
                 .setAction(action)
                 .setUser(user)
                 .setUserEmail(user.getUsername())
+                .setModelName(logModelName)
+                .setModelId(modelId)
+                ;
+        logRecordRepository.save(record);
+    }
+
+    public void log(LogAction action, LogModelName logModelName, String modelId, UserDetails userDetails) {
+        ActivityLogRecord record = new ActivityLogRecord()
+                .setAction(action)
+                .setUserEmail(userDetails.getUsername())
                 .setModelName(logModelName)
                 .setModelId(modelId)
                 ;

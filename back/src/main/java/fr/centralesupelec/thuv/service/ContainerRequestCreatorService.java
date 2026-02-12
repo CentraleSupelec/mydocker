@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 @Service
@@ -31,7 +32,22 @@ public class ContainerRequestCreatorService {
 
     public ContainerRequest createRequest(CourseSession courseSession, User user, boolean forceRecreate) {
         Course course = courseSession.getCourse();
+        return createRequest(
+                course,
+                user,
+                forceRecreate,
+                courseSession.getEndDateTime(),
+                courseSession.getDestroyContainerAfterEndTime()
+        );
+    }
 
+    public ContainerRequest createRequest(
+        Course course, 
+        User user,
+        boolean forceRecreate,
+        LocalDateTime sesssionEndDateTime,
+        Boolean destroyContainerAfterEndTime
+    ) {
         ContainerRequestOptions.Builder builder = ContainerRequestOptions.newBuilder()
                 .setForceRecreate(forceRecreate)
                 .setSaveStudentWork(course.isSaveStudentWork())
@@ -91,16 +107,16 @@ public class ContainerRequestCreatorService {
             )
             ;
         }
-        if (courseInfraRequestService.getCourseInfra(Long.toString(courseSession.getCourse().getId()))) {
-                logger.debug("Adding constraint to deploy on dedicated nodes for course '{}'", courseSession.getCourse().getId());
+        if (courseInfraRequestService.getCourseInfra(Long.toString(course.getId()))) {
+                logger.debug("Adding constraint to deploy on dedicated nodes for course '{}'", course.getId());
                 builder.addMandatoryLabels(
                         Label.newBuilder()
-                            .setKey(String.format("courseId-%s", courseSession.getCourse().getId()))
+                            .setKey(String.format("courseId-%s", course.getId()))
                             .setValue("true")
                             .build()
                 );
         } else {
-                logger.debug("Adding constraint to deploy on shared pool nodes for course '{}'", courseSession.getCourse().getId());
+                logger.debug("Adding constraint to deploy on shared pool nodes for course '{}'", course.getId());
                 builder.addMandatoryLabels(
                         Label.newBuilder()
                             .setKey("shared-pool")
@@ -160,7 +176,10 @@ public class ContainerRequestCreatorService {
                 .putTags("userId", String.valueOf(user.getId()))
                 .putTags("email", String.valueOf(user.getUsername()));
 
-        Long deletionTime = containerUtilsService.computeDeletionTime(courseSession);
+        Long deletionTime = null;
+        if (sesssionEndDateTime != null) {
+                deletionTime = containerUtilsService.computeDeletionTime(course, sesssionEndDateTime, destroyContainerAfterEndTime);
+        }
         if (deletionTime != null) {
             metadataBuilder.putTags("deleteAfter", "true");
             metadataBuilder.putTags("deletionTime", String.valueOf(deletionTime));
