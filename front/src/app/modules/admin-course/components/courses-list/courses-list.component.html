@@ -52,6 +52,18 @@
     <mat-cell *matCellDef="let element"> {{ element.createdOn | date : 'd MMMM y' }}</mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="numberOfUsers">
+    <mat-header-cell 
+      *matHeaderCellDef 
+      mat-sort-header 
+      matTooltip="Nombre d’utilisateurs ayant lancé au moins une fois l’environnement"
+      [matTooltipPosition]="'above'"
+    >
+      Nombre d'utilisateurs
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.numberOfUsers }}</mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="action">
     <mat-header-cell *matHeaderCellDef></mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
