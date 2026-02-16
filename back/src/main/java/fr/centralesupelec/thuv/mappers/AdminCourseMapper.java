@@ -88,4 +88,10 @@ public class AdminCourseMapper {
         }
         return courseDto;
     }
+
+    public AdminCourseDto convertToDto(Course course, int numberOfConnectedUsers) {
+        AdminCourseDto dto = convertToDto(course);
+        dto.setNumberOfConnectedUsers(numberOfConnectedUsers);
+        return dto;
+    }
 }

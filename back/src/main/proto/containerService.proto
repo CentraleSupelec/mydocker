@@ -2,6 +2,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 option go_package = '.;protobuf';
 package fr.centralesupelec.gRPC;
+import "google/protobuf/empty.proto";
 
 service containerService {
     rpc getContainer(stream ContainerRequest) returns (stream ContainerResponse);
@@ -16,6 +17,7 @@ service containerService {
     rpc getNodeIP(NodeIPRequest) returns (NodeIPResponse);
     rpc getContainerStatus(stream ContainerStatusRequest) returns (stream ContainerStatusResponse);
     rpc getCourseInfra(CourseInfraRequest) returns (CourseInfraResponse);
+    rpc getConnectedUsersByCourseIdMap(google.protobuf.Empty) returns (ConnectedUsersByCourseIdMapResponse);
 };
 
 message NodeIPRequest {
@@ -25,6 +27,10 @@ message NodeIPRequest {
 
 message NodeIPResponse {
     string IPAddress = 1;
+}
+
+message ConnectedUsersByCourseIdMapResponse {
+    map<string, int32> connectedUsersByCourseIdMap = 1;
 }
 
 message InitAutoscalingRequest {
