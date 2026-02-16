@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## Added
+- Number of users that have an environment running by course
+
+## 2.18.12
 ## Fixed
 - Bug in handling containers with failed tasks
 

@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,18 +20,19 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ContainerService_GetContainer_FullMethodName       = "/fr.centralesupelec.gRPC.containerService/getContainer"
-	ContainerService_SaveData_FullMethodName           = "/fr.centralesupelec.gRPC.containerService/saveData"
-	ContainerService_GetAdminContainer_FullMethodName  = "/fr.centralesupelec.gRPC.containerService/getAdminContainer"
-	ContainerService_BuildDockerImage_FullMethodName   = "/fr.centralesupelec.gRPC.containerService/buildDockerImage"
-	ContainerService_DeployInfra_FullMethodName        = "/fr.centralesupelec.gRPC.containerService/deployInfra"
-	ContainerService_GetLogs_FullMethodName            = "/fr.centralesupelec.gRPC.containerService/getLogs"
-	ContainerService_ShutdownContainer_FullMethodName  = "/fr.centralesupelec.gRPC.containerService/shutdownContainer"
-	ContainerService_DelayDeletion_FullMethodName      = "/fr.centralesupelec.gRPC.containerService/delayDeletion"
-	ContainerService_InitAutoscaling_FullMethodName    = "/fr.centralesupelec.gRPC.containerService/initAutoscaling"
-	ContainerService_GetNodeIP_FullMethodName          = "/fr.centralesupelec.gRPC.containerService/getNodeIP"
-	ContainerService_GetContainerStatus_FullMethodName = "/fr.centralesupelec.gRPC.containerService/getContainerStatus"
-	ContainerService_GetCourseInfra_FullMethodName     = "/fr.centralesupelec.gRPC.containerService/getCourseInfra"
+	ContainerService_GetContainer_FullMethodName                   = "/fr.centralesupelec.gRPC.containerService/getContainer"
+	ContainerService_SaveData_FullMethodName                       = "/fr.centralesupelec.gRPC.containerService/saveData"
+	ContainerService_GetAdminContainer_FullMethodName              = "/fr.centralesupelec.gRPC.containerService/getAdminContainer"
+	ContainerService_BuildDockerImage_FullMethodName               = "/fr.centralesupelec.gRPC.containerService/buildDockerImage"
+	ContainerService_DeployInfra_FullMethodName                    = "/fr.centralesupelec.gRPC.containerService/deployInfra"
+	ContainerService_GetLogs_FullMethodName                        = "/fr.centralesupelec.gRPC.containerService/getLogs"
+	ContainerService_ShutdownContainer_FullMethodName              = "/fr.centralesupelec.gRPC.containerService/shutdownContainer"
+	ContainerService_DelayDeletion_FullMethodName                  = "/fr.centralesupelec.gRPC.containerService/delayDeletion"
+	ContainerService_InitAutoscaling_FullMethodName                = "/fr.centralesupelec.gRPC.containerService/initAutoscaling"
+	ContainerService_GetNodeIP_FullMethodName                      = "/fr.centralesupelec.gRPC.containerService/getNodeIP"
+	ContainerService_GetContainerStatus_FullMethodName             = "/fr.centralesupelec.gRPC.containerService/getContainerStatus"
+	ContainerService_GetCourseInfra_FullMethodName                 = "/fr.centralesupelec.gRPC.containerService/getCourseInfra"
+	ContainerService_GetConnectedUsersByCourseIdMap_FullMethodName = "/fr.centralesupelec.gRPC.containerService/getConnectedUsersByCourseIdMap"
 )
 
 // ContainerServiceClient is the client API for ContainerService service.
@@ -49,6 +51,7 @@ type ContainerServiceClient interface {
 	GetNodeIP(ctx context.Context, in *NodeIPRequest, opts ...grpc.CallOption) (*NodeIPResponse, error)
 	GetContainerStatus(ctx context.Context, opts ...grpc.CallOption) (ContainerService_GetContainerStatusClient, error)
 	GetCourseInfra(ctx context.Context, in *CourseInfraRequest, opts ...grpc.CallOption) (*CourseInfraResponse, error)
+	GetConnectedUsersByCourseIdMap(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ConnectedUsersByCourseIdMapResponse, error)
 }
 
 type containerServiceClient struct {
@@ -322,6 +325,15 @@ func (c *containerServiceClient) GetCourseInfra(ctx context.Context, in *CourseI
 	return out, nil
 }
 
+func (c *containerServiceClient) GetConnectedUsersByCourseIdMap(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ConnectedUsersByCourseIdMapResponse, error) {
+	out := new(ConnectedUsersByCourseIdMapResponse)
+	err := c.cc.Invoke(ctx, ContainerService_GetConnectedUsersByCourseIdMap_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContainerServiceServer is the server API for ContainerService service.
 // All implementations must embed UnimplementedContainerServiceServer
 // for forward compatibility
@@ -338,6 +350,7 @@ type ContainerServiceServer interface {
 	GetNodeIP(context.Context, *NodeIPRequest) (*NodeIPResponse, error)
 	GetContainerStatus(ContainerService_GetContainerStatusServer) error
 	GetCourseInfra(context.Context, *CourseInfraRequest) (*CourseInfraResponse, error)
+	GetConnectedUsersByCourseIdMap(context.Context, *emptypb.Empty) (*ConnectedUsersByCourseIdMapResponse, error)
 	mustEmbedUnimplementedContainerServiceServer()
 }
 
@@ -380,6 +393,9 @@ func (UnimplementedContainerServiceServer) GetContainerStatus(ContainerService_G
 }
 func (UnimplementedContainerServiceServer) GetCourseInfra(context.Context, *CourseInfraRequest) (*CourseInfraResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCourseInfra not implemented")
+}
+func (UnimplementedContainerServiceServer) GetConnectedUsersByCourseIdMap(context.Context, *emptypb.Empty) (*ConnectedUsersByCourseIdMapResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConnectedUsersByCourseIdMap not implemented")
 }
 func (UnimplementedContainerServiceServer) mustEmbedUnimplementedContainerServiceServer() {}
 
@@ -661,6 +677,24 @@ func _ContainerService_GetCourseInfra_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ContainerService_GetConnectedUsersByCourseIdMap_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServiceServer).GetConnectedUsersByCourseIdMap(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContainerService_GetConnectedUsersByCourseIdMap_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServiceServer).GetConnectedUsersByCourseIdMap(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ContainerService_ServiceDesc is the grpc.ServiceDesc for ContainerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -687,6 +721,10 @@ var ContainerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getCourseInfra",
 			Handler:    _ContainerService_GetCourseInfra_Handler,
+		},
+		{
+			MethodName: "getConnectedUsersByCourseIdMap",
+			Handler:    _ContainerService_GetConnectedUsersByCourseIdMap_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

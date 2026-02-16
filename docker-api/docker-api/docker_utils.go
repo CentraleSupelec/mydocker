@@ -111,6 +111,16 @@ func (d *DockerUtils) getRunningTaskNodeId(ctx context.Context, userId string, c
 	return "", fmt.Errorf("among %d tasks for service %s, none found with a success state. States : %v", len(tasks), serviceName, states)
 }
 
+func (d *DockerUtils) getAllServices(ctx context.Context) ([]swarm.Service, error) {
+	allServices, err := d.dockerClient.ServiceList(ctx, types.ServiceListOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return allServices, nil
+}
+
 func (d *DockerUtils) nodeWithCourseIdLabelExists(ctx context.Context, courseId string) (bool, error) {
 
 	allNodes, err := d.dockerClient.NodeList(ctx, types.NodeListOptions{})
