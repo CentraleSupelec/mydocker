@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - Number of users column in course list view
-- Number of users that have a running environment by course in course list view
 
 ## 2.28.14
 ### Added

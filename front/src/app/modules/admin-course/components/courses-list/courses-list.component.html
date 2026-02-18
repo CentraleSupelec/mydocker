@@ -64,18 +64,6 @@
     <mat-cell *matCellDef="let element"> {{ element.numberOfUsers }}</mat-cell>
   </ng-container>
 
-
-  <ng-container matColumnDef="numberOfConnectedUsers">
-    <mat-header-cell 
-      *matHeaderCellDef
-      matTooltip="Nombre d’utilisateurs ayant un environnement en cours d’exécution"
-      [matTooltipPosition]="'above'"
-    >
-      Nombre d'utilisateurs en cours
-    </mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.numberOfConnectedUsers }}</mat-cell>
-  </ng-container>
-
   <ng-container matColumnDef="action">
     <mat-header-cell *matHeaderCellDef></mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">

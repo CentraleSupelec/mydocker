@@ -21,7 +21,7 @@ import { MatPaginator } from "@angular/material/paginator";
   ],
 })
 export class CoursesListComponent implements OnInit, OnDestroy {
-  columnsToDisplay = ['icon', 'title', 'creator', 'createdOn', 'numberOfUsers', 'numberOfConnectedUsers', 'action'];
+  columnsToDisplay = ['icon', 'title', 'creator', 'createdOn', 'numberOfUsers', 'action'];
   courses: IAdminCourse[] = [];
   courseSize: number | undefined;
   query: string = '';
