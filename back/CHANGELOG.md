@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - Routes for load testing with basic auth
+- Number of users field in course table
 
 ## 2.32.2
 ### Fixed

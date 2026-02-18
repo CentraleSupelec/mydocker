@@ -46,4 +46,11 @@ public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecif
     void deleteQueryById(Long id);
 
     Optional<Course> findByUuid(UUID uuid);
+    @Modifying
+    @Query("""
+        UPDATE Course c
+        SET c.numberOfUsers = c.numberOfUsers + 1
+        WHERE c.id = :courseId
+    """)
+    void incrementNumberOfUsers(@Param("courseId") Long courseId);
 }

@@ -1,0 +1,40 @@
+databaseChangeLog:
+- changeSet:
+    id: 1771161084270-1
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: number_of_users
+            type: BIGINT
+        tableName: courses
+- changeSet:
+    id: 1771161084270-2
+    author: mohamedalibarka
+    changes:
+      - addDefaultValue:
+          tableName: courses
+          columnName: number_of_users
+          defaultValueNumeric: 0
+- changeSet:
+    id: 1771161084270-3
+    author: mohamedalibarka
+    changes:
+      - update:
+          tableName: courses
+          columns:
+            - column:
+                name: number_of_users
+                valueComputed: >
+                  (SELECT COUNT(*) 
+                   FROM users_courses uc 
+                   WHERE uc.course_id = courses.id)
+- changeSet:
+    id: 1771161084270-4
+    author: mohamedalibarka
+    changes:
+      - addNotNullConstraint:
+          tableName: courses
+          columnName: number_of_users
+          columnDataType: BIGINT

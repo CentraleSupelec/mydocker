@@ -72,17 +72,18 @@ public class User {
     )
     private Set<Course> createdCourses = new HashSet<>();
 
-    public void addCourse(Course course) {
+    public boolean addCourse(Course course) {
         Optional<UserCourse> userCourseOptional = this.userCourses
                 .stream()
                 .filter(userCourse -> userCourse.getCourse().equals(course))
                 .findFirst();
         if (userCourseOptional.isPresent()) {
-            return;
+            return false;
         }
         UserCourse userCourse = new UserCourse();
         userCourse.setCourse(course);
         this.addUserCourse(userCourse);
+        return true;
     }
 
     public void removeCourse(Course course) {
