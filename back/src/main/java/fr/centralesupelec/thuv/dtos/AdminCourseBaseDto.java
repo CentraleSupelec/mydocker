@@ -57,6 +57,4 @@ public class AdminCourseBaseDto {
 
     private Long externalAccessExpirationDate;
     private String uid;
-    private Long numberOfUsers;
-    private int numberOfConnectedUsers;
 }

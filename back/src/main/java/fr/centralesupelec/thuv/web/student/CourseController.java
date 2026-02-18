@@ -91,11 +91,8 @@ public class CourseController {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        boolean courseAdded = user.addCourse(course);
+        user.addCourse(course);
         userRepository.save(user);
-        if (courseAdded) {
-            courseRepository.incrementNumberOfUsers(course.getId());
-        }
         return userCourseMapper.convertToDto(course);
     }
 

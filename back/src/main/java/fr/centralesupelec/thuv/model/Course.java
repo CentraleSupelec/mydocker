@@ -139,6 +139,4 @@ public class Course {
     private LocalDateTime externalAccessExpirationDate;
     
     private String uid;
-    @Column(nullable = false)
-    private Long numberOfUsers = 0L;
 }

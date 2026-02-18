@@ -10,7 +10,6 @@ import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
-import fr.centralesupelec.thuv.service.ConnectedUsersByCourseIdMapService;
 import fr.centralesupelec.thuv.service.CourseListService;
 import fr.centralesupelec.thuv.service.CourseUpdateService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ import jakarta.validation.constraints.NotNull;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 @RestController("adminCourseController")
 @RequestMapping("admin/courses")
@@ -44,7 +42,6 @@ public class CourseController {
     private final UpdateCourseMapper updateCourseMapper;
     private final CourseListService courseListService;
     private final CourseUpdateService courseUpdateService;
-    private final ConnectedUsersByCourseIdMapService connectedUsersByCourseIdMapService;
 
     @PreAuthorize("hasRole('TEACHER')")
     @GetMapping(value = "/")
@@ -58,15 +55,8 @@ public class CourseController {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-
-        Map<String, Integer> connectedUsersByCourseIdMap =
-                connectedUsersByCourseIdMapService.getConnectedUsers();
-
         return courseListService.getViewableCourse(user, decodedSearch, status, pageable)
-                .map(course -> {
-                        int count = connectedUsersByCourseIdMap.getOrDefault(course.getId().toString(), 0);
-                        return adminCourseMapper.convertToDto(course, count);
-                });
+                .map(adminCourseMapper::convertToDto);
     }
 
     @PreAuthorize("hasRole('TEACHER')")

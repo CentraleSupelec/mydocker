@@ -71,7 +71,6 @@ public class AdminCourseMapper {
                 .setStudentVolumePath(course.getStudentVolumePath())
                 .setUid(course.getUid())
                 .setVisible(course.getVisible())
-                .setNumberOfUsers(course.getNumberOfUsers())
                 ;
 
         try {
@@ -87,11 +86,5 @@ public class AdminCourseMapper {
             );
         }
         return courseDto;
-    }
-
-    public AdminCourseDto convertToDto(Course course, int numberOfConnectedUsers) {
-        AdminCourseDto dto = convertToDto(course);
-        dto.setNumberOfConnectedUsers(numberOfConnectedUsers);
-        return dto;
     }
 }
