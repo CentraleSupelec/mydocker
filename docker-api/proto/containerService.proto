@@ -18,6 +18,7 @@ service containerService {
     rpc getContainerStatus(stream ContainerStatusRequest) returns (stream ContainerStatusResponse);
     rpc getCourseInfra(CourseInfraRequest) returns (CourseInfraResponse);
     rpc getConnectedUsersByCourseIdMap(google.protobuf.Empty) returns (ConnectedUsersByCourseIdMapResponse);
+    rpc getCourseIdsByUser(google.protobuf.Empty) returns (CourseIdsByUserIdMapResponse);
 };
 
 message NodeIPRequest {
@@ -31,6 +32,14 @@ message NodeIPResponse {
 
 message ConnectedUsersByCourseIdMapResponse {
     map<string, int32> connectedUsersByCourseIdMap = 1;
+}
+
+message CourseIds {
+  repeated string courseIds = 1;
+}
+
+message CourseIdsByUserIdMapResponse {
+  map<string, CourseIds> courseIdsByUserIdMap = 1;
 }
 
 message InitAutoscalingRequest {

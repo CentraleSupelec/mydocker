@@ -33,6 +33,7 @@ const (
 	ContainerService_GetContainerStatus_FullMethodName             = "/fr.centralesupelec.gRPC.containerService/getContainerStatus"
 	ContainerService_GetCourseInfra_FullMethodName                 = "/fr.centralesupelec.gRPC.containerService/getCourseInfra"
 	ContainerService_GetConnectedUsersByCourseIdMap_FullMethodName = "/fr.centralesupelec.gRPC.containerService/getConnectedUsersByCourseIdMap"
+	ContainerService_GetCourseIdsByUser_FullMethodName             = "/fr.centralesupelec.gRPC.containerService/getCourseIdsByUser"
 )
 
 // ContainerServiceClient is the client API for ContainerService service.
@@ -52,6 +53,7 @@ type ContainerServiceClient interface {
 	GetContainerStatus(ctx context.Context, opts ...grpc.CallOption) (ContainerService_GetContainerStatusClient, error)
 	GetCourseInfra(ctx context.Context, in *CourseInfraRequest, opts ...grpc.CallOption) (*CourseInfraResponse, error)
 	GetConnectedUsersByCourseIdMap(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ConnectedUsersByCourseIdMapResponse, error)
+	GetCourseIdsByUser(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CourseIdsByUserIdMapResponse, error)
 }
 
 type containerServiceClient struct {
@@ -334,6 +336,15 @@ func (c *containerServiceClient) GetConnectedUsersByCourseIdMap(ctx context.Cont
 	return out, nil
 }
 
+func (c *containerServiceClient) GetCourseIdsByUser(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CourseIdsByUserIdMapResponse, error) {
+	out := new(CourseIdsByUserIdMapResponse)
+	err := c.cc.Invoke(ctx, ContainerService_GetCourseIdsByUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContainerServiceServer is the server API for ContainerService service.
 // All implementations must embed UnimplementedContainerServiceServer
 // for forward compatibility
@@ -351,6 +362,7 @@ type ContainerServiceServer interface {
 	GetContainerStatus(ContainerService_GetContainerStatusServer) error
 	GetCourseInfra(context.Context, *CourseInfraRequest) (*CourseInfraResponse, error)
 	GetConnectedUsersByCourseIdMap(context.Context, *emptypb.Empty) (*ConnectedUsersByCourseIdMapResponse, error)
+	GetCourseIdsByUser(context.Context, *emptypb.Empty) (*CourseIdsByUserIdMapResponse, error)
 	mustEmbedUnimplementedContainerServiceServer()
 }
 
@@ -396,6 +408,9 @@ func (UnimplementedContainerServiceServer) GetCourseInfra(context.Context, *Cour
 }
 func (UnimplementedContainerServiceServer) GetConnectedUsersByCourseIdMap(context.Context, *emptypb.Empty) (*ConnectedUsersByCourseIdMapResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConnectedUsersByCourseIdMap not implemented")
+}
+func (UnimplementedContainerServiceServer) GetCourseIdsByUser(context.Context, *emptypb.Empty) (*CourseIdsByUserIdMapResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCourseIdsByUser not implemented")
 }
 func (UnimplementedContainerServiceServer) mustEmbedUnimplementedContainerServiceServer() {}
 
@@ -695,6 +710,24 @@ func _ContainerService_GetConnectedUsersByCourseIdMap_Handler(srv interface{}, c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ContainerService_GetCourseIdsByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServiceServer).GetCourseIdsByUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContainerService_GetCourseIdsByUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServiceServer).GetCourseIdsByUser(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ContainerService_ServiceDesc is the grpc.ServiceDesc for ContainerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -725,6 +758,10 @@ var ContainerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getConnectedUsersByCourseIdMap",
 			Handler:    _ContainerService_GetConnectedUsersByCourseIdMap_Handler,
+		},
+		{
+			MethodName: "getCourseIdsByUser",
+			Handler:    _ContainerService_GetCourseIdsByUser_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -6,6 +6,10 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 ## Added
+- Active courses by user
+
+## 2.18.13
+## Added
 - Number of users that have an environment running by course
 
 ## 2.18.12
