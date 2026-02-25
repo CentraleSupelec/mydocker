@@ -20,5 +20,6 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
     {"name": "support_mail", "title": "Contacter le support", "url": "mailto:mydocker-upsaclay-request@listes.centralesupelec.fr"},
   ],
   "app_name": "MyDocker",
-  "magic_link_expiration_in_minutes": 15
+  "magic_link_expiration_in_minutes": 15,
+  "polling_interval_in_milliseconds": 60000
 };

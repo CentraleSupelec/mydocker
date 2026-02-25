@@ -13,6 +13,7 @@ export class CourseDetailComponent {
   @Input() course: IBasicCourse | undefined = undefined;
   @Input() launch: boolean = false;
   @Input() userRedirect: string | undefined = undefined;
+  @Input() active: boolean = false;
 
   constructor(
     private readonly router: Router,

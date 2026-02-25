@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - Custom display types BUTTON (defautl) + TEXT (with Lexical)
+- Poll for active courses to update shell display accordingly
+
 ### Changed
 - OTHER connection type to TCP + its display
 

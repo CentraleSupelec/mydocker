@@ -1,11 +1,12 @@
-import { AfterViewInit, Component, Inject, OnInit } from "@angular/core";
+import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ISession } from "../../interfaces/session";
 import { IBasicCourseWithSession } from "../../interfaces/course";
 import { FormControl } from "@angular/forms";
-import { filter, map, mergeMap, switchMap, take, tap } from "rxjs/operators";
+import { catchError, filter, map, mergeMap, startWith, switchMap, take, takeUntil, tap } from "rxjs/operators";
 import { APP_CONFIG, IAppConfig } from "src/app/app-config";
 import { UserCourseApiService } from "../../services/user-course-api.service";
+import { interval, of, Subject } from "rxjs";
 import { ContentsApiService } from "src/app/modules/content-access/services/contents-api.service";
 import { IContent } from "src/app/modules/content/interfaces/content";
 
@@ -15,7 +16,7 @@ import { IContent } from "src/app/modules/content/interfaces/content";
   templateUrl: './course-list.component.html',
   styleUrls: ['./course-list.component.css']
 })
-export class CourseListComponent implements OnInit, AfterViewInit {
+export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
   selectSessionId: number | null = null;
   planified: IBasicCourseWithSession[] = [];
   past: IBasicCourseWithSession[] = [];
@@ -25,6 +26,8 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   documentationUrl: string | undefined = undefined;
   showInformationMessage: boolean = false;
   errorMessage: string | null = null;
+  activeCourses: Record<string, boolean> = {};
+  private destroy$ = new Subject<void>();
   welcomeContent: IContent | null = null;
 
   constructor(
@@ -52,6 +55,10 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     this.route.data
     .pipe(
       mergeMap((routeData) => {
+        routeData.courses?.forEach((course: IBasicCourseWithSession) => {
+          this.activeCourses[course.id.toString()] = false;
+        });
+
         this.planified = routeData.courses?.map(((course: IBasicCourseWithSession) => {
             const startOfToday = new Date();
             startOfToday.setHours(0, 0, 0, 0);
@@ -120,6 +127,35 @@ export class CourseListComponent implements OnInit, AfterViewInit {
         }
       }
     )
+
+    interval(this.config.polling_interval_in_milliseconds).pipe(
+      startWith(0),
+      switchMap(() =>
+        this.userCourseApiService.getUserActiveCourses().pipe(
+          catchError(_ => {
+            return of(null);
+          })
+        )
+      ),
+      takeUntil(this.destroy$)
+    ).subscribe(courses => {
+      if (!courses) return;
+
+      const newActiveCourses: Record<string, boolean> = {};
+
+      Object.keys(this.activeCourses).forEach(id => {
+        newActiveCourses[id] = false;
+      });
+
+      courses.forEach((courseId: string | number) => {
+        const key = courseId.toString();
+        if (newActiveCourses.hasOwnProperty(key)) {
+          newActiveCourses[key] = true;
+        }
+      });
+
+      this.activeCourses = newActiveCourses;
+    });
   }
 
   dismiss() {
@@ -181,5 +217,28 @@ export class CourseListComponent implements OnInit, AfterViewInit {
       return `${prefix} moins de 24 heures`
     }
     return `${prefix} ${Math.floor(absDiffTimeInDays)} ${absDiffTimeInDays < 2 ? 'jour': 'jours'}`;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  isExpanded(element: IBasicCourseWithSession): boolean {
+    return (
+      element.sessions[0].id === this.selectSessionId ||
+      this.isActive(element)
+    );
+  }
+
+  isToBeLaunched(element: IBasicCourseWithSession): boolean {
+    return (
+      element.sessions[0].id === this.launchSessionId ||
+      this.isActive(element)
+    );
+  }
+
+  isActive(element: IBasicCourseWithSession): boolean {
+    return !!this.activeCourses[element.id.toString()];
   }
 }

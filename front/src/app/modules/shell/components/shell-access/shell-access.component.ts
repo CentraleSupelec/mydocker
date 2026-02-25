@@ -46,6 +46,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
   @Input() launch: boolean = false;
+  @Input() active: boolean = false;
   @Input() userRedirect: string | undefined = undefined;
 
   container: IContainer | null = null;
@@ -74,9 +75,15 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     private readonly ngxPermissionsService: NgxPermissionsService,
   ) {
   }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.launch && this.launch && this.canAskContainer()) {
-      this.initGetContainer();
+      this.initGetContainer(false, !this.active);
+    }
+
+    if (!(this.state == 'ask') && changes.active && !this.active) {
+      this.container = null;
+      this.state = 'ask';
     }
   }
 
@@ -104,8 +111,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     this.desktopNotificationService.askPermissions();
   }
 
-  initGetContainer(forceRecreate: boolean = false) {
-    this.containerApiService.initGetContainer(this.session?.id, forceRecreate)
+  initGetContainer(forceRecreate: boolean = false, updateLastStartDate: boolean = true) {
+    this.containerApiService.initGetContainer(this.session?.id, forceRecreate, updateLastStartDate)
       .subscribe(
         () => this.startInitPolling()
       );

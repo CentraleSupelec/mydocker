@@ -20,7 +20,7 @@
   >
     <mat-expansion-panel
       *ngIf="element.sessions && element.sessions.length > 0"
-      [expanded]="element.sessions[0].id === selectSessionId"
+      [expanded]="isExpanded(element)"
       style="margin-top: 30px;"
     >
       <mat-expansion-panel-header>
@@ -34,7 +34,8 @@
       </mat-expansion-panel-header>
       <app-course-detail
         [session]="element.sessions[0]"
-        [launch]="element.sessions[0].id === launchSessionId"
+        [launch]="isToBeLaunched(element)"
+        [active]="isActive(element)"
         [course]="element"
         [userRedirect]="element.id === courseId? userRedirect: undefined"
       ></app-course-detail>
@@ -52,7 +53,7 @@
   >
     <mat-expansion-panel
       *ngIf="element.sessions && element.sessions.length > 0"
-      [expanded]="element.sessions[0].id === selectSessionId"
+      [expanded]="isExpanded(element)"
       style="margin-top: 30px;"
     >
       <mat-expansion-panel-header>
@@ -65,7 +66,8 @@
       </mat-expansion-panel-header>
       <app-course-detail
         [session]="element.sessions[0]"
-        [launch]="element.sessions[0].id === launchSessionId"
+        [launch]="isToBeLaunched(element)"
+        [active]="isActive(element)"
         [course]="element"
         [userRedirect]="element.id === courseId? userRedirect: undefined"
       ></app-course-detail>

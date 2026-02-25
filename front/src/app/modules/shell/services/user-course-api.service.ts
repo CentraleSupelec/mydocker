@@ -19,6 +19,10 @@ export class UserCourseApiService {
     return this.httpClient.get<IBasicCourseWithSession[]>(`${this.config.back_url}courses/joined`);
   }
 
+  getUserActiveCourses(): Observable<string[]> {
+    return this.httpClient.get<string[]>(`${this.config.back_url}courses/active`);
+  }
+
   getUserCourseSessions(): Observable<ISession[]> {
     return this.httpClient.get<ISession[]>(`${this.config.back_url}courses-sessions/joined`);
   }

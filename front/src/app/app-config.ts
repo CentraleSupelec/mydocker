@@ -29,7 +29,8 @@ export interface IAppConfig {
   oidc_scope?: string;
   information?: Array<IInformation>;
   app_name?: string
-  magic_link_expiration_in_minutes?: number
+  magic_link_expiration_in_minutes?: number,
+  polling_interval_in_milliseconds?: number
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
@@ -53,6 +54,7 @@ export function appConstantFactory(): IAppConfig {
     oidc_scope: appConstants.oidc_scope,
     information: appConstants.information,
     app_name: appConstants.app_name,
-    magic_link_expiration_in_minutes: appConstants.magic_link_expiration_in_minutes
+    magic_link_expiration_in_minutes: appConstants.magic_link_expiration_in_minutes,
+    polling_interval_in_milliseconds: appConstants.polling_interval_in_milliseconds
   };
 }

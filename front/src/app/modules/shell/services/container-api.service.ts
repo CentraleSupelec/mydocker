@@ -17,10 +17,11 @@ export class ContainerApiService {
     private readonly httpClient: HttpClient,
   ) {}
 
-  initGetContainer(sessionId: number | undefined, forceRecreate: boolean): Observable<void> {
+  initGetContainer(sessionId: number | undefined, forceRecreate: boolean, updateLastStartDate: boolean = true): Observable<void> {
     return this.httpClient.post<void>(`${this.config.back_url}docker/initGetContainer/${sessionId}`, {},{
       params: {
-        forceRecreate: forceRecreate
+        forceRecreate: forceRecreate,
+        updateLastStartDate: updateLastStartDate,
       }
     });
   }
