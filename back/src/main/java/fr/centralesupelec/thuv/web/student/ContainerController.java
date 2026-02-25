@@ -52,14 +52,20 @@ public class ContainerController {
     public ResponseEntity<Void> initGetContainer(
             @PathVariable("sessionId") CourseSession courseSession,
             @RequestParam(defaultValue = "false", required = false) Boolean forceRecreate,
+            @RequestParam(defaultValue = "true", required = false) Boolean updateLastStartDate,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
     ) {
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        userCourseRepository.findByUserIdAndCourseId(
-                user.getId(), courseSession.getCourse().getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now(zoneId))
-        );
+
+        if (updateLastStartDate) {
+                userCourseRepository.findByUserIdAndCourseId(
+                        user.getId(), 
+                        courseSession.getCourse().getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now(zoneId))
+                );
+        }
+        
         ContainerRequest containerRequest = containerRequestCreatorService.createRequest(
                 courseSession, user, forceRecreate
         );

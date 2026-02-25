@@ -11,7 +11,9 @@ import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
+import fr.centralesupelec.thuv.storage.UserCoursesStorage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,18 +39,25 @@ public class CourseController {
     private final UserCourseRepository userCourseRepository;
     private final CourseRepository courseRepository;
     private final UserCourseMapper userCourseMapper;
+    private final UserCoursesStorage userCoursesStorage;
+    public static final int MILLISECONDS_IN_A_SECOND = 1000;
+    
+    @Value("${polling_interval_user_courses_in_milliseconds}")
+    private long pollingIntervalUserCoursesInMilliseconds;
 
     @Autowired
     public CourseController(
             UserRepository userRepository,
             UserCourseRepository userCourseRepository,
             CourseRepository courseRepository,
-            UserCourseMapper userCourseMapper
+            UserCourseMapper userCourseMapper,
+            UserCoursesStorage userCoursesStorage
     ) {
         this.userRepository = userRepository;
         this.userCourseRepository = userCourseRepository;
         this.courseRepository = courseRepository;
         this.userCourseMapper = userCourseMapper;
+        this.userCoursesStorage = userCoursesStorage;
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -66,6 +75,28 @@ public class CourseController {
         return listUserCourses.stream()
                 .map(userCourseMapper::convertToDtoWihSession)
                 .collect(Collectors.toList());
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @RequestMapping(value = "/active", method = RequestMethod.GET)
+    public ResponseEntity<List<String>> getUserActiveCourses(
+            @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
+    ) {
+        User user = userRepository.getReferenceById(
+                principal.getUserId()
+        );
+        
+        LocalDateTime lastUpdate = userCoursesStorage.getLastUpdate();
+
+        if (lastUpdate == null || lastUpdate.isBefore(LocalDateTime.now().minusSeconds(
+            2 * pollingIntervalUserCoursesInMilliseconds / MILLISECONDS_IN_A_SECOND
+        ))) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<String> listUserActiveCourses = userCoursesStorage.getCourses(Long.toString(user.getId()));
+
+        return ResponseEntity.ok(listUserActiveCourses);
     }
 
     @PreAuthorize("hasRole('USER')")
