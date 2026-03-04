@@ -238,6 +238,7 @@ func (s *scaleUpService) createTerraformConfig(missingGpus map[string]int64) (*T
 				Region:          region.Region,
 				Owner:           owner,
 				Labels:          []string{"shared-pool"},
+				RequestDatetime: time.Now().UTC().Format("2006-01-02 15:04:05 -0700 MST"),
 			}
 		}
 	}
