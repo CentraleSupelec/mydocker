@@ -13,4 +13,11 @@
       [ipAddress]="ipAddress"
       ></app-ssh-connexion-guide>
   </div>
+  <div *ngSwitchCase="'TCP'">
+    <app-tcp-connexion-guide
+      [containerPort]="containerPort"
+      [username]="username"
+      [ipAddress]="ipAddress"
+      ></app-tcp-connexion-guide>
+  </div>
 </div>

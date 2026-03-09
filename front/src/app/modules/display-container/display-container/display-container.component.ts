@@ -32,21 +32,21 @@ export class DisplayContainerComponent implements OnInit {
 
   shouldAutoclick(): boolean {
     const customPorts = this.displayOptions?.customPortsDisplay ?? [];
-  
+
     if (customPorts.length > 1) {
       return false;
     }
-  
+
     const displayedPortsCount = this.countDisplayedPorts(customPorts.length);
-  
+
     if (displayedPortsCount > 1) {
       return false;
     }
-  
+
     const port = customPorts.length === 1
       ? (customPorts[0] as IHttpPortDisplay)
       : undefined;
-  
+
     return this.canAutoclick(port);
   }
 
@@ -54,9 +54,9 @@ export class DisplayContainerComponent implements OnInit {
     if (!this.container) {
       return initialCount;
     }
-  
+
     let count = initialCount;
-  
+
     for (const port of this.container.ports) {
       if (this.shouldDisplay(port)) {
         count++;
@@ -65,7 +65,7 @@ export class DisplayContainerComponent implements OnInit {
         }
       }
     }
-  
+
     return count;
   }
 
@@ -73,15 +73,15 @@ export class DisplayContainerComponent implements OnInit {
     if (!this.displayOptions) {
       return false;
     }
-  
+
     if (!this.displayOptions.displayPassword && !this.displayOptions.displayUsername) {
       return true;
     }
-  
+
     if (port?.url?.includes('{{PASSWORD}}')) {
       return true;
     }
-  
+
     if (
       this.userRedirect &&
       this.userRedirect !== 'USER_REDIRECT' &&
@@ -90,10 +90,10 @@ export class DisplayContainerComponent implements OnInit {
     ) {
       return true;
     }
-  
+
     return false;
   }
-  
+
   copyText(text: string | undefined) {
     if (text) {
       this.clipboardSnackService.copyWithNotification(text);
@@ -101,7 +101,7 @@ export class DisplayContainerComponent implements OnInit {
   }
 
   showCustomDisplay(customDisplay: IPortDisplay): boolean {
-    if (undefined !== this.userRedirect 
+    if (undefined !== this.userRedirect
       && 'USER_REDIRECT' !== this.userRedirect
       && this.portDisplayHasNoUserRedirect(customDisplay as IHttpPortDisplay)) {
         return false;
@@ -114,6 +114,7 @@ export class DisplayContainerComponent implements OnInit {
   }
 
   shouldDisplay(containerPort: IContainerPort): boolean {
+    // console.log(containerPort)
     if (this.displayOptions === undefined || this.displayOptions.displayPorts === undefined) {
       return true
     }

@@ -1,10 +1,17 @@
 <div *ngIf="customDisplay?.type === 'HTTP'">
   <div fxLayout="column">
     <strong>{{ title() }}</strong>
-    <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
-      <a mat-raised-button color="primary" href="{{ url() }}" target="_blank" rel="noopener noreferrer" style="margin-top: 5px">
-        Connexion à l'interface
-      </a>
+    <div *ngIf="isCustomDisplayType('BUTTON')">
+      <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
+        <a mat-raised-button color="primary" href="{{ url() }}" target="_blank" rel="noopener noreferrer" style="margin-top: 5px">
+          Connexion à l'interface
+        </a>
+      </div>
+    </div>
+    <div *ngIf="isCustomDisplayType('TEXT')">
+      <div #contentContainer id="contentContainer"
+        [innerHtml]="url()">
+      </div>
     </div>
   </div>
 </div>

@@ -9,5 +9,5 @@ export interface IPort {
 export enum ConnectionType {
   HTTP = 'HTTP',
   SSH = 'SSH',
-  OTHER = 'AUTRE',
+  TCP = 'TCP',
 }

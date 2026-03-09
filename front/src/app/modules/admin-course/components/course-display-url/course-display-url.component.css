@@ -1,0 +1,8 @@
+#contentContainer {
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #eeeeee6b;
+  user-select: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

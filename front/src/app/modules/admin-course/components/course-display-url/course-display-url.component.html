@@ -4,8 +4,29 @@
     <input matInput formControlName="title">
   </mat-form-field>
   <mat-form-field>
-    <mat-label>Lien</mat-label>
-    <input matInput formControlName="url">
+    <mat-label>Type</mat-label>
+    <mat-select formControlName="customDisplayType">
+      <mat-option value="{{ v[0] }}" *ngFor="let v of customDisplayType">{{ v[1] }}</mat-option>
+    </mat-select>
   </mat-form-field>
-  <p><strong>Lien rendu:</strong> {{ renderString(formGroup.get('url')?.value) }}</p>
+
+  <div *ngIf="formGroup.get('customDisplayType')?.value === 'TEXT'" style="margin-bottom: 20px;" class="link-wrapper">
+    <div style="margin-bottom: 20px;">
+      <mat-label>Texte</mat-label>
+      <app-lexical-editor formControlName="url"></app-lexical-editor>
+    </div>
+    <div style="margin-bottom: 20px;">
+      Texte rendu :
+    </div>
+    <div #contentContainer id="contentContainer"
+      [innerHtml]="renderString(formGroup.get('url')?.value)">
+    </div>
+  </div>
+  <div *ngIf="formGroup.get('customDisplayType')?.value === 'BUTTON'">
+    <mat-form-field style="width: 100%;">
+      <mat-label>Lien</mat-label>
+      <input matInput formControlName="url">
+    </mat-form-field>
+    <p><strong>Lien rendu:</strong> {{ renderString(formGroup.get('url')?.value) }}</p>
+  </div>
 </div>

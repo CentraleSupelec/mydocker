@@ -1,0 +1,21 @@
+<div fxLayout="column">
+  <strong>Accès TCP
+    <span *ngIf="containerPort?.description !== 'default'">à "{{ containerPort?.description }}"</span>:&nbsp;
+  </strong>
+  <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
+    <code>
+      IP : {{ ipAddress }}
+    </code>
+    <button mat-icon-button (click)="copyIpAddress()">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
+    <code>
+      Port : {{ containerPort?.portMapTo }}
+    </code>
+    <button mat-icon-button (click)="copyPort()">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+  </div>
+</div>

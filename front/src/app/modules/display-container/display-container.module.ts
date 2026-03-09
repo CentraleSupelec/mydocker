@@ -4,6 +4,7 @@ import { DisplayContainerComponent } from "./display-container/display-container
 import { DisplayContainerPortComponent } from "./display-container-port/display-container-port.component";
 import { HttpConnectionGuideComponent } from "./http-connection-guide/http-connection-guide.component";
 import { SshConnectionGuideComponent } from "./ssh-connection-guide/ssh-connection-guide.component";
+import { TcpConnectionGuideComponent } from "./tcp-connection-guide/tcp-connection-guide.component";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatButtonModule } from "@angular/material/button";
@@ -23,6 +24,7 @@ import { RenderCreationErrorPipe } from "./render-creation-error.pipe";
     DisplayContainerPortComponent,
     HttpConnectionGuideComponent,
     SshConnectionGuideComponent,
+    TcpConnectionGuideComponent,
     DisplayCustomContainerPortComponent,
     RenderCreationErrorPipe,
   ],

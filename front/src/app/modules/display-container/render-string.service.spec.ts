@@ -33,7 +33,7 @@ describe("RenderStringService", () => {
     description: "http",
     mapPort: 8889,
     portMapTo: 8889,
-    connectionType: ConnectionType.OTHER,
+    connectionType: ConnectionType.TCP,
     requiredToAccessContainer: false,
   }];
 

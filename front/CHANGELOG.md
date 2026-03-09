@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
+- Custom display types BUTTON (defautl) + TEXT (with Lexical)
+### Changed
+- OTHER connection type to TCP + its display
+
+## 2.28.15
+### Added
 - Number of users column in course list view
 - Number of users that have a running environment by course in course list view
 
