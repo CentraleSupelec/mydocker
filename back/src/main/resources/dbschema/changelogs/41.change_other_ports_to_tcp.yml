@@ -1,0 +1,39 @@
+databaseChangeLog:
+- changeSet:
+    id: 1773063360390-1
+    author: mohamedalibarka
+    changes:
+    - update:
+        tableName: ports
+        columns:
+        - column:
+            name: connection_type
+            value: TCP
+        where: connection_type = 'OTHER'
+- changeSet:
+    id: 1773063360390-2
+    author: mohamedalibarka
+    changes:
+      - sql:
+          splitStatements: false
+          sql: |
+            UPDATE courses
+            SET display_options =
+              jsonb_set(
+                display_options::jsonb,
+                '{customPortsDisplay}',
+                COALESCE(
+                  (
+                    SELECT jsonb_agg(
+                             CASE
+                               WHEN jsonb_exists(port, 'customDisplayType') THEN port
+                               ELSE port || '{"customDisplayType": "BUTTON"}'::jsonb
+                             END
+                           )
+                    FROM jsonb_array_elements(display_options::jsonb->'customPortsDisplay') AS port
+                  ),
+                  '[]'::jsonb
+                )
+              )::text
+            WHERE display_options IS NOT NULL
+              AND jsonb_exists(display_options::jsonb, 'customPortsDisplay');

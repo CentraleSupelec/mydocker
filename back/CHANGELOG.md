@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
+- customDisplayType in display_options"
+
+### Changed
+- OTHER connection type to TCP
+
+## 2.32.3
+### Added
 - Routes for load testing with basic auth
 - Number of users field in course table
 - Number of users that have an environment running by course
