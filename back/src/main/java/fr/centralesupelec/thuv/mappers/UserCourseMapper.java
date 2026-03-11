@@ -8,20 +8,12 @@ import fr.centralesupelec.thuv.dtos.UserCourseDto;
 import fr.centralesupelec.thuv.dtos.UserCourseWithSessionDto;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.UserCourse;
-import fr.centralesupelec.thuv.activity_logging.model.ActivityLogRecord;
-import fr.centralesupelec.thuv.activity_logging.model.LogAction;
-import fr.centralesupelec.thuv.activity_logging.model.LogModelName;
-import fr.centralesupelec.thuv.activity_logging.repository.LogRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,10 +23,6 @@ public class UserCourseMapper {
     private final ObjectMapper objectMapper;
     private final SessionMapper sessionMapper;
     private final ZoneId zoneId;
-    private final LogRecordRepository logRecordRepository;
-
-    @Value("${thuv.activity.ignoreRecentLastStartDateInSeconds:300}")
-    private long ignoreRecentLastStartDateInSeconds;
 
     public UserCourseDto convertToDto(Course course) {
         UserCourseDto dto = new UserCourseDto();
@@ -44,26 +32,7 @@ public class UserCourseMapper {
 
     public UserCourseWithSessionDto convertToDtoWihSession(UserCourse userCourse) {
         UserCourseWithSessionDto dto = new UserCourseWithSessionDto();
-        dto.setCreatedAt(userCourse.getCreatedAt());
-
-        if (userCourse.getLastStartDate() != null
-            && userCourse.getLastStartDate().isAfter(LocalDateTime.now(zoneId).minusSeconds(ignoreRecentLastStartDateInSeconds))) {
-            Optional<ActivityLogRecord> latestLogRecordOptional = logRecordRepository
-                .findFirstByUserIdAndModelIdAndModelNameAndActionInAndCreatedOnBeforeOrderByCreatedOnDesc(
-                    userCourse.getUser().getId(),
-                    Long.toString(userCourse.getCourse().getId()),
-                    LogModelName.COURSE,
-                    List.of(LogAction.ENVIRONMENT_ASK, LogAction.ENVIRONMENT_RESTART),
-                    LocalDateTime.now().minusSeconds(ignoreRecentLastStartDateInSeconds)
-            );
-            latestLogRecordOptional.ifPresentOrElse(
-                latestLogRecord ->
-                    dto.setLastStartDate(latestLogRecord.getCreatedOn().atZone(ZoneId.systemDefault()).withZoneSameInstant(zoneId).toLocalDateTime()),
-                () -> dto.setLastStartDate(userCourse.getLastStartDate())
-            );
-        } else {
-            dto.setLastStartDate(userCourse.getLastStartDate());
-        }
+        dto.setCreatedAt(userCourse.getCreatedAt()).setLastStartDate(userCourse.getLastStartDate());
 
         applyToDto(userCourse.getCourse(), dto);
         dto.setSessions(
