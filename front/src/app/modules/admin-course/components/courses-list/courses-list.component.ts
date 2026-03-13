@@ -1,4 +1,5 @@
 import { Component, Inject, Input, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { CourseStatus, IAdminCourse } from "../../interfaces/course";
 import { AdminCoursesApiService } from "../../services/admin-courses-api.service";
@@ -21,15 +22,14 @@ import { MatPaginator } from "@angular/material/paginator";
   ],
 })
 export class CoursesListComponent implements OnInit, OnDestroy {
-  columnsToDisplay = ['icon', 'title', 'creator', 'createdOn', 'numberOfUsers', 'numberOfConnectedUsers', 'action'];
+  columnsToDisplay = ['icon', 'title', 'creator', 'createdOn', 'numberOfUsers', 'numberOfConnectedUsers', 'numberOfRecentUsers', 'action'];
   courses: IAdminCourse[] = [];
   courseSize: number | undefined;
-  query: string = '';
-  status: string[] = ['DRAFT', 'TEST', 'READY'];
+  formGroup!: FormGroup;
   readonly availableStatus = Object.entries(CourseStatus)
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator | undefined;
-  @ViewChild(MatSort, {static: true}) sort: MatSort | null = null;
+  @ViewChild(MatPaginator, {static: true}) paginator!: MatPaginator;
+  @ViewChild(MatSort, {static: true}) sort!: MatSort;
 
   readonly searchChange$: Subject<void> = new Subject<void>();
 
@@ -40,51 +40,62 @@ export class CoursesListComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly adminCourseApiService: AdminCoursesApiService,
+    private readonly fb: FormBuilder,
     @Inject(APP_CONFIG) readonly config: IAppConfig,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    this.formGroup = this.fb.group({
+      query: [''],
+      status: [['DRAFT','TEST','READY']],
+      dateLimit: [threeMonthsAgo.valueOf()]
+    });
+
     if (this.paginator && this.sort) {
+
+      this.formGroup.valueChanges
+        .pipe(debounceTime(150))
+        .subscribe(() => {
+          this.paginator.pageIndex = 0;
+          this.searchChange$.next();
+        });
+
       merge(
         this.paginator.page,
         this.sort.sortChange.pipe(
-          tap(() => {
-            if (this.paginator) {
-              this.paginator.pageIndex = 0;
-            }
-          })
+          tap(() => this.paginator.pageIndex = 0)
         ),
         this.searchChange$
-          .pipe(
-            debounceTime(150),
-            tap(() => {
-              if (this.paginator) {
-                this.paginator.pageIndex = 0;
-              }
-            }),
-          ),
-      ).pipe(
+      )
+      .pipe(
         mergeMap(() => {
+          const { query, status, dateLimit } = this.formGroup.value;
+
           return this.adminCourseApiService.getCourses(
-            this.query,
-            this.status,
-            this.paginator?.pageIndex,
-            this.paginator?.pageSize,
-            this.sort?.active,
-            this.sort?.direction || 'asc'
+            query,
+            status,
+            dateLimit,
+            this.paginator.pageIndex,
+            this.paginator.pageSize,
+            this.sort.active,
+            this.sort.direction || 'asc'
           )
         })
-      ).subscribe(
-        page => {
-          this.courses = page.content
-          this.courseSize = page.totalElements
-        }
       )
-      this.paginator.pageSize = 25
-      this.paginator.pageIndex = 0
-      this.sort.active = 'createdOn'
-      this.sort.direction = 'desc'
+      .subscribe(page => {
+        this.courses = page.content
+        this.courseSize = page.totalElements
+      });
+
+      this.paginator.pageSize = 25;
+      this.paginator.pageIndex = 0;
+
+      this.sort.active = 'createdOn';
+      this.sort.direction = 'desc';
     }
+
     this.searchChange$.next();
   }
 
@@ -92,12 +103,7 @@ export class CoursesListComponent implements OnInit, OnDestroy {
     this.stopContainerPolling$.next();
   }
 
-  updateQuery() {
-    this.searchChange$.next();
-  }
-
   clearQuery() {
-    this.query = '';
-    this.searchChange$.next();
+    this.formGroup.patchValue({ query: '' });
   }
 }
