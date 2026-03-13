@@ -19,7 +19,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -80,12 +83,55 @@ public class CourseController {
                         r -> (Long) r[0],
                         r -> ((Long) r[1]).intValue()));
 
+        List<String> computedFields = List.of("numberOfConnectedUsers", "numberOfRecentUsers");
+
+        boolean sortByComputedField = pageable.getSort().stream()
+            .anyMatch(order -> computedFields.contains(order.getProperty()));
+
+        if (sortByComputedField) {
+            List<AdminCourseDto> dtos = courseListService.getViewableCourse(user, decodedSearch, status, Pageable.unpaged())
+                    .getContent()
+                    .stream()
+                    .map(course -> {
+                        int connectedCount = connectedUsersByCourseIdMap.getOrDefault(course.getId().toString(), 0);
+                        int recentUsers = recentUsersByCourseId.getOrDefault(course.getId(), 0);
+                        return adminCourseMapper.convertToDto(course, connectedCount, recentUsers);
+                    })
+                    .sorted((dto1, dto2) -> {
+                        for (Sort.Order order : pageable.getSort()) {
+                            String property = order.getProperty();
+                            if (computedFields.contains(property)) {
+                                try {
+                                    Method getter = AdminCourseDto.class.getMethod(
+                                            "get" + property.substring(0, 1).toUpperCase() + property.substring(1)
+                                    );
+                                    Integer value1 = (Integer) getter.invoke(dto1);
+                                    Integer value2 = (Integer) getter.invoke(dto2);
+
+                                    int cmp = Integer.compare(value1, value2);
+                                    if (cmp != 0) {
+                                        return order.getDirection() == Sort.Direction.ASC ? cmp : -cmp;
+                                    }
+                                } catch (ReflectiveOperationException e) {
+                                    throw new RuntimeException("Failed to access getter for computed field: " + property, e);
+                                }
+                            }
+                        }
+                        return 0;
+                    })
+                    .toList();
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), dtos.size());
+            List<AdminCourseDto> pageContent = dtos.subList(start, end);
+
+            return new PageImpl<>(pageContent, pageable, dtos.size());
+        }
+
         return courseListService.getViewableCourse(user, decodedSearch, status, pageable)
                 .map(course -> {
                     int connectedCount = connectedUsersByCourseIdMap.getOrDefault(course.getId().toString(), 0);
-
                     int recentUsers = recentUsersByCourseId.getOrDefault(course.getId(), 0);
-
                     return adminCourseMapper.convertToDto(course, connectedCount, recentUsers);
                 });
     }
