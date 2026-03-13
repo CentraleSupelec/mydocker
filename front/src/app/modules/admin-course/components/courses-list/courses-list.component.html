@@ -80,6 +80,7 @@
   <ng-container matColumnDef="numberOfConnectedUsers">
     <mat-header-cell
       *matHeaderCellDef
+      mat-sort-header
       matTooltip="Nombre d’utilisateurs ayant un environnement en cours d’exécution"
       [matTooltipPosition]="'above'"
     >
@@ -92,6 +93,7 @@
   <ng-container matColumnDef="numberOfRecentUsers">
     <mat-header-cell
       *matHeaderCellDef
+      mat-sort-header
       matTooltip="Nombre d’utilisateurs récents"
       [matTooltipPosition]="'above'"
     >
