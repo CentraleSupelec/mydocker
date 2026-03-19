@@ -46,4 +46,5 @@
     <include file="changelogs/39.add_paths_table.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/40.add_number_of_users_to_courses.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/41.change_other_ports_to_tcp.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/42.add_content_table.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
