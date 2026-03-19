@@ -1,0 +1,10 @@
+<h1 class="mat-display-1">Édition d'un contenu "{{ content?.title }}"</h1>
+<app-content-form
+  [formControl]="contentForm"
+></app-content-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="contentForm.invalid  || contentForm.disabled" (click)="submit()" color="primary">
+    Sauvegarder les changements
+  </button>
+</div>

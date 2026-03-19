@@ -19,6 +19,17 @@ export const routes: Routes = [
     component: LoginAcceptComponent,
   },
   {
+    path: 'content',
+    component: BasicLayoutComponent,
+    canActivate: [AutologinGuard],
+    loadChildren: () => import('./modules/content-access/content-access.module').then(m => m.ContentAccessModule),
+    data: {
+      permissions: {
+        only: 'ROLE_USER',
+      }
+    },
+  },
+  {
     path: 'shell',
     component: BasicLayoutComponent,
     canActivate: [AutologinGuard],
@@ -113,6 +124,16 @@ export const routes: Routes = [
         loadChildren: () => import('./modules/admin-users/admin-users.module').then(m => m.AdminUsersModule),
         data: {
           breadcrumb: 'Utilisateurs',
+          permissions: {
+            only: ['ROLE_ADMIN'],
+          }
+        }
+      },
+      {
+        path: 'contents',
+        loadChildren: () => import('./modules/content/content.module').then(m => m.ContentModule),
+        data: {
+          breadcrumb: 'Contenu',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
