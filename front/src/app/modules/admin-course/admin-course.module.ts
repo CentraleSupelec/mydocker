@@ -31,7 +31,7 @@ import { MatStepperModule } from "@angular/material/stepper";
 import { DockerImageChoiceDialogComponent } from './components/docker-image-choice-dialog/docker-image-choice-dialog.component';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { MatNativeDateModule, MatOptionModule } from "@angular/material/core";
+import { MatOptionModule } from "@angular/material/core";
 import { MatSelectModule } from "@angular/material/select";
 import { AdminDockerImageModule } from "../admin-docker-image/admin-docker-image.module";
 import { MatDividerModule } from "@angular/material/divider";
@@ -47,8 +47,10 @@ import { CoursesAdminComponent } from './components/courses-admin/courses-admin.
 import { ComputeTypeModule } from '../compute-type/compute-type.module';
 import { GenerateJoinLinkPipe } from "../utils/generate-join-link.pipe";
 import { GenerateMagicLinkPipe } from '../utils/generate-magic-link.pipe';
+import { LexicalEditorComponent } from './components/lexical-editor/lexical-editor.component';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { LexicalLinkPopupComponent } from './components/lexical-link-popup/lexical-link-popup.component';
+import { LexicalImagePopupComponent } from './components/lexical-image-popup/lexical-image-popup.component';
 
 
 @NgModule({
@@ -67,6 +69,9 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     CourseDisplayUrlComponent,
     CourseIconStatusComponent,
     CoursesAdminComponent,
+    LexicalEditorComponent,
+    LexicalLinkPopupComponent,
+    LexicalImagePopupComponent
   ],
   imports: [
     CommonModule,
@@ -101,9 +106,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatCardModule,
     FormsModule,
     MatPaginatorModule,
-    ComputeTypeModule,
-    MatDatepickerModule,
-    MatNativeDateModule
+    ComputeTypeModule
   ],
   providers: [
     {

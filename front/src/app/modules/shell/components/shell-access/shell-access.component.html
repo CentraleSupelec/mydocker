@@ -6,14 +6,8 @@
     (timerElapsed)="onTimerElapsed()"
   ></app-countdown>
   <div fxLayout="row" fxLayoutAlign="end center" *ngIf="state !== 'ask'">
-    <button
-      class="logs-button"
-      mat-icon-button
-      (click)="fetchLogs()"
-      matTooltip="Voir les logs du service"
-    >
+    <button mat-icon-button (click)="fetchLogs()" matTooltip="Voir les logs du service">
       <mat-icon>playlist_add_check</mat-icon>
-      Logs
     </button>
   </div>
 </div>

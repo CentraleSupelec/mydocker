@@ -6,8 +6,6 @@ import { FormControl } from "@angular/forms";
 import { filter, map, mergeMap, switchMap, take, tap } from "rxjs/operators";
 import { APP_CONFIG, IAppConfig } from "src/app/app-config";
 import { UserCourseApiService } from "../../services/user-course-api.service";
-import { ContentsApiService } from "src/app/modules/content-access/services/contents-api.service";
-import { IContent } from "src/app/modules/content/interfaces/content";
 
 
 @Component({
@@ -25,29 +23,18 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   documentationUrl: string | undefined = undefined;
   showInformationMessage: boolean = false;
   errorMessage: string | null = null;
-  welcomeContent: IContent | null = null;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly userCourseApiService: UserCourseApiService,
-    private readonly contentsApiService: ContentsApiService
   ) {}
 
   ngOnInit(): void {
     const helpInfo = this.config.information?.find((info) => info.name === "help");
     this.documentationUrl = helpInfo?.url || "https://example.com/documentation";
     this.showInformationMessage = !!helpInfo;
-
-    this.contentsApiService.getContentBySlug("welcome").subscribe({
-      next: (content) => {
-        this.welcomeContent = content;
-      },
-      error: (_err) => {
-        console.error('Failed to load welome content');
-      }
-    });
 
     this.route.data
     .pipe(

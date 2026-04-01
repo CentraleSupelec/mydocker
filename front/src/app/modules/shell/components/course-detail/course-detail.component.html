@@ -1,11 +1,3 @@
-<div
-  *ngxPermissionsOnly="['course.' + course?.id + '.edit', 'course.' + course?.id + '.creator', 'ROLE_ADMIN']"
-  class="button-wrapper"
->
-  <button mat-raised-button color="primary" (click)="navigateToEditPage()">
-    Editer le cours
-  </button>
-</div>
 <app-shell-access
   [session]="session"
   [course]="course"

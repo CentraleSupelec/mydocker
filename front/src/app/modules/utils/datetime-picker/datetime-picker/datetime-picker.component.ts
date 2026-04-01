@@ -36,7 +36,6 @@ export class DatetimePickerComponent implements OnInit, OnDestroy, ControlValueA
 
   @Input() datePlaceholder: string = "";
   @Input() timePlaceholder: string = "";
-  @Input() dateOnly: boolean = false;
 
   readonly datetimeFormGroup: FormGroup;
   private destroy$: Subject<void> = new Subject<void>();

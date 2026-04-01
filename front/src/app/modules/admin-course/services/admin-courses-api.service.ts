@@ -17,7 +17,6 @@ export class AdminCoursesApiService {
   getCourses(
     search: string,
     status: string[],
-    dateLimit: number | undefined,
     page: number | undefined,
     limit: number | undefined,
     sort: string | undefined,
@@ -29,7 +28,6 @@ export class AdminCoursesApiService {
       .append('sort', `${sort},${direction}`)
       .append('search', encodeURIComponent(search))
       .append('status', status.join(', '))
-      .append('dateLimit', dateLimit? dateLimit.toString() : '')
     return this.httClient.get<IPageResponse<IAdminCourse>>(`${this.config.back_url}admin/courses/`, {
       params: params
     });

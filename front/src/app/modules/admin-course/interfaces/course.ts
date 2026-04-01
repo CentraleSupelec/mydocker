@@ -42,8 +42,6 @@ export interface IAdminCourseBase {
   externalAccess: boolean;
   externalAccessExpirationDate: string;
   numberOfUsers: number;
-  numberOfConnectedUsers: number;
-  numberOfRecentUsers: number;
 }
 
 export interface IAdminCourse extends IAdminCourseBase {

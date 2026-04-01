@@ -1,31 +1,19 @@
 <div class="cards-container">
   <mat-card class="mat-elevation-z3">
-    <mat-card-content [formGroup]="formGroup" fxLayoutGap="15px">
+    <mat-card-content fxLayoutGap="15px">
       <mat-form-field style="width: 15vw; min-width: 200px;">
         <input matInput type="search"
-          placeholder="Recherche par nom du cours"
-          formControlName="query"/>
-        <button
-          *ngIf="formGroup.get('query')?.value"
-          mat-button
-          matSuffix
-          mat-icon-button
-          aria-label="Clear"
-          (click)="clearQuery()">
+               placeholder="Recherche par nom du cours"
+               [(ngModel)]="query" (ngModelChange)="updateQuery()"/>
+        <button mat-button *ngIf="query" matSuffix mat-icon-button aria-label="Clear" (click)="clearQuery()">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
       <mat-form-field>
-        <mat-select multiple formControlName="status">
+        <mat-select multiple [(ngModel)]="status" (ngModelChange)="updateQuery()">
           <mat-option value="{{ v[1] }}" *ngFor="let v of availableStatus">{{ v[0] }}</mat-option>
         </mat-select>
       </mat-form-field>
-      <app-datetime-picker
-          [dateOnly]="true"
-          formControlName="dateLimit"
-          [matTooltip]="'Date limite pour déterminer le nombre d\'utilisateurs récents'"
-        >
-      </app-datetime-picker>
     </mat-card-content>
   </mat-card>
   <mat-card class="mat-elevation-z3">
@@ -65,9 +53,9 @@
   </ng-container>
 
   <ng-container matColumnDef="numberOfUsers">
-    <mat-header-cell
-      *matHeaderCellDef
-      mat-sort-header
+    <mat-header-cell 
+      *matHeaderCellDef 
+      mat-sort-header 
       matTooltip="Nombre d’utilisateurs ayant lancé au moins une fois l’environnement"
       [matTooltipPosition]="'above'"
     >
@@ -78,28 +66,14 @@
 
 
   <ng-container matColumnDef="numberOfConnectedUsers">
-    <mat-header-cell
+    <mat-header-cell 
       *matHeaderCellDef
-      mat-sort-header
       matTooltip="Nombre d’utilisateurs ayant un environnement en cours d’exécution"
       [matTooltipPosition]="'above'"
     >
       Nombre d'utilisateurs en cours
     </mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.numberOfConnectedUsers }}</mat-cell>
-  </ng-container>
-
-
-  <ng-container matColumnDef="numberOfRecentUsers">
-    <mat-header-cell
-      *matHeaderCellDef
-      mat-sort-header
-      matTooltip="Nombre d’utilisateurs récents"
-      [matTooltipPosition]="'above'"
-    >
-      Nombre d'utilisateurs récents
-    </mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.numberOfRecentUsers }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">
