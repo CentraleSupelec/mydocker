@@ -31,7 +31,7 @@ import { MatStepperModule } from "@angular/material/stepper";
 import { DockerImageChoiceDialogComponent } from './components/docker-image-choice-dialog/docker-image-choice-dialog.component';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { MatOptionModule } from "@angular/material/core";
+import { MatNativeDateModule, MatOptionModule } from "@angular/material/core";
 import { MatSelectModule } from "@angular/material/select";
 import { AdminDockerImageModule } from "../admin-docker-image/admin-docker-image.module";
 import { MatDividerModule } from "@angular/material/divider";
@@ -51,6 +51,7 @@ import { LexicalEditorComponent } from './components/lexical-editor/lexical-edit
 import { MatMenuModule } from '@angular/material/menu';
 import { LexicalLinkPopupComponent } from './components/lexical-link-popup/lexical-link-popup.component';
 import { LexicalImagePopupComponent } from './components/lexical-image-popup/lexical-image-popup.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 
 @NgModule({
@@ -106,7 +107,9 @@ import { LexicalImagePopupComponent } from './components/lexical-image-popup/lex
     MatCardModule,
     FormsModule,
     MatPaginatorModule,
-    ComputeTypeModule
+    ComputeTypeModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   providers: [
     {

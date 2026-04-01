@@ -13,7 +13,7 @@
     <mat-datepicker #picker_from></mat-datepicker>
   </mat-form-field>
 
-  <mat-form-field style="max-width: 6em">
+  <mat-form-field *ngIf="!dateOnly"  style="max-width: 6em">
     <input
       matInput
       type="time"

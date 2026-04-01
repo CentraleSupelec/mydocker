@@ -7,19 +7,30 @@ import { NgxPermissionsModule } from "ngx-permissions";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
+import { MatNativeDateModule } from '@angular/material/core';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+import { LOCALE_ID } from '@angular/core';
+
+registerLocaleData(localeFr);
+
 describe('CoursesListComponent', () => {
   let component: CoursesListComponent;
   let fixture: ComponentFixture<CoursesListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CoursesListComponent ],
+      declarations: [CoursesListComponent],
       imports: [
         AdminCourseModule,
         HttpClientTestingModule,
         NgxPermissionsModule.forRoot(),
         RouterTestingModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        MatNativeDateModule
+      ],
+      providers: [
+        { provide: LOCALE_ID, useValue: 'fr' }
       ]
     })
     .compileComponents();
