@@ -59,4 +59,5 @@ public class AdminCourseBaseDto {
     private String uid;
     private Long numberOfUsers;
     private int numberOfConnectedUsers;
+    private int numberOfRecentUsers;
 }
