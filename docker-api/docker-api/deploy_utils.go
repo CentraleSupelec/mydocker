@@ -52,7 +52,6 @@ type TerraformNamedWorker struct {
 	Region          string   `json:"region"`
 	Owner           string   `json:"owner"`
 	Labels          []string `json:"labels"`
-	RequestDatetime string   `json:"request_datetime"`
 }
 
 const DeployContainerName string = "deploy_container"
