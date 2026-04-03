@@ -1,0 +1,51 @@
+<h1 class="mat-display-1">Administration des contenus</h1>
+<mat-table [dataSource]="contents" class="mat-elevation-z3">
+  <ng-container matColumnDef="id">
+    <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.id }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="title">
+    <mat-header-cell *matHeaderCellDef>Titre</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.title }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="slug">
+    <mat-header-cell *matHeaderCellDef>Slug</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.slug }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="enabled">
+    <mat-header-cell *matHeaderCellDef>Activé ?</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.enabled ? 'Oui' : 'Non' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <a mat-raised-button color="primary" [routerLink]="'/admin/contents/new'">
+        <mat-icon>add</mat-icon>
+        Créer
+      </a>
+    </mat-header-cell>
+
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a
+        mat-icon-button
+        [routerLink]="[element.id, 'edit']"
+        matTooltip="Editer"
+      >
+        <mat-icon>edit</mat-icon>
+      </a>
+      <button
+        mat-icon-button
+        (click)="remove(element)"
+        matTooltip="Supprimer"
+        >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+  <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+  <mat-row *matRowDef="let element; columns: columnsToDisplay;">
+  </mat-row>
+</mat-table>

@@ -34,8 +34,8 @@ import { $createCodeNode, $isCodeNode, CodeNode } from '@lexical/code';
 import { MatDialog } from '@angular/material/dialog';
 import { LexicalLinkPopupComponent } from '../lexical-link-popup/lexical-link-popup.component';
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown';
-import { $createImageNode, ImageNode } from '../../../utils/lexical/image-node';
-import { INSERT_IMAGE_COMMAND } from '../../../utils/lexical/image-command';
+import { $createImageNode, ImageNode } from '../image-node';
+import { INSERT_IMAGE_COMMAND } from '../image-command';
 import { ImageDialogData, LexicalImagePopupComponent } from '../lexical-image-popup/lexical-image-popup.component';
 import { blockTypeToBlockName, findTopLevelElement, getSelectedNode, indentOverTab, sanitizeUrl, theme, TRANSFORMERS } from 'src/app/modules/utils/lexical/lexical-utils';
 
