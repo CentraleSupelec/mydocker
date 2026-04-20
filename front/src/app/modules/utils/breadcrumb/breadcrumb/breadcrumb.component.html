@@ -12,12 +12,12 @@
 
       <ng-template #link>
         <a class="secondary-color" [routerLink]="[route.url]">
-          {{ route.displayName }}
+          {{ route.displayName | translate }}
         </a>
       </ng-template>
       <ng-template #text>
         <p>
-          {{ route.displayName }}
+          {{ route.displayName | translate }}
         </p>
       </ng-template>
     </ng-template>

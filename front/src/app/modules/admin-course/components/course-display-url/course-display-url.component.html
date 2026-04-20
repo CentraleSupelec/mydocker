@@ -1,10 +1,10 @@
 <div fxLayout="column" [formGroup]="formGroup" style="width: 600px">
   <mat-form-field>
-    <mat-label>Titre</mat-label>
+    <mat-label>{{ 'admin.courses.edit.technical_info.display_options.title' | translate }}</mat-label>
     <input matInput formControlName="title">
   </mat-form-field>
   <mat-form-field>
-    <mat-label>Type</mat-label>
+    <mat-label>{{ 'admin.courses.edit.technical_info.display_options.type' | translate }}</mat-label>
     <mat-select formControlName="customDisplayType">
       <mat-option value="{{ v[0] }}" *ngFor="let v of customDisplayType">{{ v[1] }}</mat-option>
     </mat-select>
@@ -12,11 +12,11 @@
 
   <div *ngIf="formGroup.get('customDisplayType')?.value === 'TEXT'" style="margin-bottom: 20px;" class="link-wrapper">
     <div style="margin-bottom: 20px;">
-      <mat-label>Texte</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.display_options.text' | translate }}</mat-label>
       <app-lexical-editor formControlName="url"></app-lexical-editor>
     </div>
     <div style="margin-bottom: 20px;">
-      Texte rendu :
+      {{ 'admin.courses.edit.technical_info.display_options.text_preview' | translate }} :
     </div>
     <div #contentContainer id="contentContainer"
       [innerHtml]="renderString(formGroup.get('url')?.value)">
@@ -24,9 +24,9 @@
   </div>
   <div *ngIf="formGroup.get('customDisplayType')?.value === 'BUTTON'">
     <mat-form-field style="width: 100%;">
-      <mat-label>Lien</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.display_options.link' | translate }}</mat-label>
       <input matInput formControlName="url">
     </mat-form-field>
-    <p><strong>Lien rendu:</strong> {{ renderString(formGroup.get('url')?.value) }}</p>
+    <p><strong>{{ 'admin.courses.edit.technical_info.display_options.link_preview' | translate }}:</strong> {{ renderString(formGroup.get('url')?.value) }}</p>
   </div>
 </div>

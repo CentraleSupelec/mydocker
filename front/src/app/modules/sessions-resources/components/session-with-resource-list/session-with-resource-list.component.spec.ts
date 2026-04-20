@@ -7,6 +7,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { MatNativeDateModule } from "@angular/material/core";
 import localeFr from '@angular/common/locales/fr';
+import localeEn from '@angular/common/locales/en';
 import { registerLocaleData } from "@angular/common";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
@@ -16,6 +17,7 @@ describe('SessionWithResourceListComponent', () => {
 
   beforeEach(async () => {
     registerLocaleData(localeFr, 'fr');
+    registerLocaleData(localeEn, 'en');
     await TestBed.configureTestingModule({
       declarations: [ SessionWithResourceListComponent ],
       imports: [

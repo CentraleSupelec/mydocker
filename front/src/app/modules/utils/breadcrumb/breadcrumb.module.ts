@@ -8,6 +8,7 @@ import { FlexModule } from '@angular/flex-layout';
 import { UtilsModule } from "../utils.module";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     UtilsModule,
     MatButtonModule,
     MatTooltipModule,
+    TranslateModule
   ],
   exports: [
     BreadcrumbComponent,

@@ -2,11 +2,31 @@
   <div class="card"
     *ngIf="showButtons; else spinner"
     [style.height]="containerDimension"
-    [style.width]="containerDimension">
+    [style.width]="containerDimension"
+  >
+    <mat-menu #langMenu="matMenu">
+      <button
+        mat-menu-item
+        *ngFor="let lang of languages"
+        (click)="switchLang(lang.code)">
+
+        <span style="margin-right: 8px;">
+          {{ lang.flag }}
+        </span>
+
+        {{ lang.label }}
+      </button>
+    </mat-menu>
     <div class="branding">
+      <button class="lang-switcher hidden"  mat-icon-button [matMenuTriggerFor]="langMenu">
+        <span style="font-size: 20px;">{{ currentFlag }}</span>
+      </button>
       <img src="../../../../../assets/Logo_Ecole.png" alt="Logo École">
-      <h2>Bienvenue sur {{appName}} !</h2>
+      <button class="lang-switcher" mat-icon-button [matMenuTriggerFor]="langMenu">
+        <span style="font-size: 20px;">{{ currentFlag }}</span>
+      </button>
     </div>
+    <h2>{{ 'sign_in.welcome' | translate }} {{appName}} !</h2>
 
     <mat-card *ngIf="errorMessage" class="alert-banner" style="margin-bottom: 40px;">
       <div class="alert-content">
@@ -18,8 +38,8 @@
     </mat-card>
 
     <div class="intro">
-      <p *ngIf="!isMagicLink">Connectez-vous avec vos identifiants afin d’accéder à vos activités en ligne</p>
-      <p *ngIf="isMagicLink">Entrez votre adresse email pour recevoir un lien de connexion :</p>
+      <p *ngIf="!isMagicLink">{{ 'sign_in.login' | translate }}</p>
+      <p *ngIf="isMagicLink">{{ 'sign_in.magic_link' | translate }}</p>
     </div>
 
     <div class="magic-link-form" *ngIf="isMagicLink">
@@ -28,28 +48,28 @@
           <mat-label>Email</mat-label>
           <input matInput type="email" [(ngModel)]="email" name="email" required>
         </mat-form-field>
-        <button mat-flat-button color="primary" type="submit">Envoyer le lien de connexion</button>
+        <button mat-flat-button color="primary" type="submit">{{ 'sign_in.magic_link_submit' | translate }}</button>
       </form>
     </div>
 
     <div class="login-buttons" *ngIf="!isMagicLink">
-      <button *ngIf="isCasLoginEnabled" mat-flat-button color="primary" (click)="redirectToCas()">CONNEXION AVEC LE CAS</button>
+      <button *ngIf="isCasLoginEnabled" mat-flat-button color="primary" (click)="redirectToCas()">{{ 'sign_in.cas' | translate }}</button>
       <ng-container *ngIf="isOIDCLoginEnabled">
         <button
           *ngFor="let oidc_idp of config.oidc_idps"
           mat-flat-button
           color="primary"
           (click)="loginOIDC(oidc_idp.idp_hint)"
-          [matTooltip]="oidc_idp.tooltip ?? ''"
+          [matTooltip]="oidc_idp.tooltip ? oidc_idp.tooltip[currentLang] : ''"
           [matTooltipDisabled]="!oidc_idp.tooltip">
-          {{ oidc_idp.title ?? 'CONNEXION AVEC VOTRE ÉTABLISSEMENT' }}
+          {{ oidc_idp.title ? oidc_idp.title[currentLang] : ('sign_in.default_oidc' | translate) }}
         </button>
       </ng-container>
     </div>
 
     <div class="intro" *ngIf="emailSent">
-      <p>Un email vous a été envoyé. Consulter votre email et cliquer sur le lien fourni pour accéder au cours. Le lien expirera dans {{ magicLinkExpirationInMinutes }} {{ magicLinkExpirationInMinutes === 1 ? 'minute': 'minutes' }}</p>
-    </div>    
+      <p>  {{ 'sign_in.email_sent' | translate:{ count: magicLinkExpirationInMinutes } }}</p>
+    </div>
 
     <div class="info-links" *ngIf="showInformation">
       <a
@@ -58,7 +78,7 @@
         color="primary"
         [href]="info.url"
         target="_blank">
-        {{ info.title }}
+        {{ info.title[currentLang] }}
       </a>
     </div>
   </div>

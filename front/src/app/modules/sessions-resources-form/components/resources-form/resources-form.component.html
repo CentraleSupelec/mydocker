@@ -7,11 +7,11 @@
       [resources]="resources"
       [formControl]="$any(control)"
     ></app-resource-form>
-    <button mat-icon-button (click)="remove(index)" [matTooltip]="'Supprimer cette ressource'">
+    <button mat-icon-button (click)="remove(index)" [matTooltip]="'admin.resources_management.resources_by_session.edit.delete_resource' | translate">
       <mat-icon>clear</mat-icon>
     </button>
   </div>
   <div fxLayout="row" fxLayoutAlign="flex-end">
-    <button mat-raised-button color="accent" (click)="addResource()">Ajouter une ressource</button>
+    <button mat-raised-button color="accent" (click)="addResource()">{{ 'admin.resources_management.resources_by_session.edit.add_resource' | translate }}</button>
   </div>
 </div>

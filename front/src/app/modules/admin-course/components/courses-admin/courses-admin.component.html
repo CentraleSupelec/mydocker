@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Administration des cours</h1>
+<h1 class="mat-display-1">{{ 'admin.courses.title' | translate }}</h1>
 
 <app-courses-list
   [stopContainerPolling$]="stopContainerPolling$"
@@ -15,12 +15,12 @@
       target="_blank"
     >
       <mat-icon
-        matTooltip="Tester l'environnement"
+        [matTooltip]="'admin.courses.actions.test' | translate"
       >play_circle_filled</mat-icon>
     </a>
   </ng-container>
 
-  <button mat-icon-button (click)="copyLink($event, element.link)" matTooltip="Copier le lien d'invitation">
+  <button mat-icon-button (click)="copyLink($event, element.link)" [matTooltip]="'admin.courses.actions.copy_invitation_link' | translate">
     <mat-icon>content_copy</mat-icon>
   </button>
 
@@ -28,13 +28,13 @@
     <a
       mat-icon-button
       [routerLink]="[element.id, 'edit']"
-      matTooltip="Editer le cours"
+      [matTooltip]="'admin.courses.actions.edit' | translate"
     >
       <mat-icon>edit</mat-icon>
     </a>
   </ng-container>
-  
-  <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Plus d'actions">
+
+  <button mat-icon-button [matMenuTriggerFor]="menu" [matTooltip]="'admin.courses.actions.more' | translate">
       <mat-icon>arrow_drop_down</mat-icon>
   </button>
 
@@ -52,48 +52,48 @@
   <ng-template #thenBlock>
     <button
       mat-menu-item
-      matTooltip="Accéder aux travaux des étudiants"
+      [matTooltip]="'admin.courses.actions.access_students_work' | translate"
       (click)="askAdminContainer($event, element)"
       *ngIf="element?.saveStudentWork && element?.allowStudentToSubmit"
     >
       <mat-icon class="material-symbols-outlined">home_storage</mat-icon>
-      <span>Accéder aux travaux des étudiants</span>
+      <span>{{ 'admin.courses.actions.access_students_work' | translate }}</span>
     </button>
     <button
       mat-menu-item
       (click)="duplicate(element, $event)"
-      matTooltip="Dupliquer le cours"
+      [matTooltip]="'admin.courses.actions.duplicate' | translate"
     >
       <mat-icon>control_point_duplicate</mat-icon>
-      <span>Dupliquer le cours</span>
+      <span>{{ 'admin.courses.actions.duplicate' | translate }}</span>
     </button>
   </ng-template>
   <ng-template #elseBlock>
     <button
       mat-menu-item
       [routerLink]="[element.id, 'edit']"
-      matTooltip="Voir le cours"
+      [matTooltip]="'admin.courses.actions.view' | translate"
       *ngxPermissionsOnly="['course.' + element.id + '.view']"
     >
       <mat-icon>visibility</mat-icon>
-      <span>Voir le cours</span>
+      <span>{{ 'admin.courses.actions.view' | translate }}</span>
     </button>
     <button
       mat-menu-item
       [routerLink]="[element.id, 'edit']"
-      matTooltip="Voir le cours"
+      [matTooltip]="'admin.courses.actions.view' | translate"
       *ngIf="element.visible"
     >
       <mat-icon>visibility</mat-icon>
-      <span>Voir le cours</span>
+      <span>{{ 'admin.courses.actions.view' | translate }}</span>
     </button>
     <button
       mat-menu-item
       (click)="duplicate(element, $event)"
-      matTooltip="Dupliquer le cours"
+      [matTooltip]="'admin.courses.actions.duplicate' | translate"
     >
       <mat-icon>control_point_duplicate</mat-icon>
-      <span>Dupliquer le cours</span>
+      <span>{{ 'admin.courses.actions.duplicate' | translate }}</span>
     </button>
   </ng-template>
 </ng-template>
@@ -109,7 +109,7 @@
       ></app-display-container>
       <div fxLayout="column" fxLayoutAlign="center center" fxFill>
         <button mat-raised-button color="warn" (click)="forceRecreateAdminContainer(element)">
-          Demander un nouvel environnement
+          {{ 'container.request_new_environment' | translate }}
         </button>
       </div>
       <br>
@@ -118,7 +118,7 @@
     <ng-template #elseBlock>
       <div fxLayout="column" fxLayoutAlign="center center" fxFill>
         <mat-spinner></mat-spinner>
-        <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+        <p style="margin-top: 10px">{{ 'container.wait_creation' | translate }}</p>
       </div>
     </ng-template>
   </div>

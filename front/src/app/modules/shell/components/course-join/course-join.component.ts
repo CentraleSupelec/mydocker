@@ -4,6 +4,7 @@ import { catchError, map } from "rxjs/operators";
 import { mergeMap } from "rxjs/operators";
 import { UserCourseApiService } from "../../services/user-course-api.service";
 import { of } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-course-join',
@@ -16,6 +17,7 @@ export class CourseJoinComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly courseApiService: UserCourseApiService,
     private readonly router: Router,
+    private readonly translate: TranslateService
   ) { }
 
   ngOnInit(): void {
@@ -32,9 +34,9 @@ export class CourseJoinComponent implements OnInit {
             if (err.status === 404) {
               this.router.navigate(['/'], {
                 queryParams: {
-                  error_message: "L’environnement demandé n’est pas disponible."
+                  error_message: this.translate.instant('container.join_error')
                 },
-                replaceUrl: true 
+                replaceUrl: true
               });
               return of(null);
             }

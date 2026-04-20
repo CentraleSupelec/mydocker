@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Créer une nouvelle image docker</h1>
+<h1 class="mat-display-1">{{ 'admin.docker_images.create_new' | translate }}</h1>
 
 <app-docker-image-form
   [formControl]="dockerImageForm"
@@ -6,6 +6,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="dockerImageForm.invalid" (click)="submit()" color="primary">
-     Créer l'image
+    {{ 'admin.docker_images.create_submit' | translate }}
   </button>
 </div>

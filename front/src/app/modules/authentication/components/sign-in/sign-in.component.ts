@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from "@angular/core";
-import { APP_CONFIG, IAppConfig, IInformation } from "../../../../app-config";
+import { APP_CONFIG, IAppConfig, IInformation, Language, LANGUAGES } from "../../../../app-config";
 import { ActivatedRoute, Router } from "@angular/router";
 import { NavigationService } from "../../../utils/services/navigation.service";
 import { OidcSecurityService } from "angular-auth-oidc-client";
@@ -11,6 +11,7 @@ import { UserCourseApiService } from "src/app/modules/shell/services/user-course
 import { TokenService } from "../../services/token.service";
 import { Location } from "@angular/common";
 import { IBasicCourseWithSession } from "src/app/modules/shell/interfaces/course";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: 'app-sign-in',
@@ -32,6 +33,7 @@ export class SignInComponent implements OnInit {
   courseExternalAccessActivated = false;
   errorMessage: string | undefined = undefined;
   magicLinkExpirationInMinutes: number | undefined = undefined
+  languages = LANGUAGES;
 
   constructor(
     @Inject(APP_CONFIG) readonly config: IAppConfig,
@@ -43,7 +45,8 @@ export class SignInComponent implements OnInit {
     private readonly userCourseApiService: UserCourseApiService,
     private readonly tokenService: TokenService,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -68,7 +71,7 @@ export class SignInComponent implements OnInit {
             this.router.navigate(['/shell'], {queryParams: {course_id: course.id}})
           } else {
             this.router.navigate(['/shell'], {queryParams: {
-              error_message: "Le cours n'a pas été trouvé"
+              error_message: this.translate.instant('sign_in.course_not_found')
             }})
           }
         }
@@ -80,14 +83,14 @@ export class SignInComponent implements OnInit {
         next: (externalAccessActivated) => {
           if (!externalAccessActivated) {
             this.router.navigate(['/login'], {
-              state: { error_message: "L'accès par lien de connexion est désactivé pour ce cours" }
+              state: { error_message: this.translate.instant('sign_in.magic_link_deactivated') }
             });
           }
         },
         error: (err) => {
           console.error('Error fetching external access status:', err);
           this.router.navigate(['/login'], {
-            state: { error_message: "Impossible de vérifier l'accès pour ce cours" }
+            state: { error_message: this.translate.instant('sign_in.magic_link_error') }
           });
         }
       });
@@ -151,12 +154,26 @@ export class SignInComponent implements OnInit {
     this.magicLinkService.sendMagicLink(this.email, this.courseUuid)
       .subscribe({
         next: () => this.emailSent = true,
-        error: () => this.errorMessage = "Une erreur s'est produite lors de l'envoi de l'email"
+        error: () => this.errorMessage = this.translate.instant('sign_in.magic_link_email_error')
       }
       );
   }
 
   dismiss() {
     this.errorMessage = undefined;
+  }
+
+  get currentFlag(): string {
+    const language = this.currentLang;
+    return this.languages.find(l => l.code === language)?.flag || '🌐';
+  }
+
+  switchLang(language: string) {
+    this.translate.use(language);
+    localStorage.setItem('language', language);
+  }
+
+  get currentLang(): Language {
+    return ((this.translate.currentLang || this.translate.getDefaultLang()) as Language);
   }
 }

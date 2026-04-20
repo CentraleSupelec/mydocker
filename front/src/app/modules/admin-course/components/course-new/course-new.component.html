@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Créer un nouveau cours</h1>
+<h1 class="mat-display-1">{{ 'admin.courses.create_new' | translate }}</h1>
 
 <app-course-form
   [formControl]="courseForm"
@@ -8,6 +8,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="courseForm.invalid" (click)="submit()" color="primary">
-    Créer le cours
+    {{ 'admin.courses.create_submit' | translate }}
   </button>
 </div>

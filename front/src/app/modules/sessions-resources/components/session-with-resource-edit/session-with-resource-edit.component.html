@@ -1,14 +1,20 @@
-<h1 class="mat-display-1">Affectation des ressources pour la session "{{ session?.title }}" de "{{ session?.course?.title }}"</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.resources_by_session.edit.title' | translate }} "{{ session?.title }}" {{ 'admin.resources_management.resources_by_session.edit.of' | translate }} "{{ session?.course?.title }}"</h1>
 
 <div class="mat-elevation-z3 form-container">
   <div fxLayout="row" fxLayoutAlign="space-around center">
-    <p><strong>Date de début:</strong> {{ session?.startDateTime | date: 'le dd/MM/yy à HH:mm' }}</p>
-    <p><strong>Date de fin:</strong> {{ session?.endDateTime | date: 'le dd/MM/yy à HH:mm' }}</p>
-    <p><strong>Nombre d'élèves:</strong> {{ session?.studentNumber }}</p>
+    <p>
+      <strong>{{ 'admin.resources_management.resources_by_session.edit.start_date' | translate }}:</strong>
+      {{ session?.startDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
+    </p>
+    <p>
+      <strong>{{ 'admin.resources_management.resources_by_session.edit.end_date' | translate }}:</strong>
+      {{ session?.endDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
+    </p>
+    <p><strong>{{ 'admin.resources_management.resources_by_session.edit.student_count' | translate }}:</strong> {{ session?.studentNumber }}</p>
   </div>
   <br>
   <div style="padding: 20px;">
-    <strong>Description:</strong>
+    <strong>{{ 'admin.resources_management.resources_by_session.edit.description' | translate }}:</strong>
     <div style="margin-top: 20px;" [innerHTML]="session.course.description"></div>
   </div>
   <br>
@@ -23,7 +29,7 @@
         'error': ramSet < 0.75 * ramRequired
       }"
     >
-      <strong>{{ ramSet }} Go</strong>&nbsp;alloués sur&nbsp;<strong>{{ ramRequired | number}} Go</strong>&nbsp;requis
+      <strong>{{ ramSet }} Go</strong>&nbsp;{{ 'admin.resources_management.resources_by_session.edit.allocated_out_of' | translate }}&nbsp;<strong>{{ ramRequired | number}} Go</strong>&nbsp;{{ 'admin.resources_management.resources_by_session.edit.required' | translate }}
     </div>
     <div
       fxLayout="row"
@@ -35,7 +41,7 @@
         'error': cpuSet < 0.75 * cpuRequired
       }"
     >
-      <strong>{{ cpuSet }} vCPU</strong>&nbsp;alloués sur&nbsp;<strong>{{ cpuRequired | number }} vCPU</strong>&nbsp;requis
+      <strong>{{ cpuSet }} vCPU</strong>&nbsp;{{ 'admin.resources_management.resources_by_session.edit.allocated_out_of' | translate }}&nbsp;<strong>{{ cpuRequired | number }} vCPU</strong>&nbsp;{{ 'admin.resources_management.resources_by_session.edit.required' | translate }}
     </div>
   </div>
 </div>
@@ -47,7 +53,7 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="control.invalid || !control.dirty" (click)="submit()" color="primary">
-    Sauvegarder les changements
+    {{ 'admin.resources_management.resources_by_session.edit.save' | translate }}
   </button>
 </div>
 

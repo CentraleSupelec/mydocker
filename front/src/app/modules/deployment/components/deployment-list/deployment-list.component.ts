@@ -9,6 +9,7 @@ import { mergeMap } from "rxjs/operators";
 import { filter } from "rxjs/operators";
 import { IOvhResource } from "../../../sessions-resources/interfaces/ovh-resource";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-deployment-list',
@@ -25,6 +26,7 @@ export class DeploymentListComponent implements OnInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly deploymentApiService: DeploymentApiService,
     private readonly dialogConfirmService: ConfirmDialogService,
+    private readonly translate: TranslateService
   ) { }
 
   ngOnInit(): void {
@@ -45,7 +47,10 @@ export class DeploymentListComponent implements OnInit {
 
   delete(deployment: IDeployment) {
     this.dialogConfirmService.confirm({
-      text: 'Confirmez-vous la suppression du déploiement du ' + formatDate(deployment.startDateTime, 'd MMMM y à hh:mm', 'fr') + ' ?'
+      text: this.translate.instant('admin.resources_management.deployment.actions.delete_confirmation', {
+        date: formatDate(deployment.startDateTime, 'd MMMM y', this.translate.currentLang),
+        time: formatDate(deployment.startDateTime, 'hh:mm', this.translate.currentLang)
+      })
     }).pipe(
       filter(confirm => confirm),
       mergeMap(() => this.deploymentApiService.deleteDeployment(deployment.id)),

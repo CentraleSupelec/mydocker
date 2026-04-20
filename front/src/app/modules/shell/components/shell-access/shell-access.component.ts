@@ -5,7 +5,6 @@ import { catchError, map, mergeMap, switchMap, takeUntil } from "rxjs/operators"
 import {
   ContainerStatus,
   ContainerSwarmState,
-  ContainerSwarmStateMessages,
   IContainer,
 } from "../../interfaces/container";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
@@ -17,6 +16,7 @@ import { SnackNotificationService } from '../../../utils/snack-notification/snac
 import { DesktopNotificationService } from '../../../utils/services/desktop-notification.service';
 import { NgxPermissionsObject, NgxPermissionsService } from "ngx-permissions";
 import { Roles } from "../../../admin-users/interfaces/roles";
+import { TranslateService } from '@ngx-translate/core';
 
 
 const ContainerSwarmStateOrder = [
@@ -73,6 +73,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     private readonly snackNotificationService: SnackNotificationService,
     private readonly desktopNotificationService: DesktopNotificationService,
     private readonly ngxPermissionsService: NgxPermissionsService,
+    private readonly translate: TranslateService
   ) {
   }
 
@@ -127,7 +128,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
           return this.containerApiService.initGetContainer(this.session?.id, false).pipe(
             map(() => ({ container: null, recovered: true } as  IPolling)),
             catchError(err => {
-              console.error('Error intializing container:', err);
+              console.error(this.translate.instant('container.initializing_error'), err);
               return of({ container: null, recovered: false } as  IPolling);
             })
           );
@@ -135,7 +136,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
           return this.containerApiService.getContainer(this.sessionCourseOrCourse?.id).pipe(
             map(container => ({ container, recovered: false } as  IPolling)),
             catchError(err => {
-              console.error('Error fetching container:', err);
+              console.error(this.translate.instant('container.fetch_error'), err);
               this.recovering = true;
               return of({ container: null, recovered: false } as  IPolling);
             })
@@ -155,7 +156,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
           this.container = container;
           const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
           this.step =  index * 100 / ContainerSwarmStateOrder.length;
-          this.stepMessage = `${ContainerSwarmStateMessages[container.state ?? ContainerSwarmState.UNKNOWN]} (étape ${index + 1}/${ContainerSwarmStateOrder.length})`;
+          this.stepMessage = `${this.translate.instant(`container.steps.${(container.state ?? ContainerSwarmState.UNKNOWN).toLowerCase()}`)} (${this.translate.instant('container.step')} ${index + 1}/${ContainerSwarmStateOrder.length})`;
           if (container.status === ContainerStatus.OK || (container.state === ContainerSwarmState.RUNNING && container.status !== ContainerStatus.CHECKING)) {
             this.state = 'container_created';
             this.stopInitPolling$.next();
@@ -187,8 +188,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     if (timeoutDuration > 0) {
       this.warningTimeoutId = window.setTimeout(() => {
         this.desktopNotificationService.notify(
-          'Votre environnement va s\'éteindre',
-          'Si nécessaire, réinitialisez le minuteur pour retarder l\'extinction.'
+          this.translate.instant('container.shutdown_notification'),
+          this.translate.instant('container.shutdown_delay_explanation')
         );
         window.clearTimeout(this.warningTimeoutId);
         }, timeoutDuration
@@ -211,7 +212,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
           this.stopShutdownPolling$.next();
         } else if (container?.error) {
           this.state = 'container_created';
-          this.snackNotificationService.push(`Impossible d'éteindre l'environnement`, 'error');
+          this.snackNotificationService.push(this.translate.instant('container.cannot_shutdown'), 'error');
           this.stopShutdownPolling$.next();
         }
       }
@@ -220,8 +221,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
   askNewEnvWithConfirmationDialog() {
     this.dialogConfirmService.confirm({
-      title: 'Confirmez-vous la demande d\'un nouvel environnement ?',
-      text: 'Demander un nouvel environnement supprimera l\'ancien.'
+      title: this.translate.instant('container.confirm_env_request'),
+      text: this.translate.instant('container.confirm_env_request_warning')
     }).subscribe(
       (confirm:boolean) => {
         if(confirm) {
@@ -263,7 +264,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   canEditCourse(courseId?: number): boolean {
     return !!this.userPermissions?.[`course.${courseId}.edit`]
       || !!this.userPermissions?.[`course.${courseId}.creator`]
-      || !!this.userPermissions?.[Roles.Admin];
+      || !!this.userPermissions?.[Roles.admin];
   }
 
   fetchLogs() {
@@ -275,7 +276,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   deleteEnvWithConfirmationDialog() {
     this.dialogConfirmService
       .confirm({
-        text: 'Confirmez-vous l\'extinction de l\'environnement ?',
+        text: this.translate.instant('container.confirm_shutdown'),
       })
       .subscribe((confirm:boolean) => {
         if(confirm) {

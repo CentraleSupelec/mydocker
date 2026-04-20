@@ -3,7 +3,7 @@
     <mat-card-content [formGroup]="formGroup" fxLayoutGap="15px">
       <mat-form-field style="width: 15vw; min-width: 200px;">
         <input matInput type="search"
-          placeholder="Recherche par nom du cours"
+          [placeholder]="'admin.courses.search' | translate"
           formControlName="query"/>
         <button
           *ngIf="formGroup.get('query')?.value"
@@ -23,7 +23,7 @@
       <app-datetime-picker
           [dateOnly]="true"
           formControlName="dateLimit"
-          [matTooltip]="'Date limite pour déterminer le nombre d\'utilisateurs récents'"
+          [matTooltip]="'admin.courses.date_search_tooltip' | translate"
         >
       </app-datetime-picker>
     </mat-card-content>
@@ -32,7 +32,7 @@
     <mat-card-content fxLayoutGap="15px">
     <div>
       <a mat-raised-button color="primary" [routerLink]="'/admin/courses/new'">
-        Créer un cours
+        {{ 'admin.courses.create' | translate }}
       </a>
     </div>
     </mat-card-content>
@@ -48,30 +48,30 @@
     </mat-cell>
   </ng-container>
   <ng-container matColumnDef="title">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Nom du cours</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.courses.columns.name' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element">
       <span [matTooltip]="element.description | removeMarkdown | truncate:200" [matTooltipPosition]="'above'">{{ element.title }}</span>
     </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="creator">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Créateur</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.courses.columns.creator' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.creator }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="createdOn">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Date de création</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.createdOn | date : 'd MMMM y' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.courses.columns.creation_date' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.createdOn | translatedDate :'d MMMM y':null:true }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="numberOfUsers">
     <mat-header-cell
       *matHeaderCellDef
       mat-sort-header
-      matTooltip="Nombre d’utilisateurs ayant lancé au moins une fois l’environnement"
+      [matTooltip]="'admin.courses.columns.user_count_tooltip' | translate"
       [matTooltipPosition]="'above'"
     >
-      Nombre d'utilisateurs
+      {{ 'admin.courses.columns.user_count' | translate }}
     </mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.numberOfUsers }}</mat-cell>
   </ng-container>
@@ -81,10 +81,10 @@
     <mat-header-cell
       *matHeaderCellDef
       mat-sort-header
-      matTooltip="Nombre d’utilisateurs ayant un environnement en cours d’exécution"
+      [matTooltip]="'admin.courses.columns.live_user_count_tooltip' | translate"
       [matTooltipPosition]="'above'"
     >
-      Nombre d'utilisateurs en cours
+      {{ 'admin.courses.columns.live_user_count' | translate }}
     </mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.numberOfConnectedUsers }}</mat-cell>
   </ng-container>
@@ -94,10 +94,10 @@
     <mat-header-cell
       *matHeaderCellDef
       mat-sort-header
-      matTooltip="Nombre d’utilisateurs récents"
+      [matTooltip]="'admin.courses.columns.recent_user_count_tooltip' | translate"
       [matTooltipPosition]="'above'"
     >
-      Nombre d'utilisateurs récents
+      {{ 'admin.courses.columns.recent_user_count' | translate }}
     </mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.numberOfRecentUsers }}</mat-cell>
   </ng-container>

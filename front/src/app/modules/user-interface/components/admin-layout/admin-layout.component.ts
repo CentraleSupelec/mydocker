@@ -1,9 +1,10 @@
 import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
-import {APP_CONFIG, IAppConfig, IInformation} from "../../../../app-config";
+import {APP_CONFIG, IAppConfig, IInformation, Language, LANGUAGES} from "../../../../app-config";
 import {AuthService} from "../../../authentication/services/auth.service";
 import {APP_MODE, AppModeService} from "../../../utils/services/app-mode.service";
 import {BehaviorSubject} from "rxjs";
 import { TokenService } from "../../../authentication/services/token.service";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './admin-layout.component.html',
@@ -14,6 +15,7 @@ export class AdminLayoutComponent implements OnInit {
   email = '';
   appName: string | undefined = '';
   information: IInformation[] | undefined = [];
+  languages = LANGUAGES;
 
   courseRoute = new BehaviorSubject<string>('/admin/courses');
   constructor(
@@ -21,7 +23,8 @@ export class AdminLayoutComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly appModeService: AppModeService,
     private readonly cd: ChangeDetectorRef,
-    private readonly tokenService: TokenService
+    private readonly tokenService: TokenService,
+    private translate: TranslateService
   ) { }
 
   ngOnInit() {
@@ -44,5 +47,19 @@ export class AdminLayoutComponent implements OnInit {
 
   logout() {
     this.authService.signOut();
+  }
+
+  get currentFlag(): string {
+    const language = this.currentLang;
+    return this.languages.find(l => l.code === language)?.flag || '🌐';
+  }
+
+  switchLang(language: string) {
+    this.translate.use(language);
+    localStorage.setItem('language', language);
+  }
+
+  get currentLang(): Language {
+    return ((this.translate.currentLang || this.translate.getDefaultLang()) as Language);
   }
 }

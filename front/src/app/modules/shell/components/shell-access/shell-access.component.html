@@ -10,10 +10,10 @@
       class="logs-button"
       mat-icon-button
       (click)="fetchLogs()"
-      matTooltip="Voir les logs du service"
+      [matTooltip]="'container.service_logs' | translate"
     >
       <mat-icon>playlist_add_check</mat-icon>
-      Logs
+      {{ 'container.logs' | translate }}
     </button>
   </div>
 </div>
@@ -35,10 +35,10 @@
         </app-save-state>
         <div fxLayout="column" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="container?.status === 'OK'">
           <p class="information">
-            En cas de problème ou si l'environnement ne répond pas, vous pouvez l'éteindre et en demander un nouveau.
+            {{ 'container.problem' | translate }}
           </p>
           <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
-            Éteindre l'environnement
+            {{ 'container.shutdown' | translate }}
           </button>
         </div>
       </div>
@@ -47,32 +47,32 @@
 
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_init'">
     <mat-spinner></mat-spinner>
-    <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès</p>
+    <p style="margin-top: 10px">{{ 'container.wait_creation' | translate }}</p>
   </div>
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'pending'">
     <mat-progress-bar mode="buffer" [value]="step"></mat-progress-bar>
     <p style="margin-top: 10px">{{ stepMessage }}</p>
     <div style="margin-top: 30px">
       <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
-        Éteindre l'environnement
+        {{ 'container.shutdown' | translate }}
       </button>
     </div>
   </div>
 
   <div fxLayout="column" fxLayoutAlign="center center" *ngSwitchCase="'loading_shutdown'">
     <mat-spinner></mat-spinner>
-    <p style="margin-top: 10px">Veuillez patienter pendant l'extinction...</p>
+    <p style="margin-top: 10px">{{ 'container.wait_shutdown' | translate }}</p>
   </div>
 
   <div fxLayout="column" fxLayoutAlign="center center" fxFill *ngSwitchCase="'ask'">
     <div *ngIf="canAskContainer(); then thenBlock else elseBlock"></div>
     <ng-template #thenBlock>
       <button mat-raised-button color="primary" (click)="initGetContainer()">
-        Demander un environnement
+        {{ 'container.request_environment' | translate }}
       </button>
     </ng-template>
     <ng-template #elseBlock>
-      <strong>Il n'est pas possible de demander un environnement avant l'heure de début de la session</strong>
+      <strong>{{ 'container.request_blocked' | translate }}</strong>
     </ng-template>
   </div>
 </div>

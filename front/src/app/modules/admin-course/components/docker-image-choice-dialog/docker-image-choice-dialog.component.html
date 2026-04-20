@@ -1,9 +1,9 @@
-<h1 mat-dialog-title>Choix d'une image docker</h1>
+<h1 mat-dialog-title>{{ 'admin.courses.edit.technical_info.docker_image.choice' | translate }}</h1>
 
 <div mat-dialog-content>
   <div fxLayout="column">
     <mat-form-field>
-      <mat-label>Image docker</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.docker_image.label' | translate }}</mat-label>
       <input type="text"
              aria-label="Image docker"
              matInput
@@ -21,12 +21,12 @@
       </mat-autocomplete>
     </mat-form-field>
     <mat-form-field>
-      <mat-label>Choix du build</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.docker_image.build' | translate }}</mat-label>
       <mat-select [disabled]="buildChoiceDisabled" (selectionChange)="this.chosenDockerImageBuild = $event.value">
         <mat-select-trigger>
           {{
             chosenDockerImageBuild ?
-              chosenDockerImageBuild.id + ' | ' + (chosenDockerImageBuild.updatedOn | date: 'd MMM y à HH:mm'): ''
+              chosenDockerImageBuild.id + ' | ' + (chosenDockerImageBuild.updatedOn | translatedDate: 'd MMM y':'HH:mm':true): ''
           }}
         </mat-select-trigger>
         <mat-option *ngFor="let option of dockerImageBuilds" [value]="option">
@@ -34,7 +34,8 @@
             <app-docker-image-build-status
               [status]="option.status"
             ></app-docker-image-build-status>
-            <span>{{ option.id }} | {{ option.updatedOn | date: 'd MMM y à HH:mm' }}</span>
+            <span>
+              {{ option.id }} | {{ option.updatedOn | translatedDate: 'd MMM y':'HH:mm':true }}</span>
           </div>
         </mat-option>
       </mat-select>
@@ -50,9 +51,9 @@
     mat-raised-button
     type="button"
   >
-    Confirmer
+  {{ 'admin.courses.edit.technical_info.docker_image.confirm' | translate }}
   </button>
   <button type="button" mat-button color="primary" (click)="dialogRef.close(null)">
-    Annuler
+    {{ 'admin.courses.edit.technical_info.docker_image.cancel' | translate }}
   </button>
 </div>

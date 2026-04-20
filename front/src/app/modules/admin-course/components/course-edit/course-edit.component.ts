@@ -9,6 +9,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { CoursePermissionService } from "../../services/course-permission.service";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-course-edit',
@@ -28,7 +29,8 @@ export class CourseEditComponent implements OnInit {
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly matDialog: MatDialog,
     private readonly coursePermissionService: CoursePermissionService,
-    private readonly cd: ChangeDetectorRef
+    private readonly cd: ChangeDetectorRef,
+    private readonly translate: TranslateService
   ) {
     this.courseForm = formBuilder.control({});
   }
@@ -61,8 +63,8 @@ export class CourseEditComponent implements OnInit {
     if (this.course) {
       this.toasterService.toast(
         this.adminCoursesApi.updateCourse(this.course.id, this.courseForm.value),
-        "Le cours a bien été mis à jour",
-        "Erreur lors de la sauvegarde du cours",
+        this.translate.instant('admin.courses.edit.success'),
+        this.translate.instant('admin.courses.edit.error'),
         false,
         ['/admin/courses']
       )

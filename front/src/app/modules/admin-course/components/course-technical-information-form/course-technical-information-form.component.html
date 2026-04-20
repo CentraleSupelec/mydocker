@@ -1,20 +1,20 @@
 <div [formGroup]="courseTechnicalForm" fxLayout="column">
   <div fxLayout="row" fxFlexFill fxLayoutAlign="start center" fxLayoutGap="30px">
     <mat-form-field style="width: 50%">
-      <mat-label>Image docker</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.docker_image.label' | translate }}</mat-label>
       <input matInput formControlName="dockerImage">
     </mat-form-field>
     <button mat-raised-button color="primary" (click)="openDialog()" [disabled]="courseTechnicalForm.disabled">
-      À partir d'une image docker existante
+      {{ 'admin.courses.edit.technical_info.docker_image.import' | translate }}
     </button>
   </div>
-  <h2>Ports:</h2>
+  <h2>{{ 'admin.courses.edit.technical_info.ports.label' | translate }}:</h2>
   <app-ports-form
     formControlName="ports"
   ></app-ports-form>
 
   <mat-form-field>
-    <mat-label>Commande</mat-label>
+    <mat-label>{{ 'admin.courses.edit.technical_info.command' | translate }}</mat-label>
     <input matInput formControlName="command" type="text">
   </mat-form-field>
   <br>
@@ -22,24 +22,24 @@
   <br>
   <div fxLayout="row" fxFlexFill fxLayout.lt-md="column" fxLayoutGap="16px">
     <mat-form-field>
-      <mat-label>Charge de travail</mat-label>
-      <mat-select formControlName="computeTypeId" matTooltip="Choisissez GPU uniquement si l'environnement nécessite une carte graphique.">
+      <mat-label>{{ 'admin.courses.edit.technical_info.compute_type' | translate }}</mat-label>
+      <mat-select formControlName="computeTypeId" [matTooltip]="'admin.courses.edit.technical_info.compute_type_tooltip' | translate">
         <mat-option [value]="v.id" *ngFor="let v of computeTypes">
           {{ v.displayName }}
         </mat-option>
       </mat-select>
     </mat-form-field>
     <mat-form-field>
-      <mat-label>Limite CPU (en VCPU)</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.cpu_limit' | translate }}</mat-label>
       <input matInput formControlName="nanoCpusLimit" type="number">
     </mat-form-field>
     <mat-form-field>
-      <mat-label>Limite RAM (en Go)</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.memory_limit' | translate }}</mat-label>
       <input matInput formControlName="memoryBytesLimit" type="number">
     </mat-form-field>
   </div>
   <mat-checkbox formControlName="saveStudentWork" (change)="changeSaveStudentWork($event.checked)">
-    Sauvegarder le travail de l'étudiant
+    {{ 'admin.courses.edit.technical_info.save_student_work.label' | translate }}
   </mat-checkbox>
   <div
     fxLayout="row"
@@ -50,15 +50,15 @@
      *ngIf="courseTechnicalForm.get('saveStudentWork')?.value"
   >
     <mat-form-field>
-      <mat-label>Taille du stockage (en Mo)</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.save_student_work.size' | translate }}</mat-label>
       <input matInput formControlName="workdirSize" type="number">
     </mat-form-field>
     <mat-form-field>
-      <mat-label>Chemin du dossier à sauvegarder</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.save_student_work.path' | translate }}</mat-label>
       <input matInput formControlName="workdirPath">
     </mat-form-field>
     <mat-checkbox formControlName="allowStudentToSubmit">
-      Activer le rendu du travail de l'étudiant
+      {{ 'admin.courses.edit.technical_info.save_student_work.allow_submit' | translate }}
     </mat-checkbox>
   </div>
   <br>
@@ -66,7 +66,11 @@
     formControlName="useStudentVolume"
     (change)="changeUseStudentVolume($event.checked)"
   >
-    <span matTooltip="Met à disposition de l'élève un espace de stockage partagé entre les différents cours">Activer le répertoire personnel de l'élève</span>
+    <span
+      [matTooltip]="'admin.courses.edit.technical_info.use_student_volume.tooltip' | translate"
+    >
+      {{ 'admin.courses.edit.technical_info.use_student_volume.label' | translate }}
+    </span>
   </mat-checkbox>
   <div
     fxLayout="row"
@@ -77,19 +81,19 @@
      *ngIf="courseTechnicalForm.get('useStudentVolume')?.value"
   >
     <mat-form-field>
-      <mat-label>Chemin du volume étudiant</mat-label>
+      <mat-label>{{ 'admin.courses.edit.technical_info.use_student_volume.path' | translate }}</mat-label>
       <input matInput formControlName="studentVolumePath">
     </mat-form-field>
     <mat-form-field>
-      <mat-label>UID de l'utilisateur de l'image Docker</mat-label>
-      <input matInput formControlName="uid" matTooltip="Utilisé pour changer l'appartenance des dossiers partagés.">
+      <mat-label>{{ 'admin.courses.edit.technical_info.use_student_volume.uid' | translate }}</mat-label>
+      <input matInput formControlName="uid" [matTooltip]="'admin.courses.edit.technical_info.use_student_volume.uid_tooltip' | translate">
     </mat-form-field>
   </div>
   <br>
   <mat-expansion-panel>
     <mat-expansion-panel-header>
       <mat-panel-title>
-        Options d'affichage
+        {{ 'admin.courses.edit.technical_info.display_options.label' | translate }}
       </mat-panel-title>
     </mat-expansion-panel-header>
     <app-course-display-form

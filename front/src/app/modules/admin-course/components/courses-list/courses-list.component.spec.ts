@@ -10,9 +10,11 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { MatNativeDateModule } from '@angular/material/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
+import localEn from '@angular/common/locales/en';
 import { LOCALE_ID } from '@angular/core';
 
 registerLocaleData(localeFr);
+registerLocaleData(localEn);
 
 describe('CoursesListComponent', () => {
   let component: CoursesListComponent;

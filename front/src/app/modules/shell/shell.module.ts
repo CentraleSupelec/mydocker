@@ -30,6 +30,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { LogDialogModule } from "../log-dialog/log-dialog.module";
 import { CountdownComponent } from './components/countdown/countdown.component';
 import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { TranslateModule } from '@ngx-translate/core';
+import { UtilsModule } from '../utils/utils.module';
 
 
 @NgModule({
@@ -65,6 +67,8 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
         MatTooltipModule,
         LogDialogModule,
         MatProgressBarModule,
+        TranslateModule,
+        UtilsModule
     ],
   providers: [
     {

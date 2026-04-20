@@ -6,6 +6,7 @@ import { DeepLinkingComponent } from './components/deep-linking/deep-linking.com
 import { MatButtonModule } from '@angular/material/button';
 import { AdminCourseModule } from '../admin-course/admin-course.module';
 import {MatTooltipModule} from "@angular/material/tooltip";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
@@ -19,7 +20,8 @@ import {MatTooltipModule} from "@angular/material/tooltip";
         LtiRoutingModule,
         MatButtonModule,
         AdminCourseModule,
-        MatTooltipModule
+        MatTooltipModule,
+        TranslateModule
     ]
 })
 export class LtiModule { }

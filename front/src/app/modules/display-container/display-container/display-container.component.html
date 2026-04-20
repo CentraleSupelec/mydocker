@@ -32,7 +32,9 @@
       style="max-width: 500px;"
       *ngIf="displayUsername()"
     >
-      <mat-label style="color: rgba(0, 0, 0, 0.87)">Username</mat-label>
+      <mat-label style="color: rgba(0, 0, 0, 0.87)">
+        {{ 'container.username' | translate }}
+      </mat-label>
       <input matInput disabled value="{{ container?.username }}">
       <button mat-icon-button matSuffix (click)="copyText(container?.username)">
         <mat-icon>content_copy</mat-icon>
@@ -44,7 +46,9 @@
       style="max-width: 500px;"
       *ngIf="displayPassword()"
     >
-      <mat-label style="color: rgba(0, 0, 0, 0.87)">Mot de passe</mat-label>
+      <mat-label style="color: rgba(0, 0, 0, 0.87)">
+        {{ 'container.password' | translate }}
+      </mat-label>
       <input matInput disabled value="{{ container?.password }}">
       <button mat-icon-button matSuffix (click)="copyText(container?.password)">
         <mat-icon>content_copy</mat-icon>
@@ -55,28 +59,22 @@
 
 <ng-template #elseBlock>
   <p *ngIf="container?.creationError; else noCreationError">
-    Impossible de démarrer, car <span [innerHTML]="container | renderCreationError"></span>
+    {{ 'container.impossible_to_start' | translate }} <span [innerHTML]="container | renderCreationError"></span>
   </p>
   <ng-template #noCreationError>
-    <p>Le démarrage de votre environnement a échoué (état : "{{ ContainerSwarmStateMessages[container?.state ?? ContainerSwarmState.UNKNOWN] }}"). Trois causes
-      principales sont à envisager:
+    <p>
+      {{ 'container.impossible_to_start_causes' | translate:{ name: ('container.steps.' + (container?.state ?? ContainerSwarmState.UNKNOWN) | lowercase) } }}
     </p>
     <ul>
-      <li>Le téléchargement vers MyDocker de l'<strong>image</strong> (les logiciels) de l'environnement a pris trop
-        de temps. Ce téléchargement est incrémental et mémorisé d'une
-        fois sur l'autre. Vous pouvez réessayer quelques fois de
-        relancer l'environnement en rechargeant cette page.</li>
-      <li>L'environnement est mal configuré. Nous vous recommandons
-        alors de contacter les auteurs de l'environnement.
-      </li>
-      <li>Tous les serveurs alloués à cet environnement sont
-        actuellement utilisés. Vous pourrez réessayer ultérieurement.
-      </li>
+      <li>{{ 'container.impossible_to_start_cause_1' | translate }}</li>
+      <li>{{ 'container.impossible_to_start_cause_2' | translate }}</li>
+      <li>{{ 'container.impossible_to_start_cause_3' | translate }}</li>
+
     </ul>
   </ng-template>
   <p class="shutdown-paragraph">
     <button mat-raised-button color="warn" (click)="onDeleteEnv()">
-      Éteindre l'environnement
+      {{ 'container.shutdown' | translate }}
     </button>
   </p>
 </ng-template>

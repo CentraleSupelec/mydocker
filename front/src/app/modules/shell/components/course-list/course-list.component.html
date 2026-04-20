@@ -8,10 +8,13 @@
 </mat-card>
 <div class="welcome-content" *ngIf="welcomeContent?.enabled" [innerHtml]="welcomeContent?.richText">
 </div>
-<h1 class="mat-display-2">Environnements</h1>
+<h1 class="mat-display-2">{{ 'student.environments' | translate }}</h1>
 <div *ngIf="planified && planified.length > 0">
   <h2 class="mat-display-1" >
-    <span matTooltip="Retrouvez ici vos activités prévues dans moins d’une semaine" matTooltipPosition="above">Planifiés</span>
+    <span
+      [matTooltip]="'student.planified_tooltip' | translate" matTooltipPosition="above">
+      {{ 'student.planified' | translate }}
+    </span>
   </h2>
   <div
     *ngFor="let element of planified"
@@ -27,7 +30,11 @@
         <mat-panel-title class="panel-title" fxLayout="row" fxLayoutAlign="space-between center">
           <b>{{ element.title }}</b>
           <div>
-            <span [matTooltip]="(element.sessions?.[0]?.startDateTime | date : 'dd/MM/yyyy à HH\'h\'mm') || ''" [matTooltipPosition]="'above'">{{ getDaysUntil(element.sessions[0].startDateTime) }}</span>
+            <span
+              [matTooltip]="element.sessions?.[0]?.startDateTime | translatedDate:'dd/MM/yyyy':'HH\'h\'mm' "
+              [matTooltipPosition]="'above'"
+            >
+              {{ getDaysUntil(element.sessions[0].startDateTime) }}</span>
             <span *ngIf="element.sessions[0].title">: {{ element.sessions[0].title }}</span>
           </div>
         </mat-panel-title>
@@ -45,7 +52,7 @@
 </div>
 
 <div *ngIf="past && past.length > 0" style="margin-top: 50px;">
-  <h2 class="mat-display-1" >Utilisés précédemment</h2>
+  <h2 class="mat-display-1" >{{ 'student.previously_used' | translate }}</h2>
   <div
     *ngFor="let element of past"
     class="session-container"
@@ -60,7 +67,12 @@
         <mat-panel-title class="panel-title" fxLayout="row" fxLayoutAlign="space-between center">
           <b>{{ element.title }}</b>
           <div>
-            <span [matTooltip]="(element.lastStartDate ?? element.createdAt | date : 'dd/MM/yyyy à HH\'h\'mm') || ''" [matTooltipPosition]="'above'">{{ getDaysUntil(element.lastStartDate ?? element.createdAt) }}</span>
+            <span
+              [matTooltip]="element.lastStartDate ?? element.createdAt | translatedDate:'dd/MM/yyyy':'HH\'h\'mm' "
+              [matTooltipPosition]="'above'"
+            >
+              {{ getDaysUntil(element.lastStartDate ?? element.createdAt) }}
+            </span>
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
@@ -77,9 +89,9 @@
 </div>
 
 <div *ngIf="planified && planified.length === 0 && past && past.length === 0" class="session-container center-message">
-  <h3>Aucun cours disponible</h3>
+  <h3>{{ 'student.no_data' | translate }}</h3>
   <p *ngIf="showInformationMessage">
-    L'historique des environnements auxquels vous avez accédés est actuellement vide.
-    Vous trouverez dans notre <a mat-button color="primary" [href]="documentationUrl" target="_blank">documentation</a> des propositions d'environnements génériques mis à votre disposition.
+    {{ 'student.no_data_explanation' | translate }}
+    {{ 'student.find' | translate }} <a mat-button color="primary" [href]="documentationUrl" target="_blank">{{ 'student.documentation' | translate }}</a> {{ 'student.propositions' | translate }}
   </p>
 </div>

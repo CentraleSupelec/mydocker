@@ -15,7 +15,7 @@
             style="color: green"
           >verified
           </mat-icon>
-          <p class="mat-caption">Déploiements programmés</p>
+          <p class="mat-caption">{{ 'admin.courses.edit.general_info.sessions.scheduled_deployments' | translate }}</p>
         </div>
       </ng-template>
       <ng-template #elseBlock>
@@ -26,8 +26,12 @@
             style="color: red"
           >error
           </mat-icon>
-          <p class="mat-caption" *ngIf="!isDisabled">Déploiement manquant</p>
-          <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link" [disabled]="isDisabled"><mat-icon>mail</mat-icon>Demander les déploiements<br />pour l'environnement</a>
+          <p class="mat-caption" *ngIf="!isDisabled">{{ 'admin.courses.edit.general_info.sessions.missing_deployment' | translate }}</p>
+          <a [href]="askDeploymentEmailLink" mat-button color="primary" class="email-link" [disabled]="isDisabled"><mat-icon>mail</mat-icon>
+            {{ 'admin.courses.edit.general_info.sessions.deploy_ask_line_1' | translate }}
+            <br />
+            {{ 'admin.courses.edit.general_info.sessions.deploy_ask_line_2' | translate }}
+          </a>
         </div>
       </ng-template>
     </div>
@@ -36,9 +40,17 @@
     </button>
   </div>
   <div *ngIf="isSessionDisabled(control)" fxLayout="row" fxLayoutAlign="center center">
-    <p class="mat-caption locked-explanation">Cette session ne peut pas être modifiée<br /> car un déploiement y est associé.</p>
+    <p class="mat-caption locked-explanation">
+      {{ 'admin.courses.edit.general_info.sessions.locked_explanation_line_1' | translate }}
+      <br />
+      {{ 'admin.courses.edit.general_info.sessions.locked_explanation_line_2' | translate }}
+    </p>
     <p>
-      <a [href]="askSessionChangeEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>Demander une modification<br />au support</a>
+      <a [href]="askSessionChangeEmailLink" mat-button color="primary" class="email-link"><mat-icon>mail</mat-icon>
+        {{ 'admin.courses.edit.general_info.sessions.ask_change_line_1' | translate }}
+        <br />
+        {{ 'admin.courses.edit.general_info.sessions.ask_change_line_2' | translate }}
+      </a>
     </p>
   </div>
 </div>
@@ -49,6 +61,6 @@
     (click)="addSession()"
     [disabled]="isDisabled"
   >
-    Ajouter une session
+    {{ 'admin.courses.edit.general_info.sessions.add' | translate }}
   </button>
 </div>

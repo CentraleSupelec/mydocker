@@ -5,6 +5,7 @@ import { IOvhResource } from "../../interfaces/ovh-resource";
 import { FormBuilder, FormControl } from "@angular/forms";
 import { SessionWithResourcesApiService } from "../../services/session-with-resources-api.service";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
+import { TranslateService } from '@ngx-translate/core';
 
 
 @Component({
@@ -28,6 +29,7 @@ export class SessionWithResourceEditComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly sessionWithResourceApiService: SessionWithResourcesApiService,
     private readonly toasterService: ObservableSnackNotificationService,
+    private readonly translate: TranslateService
   ) {
     this.control = formBuilder.control([]);
   }
@@ -68,8 +70,8 @@ export class SessionWithResourceEditComponent implements OnInit {
       this.sessionWithResourceApiService.updateSession(
         this.session.id, this.session
       ),
-      "Les ressources ont bien été mis à jour",
-      "Erreur lors de la sauvegarde des ressources",
+      this.translate.instant('admin.resources_management.resources_by_session.edit.success'),
+      this.translate.instant('admin.resources_management.resources_by_session.edit.error'),
       false,
       ['/admin/sessions-resources']
     );

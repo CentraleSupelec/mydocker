@@ -1,5 +1,5 @@
 <div fxLayout="row" fxLayoutAlign="space-between start">
-  <h1 class="mat-display-1">Édition de l'image: {{ dockerImage?.name }}</h1>
+  <h1 class="mat-display-1">{{ 'admin.docker_images.edit.label' | translate }}: {{ dockerImage?.name }}</h1>
   <button
     mat-icon-button
     (click)="openShareDialog()"
@@ -22,6 +22,6 @@
     (click)="submit()"
     color="primary"
   >
-    Sauvegarder les changements
+    {{ 'admin.docker_images.edit.save' | translate }}
   </button>
 </div>

@@ -18,7 +18,7 @@ const routes: Routes = [
       computeTypes: ComputeTypesResolver,
     },
     data: {
-      breadcrumb: 'Création d\'un cours',
+      breadcrumb: 'admin.courses.create_breadcrumb',
     }
   },
   {
@@ -29,7 +29,7 @@ const routes: Routes = [
       computeTypes: ComputeTypesResolver,
     },
     data: {
-      breadcrumb: 'Édition d\'un cours',
+      breadcrumb: 'admin.courses.edit.breadcrumb',
     }
   },
 ];

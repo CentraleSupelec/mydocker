@@ -49,6 +49,7 @@ import { GenerateJoinLinkPipe } from "../utils/generate-join-link.pipe";
 import { GenerateMagicLinkPipe } from '../utils/generate-magic-link.pipe';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -103,7 +104,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatPaginatorModule,
     ComputeTypeModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    TranslateModule
   ],
   providers: [
     {

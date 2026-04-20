@@ -18,7 +18,7 @@ const routes: Routes = [
       resources: OvhResourceResolver,
     },
     data: {
-      breadcrumb: 'Ajout des ressources',
+      breadcrumb: 'admin.resources_management.resources_by_session.breadcrumb',
     }
   },
 ];

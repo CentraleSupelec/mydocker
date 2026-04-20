@@ -7,6 +7,7 @@ import { DockerImageApiService } from "../../services/docker-image-api.service";
 import { DockerImagePermissionDialogComponent } from "../../../permissions/components/docker-image-permission-dialog/docker-image-permission-dialog.component";
 import { MatDialog } from "@angular/material/dialog";
 import { NgxPermissionsService } from "ngx-permissions";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-docker-image-edit',
@@ -24,6 +25,7 @@ export class DockerImageEditComponent implements OnInit {
     private readonly dockerImageApiService: DockerImageApiService,
     private readonly matDialog: MatDialog,
     private readonly permissionService: NgxPermissionsService,
+    private readonly translate: TranslateService
   ) {
     this.dockerImageForm = this.formBuilder.control({});
   }
@@ -54,8 +56,8 @@ export class DockerImageEditComponent implements OnInit {
     if (this.dockerImage) {
       this.toasterService.toast(
         this.dockerImageApiService.updateDockerImage(this.dockerImage.id, this.dockerImageForm.value),
-        "L'image a bien été mis à jour",
-        "Erreur lors de la sauvegarde de l'image",
+        this.translate.instant('admin.docker_images.edit.success'),
+        this.translate.instant('admin.docker_images.edit.error'),
         true
       )
     }

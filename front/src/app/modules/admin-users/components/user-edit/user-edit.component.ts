@@ -4,6 +4,7 @@ import { UserApiService } from "../../service/user-api.service";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { ActivatedRoute } from "@angular/router";
 import { IUser } from "../../../permissions/interfaces/user";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-user-edit',
@@ -19,6 +20,7 @@ export class UserEditComponent implements OnInit {
     private readonly userApiService: UserApiService,
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly route: ActivatedRoute,
+    private readonly translate: TranslateService
   ) {
     this.userForm = formBuilder.control({})
   }
@@ -35,8 +37,8 @@ export class UserEditComponent implements OnInit {
   submit() {
     this.toasterService.toast(
       this.userApiService.editUser(this.user?.id, this.userForm.value),
-      "L'utilisateur a bien été modifié",
-      "Erreur lors de la modification de l'utilisateur",
+      this.translate.instant('admin.users_management.users.edit.success'),
+      this.translate.instant('admin.users_management.users.edit.error'),
       false,
       ['/admin/users'],
     )

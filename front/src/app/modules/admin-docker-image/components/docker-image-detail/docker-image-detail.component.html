@@ -1,5 +1,5 @@
 <div fxLayout="row" fxLayoutAlign="space-between start">
-  <h1 class="mat-display-1">Image docker: {{ dockerImage?.name }}</h1>
+  <h1 class="mat-display-1">{{ 'admin.docker_images.builds.title' | translate }}: {{ dockerImage?.name }}</h1>
   <div fxLayout="row" fxLayoutAlign="start center">
     <ng-template
       [ngxPermissionsOnly]="['docker_image.' + dockerImage?.id + '.edit', 'docker_image.' + dockerImage?.id + '.creator', 'ROLE_ADMIN']"
@@ -8,12 +8,12 @@
     </ng-template>
     <ng-template #thenBlock>
       <a mat-raised-button color="primary" [routerLink]="['edit']">
-        Éditer l'image
+        {{ 'admin.docker_images.builds.edit' | translate }}
       </a>
     </ng-template>
     <ng-template #elseBlock>
       <a mat-raised-button color="primary" [routerLink]="['edit']">
-        Voir l'image
+        {{ 'admin.docker_images.builds.view' | translate }}
       </a>
     </ng-template>
     <button
@@ -31,7 +31,7 @@
     <mat-header-cell *matHeaderCellDef fxFlex="70px" fxLayoutAlign="center center">
       <div *ngIf="polling; then pollingLoader else refreshButton"></div>
       <ng-template #refreshButton>
-        <button mat-icon-button matTooltip="Rafraichir" (click)="refresh$.next()">
+        <button mat-icon-button [matTooltip]="'admin.docker_images.builds.refresh' | translate" (click)="refresh$.next()">
           <mat-icon>refresh</mat-icon>
         </button>
       </ng-template>
@@ -47,13 +47,13 @@
   </ng-container>
 
   <ng-container matColumnDef="buildId">
-    <mat-header-cell *matHeaderCellDef fxFlex="100px">ID du build</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef fxFlex="100px">{{ 'admin.docker_images.builds.columns.build_id' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element" fxFlex="100px"> {{ element?.id }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="updatedOn">
-    <mat-header-cell *matHeaderCellDef>Date de mise à jour</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element?.updatedOn | date: 'd MMM y à HH:mm' }} </mat-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.docker_images.builds.columns.update_date' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element?.updatedOn | translatedDate:'d MMM y':'HH:mm'}} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">
@@ -66,20 +66,20 @@
           *ngxPermissionsOnly="['docker_image.' + dockerImage?.id + '.edit', 'docker_image.' + dockerImage?.id + '.creator', 'ROLE_ADMIN']"
         >
           <mat-icon>add</mat-icon>
-          Créer un nouveau build
+          {{ 'admin.docker_images.builds.actions.create' | translate }}
         </button>
       </div>
     </mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
       <button
         mat-icon-button
-        matTooltip="Tester ce build"
+        [matTooltip]="'admin.docker_images.builds.actions.test' | translate"
         (click)="testBuild(element)"
         *ngIf="element?.status === 'OK'"
       >
         <mat-icon>play_circle_filled</mat-icon>
       </button>
-      <button mat-icon-button matTooltip="Voir les informations sur le build" (click)="openDetailDialog(element)">
+      <button mat-icon-button [matTooltip]="'admin.docker_images.builds.actions.view' | translate" (click)="openDetailDialog(element)">
         <mat-icon>loupe</mat-icon>
       </button>
     </mat-cell>
@@ -89,15 +89,15 @@
   <ng-container matColumnDef="expandedDetail">
     <mat-cell *matCellDef="let element" fxLayout="column">
       <div fxLayout="row" fxLayoutAlign="end center" fxFill>
-        <button mat-icon-button (click)="fetchLogs(element)" matTooltip="Voir les logs du service">
+        <button mat-icon-button (click)="fetchLogs(element)" [matTooltip]="'admin.docker_images.builds.service_logs' | translate">
           <mat-icon>playlist_add_check</mat-icon>
         </button>
       </div>
       <div [ngSwitch]="containerState">
         <div *ngSwitchCase="'loading'" fxLayout="column" fxLayoutAlign="center center" fxFill>
           <mat-spinner></mat-spinner>
-          <p style="margin-top: 10px">Veuillez patienter pendant que nous créons vos accès...</p>
-          <p style="margin-top: 5px; font-size: 0.9em; color: #666;">Cette opération peut prendre plusieurs minutes</p>
+          <p style="margin-top: 10px">{{ 'container.wait_creation' | translate }}</p>
+          <p style="margin-top: 5px; font-size: 0.9em; color: #666;">{{ 'admin.docker_images.builds.please_wait_minutes' | translate }}</p>
         </div>
 
         <div *ngSwitchCase="'ready'">
@@ -106,27 +106,27 @@
           ></app-display-container>
           <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="15px" style="margin: 15px 0 30px 0;">
             <button mat-raised-button color="warn" (click)="deleteEnv(expandedElement!)" *ngIf="expandedElement">
-              Éteindre l'environnement
+              {{ 'container.shutdown' | translate }}
             </button>
           </div>
         </div>
 
         <div *ngSwitchCase="'shutting_down'" fxLayout="column" fxLayoutAlign="center center" fxFill>
           <mat-spinner></mat-spinner>
-          <p style="margin-top: 10px">Extinction de l'environnement en cours...</p>
-          <p style="margin-top: 5px; font-size: 0.9em; color: #666;">Cette opération peut prendre quelques instants</p>
+          <p style="margin-top: 10px">{{ 'admin.docker_images.builds.shutting_down' | translate }}</p>
+          <p style="margin-top: 5px; font-size: 0.9em; color: #666;">{{ 'admin.docker_images.builds.please_wait' | translate }}</p>
         </div>
 
         <div *ngSwitchCase="'creation_error'" fxLayout="column" fxLayoutAlign="center center" fxFill>
           <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error_outline</mat-icon>
-          <p style="margin-top: 10px">Une erreur est survenue lors de l'initialisation du conteneur</p>
-          <p style="margin-top: 5px; font-size: 0.9em;">Veuillez réessayer ou contacter un administrateur si le problème persiste</p>
+          <p style="margin-top: 10px">{{ 'admin.docker_images.builds.creation_error_line_1' | translate }}</p>
+          <p style="margin-top: 5px; font-size: 0.9em;">{{ 'admin.docker_images.builds.creation_error_line_2' | translate }}</p>
         </div>
 
         <div *ngSwitchCase="'shutdown_error'" fxLayout="column" fxLayoutAlign="center center" fxFill>
           <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error_outline</mat-icon>
-          <p style="margin-top: 10px">Une erreur est survenue lors de l'extinction du conteneur</p>
-          <p style="margin-top: 5px; font-size: 0.9em;">L'environnement est peut-être déjà éteint. Si le problème persiste, veuillez contacter un administrateur.</p>
+          <p style="margin-top: 10px">{{ 'admin.docker_images.builds.shutdown_error_line_1' | translate }}</p>
+          <p style="margin-top: 5px; font-size: 0.9em;">{{ 'admin.docker_images.builds.shutdown_error_line_2' | translate }}</p>
         </div>
       </div>
     </mat-cell>
@@ -134,13 +134,13 @@
 
   <ng-container matColumnDef="noData">
     <mat-footer-cell *matFooterCellDef>
-      Aucun build encore effectué
+      {{ 'admin.docker_images.builds.no_data' | translate }}
     </mat-footer-cell>
   </ng-container>
 
   <ng-container matColumnDef="loading">
     <mat-footer-cell *matFooterCellDef>
-      Chargement des builds...
+      {{ 'admin.docker_images.builds.loading' | translate }}
     </mat-footer-cell>
   </ng-container>
 

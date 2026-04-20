@@ -14,6 +14,7 @@ import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatListModule } from "@angular/material/list";
 import { BreadcrumbModule } from "../utils/breadcrumb/breadcrumb.module";
 import {DrawerAutosizeHackDirective} from "./components/admin-layout/drawer-autosize-hack.directive";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -35,6 +36,7 @@ import {DrawerAutosizeHackDirective} from "./components/admin-layout/drawer-auto
     MatSidenavModule,
     MatListModule,
     BreadcrumbModule,
+    TranslateModule
   ]
 })
 export class UserInterfaceModule { }

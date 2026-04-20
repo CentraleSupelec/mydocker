@@ -1,4 +1,4 @@
-<p>Ressource à nettoyer</p>
+<p>{{ 'admin.resources_management.deployment.edit.resource_allocation.resource_to_clean' | translate}}</p>
 
 <div
   *ngFor="let worker of workerToClean.controls"
@@ -9,7 +9,7 @@
   <div>
     <div fxLayout="row" fxFill fxLayoutAlign="start center" fxLayoutGap="10px">
       <mat-form-field>
-        <mat-label>Région</mat-label>
+        <mat-label>{{ 'admin.resources_management.deployment.edit.resource_allocation.region' | translate}}</mat-label>
         <mat-select [value]="worker.get('region')?.value" disabled>
           <mat-option value="{{ worker.get('region')?.value }}">
             {{ worker.get('region')?.value }}
@@ -17,19 +17,19 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field style="width: 300px;">
-        <mat-label>Ressource</mat-label>
+        <mat-label>{{ 'admin.resources_management.deployment.edit.resource_allocation.resource' | translate}}</mat-label>
         <mat-select [value]="worker.get('resource')?.value?.toString()" disabled>
           <mat-option value="{{ r.id }}" *ngFor="let r of resources">
-            {{ r.type }} | {{ r.ramInGo }} Go de RAM | {{ r.coreNumber }} CPUs
+            {{ r.type }} | {{ r.ramInGo }} Go {{ 'admin.resources_management.deployment.edit.resource_allocation.of' | translate}} RAM | {{ r.coreNumber }} CPUs
           </mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Nombre d'instances</mat-label>
+        <mat-label>{{ 'admin.resources_management.deployment.edit.resource_allocation.instance_count' | translate}}</mat-label>
         <input matInput type="number" [value]="worker.get('count')?.value" disabled>
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Charge de travail</mat-label>
+        <mat-label>{{ 'admin.resources_management.deployment.edit.resource_allocation.compute_type' | translate}}</mat-label>
         <mat-select [value]="worker.get('computeTypeId')?.value" disabled>
           <mat-option [value]="v.id" *ngFor="let v of computeTypes">
             {{ v.displayName + (v.gpu ? ' (GPU)' : '') }}
@@ -38,7 +38,7 @@
       </mat-form-field>
     </div>
     <div fxLayout="row" fxFill fxLayoutAlign="start center" fxLayoutGap="5px">
-      <p><strong>Cours associé: </strong></p>
+      <p><strong>{{ 'admin.resources_management.deployment.edit.resource_allocation.associated_course' | translate}}: </strong></p>
       <p>
         {{ displaySession(worker.value.id) }}
       </p>

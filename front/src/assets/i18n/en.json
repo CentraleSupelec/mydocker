@@ -1,0 +1,607 @@
+{
+  "home": {
+    "title": "Hello",
+    "logout": "Logout",
+    "language": "Language",
+    "student_page": "Back to student interface",
+    "admin_page": "Platform's administration panel"
+  },
+  "admin": {
+    "courses": {
+      "nav_label": "Courses",
+      "title": "Courses administration",
+      "breadcrumb": "Courses list",
+      "search": "Search by course name",
+      "date_search_tooltip": "Cut-off date to determine recent users",
+      "create": "Create a course",
+      "create_new": "Create a new course",
+      "create_submit": "Create the course",
+      "create_breadcrumb": "Creation of a course",
+      "create_success":"The course has been created",
+      "create_error": "An error occurred while creating the course",
+      "lti": {
+        "breadcrumb": "Link a MyDocker environment to a course activity",
+        "title": "Choose a MyDocker environment",
+        "subtitle": "Select a MyDocker environment to link to your activity or create a new one.",
+        "integrate_to_moodle": "Integrate to Moodle",
+        "choose": "Choose"
+      },
+      "edit": {
+        "title": "Course edition",
+        "breadcrumb": "Edition of a course",
+        "general_info": {
+          "step_name": "General information",
+          "title": "Title",
+          "title_error": "The title should not contain /",
+          "description": "Description",
+          "status": "Course status",
+          "visible": "Make the course visible for all teachers",
+          "visible_warning": "When making the course visible, the associated Docker image will be accessible in read-only mode to all teachers",
+          "automatic_shutdown": {
+            "label": "Activate automatic shutdown",
+            "explanation": "After a certain duration (defined below), the student container will automatically be shutdown. As long as the shutdown has not been initiated, the student can restart the counter to delay the shutdown.",
+            "time_label": "Time before automatic shutdown :",
+            "duration_error": "You must input a non null duration",
+            "student_warning_explanation": "If you set a duration below, the student will be notified before the shutdown happens.",
+            "student_warning_label": "Remaining time before warning the student about the shutdown",
+            "student_warning_error": "The duration before shutdown for notifying the student must be shorter than the duration before shutdown"
+          },
+          "external_access": "Activate external access",
+          "external_access_expiration": "Expiration date of the external access",
+          "sessions": {
+            "label": "Sessions",
+            "title": "Title",
+            "title_error": "The title should not contain /",
+            "student_count": "Student count",
+            "start_date": "Start date",
+            "end_date": "End date",
+            "block": "Block connection before start date",
+            "destroy": "Automatic shutdown of the containers",
+            "missing_deployment": "Missing deployment",
+            "scheduled_deployments": "Scheduled deployments",
+            "deploy_ask_line_1": "Ask for deployment",
+            "deploy_ask_line_2": "for the environment",
+            "locked_explanation_line_1": "This session cannot be edited",
+            "locked_explanation_line_2": "because it has an associated deployment.",
+            "ask_change_line_1": "Request session edit",
+            "ask_change_line_2": "from support",
+            "add": "Add a session",
+            "ask_deployment_subject": "[MyDocker] Deployment scheduling",
+            "ask_deployment_body": "Hello,\nPlease schedule the deployments related to the sessions of the environment {link}.",
+            "ask_session_change_subject": "[MyDocker] Session modification",
+            "ask_session_change_body": "Hello, I would like to modify the sessions of the environment {link}. Here are the desired changes: ...",
+            "launch_on": "Launch on {date} at {time}",
+            "clean_on": "Clean on {date} at {time}"
+          }
+        },
+        "technical_info": {
+          "step_name": "Technical information",
+          "docker_image": {
+            "label": "Docker image",
+            "import": "From an existing Docker image",
+            "choice": "Docker image choice",
+            "build": "Build choice",
+            "confirm": "Confirm",
+            "cancel": "Cancel"
+          },
+          "ports": {
+            "label" : "Ports",
+            "add": "Add a port",
+            "title": "Title",
+            "type": "Connection type",
+            "port": "Port to expose",
+            "required": "Required",
+            "required_tooltip": "Check this box if this port must be accessible when the student environment starts up."
+          },
+          "command": "Command",
+          "compute_type": "Compute type",
+          "compute_type_tooltip": "Only choose GPU if the container requires it.",
+          "cpu_limit": "CPU limit (in VCPU)",
+          "memory_limit": "RAM limit (in GB)",
+          "save_student_work": {
+            "label": "Save student work",
+            "size": "Storage size (in MB)",
+            "path": "Folder to be saved path",
+            "allow_submit": "Allow students to submit"
+          },
+          "use_student_volume": {
+            "label": "Enable student personal folder",
+            "tooltip": "Provides the student with a shared storage space across different courses",
+            "path": "Student volume path",
+            "uid": "Docker image's user UID",
+            "uid_tooltip": "Used to change the ownership of shared folders."
+          },
+          "display_options": {
+            "label": "Display options",
+            "display_username": "Display username to the student",
+            "display_password": "Display password to the student",
+            "preview" : "Preview",
+            "view_port": "Show port",
+            "add_custom_url": "Add a custom display",
+            "title": "Title",
+            "type": "Type",
+            "text": "Text",
+            "text_preview": "Text preview",
+            "link": "Link",
+            "link_preview": "Link preview"
+          }
+        },
+        "success": "The course has been successfully updated",
+        "error": "An error occurred while updating the course",
+        "save" : "Save changes"
+      },
+      "columns": {
+        "name": "Course name",
+        "creator": "Creator",
+        "creation_date": "Creation date",
+        "user_count": "User count",
+        "user_count_tooltip": "Number of users that have launched the environment at least once",
+        "live_user_count": "Live user count",
+        "live_user_count_tooltip": "Number of users that have an active environment",
+        "recent_user_count": "Recent user count",
+        "recent_user_count_tooltip": "Recent user count"
+      },
+      "actions": {
+        "test": "Test the environment",
+        "copy_invitation_link": "Copy invitation link",
+        "edit": "Edit course",
+        "duplicate": "Duplicate course",
+        "access_students_work": "Access students work",
+        "view": "View course",
+        "more": "More actions"
+      },
+      "ask_container": "Ask for a new container",
+      "wait": "Please wait while we create your access credentials"
+    },
+    "docker_images": {
+      "nav_label": "Docker images",
+      "title": "Docker images administration",
+      "breadcrumb": "Docker image list",
+      "search": "Search by image name",
+      "columns": {
+        "name": "Image name",
+        "creator": "Creator",
+        "creation_date": "Creation date",
+        "description": "Description"
+      },
+      "create": "Create an image",
+      "create_new": "Create a new docker image",
+      "create_submit": "Create the image",
+      "create_success": "The image has been created",
+      "create_error": "An error occurred while creating the image",
+      "create_breadcrumb": "Creation of a docker image",
+      "detail_breadcrumb": "Details of a docker image",
+      "actions": {
+        "edit":"Edit image",
+        "logs": "View image builds",
+        "view": "View image"
+      },
+      "no_data": "No image found",
+      "loading": "Loading images...",
+      "edit": {
+        "label": "Image edition",
+        "breadcrumb": "Edition of a docker image",
+        "general": {
+          "label": "General",
+          "name": "Image name",
+          "name_error": "Image name must only contain lowercase letters, numbers, - or _",
+          "description": "Image description",
+          "visible": "Make the image visible for all",
+          "upload": "Upload a context folder",
+          "upload_placeholder": "Select or drag an archive",
+          "ports": "Ports"
+        },
+          "dockerfile": "Dockerfile",
+        "wrapper_script": "WrapperScript",
+        "success": "The docker image has been successfully updated",
+        "error": "An error occurred while updating the docker image",
+        "save" : "Save changes"
+      },
+      "builds": {
+          "title": "Docker image",
+          "edit": "Edit image",
+          "view": "View image",
+          "refresh": "Refresh",
+          "columns": {
+            "build_id": "Build ID",
+            "update_date": "Update date"
+          },
+          "actions": {
+            "create": "Create a new build",
+            "view": "View build details",
+            "test": "Test this build"
+          },
+          "no_data": "No builds have been created yet",
+          "loading": "Loading builds...",
+          "creation_error_line_1": "An error occurred while initializing the container",
+          "creation_error_line_2": "Please try again or contact an administrator if the problem persists",
+          "shutdown_error_line_1": "An error occurred while shutting down the container",
+          "shutdown_error_line_2": "The environment may already be stopped. If the problem persists, please contact an administrator.",
+          "shutting_down": "Shutting down the environment...",
+          "please_wait_instants": "This operation may take a few moments",
+          "shutdown": "Shutdown environment",
+          "please_wait_minutes": "This operation may take several minutes",
+          "service_logs": "View service logs"
+        }
+    },
+    "resources_management": {
+      "title": "Resource management",
+      "resources_by_session": {
+        "nav_label": "Resources by session",
+        "title": "Resource allocation to sessions",
+        "breadcrumb": "List of sessions with resources",
+        "sessions_start_date": "Sessions start date",
+        "columns": {
+          "course_title": "Course title",
+          "session_title": "Session title",
+          "session_start_date": "Session start",
+          "session_end_date": "Session end"
+        },
+        "actions": {
+          "add_resources": "Add resources"
+        },
+        "no_data": "No session found",
+        "edit": {
+          "title": "Resource allocation for the session",
+          "breadcrumb": "Adding resources",
+          "of": "of",
+          "start_date": "Start date",
+          "end_date":"End date",
+          "student_count": "Student count",
+          "description":"Description",
+          "allocated_out_of": "allocated out of",
+          "required": "required",
+          "success": "The resources have been successfully updated",
+          "error": "An error occurred while updating the resources",
+          "save" : "Save changes",
+          "add_resource": "Add a resource",
+          "delete_resource": "Delete this resource",
+          "resource": "Resource",
+          "instance_count": "Instance count"
+        }
+      },
+      "deployment": {
+        "nav_label": "Deployment",
+        "title": "Deployment administration",
+        "breadcrumb": "Deployments",
+        "create": "Create a deployment",
+        "create_new": "Create a new deployment",
+        "create_submit": "Create the deployment",
+        "create_breadcrumb": "Creation of a deployment",
+        "create_success": "The deployment has been created",
+        "create_error": "An error occurred while creating the deployment",
+        "view_breadcrumb": "Visualization of a deployment",
+        "on": "on",
+        "of_type": "of type",
+        "columns": {
+          "type": "Type",
+          "start_date": "Start date",
+          "courses": "Courses",
+          "resources": "Resources",
+          "description": "Description",
+          "sessions": "Sessions"
+        },
+        "actions": {
+          "delete": "Delete the deployment",
+          "delete_confirmation": "Do you confirm the deletion of the deployment of {date} on {time} ?",
+          "view": "View the deployment"
+        },
+        "dialog": {
+          "build_of": "Build of",
+          "build_errors": "Error while building",
+          "build_logs": "Build logs"
+        },
+        "no_data": "No deployment found",
+        "edit": {
+          "back": "Back",
+          "next": "Next",
+          "on": "on",
+          "at": "at",
+          "from": "from",
+          "to": "to",
+          "for_course": "for course",
+          "deployment_type": {
+            "label": "Deployment type",
+            "description": "Description",
+            "launch": "Launch before a session",
+            "clean": "Clean after a session"
+          },
+          "linked_sessions": {
+            "label": "Sessions linked to the deployment",
+            "no_sessions_to": "No session to",
+            "launch": "launch",
+            "clean": "clean"
+          },
+          "deploy_date": {
+            "label": "Deployment date",
+            "selected_sessions": "Selected sessions"
+          },
+          "resource_allocation": {
+            "label": "Resource allocation",
+            "resource_to_clean": "Resource to clean",
+            "selected_sessions":"Selected sessions",
+            "region": "Region",
+            "resource": "Resource",
+            "instance_count":"Instance count",
+            "compute_type":"Compute type",
+            "associated_course": "Associated course",
+            "of": "of",
+            "delete_region": "Delete this region",
+            "add_resource": "Add a resource"
+          }
+        }
+      },
+      "infrastructure_state": {
+        "nav_label": "Infrastructure state",
+        "breadcrumb": "Infrastructure state",
+        "no_instances": "No instances currently deployed",
+        "flavor": "Flavor",
+        "state": "State",
+        "ip": "IP",
+        "owner": "Owner",
+        "instances": "instances"
+      },
+      "deployment_status": {
+        "nav_label": "Deployment status",
+        "title": "List of deployments",
+        "breadcrumb": "Deployment status",
+        "update_date": "Update date",
+        "launch_deployment": "Launch a deployment",
+        "refresh": "Refresh",
+        "no_data": "No build has been done",
+        "view_logs": "View deployment logs",
+        "on": "on",
+        "at": "at",
+        "deployment_of": "Deployment of",
+        "errors": "Errors in deployment",
+        "logs": "Deployment logs",
+        "close": "Close",
+        "launched": "The deployment has been launched",
+        "another_in_progress": "A deployment is already in progress",
+        "success": "Deployment completed successfully",
+        "error": "Deployment completed with errors",
+        "in_progress": "Deployment in progress",
+        "canceled": "Deployment canceled"
+      },
+      "compute_types": {
+        "nav_label": "Compute types",
+        "title": "Compute types administration",
+        "breadcrumb": "Compute types",
+        "yes": "Yes",
+        "no": "No",
+        "create": "Create",
+        "create_new": "Create a new compute type",
+        "create_submit": "Create the compute type",
+        "create_breadcrumb": "Creation of a compute type",
+        "create_success":"The compute type has been created",
+        "create_error": "An error occurred while creating the compute type",
+        "columns": {
+          "name": "Name",
+          "technical_identifier": "Technical identifier",
+          "gpu": "GPU ?",
+          "storage_backend": "Storage backend",
+          "autoscaling": {
+            "label": "Autoscaling",
+            "instances_to_be_reserved": "instances to be reserved",
+            "max_instances": "instances max",
+            "manual_instances": "manual instances"
+          }
+        },
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete",
+          "delete_confirmation": "Are you sure you want to delete compute type \"{name}\" ?",
+          "delete_success": "The compute type \"{name}\" has been deleted successfully",
+          "delete_error": "Impossible to delete the compute type \"{name}\""
+        },
+        "edit": {
+          "title": "Compute type edition",
+          "breadcrumb": "Edition of a compute type",
+          "name": "Display name",
+          "technical_identifier": "Technical identifier",
+          "gpu": "Usable for GPU tasks",
+          "storage_backend": "Storage backend",
+          "success":"The compute type has been successfully updated",
+          "error": "An error occurred while updating the compute type",
+          "save":"Save changes",
+          "autoscaling": {
+            "label": "Autoscaling settings",
+            "region": "Region",
+            "resource": "Resource",
+            "available_instances": "Number of instances to keep available",
+            "max_instances": "Maximum number of instances",
+            "manual_instances": "Number of instances created manually (deducted from the number of instances to be created)"
+          }
+        }
+      },
+      "content_management": {
+        "nav_label": "Content management",
+        "title": "Content administration",
+        "breadcrumb": "Content",
+        "create": "Create",
+        "create_new": "Create a new content",
+        "create_submit": "Create the content",
+        "create_breadcrumb": "Creation of a content",
+        "create_success": "The content has been created",
+        "create_error": "An error occurred while creating the content",
+        "yes": "Yes",
+        "no": "No",
+        "columns": {
+          "title": "Title",
+          "slug": "Slug",
+          "active": "Active"
+        },
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete",
+          "delete_confirmation": "Are you sure you want to delete the content \"{name}\" ?",
+          "delete_success": "The content \"{name}\" has been deleted successfully",
+          "delete_error": "Impossible to delete the content \"{name}\""
+        },
+        "edit": {
+          "header": "Content edition",
+          "breadcrumb": "Edition of a content",
+          "title": "Title",
+          "active": "Active",
+          "content": "Content",
+          "slug": "Slug",
+          "success": "The content has been successfully updated",
+          "error": "An error occurred while updating the content",
+          "save":"Save changes"
+        }
+      }
+    },
+    "users_management": {
+      "title": "User management",
+      "users": {
+        "nav_label": "Users",
+        "title": "Users list",
+        "breadcrumb": "Users",
+        "search": "Search by email",
+        "create": "Create",
+        "create_new": "Create a new user",
+        "create_submit": "Create the user",
+        "create_breadcrumb": "Creation of a user",
+        "create_success": "The user has been created",
+        "create_error": "An error occurred while creating the user",
+        "create_duplicate": "The user already exists",
+        "columns": {
+          "username": "Username",
+          "first_name": "First name",
+          "last_name": "Last name",
+          "email": "Email",
+          "active": "Active",
+          "deactivated": "Deactivated"
+        },
+        "actions": {
+          "edit": "Edit user"
+        },
+        "edit": {
+          "title": "User edition",
+          "breadcrumb": "Edition of a user",
+          "username": "Username",
+          "first_name": "First name",
+          "last_name": "Last name",
+          "email": "Email",
+          "active": "Active",
+          "role": "Role",
+          "success": "The user has been successfully updated",
+          "error":"An error occurred while updating the user",
+          "save": "Edit the user"
+        },
+        "roles": {
+          "admin": "Admin",
+          "professor": "Professor",
+          "student": "Student"
+        },
+        "no_data":"No user found"
+      }
+    }
+  },
+  "student": {
+    "environments": "Environments",
+    "previously_used": "Previously used",
+    "planified": "Planned",
+    "planified_tooltip": "Find here your planned activities in less than a week",
+    "no_data": "No courses available",
+    "no_data_explanation": "The history of environments you have accessed is currently empty.",
+    "find": "You can find in our",
+    "documentation": "documentation",
+    "propositions": "generic environment proposals made available to you."
+  },
+  "container": {
+    "password": "Password",
+    "username": "Username",
+    "connection": "Connect to the interface",
+    "web_access": "Web access",
+    "ssh_access": "SSH access",
+    "tcp_access": "TCP access",
+    "to": "to",
+    "request_environment": "Request an environment",
+    "wait_shutdown": "Please wait for the shutdown...",
+    "request_blocked": "It is not possible to request an environment before the session start time.",
+    "wait_creation": "Please wait while we create your access credentials",
+    "shutdown": "Shutdown the environment",
+    "problem": "If there is a problem or if the environment is unresponsive, you can turn it off and request a new one.",
+    "logs": "Logs",
+    "request_new_environment": "Request a new environment",
+    "date": {
+      "future": {
+        "lessThanDay": "In less than 24 hours",
+        "days": "In {count, plural, one {# day} other {# days}}"
+      },
+      "past": {
+        "lessThanDay": "Less than 24 hours ago",
+        "days": "{count, plural, one {# day} other {# days}} ago"
+      }
+    },
+    "confirm_env_request": "Do you confirm the request for a new environment?",
+    "confirm_env_request_warning": "Requesting a new environment will delete the existing one",
+    "confirm_env_request_wait": "If you just received access and it is not working, please wait a few minutes before requesting a new one.",
+    "cannot_shutdown": "Unable to shut down the environment",
+    "confirm_shutdown": "Do you confirm shutting down the environment?",
+    "shutdown_notification": "Your environment is about to shut down",
+    "shutdown_delay_explanation": "If needed, reset the timer to delay shutdown",
+    "shutdown_in": "Shutdown in",
+    "reinitialze_countdown": "Reset the timer",
+    "reinitialze_countdown_success": "Shutdown has been successfully delayed",
+    "reinitialze_countdown_failure": "Unable to delay the environment shutdown",
+    "step": "step",
+    "join_error": "The requested environment is not available.",
+    "fetch_error": "Error fetching container:",
+    "initializing_error": "Error initializing container",
+    "creation_error": "We encountered a problem while creating the environment...",
+    "steps": {
+      "new": "Creating environment",
+      "pending": "Searching for a compute node",
+      "assigned": "Assigning to a node",
+      "accepted": "Accepted by the node",
+      "preparing": "Downloading environment to the node",
+      "ready": "Environment ready to start",
+      "starting": "Starting initialization",
+      "running": "Waiting for interface",
+      "complete": "Environment completed",
+      "failed": "Environment failed",
+      "shutdown": "Shutting down",
+      "rejected": "Environment rejected",
+      "orphaned": "Orphaned environment",
+      "unknown": "Unknown state"
+    },
+    "impossible_to_start": "Unable to start because",
+    "impossible_to_start_causes": "Your environment failed to start (state: \"{name}\"). Three main causes can be considered:",
+    "impossible_to_start_cause_1": "The download of the environment image (software) to MyDocker took too long. This download is incremental and cached between runs. You can try restarting the environment a few times by refreshing this page.",
+    "impossible_to_start_cause_2": "The environment is misconfigured. We recommend contacting the environment authors.",
+    "impossible_to_start_cause_3": "All servers allocated to this environment are currently in use. Please try again later.",
+    "service_logs": "View service logs",
+    "unknown_error": "An unknown error occurred",
+    "storage_error": "The course is configured with an unsupported file storage type (local).",
+    "image_not_found_error": "The course is configured with a missing template. Please contact the course administrator.",
+    "problem_encountered": "The course encountered an issue: \"{error}\"",
+    "recently": "recently",
+    "personal_volume_error": "The service <a href=\"{url}\">{course}</a> started {date} is currently using the personal directory. It must be stopped first.",
+    "on": "on",
+    "at": "at",
+    "save_state": {
+      "submit": "Submit my work",
+      "no_submission": "No submission recorded",
+      "last_submission_date": "Last submission on {date} at {time}"
+    },
+    "help_connecting": "Help to connect"
+  },
+  "sign_in": {
+    "welcome": "Welcome to",
+    "login": "Sign in with your credentials to access your online activities",
+    "magic_link": "Enter your email address to receive a login link:",
+    "magic_link_submit": "Send login link",
+    "cas": "CAS LOGIN",
+    "email_sent": "An email has been sent to you. Check your inbox and click the link provided to access the course. The link will expire in {count, plural, one {# minute} other {# minutes}}.",
+    "course_not_found": "The course has not been found",
+    "magic_link_deactivated": "Login via magic link is disabled for this course",
+    "magic_link_error": "Unable to verify access for this course",
+    "magic_link_email_error": "An error occurred while sending the email",
+    "default_oidc": "SIGN IN WITH YOUR INSTITUTION"
+  },
+  "date": {
+    "on_at": "on {date} at {time}"
+  }
+}

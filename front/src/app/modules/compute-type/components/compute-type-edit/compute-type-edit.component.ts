@@ -7,6 +7,7 @@ import {
 } from '../../../utils/snack-notification/observable-snack-notification.service';
 import { ComputeTypesApiService } from '../../services/compute-types-api.service';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-compute-type-edit',
@@ -25,7 +26,8 @@ export class ComputeTypeEditComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly computeTypeApi: ComputeTypesApiService,
-    private readonly activatedRoute: ActivatedRoute
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly translate: TranslateService
   ) {
     this.computeTypeForm = fb.control({});
     this.route.data.subscribe(({computeType}) => {
@@ -52,8 +54,8 @@ export class ComputeTypeEditComponent implements OnInit {
     if (this.computeType) {
       this.toasterService.toast(
         this.computeTypeApi.editComputeType(this.computeType.id, this.computeTypeForm.value),
-        "Le type de charge a bien été mis à jour",
-        "Erreur lors de la sauvegarde du type de charge",
+        this.translate.instant('admin.resources_management.compute_types.edit.success'),
+        this.translate.instant('admin.resources_management.compute_types.edit.error'),
         false,
         ['/admin/compute-types']
       )

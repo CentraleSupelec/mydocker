@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { TruncatePipe } from './truncate.pipe';
 import { GenerateJoinLinkPipe } from "./generate-join-link.pipe";
 import { GenerateMagicLinkPipe } from './generate-magic-link.pipe';
@@ -13,6 +13,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
+import { TranslatedDatePipe } from './translated-date.pipe';
+import { CapitalizeFirstPipe } from './capitalize-first.pipe';
 
 
 
@@ -25,6 +27,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     LexicalEditorComponent,
     LexicalLinkPopupComponent,
     LexicalImagePopupComponent,
+    TranslatedDatePipe,
+    CapitalizeFirstPipe
   ],
   exports: [
     TruncatePipe,
@@ -33,7 +37,9 @@ import { MatDialogModule } from '@angular/material/dialog';
     RemoveMarkdownPipe,
     LexicalEditorComponent,
     LexicalLinkPopupComponent,
-    LexicalImagePopupComponent
+    LexicalImagePopupComponent,
+    TranslatedDatePipe,
+    CapitalizeFirstPipe
   ],
   imports: [
     FormsModule,
@@ -43,6 +49,9 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatIconModule,
     MatDialogModule,
     CommonModule
+  ],
+  providers: [
+    DatePipe
   ]
 })
 export class UtilsModule { }

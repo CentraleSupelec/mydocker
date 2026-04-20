@@ -1,16 +1,31 @@
 import { InjectionToken } from "@angular/core";
 import { TokenOrigin } from "./modules/authentication/interfaces/jwt-token";
 
+export enum Language {
+  FR= 'fr',
+  EN= 'en',
+}
+
+export const LANGUAGES = [
+  { code: Language.FR, flag: '🇫🇷', label: "Français" },
+  { code: Language.EN, flag: '🇬🇧', label: "English" }
+];
+
 export interface IOIDC_IDP {
   idp_hint?: string;
-  title?: string;
-  tooltip?: string;
+  title?: ITranslation;
+  tooltip?: ITranslation;
 }
 
 export interface IInformation {
   name?: string;
-  title?: string;
+  title: ITranslation;
   url?: string;
+}
+
+export interface ITranslation {
+  [Language.FR]: string,
+  [Language.EN]: string,
 }
 
 export interface IAppConfig {

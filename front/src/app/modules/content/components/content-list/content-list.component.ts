@@ -8,6 +8,7 @@ import {
   ObservableSnackNotificationService
 } from '../../../utils/snack-notification/observable-snack-notification.service';
 import { APP_CONFIG, IAppConfig } from "../../../../app-config";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: 'app-content-list',
@@ -24,6 +25,7 @@ export class ContentListComponent {
     private readonly confirmDialogService: ConfirmDialogService,
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly contentsApi: ContentsApiService,
+    private translate: TranslateService,
     @Inject(APP_CONFIG) readonly config: IAppConfig
   ) {
   }
@@ -36,22 +38,31 @@ export class ContentListComponent {
   }
 
   remove(content: IContent) {
-    this.toasterService
-      .toast(
-        this.confirmDialogService
-          .confirm({
-            text: `Souhaitez-vous vraiment supprimer ce contenu "${content.title}" ?`
-          })
-          .pipe(
-            filter((confirm: boolean) => confirm),
-            mergeMap(() => this.contentsApi.deleteContent(content.id)),
-            mergeMap(() => this.contentsApi.getContents()),
-            map((contents) => {
-              this.contents = contents;
+
+    this.translate
+      .get([
+        'admin.resources_management.content_management.actions.delete_confirmation',
+        'admin.resources_management.content_management.actions.delete_success',
+        'admin.resources_management.content_management.actions.delete_error'
+      ], { name: content.title })
+      .subscribe(translations => {
+        this.toasterService
+        .toast(
+          this.confirmDialogService
+            .confirm({
+              text: translations['admin.resources_management.content_management.actions.delete_confirmation']
             })
-          ),
-        `Le contenu "${content.title}" a bien été supprimé`,
-        `Impossible de supprimer le contenu "${content.title}"`
-      );
+            .pipe(
+              filter((confirm: boolean) => confirm),
+              mergeMap(() => this.contentsApi.deleteContent(content.id)),
+              mergeMap(() => this.contentsApi.getContents()),
+              map((contents) => {
+                this.contents = contents;
+              })
+            ),
+            translations['admin.resources_management.content_management.actions.delete_success'],
+            translations['admin.resources_management.content_management.actions.delete_error']
+        );
+      })
   }
 }

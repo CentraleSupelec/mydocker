@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Créer un nouveau déploiement</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.deployment.create_new' | translate }}</h1>
 
 <app-deployment-form
   [regions]="regions"
@@ -10,6 +10,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="deployFormControl.invalid" (click)="submit()" color="primary">
-    Créer le déploiement
+    {{ 'admin.resources_management.deployment.create_submit' | translate }}
   </button>
 </div>

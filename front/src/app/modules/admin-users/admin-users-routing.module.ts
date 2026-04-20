@@ -14,7 +14,7 @@ const routes: Routes = [
     path: 'new',
     component: UserCreateComponent,
     data: {
-      breadcrumb: 'Création d\'un utilisateur',
+      breadcrumb: 'admin.user_management.create_submit',
     }
   },
   {
@@ -24,7 +24,7 @@ const routes: Routes = [
       user: UserResolver,
     },
     data: {
-      breadcrumb: 'Édition d\'un utilisateur',
+      breadcrumb: 'admin.user_management.edit.breadcrumb',
     }
   },
 ];

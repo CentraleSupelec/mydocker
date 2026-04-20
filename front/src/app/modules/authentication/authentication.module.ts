@@ -21,6 +21,8 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { LoginGuard } from './services/login.guard';
+import { MatMenuModule } from '@angular/material/menu';
+import { TranslateModule } from '@ngx-translate/core';
 
 const loadPermissionsOnStartupAppInitializerFactory = (tokenService: TokenService) =>
   function(): Promise<any> {
@@ -61,6 +63,7 @@ const generateAuthConfiguration = (appConfig: IAppConfig) => {
     ReactiveFormsModule,
     MatCardModule,
     MatIconModule,
+    MatMenuModule,
     AuthModule.forRoot({
       loader: {
         provide: StsConfigLoader,
@@ -69,6 +72,7 @@ const generateAuthConfiguration = (appConfig: IAppConfig) => {
       },
     }),
     MatTooltipModule,
+    TranslateModule
   ],
   providers: [
     AuthGuard,

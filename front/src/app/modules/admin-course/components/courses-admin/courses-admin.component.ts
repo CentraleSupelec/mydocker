@@ -11,6 +11,7 @@ import { ConfirmDialogService } from '../../../utils/confirm-dialog/confirm-dial
 import { APP_CONFIG, IAppConfig } from '../../../../app-config';
 import { GenerateJoinLinkPipe } from "../../../utils/generate-join-link.pipe";
 import { Router } from "@angular/router";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-courses-admin',
@@ -31,7 +32,8 @@ export class CoursesAdminComponent {
     private readonly dialogConfirmService: ConfirmDialogService,
     @Inject(APP_CONFIG) readonly config: IAppConfig,
     private readonly generateJoinLinkPipe: GenerateJoinLinkPipe,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) { }
 
   private adminContainerPolling(element: IAdminCourse, forceRecreate: boolean) {
@@ -53,7 +55,7 @@ export class CoursesAdminComponent {
           this.stopContainerPolling$.next();
           this.askContainer = false;
           this.snackNotificationService
-            .push("Nous avons rencontré un problème lors de la création de l'environnement ...", 'error');
+            .push(this.translate.instant('container.creation_error'), 'error');
         }
       )
   }
@@ -75,8 +77,8 @@ export class CoursesAdminComponent {
 
   forceRecreateAdminContainer(element: IAdminCourse) {
     this.dialogConfirmService.confirm({
-      title: 'Confirmez-vous la demande d\'un nouvel environnement ?',
-      text: 'Si vous venez d\'avoir les accès et que ceux-ci ne fonctionnent pas, attendez quelques minutes avant d\'en demander un nouveau.'
+      title: this.translate.instant('container.confirm_env_request'),
+      text: this.translate.instant('container.confirm_env_request_wait')
     }).subscribe(
       (confirm:boolean) => {
         if(confirm) {

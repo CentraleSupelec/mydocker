@@ -28,7 +28,7 @@ const routes: Routes = [
       computeTypes: ComputeTypesResolver,
     },
     data: {
-      breadcrumb: 'Création d\'un déploiement',
+      breadcrumb: 'admin.resources_management.deployment.create_breadcrumb',
     }
   },
   {
@@ -40,7 +40,7 @@ const routes: Routes = [
       computeTypes: ComputeTypesResolver,
     },
     data: {
-      breadcrumb: 'Visualisation d\'un déploiement',
+      breadcrumb: 'admin.resources_management.deployment.view_breadcrumb',
     }
   }
 ];

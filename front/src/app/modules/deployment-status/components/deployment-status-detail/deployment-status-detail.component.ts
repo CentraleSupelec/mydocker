@@ -7,6 +7,7 @@ import { mergeMap } from "rxjs/operators";
 import { DeploymentStatusDetailDialogComponent } from "../deployment-status-detail-dialog/deployment-status-detail-dialog.component";
 import { MatPaginator } from "@angular/material/paginator";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   templateUrl: './deployment-status-detail.component.html',
@@ -26,6 +27,7 @@ export class DeploymentStatusDetailComponent implements OnInit {
     private readonly deploymentStatusApiService: DeploymentStatusApiService,
     private readonly matDialog: MatDialog,
     private readonly toasterService: ObservableSnackNotificationService,
+    private readonly translate: TranslateService
   ) { }
 
   ngOnInit(): void {
@@ -60,8 +62,8 @@ export class DeploymentStatusDetailComponent implements OnInit {
   launchDeployment() {
     this.toasterService.toastWithCallback(
       this.deploymentStatusApiService.launchDeployment(),
-      "Le déploiement a bien été lancé",
-      "Un déploiment est déjà en cours",
+      this.translate.instant('admin.resources_management.deployment_status.launched'),
+      this.translate.instant('admin.resources_management.deployment_status.another_in_progress'),
       () => {
         this.refresh$.next();
       }

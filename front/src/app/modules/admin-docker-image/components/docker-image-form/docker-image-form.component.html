@@ -1,20 +1,20 @@
 <mat-tab-group (animationDone)="updateLayout()" #matTabGroup [formGroup]="form" class="mat-elevation-z3 form-container">
-  <mat-tab label="Général">
+  <mat-tab [label]="'admin.docker_images.edit.general.label' | translate">
     <br>
     <div fxLayout="column">
       <mat-form-field *ngIf="!editMode">
-        <mat-label>Nom de l'image</mat-label>
+        <mat-label>{{ 'admin.docker_images.edit.general.name' | translate }}</mat-label>
         <input matInput formControlName="name">
         <mat-error *ngIf="form?.get('name')?.hasError('pattern')">
-          Le nom de l'image doit contenir uniquement des lettres minuscules, chiffres, - ou _
+          {{ 'admin.docker_images.edit.general.name_error' | translate }}
         </mat-error>
       </mat-form-field>
       <mat-form-field>
-        <mat-label>Description de l'image</mat-label>
+        <mat-label>{{ 'admin.docker_images.edit.general.description' | translate }}</mat-label>
         <textarea matInput formControlName="description"></textarea>
       </mat-form-field>
       <mat-checkbox formControlName="visible">
-        Rendre l'image utilisable par tous
+        {{ 'admin.docker_images.edit.general.visible' | translate }}
       </mat-checkbox>
       <div fxLayout="row" fxLayoutGap="5px">
         <mat-form-field appFileDrop
@@ -25,7 +25,7 @@
                         (keyup.backspace)="fileInput.clear()"
                         fxFlex="grow">
           <input matInput
-                 placeholder="Choisissez ou glissez une archive"
+                 [placeholder]="'admin.docker_images.edit.general.upload_placeholder' | translate"
                  [value]="form?.get('contextFolder')?.value?.name"
                  readonly/>
         </mat-form-field>
@@ -40,10 +40,10 @@
         </button>
         <app-file-input-form #fileInput formControlName="contextFolder" accept=".zip">
           <mat-icon>attach_file</mat-icon>
-          <span>Uploader un dossier de contexte</span>
+          <span>{{ 'admin.docker_images.edit.general.upload' | translate }}</span>
         </app-file-input-form>
       </div>
-      <h2>Ports:</h2>
+      <h2>{{ 'admin.docker_images.edit.general.ports' | translate }}:</h2>
       <app-ports-form
         formControlName="ports"
       ></app-ports-form>
@@ -52,7 +52,7 @@
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon *ngIf="form.get('dockerFile')?.invalid">error</mat-icon>
-      DockerFile
+      {{ 'admin.docker_images.edit.dockerfile' | translate }}
     </ng-template>
     <br>
     <ngx-monaco-editor
@@ -65,7 +65,7 @@
   <mat-tab label="WrapperScript">
     <ng-template mat-tab-label>
       <mat-icon *ngIf="form.get('wrapperScript')?.invalid">error</mat-icon>
-      WrapperScript
+      {{ 'admin.docker_images.edit.wrapper_script' | translate }}
     </ng-template>
     <br>
     <ngx-monaco-editor

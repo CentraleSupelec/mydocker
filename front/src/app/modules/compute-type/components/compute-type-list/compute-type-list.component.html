@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Administration des types de charge</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.compute_types.title' | translate }}</h1>
 <mat-table [dataSource]="computeTypes" class="mat-elevation-z3">
   <ng-container matColumnDef="id">
     <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
@@ -6,33 +6,33 @@
   </ng-container>
 
   <ng-container matColumnDef="displayName">
-    <mat-header-cell *matHeaderCellDef>Nom</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.compute_types.columns.name' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.displayName }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="technicalName">
-    <mat-header-cell *matHeaderCellDef>Identifiant technique</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.compute_types.columns.technical_identifier' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.technicalName }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="gpu">
-    <mat-header-cell *matHeaderCellDef>GPU ?</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.gpu ? 'Oui' : 'Non' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.compute_types.columns.gpu' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.gpu ? ('admin.resources_management.compute_types.yes' | translate) : ('admin.resources_management.compute_types.no' | translate) }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="storageBackend">
-    <mat-header-cell *matHeaderCellDef>Stockage de fichiers</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.compute_types.columns.storage_backend' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.storageBackend }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="autoscaling">
-    <mat-header-cell *matHeaderCellDef>Autoscaling</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.compute_types.columns.autoscaling.label' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element">
       <ng-container *ngIf="element.autoscalingRegions?.length && element.autoscalingResource">
         {{ mapRegions(element.autoscalingRegions).join(' / ') }} - {{ element.autoscalingResource.type }}<br />
-        {{ element.minIdleNodesCount }} instances à réserver<br />
-        {{ element.maxNodesCount }} instances max<br />
-        {{ element.manualNodesCount }} instances manuelles<br />
+        {{ element.minIdleNodesCount }} {{ 'admin.resources_management.compute_types.columns.autoscaling.instances_to_be_reserved' | translate }}<br />
+        {{ element.maxNodesCount }} {{ 'admin.resources_management.compute_types.columns.autoscaling.max_instances' | translate }}<br />
+        {{ element.manualNodesCount }} {{ 'admin.resources_management.compute_types.columns.autoscaling.manual_instances' | translate }}<br />
       </ng-container>
     </mat-cell>
   </ng-container>
@@ -41,7 +41,7 @@
     <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
       <a mat-raised-button color="primary" [routerLink]="'/admin/compute-types/new'">
         <mat-icon>add</mat-icon>
-        Créer
+        {{ 'admin.resources_management.compute_types.create' | translate }}
       </a>
     </mat-header-cell>
 
@@ -49,14 +49,14 @@
       <a
         mat-icon-button
         [routerLink]="[element.id, 'edit']"
-        matTooltip="Editer"
+        [matTooltip]="'admin.resources_management.compute_types.actions.edit' | translate"
       >
         <mat-icon>edit</mat-icon>
       </a>
       <button
         mat-icon-button
         (click)="remove(element)"
-        matTooltip="Supprimer"
+        [matTooltip]="'admin.resources_management.compute_types.actions.delete' | translate"
         >
         <mat-icon>delete</mat-icon>
       </button>

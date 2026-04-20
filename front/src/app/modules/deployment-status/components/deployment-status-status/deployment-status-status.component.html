@@ -2,13 +2,13 @@
   <mat-icon
     *ngSwitchCase="'DONE'"
     style="color: green"
-    matTooltip="Déploiement fini avec succès"
+    [matTooltip]="'admin.resources_management.deployment_status.success' | translate"
   >
     check_circle
   </mat-icon>
   <mat-icon
     style="color: red"
-    matTooltip="Déploiement fini avec des erreurs"
+    [matTooltip]="'admin.resources_management.deployment_status.error' | translate"
     *ngSwitchCase="'ERROR'"
   >
     error
@@ -16,14 +16,14 @@
   <mat-icon
     *ngSwitchCase="'RUNNING'"
     style="color: darkblue"
-    matTooltip="Déploiement en cours"
+    [matTooltip]="'admin.resources_management.deployment_status.in_progress' | translate"
   >
     build_circle
   </mat-icon>
   <mat-icon
     *ngSwitchCase="'SKIPPED'"
     style="color: darkgray"
-    matTooltip="Déploiement annulé"
+    [matTooltip]="'admin.resources_management.deployment_status.canceled' | translate"
   >
     block
   </mat-icon>

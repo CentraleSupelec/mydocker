@@ -24,6 +24,7 @@ import { DeploymentViewComponent } from './components/deployment-view/deployment
 import { ConfirmDialogModule } from "../utils/confirm-dialog/confirm-dialog.module";
 import { UtilsModule } from "../utils/utils.module";
 import { RegionsModule } from '../regions/regions.module';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -54,6 +55,7 @@ import { RegionsModule } from '../regions/regions.module';
         ConfirmDialogModule,
         UtilsModule,
         RegionsModule,
+        TranslateModule
     ]
 })
 export class DeploymentModule { }

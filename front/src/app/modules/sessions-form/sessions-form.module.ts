@@ -13,6 +13,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { DatetimePickerModule } from "../utils/datetime-picker/datetime-picker.module";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { APP_CONFIG, appConstantFactory } from "../../app-config";
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { APP_CONFIG, appConstantFactory } from "../../app-config";
     MatCheckboxModule,
     DatetimePickerModule,
     NgxPermissionsModule,
+    TranslateModule
   ],
   providers: [
     {

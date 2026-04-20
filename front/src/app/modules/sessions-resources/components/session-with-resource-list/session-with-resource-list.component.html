@@ -1,7 +1,7 @@
-<h1 class="mat-display-1">Affectation des ressources aux sessions</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.resources_by_session.title' | translate }}</h1>
 
 <div fxLayout="row" fxLayoutAlign="start center">
-  <h4 style="margin: 0 16px">Date de début des sessions</h4>
+  <h4 style="margin: 0 16px">{{ 'admin.resources_management.resources_by_session.sessions_start_date' | translate }}</h4>
   <app-datetime-picker
     [formControl]="formControl"
   >
@@ -28,30 +28,34 @@
   </ng-container>
 
   <ng-container matColumnDef="title">
-    <mat-header-cell *matHeaderCellDef>Titre du cours</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.resources_by_session.columns.course_title' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.course.title }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="sessionTitle">
-    <mat-header-cell *matHeaderCellDef>Titre de la session</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.resources_by_session.columns.session_title' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.title }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="startDateTime">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Début de la session</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.startDateTime | date: 'le dd/MM/y à HH:mm' }} </mat-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.resources_management.resources_by_session.columns.session_start_date' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      {{ element.startDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
+    </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="endDateTime">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Fin de la session</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.endDateTime | date: 'le dd/MM/y à HH:mm' }} </mat-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.resources_management.resources_by_session.columns.session_end_date' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element">
+      {{ element.endDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
+    </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">
     <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
     </mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
-      <a mat-icon-button [routerLink]="[element.id, 'edit']" matTooltip="Ajouter des ressources">
+      <a mat-icon-button [routerLink]="[element.id, 'edit']" [matTooltip]="'admin.resources_management.resources_by_session.actions.add_resources' | translate">
         <mat-icon>edit</mat-icon>
       </a>
     </mat-cell>
@@ -59,7 +63,7 @@
 
   <ng-container matColumnDef="noData">
     <mat-footer-cell *matFooterCellDef>
-      Aucune session n'a été trouvée
+      {{ 'admin.resources_management.resources_by_session.no_data' | translate }}
     </mat-footer-cell>
   </ng-container>
 

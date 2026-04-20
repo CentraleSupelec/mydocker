@@ -15,6 +15,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { DeploymentStatusStatusComponent } from "./components/deployment-status-status/deployment-status-status.component";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { SnackNotificationModule } from "../utils/snack-notification/snack-notification.module";
+import { TranslateModule } from '@ngx-translate/core';
+import { UtilsModule } from '../utils/utils.module';
 
 
 @NgModule({
@@ -35,7 +37,9 @@ import { SnackNotificationModule } from "../utils/snack-notification/snack-notif
         MatIconModule,
         MatTooltipModule,
         MatPaginatorModule,
-        SnackNotificationModule
+        SnackNotificationModule,
+        TranslateModule,
+        UtilsModule
     ]
 })
 export class DeploymentStatusModule { }

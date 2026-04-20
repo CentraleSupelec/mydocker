@@ -8,7 +8,7 @@
         target="_blank"
         style="color: inherit; text-decoration: none;margin-left: 20px;"
         class="mat-body">
-        {{ element.title }}
+        {{ element.title[currentLang] }}
       </a>
     </ng-container>
   </div>
@@ -18,10 +18,26 @@
     mat-icon-button
     routerLink="/admin"
     *ngxPermissionsOnly="['ROLE_TEACHER', 'ROLE_ADMIN']"
-    matTooltip="Interface d'administration de la plateforme">
+    [matTooltip]="'home.admin_page' | translate" >
     <mat-icon>admin_panel_settings</mat-icon>
   </a>
-  <button mat-icon-button (click)="logout()" matTooltip="Se déconnecter">
+  <button mat-icon-button [matMenuTriggerFor]="langMenu">
+    <span style="font-size: 20px;">{{ currentFlag }}</span>
+  </button>
+  <mat-menu #langMenu="matMenu">
+    <button
+      mat-menu-item
+      *ngFor="let lang of languages"
+      (click)="switchLang(lang.code)">
+
+      <span style="margin-right: 8px;">
+        {{ lang.flag }}
+      </span>
+
+      {{ lang.label }}
+    </button>
+  </mat-menu>
+  <button mat-icon-button (click)="logout()" [matTooltip]="'home.logout' | translate">
     <mat-icon>logout</mat-icon>
   </button>
 </mat-toolbar>

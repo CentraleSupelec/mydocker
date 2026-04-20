@@ -1,7 +1,7 @@
-<h1 class="mat-display-1">Choisir un environnement MyDocker</h1>
+<h1 class="mat-display-1">{{ 'admin.courses.lti.title' | translate }}</h1>
 
 <p>
-  Choisissez un environnement MyDocker à lier à votre activité ou créez-en un nouveau.
+  {{ 'admin.courses.lti.subtitle' | translate}}
 </p>
 
 <app-courses-list
@@ -13,11 +13,11 @@
     <button
       [disabled]="loading"
       mat-raised-button
-      matTooltip="Intégrer à Moodle"
+      [matTooltip]="'admin.courses.lti.integrate_to_moodle' | translate"
       color="primary"
       (click)="choose(element)"
     >
-      Choisir
+    {{ 'admin.courses.lti.choose' | translate}}
     </button>
 </ng-template>
 

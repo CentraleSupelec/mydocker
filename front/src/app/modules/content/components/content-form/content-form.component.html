@@ -2,18 +2,20 @@
   <mat-card-content>
     <div fxLayout="column" [formGroup]="contentForm">
       <mat-form-field>
-        <mat-label>Titre</mat-label>
+        <mat-label>{{ 'admin.resources_management.content_management.edit.title' | translate }}</mat-label>
         <input matInput formControlName="title">
       </mat-form-field>
       <mat-form-field *ngIf="contentForm.get('slug')?.value" disabled>
-        <mat-label>Slug</mat-label>
+        <mat-label>{{ 'admin.resources_management.content_management.edit.slug' | translate }}</mat-label>
         <input matInput formControlName="slug">
       </mat-form-field>
       <mat-checkbox formControlName="enabled">
-        Activé
+        {{ 'admin.resources_management.content_management.edit.active' | translate }}
       </mat-checkbox>
       <div class="content-wrapper">
-        <mat-label class="content-label" [class.invalid]="!contentForm.get('richText')?.valid">Contenu <span *ngIf="hasRequiredValidator('richText')" class="required">*</span></mat-label>
+        <mat-label class="content-label" [class.invalid]="!contentForm.get('richText')?.valid">
+          {{ 'admin.resources_management.content_management.edit.content' | translate }}
+          <span *ngIf="hasRequiredValidator('richText')" class="required">*</span></mat-label>
         <app-lexical-editor formControlName="richText" [isValid]="contentForm.get('richText')?.valid"></app-lexical-editor>
       </div>
     </div>

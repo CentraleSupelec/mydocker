@@ -1,44 +1,48 @@
 <mat-stepper [formGroup]="deploymentForm" linear class="mat-elevation-z3 form-container" orientation="vertical">
   <mat-step [stepControl]="$any(deploymentForm.get('type'))">
-    <ng-template matStepLabel>Type de déploiement</ng-template>
+    <ng-template matStepLabel>{{ 'admin.resources_management.deployment.edit.deployment_type.label' | translate}}</ng-template>
     <mat-form-field fxFill>
-      <mat-label>Type de déploiement</mat-label>
+      <mat-label>{{ 'admin.resources_management.deployment.edit.deployment_type.label' | translate}}</mat-label>
       <mat-select formControlName="type">
-        <mat-option value="launch">Lancement avant une session</mat-option>
-        <mat-option value="clean">Repli après une session</mat-option>
+        <mat-option value="launch">{{ 'admin.resources_management.deployment.edit.deployment_type.launch' | translate}}</mat-option>
+        <mat-option value="clean">{{ 'admin.resources_management.deployment.edit.deployment_type.clean' | translate}}</mat-option>
       </mat-select>
     </mat-form-field>
     <mat-form-field fxFill>
-      <mat-label>Description</mat-label>
+      <mat-label>{{ 'admin.resources_management.deployment.edit.deployment_type.description' | translate}}</mat-label>
       <textarea matInput formControlName="description"></textarea>
     </mat-form-field>
     <div fxLayout="row" fxLayoutAlign="start center">
-      <button mat-button matStepperNext>Suivant</button>
+      <button mat-button matStepperNext>{{ 'admin.resources_management.deployment.edit.next' | translate}}</button>
     </div>
   </mat-step>
   <mat-step [stepControl]="$any(deploymentForm.get('sessions'))">
-    <ng-template matStepLabel>Sessions liées au déploiement</ng-template>
+    <ng-template matStepLabel>{{ 'admin.resources_management.deployment.edit.linked_sessions.label' | translate}}</ng-template>
     <mat-form-field fxFill *ngIf="sessions.length > 0 else noSessions">
-      <mat-label>Session liée au déploiement</mat-label>
+      <mat-label>{{ 'admin.resources_management.deployment.edit.linked_sessions.label' | translate}}</mat-label>
       <mat-select formControlName="sessions" multiple>
-        <mat-option *ngFor="let session of sessions" [value]="session.id">{{ session.course.title }} | {{ session.startDateTime | date: 'le dd/MM/yy à HH:mm' }}</mat-option>
+        <mat-option *ngFor="let session of sessions" [value]="session.id">
+          {{ session.course.title }},
+          {{ session.startDateTime | translatedDate:'dd/MM/yy':'HH:mm' }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
     <ng-template  #noSessions>
-      <p>Aucune session à {{ deploymentForm.get('type')?.value === 'launch' ? 'lancer' : 'nettoyer' }}</p>
+      <p>{{ 'admin.resources_management.deployment.edit.linked_sessions.no_sessions_to' | translate}} {{ deploymentForm.get('type')?.value === 'launch' ? ('admin.resources_management.deployment.edit.linked_sessions.launch' | translate)  : ('admin.resources_management.deployment.edit.linked_sessions.clean' | translate) }}</p>
     </ng-template>
     <div fxLayout="row" fxLayoutAlign="start center">
-      <button mat-button matStepperPrevious>Retour</button>
-      <button mat-button matStepperNext>Suivant</button>
+      <button mat-button matStepperPrevious>{{ 'admin.resources_management.deployment.edit.back' | translate}}</button>
+      <button mat-button matStepperNext>{{ 'admin.resources_management.deployment.edit.next' | translate}}</button>
     </div>
   </mat-step>
   <mat-step [stepControl]="$any(deploymentForm.get('startDateTime'))">
-    <ng-template matStepLabel>Date du déploiement</ng-template>
+    <ng-template matStepLabel>{{ 'admin.resources_management.deployment.edit.deploy_date.label' | translate}}</ng-template>
     <div>
-      <strong>Sessions selectionnées</strong>
+      <strong>{{ 'admin.resources_management.deployment.edit.deploy_date.selected_sessions' | translate}}</strong>
       <ul>
         <li *ngFor="let session of selectedSessions">
-          {{ session.course.title }}, {{ session.startDateTime | date: 'le dd/MM/yy à HH:mm' }}
+          {{ session.course.title }},
+          {{ session.startDateTime | translatedDate:'dd/MM/yy':'HH:mm' }}
         </li>
       </ul>
     </div>
@@ -47,12 +51,12 @@
     >
     </app-datetime-picker>
     <div fxLayout="row" fxLayoutAlign="start center">
-      <button mat-button matStepperPrevious>Retour</button>
-      <button mat-button matStepperNext>Suivant</button>
+      <button mat-button matStepperPrevious>{{ 'admin.resources_management.deployment.edit.back' | translate}}</button>
+      <button mat-button matStepperNext>{{ 'admin.resources_management.deployment.edit.next' | translate}}</button>
     </div>
   </mat-step>
   <mat-step [stepControl]="$any(deploymentForm.get('workers'))">
-    <ng-template matStepLabel>Allocation des ressources</ng-template>
+    <ng-template matStepLabel>{{ 'admin.resources_management.deployment.edit.resource_allocation.label' | translate}}</ng-template>
     <app-launch-workers-form
       *ngIf="deploymentForm.get('type')?.value === 'launch'"
       [resources]="resources"

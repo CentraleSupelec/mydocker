@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Créer un nouveau contenu</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.content_management.create_new' | translate }}</h1>
 
 <app-content-form
   [formControl]="contentForm"
@@ -6,6 +6,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="contentForm.invalid" (click)="submit()" color="primary">
-    Créer le contenu
+    {{ 'admin.resources_management.content_management.create_submit' | translate }}
   </button>
 </div>

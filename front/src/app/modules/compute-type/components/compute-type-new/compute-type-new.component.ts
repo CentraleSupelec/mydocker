@@ -6,6 +6,7 @@ import {
 import { ComputeTypesApiService } from '../../services/compute-types-api.service';
 import { ActivatedRoute } from '@angular/router';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-compute-type-new',
@@ -22,6 +23,7 @@ export class ComputeTypeNewComponent implements OnInit {
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly computeTypeApi: ComputeTypesApiService,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly translate: TranslateService
   ) {
     this.computeTypeForm = fb.control({});
   }
@@ -39,8 +41,8 @@ export class ComputeTypeNewComponent implements OnInit {
   submit() {
     this.toasterService.toast(
       this.computeTypeApi.newComputeType(this.computeTypeForm.value),
-      "Le type de charge a bien été créé",
-      "Erreur lors de la création du type de charge",
+      this.translate.instant('admin.resources_management.compute_types.create_success'),
+      this.translate.instant('admin.resources_management.compute_types.create_error'),
       false,
       ['/admin/compute-types']
     );

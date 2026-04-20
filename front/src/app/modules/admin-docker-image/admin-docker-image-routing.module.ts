@@ -15,13 +15,13 @@ const routes: Routes = [
     path: 'new',
     component: DockerImageCreateComponent,
     data: {
-      breadcrumb: 'Création d\'une nouvelle image docker',
+      breadcrumb: 'admin.docker_images.create_breadcrumb',
     }
   },
   {
     path: ':id',
     data: {
-      breadcrumb: 'Détail d\'une image docker',
+      breadcrumb: 'admin.docker_images.detail_breadcrumb',
     },
     children: [
       {
@@ -38,7 +38,7 @@ const routes: Routes = [
           docker_image: DockerImageResolver,
         },
         data: {
-          breadcrumb: 'Édition d\'une image docker',
+          breadcrumb: 'admin.docker_images.edit.breadcrumb',
         }
       },
     ]

@@ -13,6 +13,7 @@ import {
 import { IAdminSession, ISessionsById } from "../../interfaces/admin-session";
 import { formatDate } from "@angular/common";
 import { NgxPermissionsService } from "ngx-permissions";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-sessions-form',
@@ -36,16 +37,9 @@ export class SessionsFormComponent implements OnInit, ControlValueAccessor, Vali
   readonly sessionsFormArray: FormArray;
 
   private propagateChange = (_: IAdminSession[]) => {};
-  private readonly dateFormat = 'dd/MM/YYYY \'à\' HH\'h\'mm';
-  private readonly askDeploymentSubject = '[MyDocker] Programmation de déploiements';
-  private readonly askSessionChangeSubject = '[MyDocker] Modification de session';
-  private readonly askDeploymentBody = `Bonjour,
-Merci de programmer les déploiements liés aux sessions de l'environnement ${window.location.href} .`
-  private readonly askSessionChangeBody = `Bonjour,
-Je souhaite modifier les sessions de l'environnement ${window.location.href} . Voici les changements souhaités : ...`
+  private readonly dateFormat = 'dd/MM/YYYY';
+  private readonly timeFormat = 'HH\'h\'mm';
   private readonly emailAddress = 'support@example.com';
-  readonly askDeploymentEmailLink = `mailto:${this.emailAddress}?subject=${encodeURIComponent(this.askDeploymentSubject)}&body=${encodeURIComponent(this.askDeploymentBody)}`;
-  readonly askSessionChangeEmailLink = `mailto:${this.emailAddress}?subject=${encodeURIComponent(this.askSessionChangeSubject)}&body=${encodeURIComponent(this.askSessionChangeBody)}`;
   private isAdmin = false;
   isDisabled = false;
 
@@ -54,6 +48,7 @@ Je souhaite modifier les sessions de l'environnement ${window.location.href} . V
     private readonly formBuilder: FormBuilder,
     private readonly cd: ChangeDetectorRef,
     private readonly permissionService: NgxPermissionsService,
+    private readonly translate: TranslateService
   ) {
     this.sessionsFormArray = formBuilder.array([], Validators.required);
   }
@@ -163,15 +158,35 @@ Je souhaite modifier les sessions de l'environnement ${window.location.href} . V
     }
     const tooltipParts: string[] = [];
     if (session.launchDeployment) {
-      tooltipParts.push(`Lancement le ${formatDate(
-        session.launchDeployment.startDateTime, this.dateFormat, 'fr',
-      )}`);
+      tooltipParts.push(
+        this.translate.instant('admin.courses.edit.general_info.sessions.launch_on',
+          {
+            date: formatDate(session.launchDeployment.startDateTime, this.dateFormat, this.translate.currentLang),
+            time: formatDate(session.launchDeployment.startDateTime, this.timeFormat, this.translate.currentLang),
+          }
+        ));
     }
     if (session.cleanDeployment) {
-      tooltipParts.push(`Repli le ${formatDate(
-        session.cleanDeployment.startDateTime, this.dateFormat, 'fr',
-      )}`);
+      tooltipParts.push(
+        this.translate.instant('admin.courses.edit.general_info.sessions.clean_on',
+          {
+            date: formatDate(session.launchDeployment.startDateTime, this.dateFormat, this.translate.currentLang),
+            time: formatDate(session.launchDeployment.startDateTime, this.timeFormat, this.translate.currentLang),
+          }
+        ));
     }
     return tooltipParts.join('\n');
+  }
+
+  get askDeploymentEmailLink() {
+    const askDeploymentSubject = this.translate.instant('admin.courses.edit.general_info.sessions.ask_deployment_subject')
+    const askDeploymentBody = this.translate.instant('admin.courses.edit.general_info.sessions.ask_deployment_body', { link: window.location.href })
+    return `mailto:${this.emailAddress}?subject=${encodeURIComponent(askDeploymentSubject)}&body=${encodeURIComponent(askDeploymentBody)}`;
+  }
+
+  get askSessionChangeEmailLink() {
+    const askSessionChangeSubject = this.translate.instant('admin.courses.edit.general_info.sessions.admin.courses.edit.general_info.sessions.ask_deployment_subject');
+    const askSessionChangeBody = this.translate.instant('admin.courses.edit.general_info.sessions.admin.courses.edit.general_info.sessions.ask_deployment_body', { link: window.location.href });
+    return `mailto:${this.emailAddress}?subject=${encodeURIComponent(askSessionChangeSubject)}&body=${encodeURIComponent(askSessionChangeBody)}`;
   }
 }

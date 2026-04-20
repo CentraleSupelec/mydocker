@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { timer, Subscription } from 'rxjs';
 import { ContainerApiService } from '../../services/container-api.service';
 import { SnackNotificationService } from '../../../utils/snack-notification/snack-notification.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-countdown',
@@ -29,6 +30,7 @@ export class CountdownComponent implements OnInit, OnDestroy {
   constructor(
     private readonly containerApiService: ContainerApiService,
     private readonly snackNotificationService: SnackNotificationService,
+    private readonly translate: TranslateService
   ) {
   }
 
@@ -67,10 +69,10 @@ export class CountdownComponent implements OnInit, OnDestroy {
       .subscribe((newDeletionTime) => {
         this.delayPending = false;
         this.targetDatetime = newDeletionTime.deletionTime;
-        this.snackNotificationService.push(`L'extinction a bien été retardée`, 'success');
+        this.snackNotificationService.push(this.translate.instant('container.reinitialze_countdown_success'), 'success');
       }, () => {
         this.delayPending = false;
-        this.snackNotificationService.push(`Impossible de retarder l'extinction de l'environnement`, 'error');
+        this.snackNotificationService.push(this.translate.instant('container.reinitialze_countdown_failure'), 'error');
       });
   }
 

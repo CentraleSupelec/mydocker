@@ -1,0 +1,607 @@
+{
+  "home": {
+    "title": "Bienvenue",
+    "logout": "Se déconnecter",
+    "language": "Langue",
+    "student_page": "Retour à l'interface élève",
+    "admin_page": "Interface d'administration de la plateforme"
+  },
+  "admin": {
+    "courses": {
+      "nav_label": "Cours",
+      "title": "Administration des cours",
+      "breadcrumb": "Liste des cours",
+      "search": "Recherche par nom du cours",
+      "date_search_tooltip": "Date limite pour déterminer le nombre d'utilisateurs récents",
+      "create": "Créer un cours",
+      "create_new": "Créer un nouveau cours",
+      "create_submit": "Créer le cours",
+      "create_breadcrumb": "Création d'un cours",
+      "create_success": "Le cours a bien été créé",
+      "create_error": "Erreur lors de la création du cours",
+      "lti": {
+        "breadcrumb": "Lier un environnement MyDocker à une activité du cours",
+        "title": "Choisir un environnement MyDocker",
+        "subtitle": "Choisissez un environnement MyDocker à lier à votre activité ou créez-en un nouveau.",
+        "integrate_to_moodle": "Intégrer à Moodle",
+        "choose": "Choisir"
+      },
+      "edit": {
+        "title": "Édition du cours",
+        "breadcrumb": "Édition d'un cours",
+        "general_info": {
+          "step_name": "Informations générales",
+          "title": "Titre",
+          "title_error": "Le titre ne doit pas contenir de /",
+          "description": "Description",
+          "status": "Statut du cours",
+          "visible": "Rendre le cours visible pour tous les enseignants",
+          "visible_warning": "En rendant ce cours visible, l'image Docker utilisée sera accessible en lecture seule à tous les enseignants.",
+          "automatic_shutdown": {
+            "label": "Activer l'extinction automatique",
+            "explanation": "Après une certaine durée (définie ci-dessous), l'environnement de l'étudiant est automatiquement éteint. Tant que l'extinction n'est pas amorcée, l'étudiant peut relancer le compteur pour retarder l'extinction.",
+            "time_label": "Temps avant extinction automatique :",
+            "duration_error": "Vous devez saisir une durée non nulle",
+            "student_warning_explanation": "Si vous saisissez une durée ci-dessous, l'étudiant sera prévenu avant que l'extinction ait lieu.",
+            "student_warning_label": "Temps restant avant d'avertir l'élève de l'extinction",
+            "student_warning_error": "La durée avant avertissement doit être plus courte que la durée avant extinction"
+          },
+          "external_access": "Activer l'accès extérieur",
+          "external_access_expiration": "Date de fin de validité de l'accès extérieur",
+          "sessions": {
+            "label": "Sessions",
+            "title": "Titre",
+            "title_error": "Le titre ne doit pas contenir de /",
+            "student_count": "Nombre d'étudiants",
+            "start_date": "Date de début",
+            "end_date": "Date de fin",
+            "block": "Bloquer la connexion avant l'heure",
+            "destroy": "Extinction automatique des environnements",
+            "missing_deployment": "Déploiement manquant",
+            "scheduled_deployments": "Déploiements programmés",
+            "deploy_ask_line_1": "Demander les déploiements",
+            "deploy_ask_line_2": "pour l'environnement",
+            "locked_explanation_line_1": "Cette session ne peut pas être modifiée",
+            "locked_explanation_line_2": "car un déploiement y est associé.",
+            "ask_change_line_1": "Demander une modification",
+            "ask_change_line_2": "au support",
+            "add": "Ajouter une session",
+            "ask_deployment_subject": "[MyDocker] Programmation de déploiements",
+            "ask_deployment_body": "Bonjour,\nMerci de programmer les déploiements liés aux sessions de l'environnement \"{link}\".",
+            "ask_session_change_subject": "[MyDocker] Modification de session",
+            "ask_session_change_body": "Bonjour,\nJe souhaite modifier les sessions de l'environnement {link}. Voici les changements souhaités : ...",
+            "launch_on": "Lancement le {date} à {time}",
+            "clean_on": "Repli le {date} à {time}"
+          }
+        },
+        "technical_info": {
+          "step_name": "Informations techniques",
+          "docker_image": {
+            "label": "Image docker",
+            "import": "À partir d'une image docker existante",
+            "choice": "Choix d'une image docker",
+            "build": "Choix du build",
+            "confirm": "Confirmer",
+            "cancel": "Annuler"
+          },
+          "ports": {
+            "label" : "Ports",
+            "add": "Ajouter un port",
+            "title": "Titre",
+            "type": "Type de connexion",
+            "port": "Port à exposer",
+            "required": "Requis",
+            "required_tooltip": "À cocher si ce port doit être accessible au démarrage de l'environnement de l'élève."
+          },
+          "command": "Commande",
+          "compute_type": "Charge de travail",
+          "compute_type_tooltip": "Choisissez GPU uniquement si l'environnement nécessite une carte graphique.",
+          "cpu_limit": "Limite CPU (en VCPU)",
+          "memory_limit": "Limite RAM (en Go)",
+          "save_student_work": {
+            "label": "Sauvegarder le travail de l'étudiant",
+            "size": "Taille du stockage (en Mo)",
+            "path": "Chemin du dossier à sauvegarder",
+            "allow_submit": "Activer le rendu du travail de l'étudiant"
+          },
+          "use_student_volume": {
+            "label": "Activer le répertoire personnel de l'élève",
+            "tooltip": "Met à disposition de l'élève un espace de stockage partagé entre les différents cours",
+            "path": "Chemin du volume étudiant",
+            "uid": "UID de l'utilisateur de l'image Docker",
+            "uid_tooltip": "Utilisé pour changer l'appartenance des dossiers partagés."
+          },
+          "display_options": {
+            "label": "Options d'affichage",
+            "display_username": "Afficher l'utilisateur à l'élève",
+            "display_password": "Afficher le mot de passe à l'élève",
+            "preview" : "Exemple de rendu",
+            "view_port": "Afficher le port",
+            "add_custom_url": "Ajouter un affichage",
+            "title": "Titre",
+            "type": "Type",
+            "text": "Texte",
+            "text_preview": "Texte rendu",
+            "link": "Lien",
+            "link_preview": "Lien rendu"
+          }
+        },
+        "save" : "Sauvegarder les changements",
+        "success": "Le cours a bien été mis à jour",
+        "error": "Erreur lors de la sauvegarde du cours"
+      },
+      "columns": {
+        "name": "Nom du cours",
+        "creator": "Créateur",
+        "creation_date": "Date de création",
+        "user_count": "Nombre d'utilisateurs",
+        "user_count_tooltip": "Nombre d'utilisateurs ayant lancé au moins une fois l'environnement",
+        "live_user_count": "Nombre d'utilisateurs en cours",
+        "live_user_count_tooltip": "Nombre d'utilisateurs ayant un environnement en cours d'exécution",
+        "recent_user_count": "Nombre d'utilisateurs récents",
+        "recent_user_count_tooltip": "Nombre d'utilisateurs récents"
+      },
+      "actions": {
+        "test": "Tester l'environnement",
+        "copy_invitation_link": "Copier le lien d'invitation",
+        "edit": "Éditer le cours",
+        "duplicate": "Dupliquer le cours",
+        "access_students_work": "Accéder aux travaux des étudiants",
+        "view": "Voir le cours",
+        "more": "Plus d'actions"
+      },
+      "ask_container": "Demander un nouvel environnement",
+      "wait": "Veuillez patienter pendant que nous créons vos accès"
+    },
+    "docker_images": {
+      "nav_label": "Image docker",
+      "title": "Administration des images docker",
+      "breadcrumb": "Liste des images docker",
+      "search": "Recherche par nom de l'image",
+      "columns": {
+        "name": "Nom de l'image",
+        "creator": "Créateur de l'image",
+        "creation_date": "Date de création",
+        "description": "Description"
+      },
+      "create": "Créer une image",
+      "create_new": "Créer une nouvelle image docker",
+      "create_submit": "Créer l'image",
+      "create_breadcrumb": "Création d'une image docker",
+      "create_success": "L'image docker a bien été créée",
+      "create_error": "Erreur lors de la création de l'image docker",
+      "detail_breadcrumb": "Détail d'une image docker",
+      "actions": {
+        "edit":"Éditer l'image",
+        "logs": "Voir les builds de l'image",
+        "view": "Voir l'image"
+      },
+      "no_data": "Aucune image n'a été trouvée",
+      "loading": "Chargement des images...",
+      "edit": {
+        "label": "Édition de l'image",
+        "breadcrumb": "Édition d'une image docker",
+        "general": {
+          "label": "Général",
+          "name": "Nom de l'image",
+          "name_error": "Le nom de l'image doit contenir uniquement des lettres minuscules, chiffres, - ou _",
+          "description": "Description de l'image",
+          "visible": "Rendre l'image utilisable par tous",
+          "upload": "Uploader un dossier de contexte",
+          "upload_placeholder": "Choisissez ou glissez une archive",
+          "ports": "Ports"
+        },
+          "dockerfile": "Dockerfile",
+        "wrapper_script": "WrapperScript",
+        "success": "L'image docker a bien été mise à jour",
+        "error": "Erreur lors de la sauvegarde de l'image docker",
+        "save" : "Sauvegarder les changements"
+      },
+      "builds": {
+        "title": "Image docker",
+        "edit": "Éditer l'image",
+        "view": "Voir l'image",
+        "refresh": "Rafraîchir",
+        "columns": {
+          "build_id": "ID du build",
+          "update_date":"Date de mise à jour"
+        },
+        "actions": {
+          "create": "Créer un nouveau build",
+          "view": "Voir les informations sur le build",
+          "test": "Tester ce build"
+        },
+        "no_data":"Aucun build encore effectué",
+        "loading": "Chargement des builds...",
+        "creation_error_line_1": "Une erreur est survenue lors de l'initialisation du conteneur",
+        "creation_error_line_2": "Veuillez réessayer ou contacter un administrateur si le problème persiste",
+        "shutdown_error_line_1": "Une erreur est survenue lors de l'extinction du conteneur",
+        "shutdown_error_line_2": "L'environnement est peut-être déjà éteint. Si le problème persiste, veuillez contacter un administrateur.",
+        "shutting_down": "Extinction de l'environnement en cours...",
+        "please_wait_instants": "Cette opération peut prendre quelques instants",
+        "shutdown": "Éteindre l'environnement",
+        "please_wait_minutes": "Cette opération peut prendre plusieurs minutes",
+        "service_logs": "Voir les logs du service"
+      }
+    },
+    "resources_management": {
+      "title": "Gestion des ressources",
+      "resources_by_session": {
+        "nav_label": "Ressources par session",
+        "title": "Affectation des ressources aux sessions",
+        "breadcrumb": "Liste des sessions avec les ressources",
+        "sessions_start_date": "Date de début des sessions",
+        "columns": {
+          "course_title": "Titre du cours",
+          "session_title": "Titre de la session",
+          "session_start_date": "Début de la session",
+          "session_end_date": "Fin de la session"
+        },
+        "actions": {
+          "add_resources": "Ajouter des ressources"
+        },
+        "no_data": "Aucune session n'a été trouvée",
+        "edit": {
+          "title": "Affectation des ressources pour la session",
+          "breadcrumb": "Ajout des ressources",
+          "of": "de",
+          "start_date": "Date de début",
+          "end_date":"Date de fin",
+          "student_count": "Nombre d'élèves",
+          "description":"Description",
+          "allocated_out_of": "alloués sur",
+          "required": "requis",
+          "success": "Les ressources ont bien été mises à jour",
+          "error": "Erreur lors de la sauvegarde des ressources",
+          "save" : "Sauvegarder les changements",
+          "add_resource": "Ajouter une ressource",
+          "delete_resource": "Supprimer cette ressource",
+          "resource": "Ressource",
+          "instance_count": "Nombre d'instances"
+        }
+      },
+      "deployment": {
+        "nav_label": "Déploiement",
+        "title": "Administration des déploiements",
+        "breadcrumb": "Déploiements",
+        "create": "Créer un déploiement",
+        "create_new": "Créer un nouveau déploiement",
+        "create_submit": "Créer le déploiement",
+        "create_breadcrumb": "Création d'un déploiement",
+        "create_success": "Le déploiement a bien été créé",
+        "create_error": "Erreur lors de la création du déploiement",
+        "view_breadcrumb": "Visualisation d'un déploiement",
+        "on": "sur",
+        "of_type": "de type",
+        "columns": {
+          "type": "Type",
+          "start_date": "Date de début",
+          "courses": "Cours",
+          "resources": "Ressources",
+          "description": "Description",
+          "sessions": "Sessions"
+        },
+        "actions": {
+          "delete": "Supprimer le déploiement",
+          "delete_confirmation": "Confirmez-vous la suppression du déploiement du {date} à {time} ?",
+          "view": "Voir le déploiement"
+        },
+        "dialog": {
+          "build_of": "Build du",
+          "build_errors": "Erreurs lors du build",
+          "build_logs": "Logs du build"
+        },
+        "no_data": "Aucun déploiement n'a été trouvé",
+        "edit": {
+          "back": "Retour",
+          "next": "Suivant",
+          "on": "le",
+          "at": "à",
+          "from": "du",
+          "to": "au",
+          "for_course": "pour le cours",
+          "deployment_type": {
+            "label": "Type de déploiement",
+            "description": "Description",
+            "launch": "Lancement avant une session",
+            "clean": "Repli après une session"
+          },
+          "linked_sessions": {
+            "label": "Sessions liées au déploiement",
+            "no_sessions": "Aucune session à",
+            "launch": "lancer",
+            "clean": "nettoyer"
+          },
+          "deploy_date": {
+            "label": "Date de déploiement",
+            "selected_sessions": "Sessions sélectionnées"
+          },
+          "resource_allocation": {
+            "label": "Allocation des ressources",
+            "resource_to_clean": "Ressource à nettoyer",
+            "selected_sessions":"Sessions sélectionnées",
+            "region": "Région",
+            "resource": "Ressource",
+            "instance_count":"Nombre d'instances",
+            "compute_type":"Charge de travail",
+            "associated_course": "Cours associé",
+            "of": "de",
+            "delete_region": "Supprimer cette région",
+            "add_resource": "Ajouter une ressource"
+          }
+        }
+      },
+      "infrastructure_state": {
+        "nav_label": "État de l'infrastructure",
+        "breadcrumb": "État de l'infrastructure",
+        "no_instances": "Aucune instance actuellement déployée",
+        "flavor": "Flavor",
+        "state": "State",
+        "ip": "IP",
+        "owner": "Owner",
+        "instances": "instances"
+      },
+      "deployment_status": {
+        "nav_label": "Statuts des déploiements",
+        "title": "Liste des déploiements effectués",
+        "breadcrumb": "Statuts des déploiements",
+        "update_date": "Date de mise à jour",
+        "launch_deployment": "Lancer un déploiement",
+        "refresh": "Rafraîchir",
+        "no_data": "Aucun build encore effectué",
+        "view_logs": "Voir les informations sur le déploiement",
+        "on": "le",
+        "at": "à",
+        "deployment_of": "Déploiement du",
+        "errors": "Erreurs lors du déploiement",
+        "logs": "Logs du déploiement",
+        "close": "Fermer",
+        "launched": "Le déploiement a bien été lancé",
+        "another_in_progress": "Un déploiement est déjà en cours",
+        "success": "Déploiement fini avec succès",
+        "error": "Déploiement fini avec des erreurs",
+        "in_progress": "Déploiement en cours",
+        "canceled": "Déploiement annulé"
+      },
+      "compute_types": {
+        "nav_label": "Types de charge",
+        "title": "Administration des types de charge",
+        "breadcrumb": "Types de charge",
+        "yes": "Oui",
+        "no": "Non",
+        "create": "Créer",
+        "create_new": "Créer un nouveau type de charge",
+        "create_submit": "Créer le type de charge",
+        "create_breadcrumb": "Création d'un type de charge",
+        "create_success": "Le type de charge a bien été créé",
+        "create_error":"Erreur lors de la création du type de charge",
+        "columns": {
+          "name": "Nom",
+          "technical_identifier": "Identifiant technique",
+          "gpu": "GPU ?",
+          "storage_backend": "Stockage de fichiers",
+          "autoscaling": {
+            "label": "Autoscaling",
+            "instances_to_be_reserved": "instances à réserver",
+            "max_instances": "instances max",
+            "manual_instances": "instances manuelles"
+          }
+        },
+        "actions": {
+          "edit": "Éditer",
+          "delete": "Supprimer",
+          "delete_confirmation": "Souhaitez-vous vraiment supprimer le type de charge \"{name}\" ?",
+          "delete_success": "Le type de charge \"{name}\" a bien été supprimé",
+          "delete_error": "Impossible de supprimer le type de charge \"{name}\""
+        },
+        "edit": {
+          "title": "Édition du type de charge",
+          "breadcrumb": "Édition d'un type de charge",
+          "name": "Nom d'affichage",
+          "technical_identifier": "Identifiant technique",
+          "gpu": "Utilisable pour des tâches avec GPU",
+          "storage_backend": "Stockage de fichiers",
+          "success": "Le type de charge a bien été mis à jour",
+          "error":"Erreur lors de la sauvegarde du type de charge",
+          "save":"Sauvegarder les changements",
+          "autoscaling": {
+            "label": "Paramètres d'autoscaling",
+            "region": "Région",
+            "resource": "Ressource",
+            "available_instances": "Nombre d'instances à garder disponibles",
+            "max_instances": "Nombre d'instances max",
+            "manual_instances": "Nombre d'instances créées manuellement (décomptées du nombre d'instances à créer)"
+          }
+        }
+      },
+      "content_management": {
+        "nav_label": "Gestion du contenu",
+        "title": "Administration des contenus",
+        "breadcrumb": "Contenu",
+        "create": "Créer",
+        "create_new": "Créer un nouveau contenu",
+        "create_submit": "Créer le contenu",
+        "create_breadcrumb": "Création d'un contenu",
+        "create_success": "Le contenu a bien été créé",
+        "create_error":"Erreur lors de la création du contenu",
+        "yes": "Oui",
+        "no": "Non",
+        "columns": {
+          "title": "Titre",
+          "slug": "Slug",
+          "active": "Activé"
+        },
+        "actions": {
+          "edit": "Éditer",
+          "delete": "Supprimer",
+          "delete_confirmation": "Souhaitez-vous vraiment supprimer le contenu \"{name}\" ?",
+          "delete_success": "Le contenu \"{name}\" a bien été supprimé",
+          "delete_error": "Impossible de supprimer le contenu \"{name}\""
+        },
+        "edit": {
+          "header": "Édition du contenu",
+          "breadcrumb": "Édition d'un contenu",
+          "title": "Titre",
+          "active": "Activé",
+          "content": "Contenu",
+          "slug": "Slug",
+          "success": "Le contenu a bien été mis à jour",
+          "error":"Erreur lors de la sauvegarde du contenu",
+          "save":"Sauvegarder les changements"
+        }
+      }
+    },
+    "users_management": {
+      "title": "Gestion des utilisateurs",
+      "users": {
+        "nav_label": "Utilisateurs",
+        "title": "Liste des utilisateurs",
+        "breadcrumb": "Utilisateurs",
+        "search": "Recherche par email",
+        "create": "Créer",
+        "create_new": "Créer un nouvel utilisateur",
+        "create_submit": "Créer l'utilisateur",
+        "create_success":"L'utilisateur a bien été créé",
+        "create_error": "Erreur lors de la création de l'utilisateur",
+        "create_duplicate": "L'utilisateur existe déjà",
+        "create_breadcrumb":"Création d'un utilisateur",
+        "columns": {
+          "username": "Nom d'utilisateur",
+          "first_name": "Prénom",
+          "last_name": "Nom",
+          "email": "Email",
+          "active": "Activé",
+          "deactivated": "Désactivé"
+        },
+        "actions": {
+          "edit": "Modifier l'utilisateur"
+        },
+        "edit": {
+          "title": "Édition de l'utilisateur",
+          "breadcrumb": "Édition d'un utilisateur",
+          "username": "Nom d'utilisateur",
+          "first_name": "Prénom",
+          "last_name": "Nom",
+          "email": "Email",
+          "active": "Activé",
+          "role": "Rôle",
+          "success": "L'utilisateur a bien été mis à jour",
+          "error":"Erreur lors de la modification de l'utilisateur",
+          "save": "Éditer l'utilisateur"
+        },
+        "roles": {
+          "admin": "Admin",
+          "professor": "Professeur",
+          "student": "Élève"
+        },
+        "no_data":"Aucun utilisateur trouvé"
+      }
+    }
+  },
+  "student": {
+    "environments": "Environnements",
+    "previously_used": "Utilisés précédemment",
+    "planified": "Planifiés",
+    "planified_tooltip": "Retrouvez ici vos activités prévues dans moins d'une semaine",
+    "no_data": "Aucun cours disponible",
+    "no_data_explanation": "L'historique des environnements auxquels vous avez accédés est actuellement vide.",
+    "find": "Vous trouverez dans notre",
+    "documentation": "documentation",
+    "propositions": "des propositions d'environnements génériques mis à votre disposition."
+  },
+  "container": {
+    "password": "Mot de passe",
+    "username": "Nom d'utilisateur",
+    "connection": "Connexion à l'interface",
+    "web_access": "Accès Web",
+    "ssh_access": "Accès SSH",
+    "tcp_access": "Accès TCP",
+    "to": "à",
+    "request_environment": "Demander un environnement",
+    "wait_shutdown": "Veuillez patienter pendant l'extinction...",
+    "request_blocked": "Il n'est pas possible de demander un environnement avant l'heure de début de la session",
+    "wait_creation": "Veuillez patienter pendant que nous créons vos accès",
+    "shutdown": "Éteindre l'environnement",
+    "problem": "En cas de problème ou si l'environnement ne répond pas, vous pouvez l'éteindre et en demander un nouveau.",
+    "logs": "Logs",
+    "request_new_environment": "Demander un nouvel environnement",
+    "date": {
+      "future": {
+        "lessThanDay": "Dans moins de 24 heures",
+        "days": "Dans {count, plural, one {# jour} other {# jours}}"
+      },
+      "past": {
+        "lessThanDay": "Il y a moins de 24 heures",
+        "days": "Il y a {count, plural, one {# jour} other {# jours}}"
+      }
+    },
+    "confirm_env_request": "Confirmez-vous la demande d'un nouvel environnement ?",
+    "confirm_env_request_warning": "Demander un nouvel environnement supprimera l'ancien",
+    "confirm_env_request_wait": "Si vous venez d'avoir les accès et que ceux-ci ne fonctionnent pas, attendez quelques minutes avant d'en demander un nouveau.",
+    "cannot_shutdown": "Impossible d'éteindre l'environnement",
+    "confirm_shutdown": "Confirmez-vous l'extinction de l'environnement",
+    "shutdown_notification": "Votre environnement va s'éteindre",
+    "shutdown_delay_explanation": "Si nécessaire, réinitialisez le minuteur pour retarder l'extinction",
+    "shutdown_in": "Extinction dans",
+    "reinitialze_countdown": "Réinitialiser le minuteur",
+    "reinitialze_countdown_success": "L'extinction a bien été retardée",
+    "reinitialze_countdown_failure": "Impossible de retarder l'extinction de l'environnement",
+    "step": "étape",
+    "join_error": "L'environnement demandé n'est pas disponible.",
+    "fetch_error": "Erreur lors de la récupération du conteneur :",
+    "initializing_error": "Erreur lors de l'initialisation du conteneur",
+    "creation_error": "Nous avons rencontré un problème lors de la création de l'environnement ...",
+    "steps": {
+      "new": "Création de l'environnement",
+      "pending": "Recherche d'un nœud de calcul",
+      "assigned": "Assignation à un nœud",
+      "accepted": "Acceptation par le nœud",
+      "preparing": "Téléchargement de l'environnement sur le noeud",
+      "ready": "Environnement prêt à démarrer",
+      "starting": "Initialisation en cours",
+      "running": "En attente de l'interface",
+      "complete": "Environnement terminé",
+      "failed": "Échec de l'environnement",
+      "shutdown": "Arrêt en cours",
+      "rejected": "Environnement rejeté",
+      "orphaned": "Environnement orphelin",
+      "unknown": "État inconnu"
+    },
+    "impossible_to_start": "Impossible de démarrer, car",
+    "impossible_to_start_causes" : "Le démarrage de votre environnement a échoué (état : \"{name}\"). Trois causes principales sont à envisager:",
+    "impossible_to_start_cause_1": "Le téléchargement vers MyDocker de l'image (les logiciels) de l'environnement a pris trop de temps. Ce téléchargement est incrémental et mémorisé d'une fois sur l'autre. Vous pouvez réessayer quelques fois de relancer l'environnement en rechargeant cette page.",
+    "impossible_to_start_cause_2": "L'environnement est mal configuré. Nous vous recommandons alors de contacter les auteurs de l'environnement.",
+    "impossible_to_start_cause_3": "Tous les serveurs alloués à cet environnement sont actuellement utilisés. Vous pourrez réessayer ultérieurement.",
+    "service_logs": "Voir les logs du service",
+    "unknown_error": "une erreur inconnue s'est produite",
+    "storage_error": "le cours est configuré avec un type de fichiers non supporté (local).",
+    "image_not_found_error": "le cours est configuré avec un modèle introuvable. Contactez le responsable du cours.",
+    "problem_encountered": "le cours a rencontré un problème : \"{error}\"",
+    "recently": "récemment",
+    "personal_volume_error": "le service <a href=\"{url}\">{course}</a> démarré {date} utilise actuellement le répertoire personnel. Il est nécessaire de l'éteindre au préalable.",
+    "on": "le",
+    "at": "à",
+    "save_state": {
+      "submit": "Soumettre mon travail",
+      "no_submission": "Aucune soumission enregistrée",
+      "last_submission_date": "Dernière soumission le {date} à {time}"
+    },
+    "help_connecting": "Aide à la connexion"
+  },
+  "sign_in": {
+    "welcome": "Bienvenue sur",
+    "login": "Connectez-vous avec vos identifiants afin d'accéder à vos activités en ligne",
+    "magic_link": "Entrez votre adresse email pour recevoir un lien de connexion :",
+    "magic_link_submit": "Envoyer le lien de connexion",
+    "cas": "CONNEXION AVEC LE CAS",
+    "email_sent": "Un email vous a été envoyé. Consultez votre email et cliquez sur le lien fourni pour accéder au cours. Le lien expirera dans {count, plural, one {# minute} other {# minutes}}.",
+    "course_not_found": "Le cours n'a pas été trouvé",
+    "magic_link_deactivated": "L'accès par lien de connexion est désactivé pour ce cours",
+    "magic_link_error": "Impossible de vérifier l'accès pour ce cours",
+    "magic_link_email_error": "Une erreur s'est produite lors de l'envoi de l'email",
+    "default_oidc": "CONNEXION AVEC VOTRE ÉTABLISSEMENT"
+  },
+  "date": {
+    "on_at": "le {date} à {time}"
+  }
+}

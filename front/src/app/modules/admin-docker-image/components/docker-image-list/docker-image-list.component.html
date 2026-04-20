@@ -1,10 +1,10 @@
-<h1 class="mat-display-1">Administration des images docker</h1>
+<h1 class="mat-display-1">{{ 'admin.docker_images.title' | translate }}</h1>
 
 <mat-card class="mat-elevation-z3">
   <mat-card-content fxLayoutGap="15px">
     <mat-form-field style="width: 15vw; min-width: 200px;">
       <input matInput type="search"
-             placeholder="Recherche par nom de l'image"
+             [placeholder]="'admin.docker_images.search' | translate"
              [(ngModel)]="query" (ngModelChange)="updateQuery()"/>
       <button mat-button *ngIf="query" matSuffix mat-icon-button aria-label="Clear" (click)="clearQuery()">
         <mat-icon>close</mat-icon>
@@ -29,23 +29,23 @@
   </ng-container>
 
   <ng-container matColumnDef="name">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Nom de l'image</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.docker_images.columns.name' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.name }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="description">
-    <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.docker_images.columns.description' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.description | truncate:30 }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="creator">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Créateur de l'image</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.docker_images.columns.creator' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.creator }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="createdOn">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Date de création</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.createdOn | date : 'd MMMM y' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'admin.docker_images.columns.creation_date' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.createdOn | translatedDate :'d MMMM y':null:true }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">
@@ -53,12 +53,12 @@
       <div>
         <a mat-raised-button color="primary" [routerLink]="'./new'">
           <mat-icon>add</mat-icon>
-          Créer une image
+          {{ 'admin.docker_images.create' | translate }}
         </a>
       </div>
     </mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
-      <a mat-icon-button [routerLink]="[element.id]" matTooltip="Voir les builds de l'image">
+      <a mat-icon-button [routerLink]="[element.id]" [matTooltip]="'admin.docker_images.actions.logs' | translate">
         <mat-icon>playlist_add_check</mat-icon>
       </a>
       <ng-template
@@ -67,7 +67,7 @@
         [ngxPermissionsOnlyElse]="elseBlock">
       </ng-template>
       <ng-template #thenBlock>
-        <a mat-icon-button [routerLink]="[element.id, 'edit']" matTooltip="Editer l'image">
+        <a mat-icon-button [routerLink]="[element.id, 'edit']" [matTooltip]="'admin.docker_images.actions.edit' | translate">
           <mat-icon>edit</mat-icon>
         </a>
       </ng-template>
@@ -81,7 +81,7 @@
           <a
             mat-icon-button
             [routerLink]="[element.id, 'edit']"
-            matTooltip="Voir l'image'"
+            [matTooltip]="'admin.docker_images.actions.view' | translate"
           >
             <mat-icon>visibility</mat-icon>
           </a>
@@ -90,7 +90,7 @@
           <a
             mat-icon-button
             [routerLink]="[element.id, 'edit']"
-            matTooltip="Voir l'image'"
+            matTooltip="'admin.docker_images.actions.view' | translate"
           >
             <mat-icon>visibility</mat-icon>
           </a>
@@ -101,13 +101,13 @@
 
   <ng-container matColumnDef="noData">
     <mat-footer-cell *matFooterCellDef>
-      Aucune image n'a été trouvée
+      {{ 'admin.docker_images.no_data' | translate }}
     </mat-footer-cell>
   </ng-container>
 
   <ng-container matColumnDef="loading">
     <mat-footer-cell *matFooterCellDef>
-      Chargement des images...
+      {{ 'admin.docker_images.loading' | translate }}
     </mat-footer-cell>
   </ng-container>
 

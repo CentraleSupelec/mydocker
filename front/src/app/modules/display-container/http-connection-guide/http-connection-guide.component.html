@@ -1,9 +1,9 @@
 <div fxLayout="column">
-  <strong>Accès Web
-    <span *ngIf="containerPort?.description !== 'default'">à "{{ containerPort?.description }}"</span>:&nbsp;
+  <strong>{{ 'container.web_access' | translate }}
+    <span *ngIf="containerPort?.description !== 'default'">{{ 'container.to' | translate }} "{{ containerPort?.description }}"</span>:&nbsp;
   </strong>
   <div fxLayout="row" fxLayoutAlign="start center" style="margin-left: 15px">
-    <a 
+    <a
       mat-raised-button
       color="primary"
       href="{{ getContainerUrl() }}"
@@ -13,7 +13,7 @@
       matTooltip="http://{{ ipAddress }}:{{ containerPort?.portMapTo }}"
       matTooltipShowDelay=1500
     >
-      Connexion à l'interface
+      {{ 'container.connection' | translate }}
     </a>
   </div>
 </div>

@@ -25,7 +25,7 @@ const routes: Routes = [
       permissions: {
         only: ['ROLE_TEACHER', 'ROLE_ADMIN'],
       },
-      breadcrumb: 'Lier un environnement MyDocker à une activité du cours',
+      breadcrumb: 'admin.courses.lti.breadcrumb',
     }
   },
 ];

@@ -1,17 +1,19 @@
 <div [formGroup]="formGroup" fxLayout="column">
   <mat-form-field>
-    <mat-label>Titre</mat-label>
+    <mat-label>{{ 'admin.courses.edit.general_info.title' | translate }}</mat-label>
     <input matInput formControlName="title">
     <mat-error *ngIf="formGroup?.get('title')?.hasError('pattern')">
-      Le titre ne doit pas contenir de /
+      {{ 'admin.courses.edit.general_info.title_error' | translate }}
     </mat-error>
   </mat-form-field>
   <div style="margin-bottom: 20px;" class="description-wrapper">
-    <mat-label [class.invalid]="!formGroup.get('description')?.valid">Description <span *ngIf="hasRequiredValidator('description')" class="required">*</span></mat-label>
+    <mat-label [class.invalid]="!formGroup.get('description')?.valid">
+      {{ 'admin.courses.edit.general_info.description' | translate }}
+      <span *ngIf="hasRequiredValidator('description')" class="required">*</span></mat-label>
     <app-lexical-editor formControlName="description" [isValid]="formGroup.get('description')?.valid"></app-lexical-editor>
   </div>
   <mat-form-field>
-    <mat-label>Statut du cours</mat-label>
+    <mat-label>{{ 'admin.courses.edit.general_info.status' | translate }}</mat-label>
     <mat-select formControlName="status">
       <mat-select-trigger fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
         <app-course-icon-status [status]="formGroup.get('status')?.value"></app-course-icon-status>
@@ -23,20 +25,20 @@
     </mat-select>
   </mat-form-field>
   <p>
-    <mat-checkbox formControlName="automaticShutdown">Activer l'extinction automatique</mat-checkbox>
+    <mat-checkbox formControlName="automaticShutdown">{{ 'admin.courses.edit.general_info.automatic_shutdown.label' | translate }}</mat-checkbox>
   </p>
   <p>
     <mat-checkbox formControlName="visible">
-      Rendre le cours visible pour tous les enseignants
+      {{ 'admin.courses.edit.general_info.visible' | translate }}
     </mat-checkbox>
   </p>
   <div *ngIf="formGroup.enabled && formGroup.get('visible')?.value" class="info-banner" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="8px">
     <mat-icon color="warn">info</mat-icon>
-    <span>En rendant ce cours visible, l'image Docker utilisée sera accessible en lecture seule à tous les enseignants.</span>
+    <span>{{ 'admin.courses.edit.general_info.visible_warning' | translate }}</span>
   </div>
   <p>
     <mat-checkbox formControlName="externalAccess">
-      Activer l’accès extérieur
+      {{ 'admin.courses.edit.general_info.external_access' | translate }}
     </mat-checkbox>
   </p>
 
@@ -49,7 +51,7 @@
     </div>
     <div class="info-banner" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="8px">
       <div class="grid">
-        <span>Date de fin de validité de l’accès extérieur</span>
+        <span>{{ 'admin.courses.edit.general_info.external_access_expiration' | translate }}</span>
         <app-datetime-picker
           formControlName="externalAccessExpirationDate"
         >
@@ -59,9 +61,9 @@
   </div>
 
   <div *ngIf="formGroup.get('automaticShutdown')?.value">
-    <p><em>Après une certaine durée (définie ci-dessous), l'environnement de l'étudiant est automatiquement éteint. Tant que l'extinction n'est pas amorcée, l'étudiant peut relancer le compteur pour retarder l'extinction.</em></p>
+    <p><em>{{ 'admin.courses.edit.general_info.automatic_shutdown.explanation' | translate }}</em></p>
     <p>
-      <span>Temps avant extinction automatique :</span>
+      <span>{{ 'admin.courses.edit.general_info.automatic_shutdown.time_label' | translate }}</span>
       <mat-form-field [style.width.px]=70 [style.marginLeft.px]=20>
         <input type="number" matInput formControlName="shutdownAfterHours">
         <span matSuffix>h</span>
@@ -71,12 +73,12 @@
         <span matSuffix>min</span>
       </mat-form-field>
       <mat-error *ngIf="formGroup?.hasError('missingShutdownAfterMinutes')">
-        Vous devez saisir une durée non nulle
+        {{ 'admin.courses.edit.general_info.automatic_shutdown.duration_error' | translate }}
       </mat-error>
     </p>
-    <p><em>Si vous saisissez une durée ci-dessous, l'étudiant sera prévenu avant que l'extinction ait lieu.</em></p>
+    <p><em>{{ 'admin.courses.edit.general_info.automatic_shutdown.student_warning_explanation' | translate }}</em></p>
     <p>
-      <span>Temps restant avant d'avertir l'élève de l'extinction :</span>
+      <span>{{ 'admin.courses.edit.general_info.automatic_shutdown.student_warning_label' | translate }}</span>
       <mat-form-field [style.width.px]=70 [style.marginLeft.px]=20>
         <input type="number" matInput formControlName="warnShutdownHours">
         <span matSuffix>h</span>
@@ -87,11 +89,11 @@
       </mat-form-field>
 
       <mat-error *ngIf="formGroup?.hasError('warnAfterShutdown')">
-        La durée avant avertissement doit être plus courte que la durée avant extinction
+        {{ 'admin.courses.edit.general_info.automatic_shutdown.student_warning_error' | translate }}
       </mat-error>
     </p>
   </div>
-  <h2>Sessions:</h2>
+  <h2>{{ 'admin.courses.edit.general_info.sessions.label' | translate }} :</h2>
   <app-sessions-form
     [sessionsById]="sessionsById"
     formControlName="sessions"

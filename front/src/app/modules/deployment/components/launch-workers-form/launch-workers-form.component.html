@@ -1,5 +1,5 @@
 <div>
-  <strong>Sessions selectionnées</strong>
+  <strong>{{ 'admin.resources_management.deployment.edit.resource_allocation.selected_sessions' | translate}}</strong>
   <ul>
     <li *ngFor="let session of sessionsWithResources">
       {{ session.course.title }}
@@ -22,10 +22,10 @@
     [formControl]="$any(control)"
     [computeTypes]="computeTypes"
   ></app-worker-form>
-  <button mat-icon-button (click)="remove(index)" [matTooltip]="'Supprimer cette région'">
+  <button mat-icon-button (click)="remove(index)" [matTooltip]="'admin.resources_management.deployment.edit.resource_allocation.delete_region' | translate">
     <mat-icon>clear</mat-icon>
   </button>
 </div>
 <div fxLayout="row" fxLayoutAlign="flex-end">
-  <button mat-raised-button color="accent" (click)="addRegionWorker()">Ajouter une ressource</button>
+  <button mat-raised-button color="accent" (click)="addRegionWorker()">{{ 'admin.resources_management.deployment.edit.resource_allocation.add_resource' | translate}}</button>
 </div>

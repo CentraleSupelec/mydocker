@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { IAdminCourse } from "../../interfaces/course";
 import { Location } from '@angular/common';
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-course-new',
@@ -23,7 +24,8 @@ export class CourseNewComponent implements OnInit {
     private readonly permissionService: NgxPermissionsService,
     private readonly router: Router,
     private readonly location: Location,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly translate: TranslateService
   ) {
     this.courseForm = formBuilder.control({});
   }
@@ -48,8 +50,8 @@ export class CourseNewComponent implements OnInit {
   submit() {
     this.toasterService.toastWithCallback(
       this.adminCoursesApi.createCourse(this.courseForm.value),
-      "Le cours a bien été crée",
-      "Erreur lors de la création du cours",
+      this.translate.instant('admin.courses.create_success'),
+      this.translate.instant('admin.courses.create_error'),
       (result: IAdminCourse) => {
         this.permissionService.addPermission('course.' + result.id + '.creator');
         this.location.back();

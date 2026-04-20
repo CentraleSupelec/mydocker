@@ -7,6 +7,7 @@ import {
 } from '../../../utils/snack-notification/observable-snack-notification.service';
 import { ContentsApiService } from '../../services/contents-api.service';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-content-edit',
@@ -22,7 +23,8 @@ export class ContentEditComponent {
     private readonly fb: FormBuilder,
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly contentApi: ContentsApiService,
-    private readonly activatedRoute: ActivatedRoute
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly translate: TranslateService
   ) {
     this.contentForm = fb.control({});
     this.route.data.subscribe(({content}) => {
@@ -38,8 +40,8 @@ export class ContentEditComponent {
     if (this.content) {
       this.toasterService.toast(
         this.contentApi.editContent(this.content.id, this.contentForm.value),
-        "Le contenu a bien été mis à jour",
-        "Erreur lors de la sauvegarde du contenu",
+        this.translate.instant('admin.resources_management.content_management.edit.success'),
+        this.translate.instant('admin.resources_management.content_management.edit.error'),
         false,
         ['/admin/contents']
       )

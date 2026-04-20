@@ -1,27 +1,27 @@
 <div [formGroup]="userForm" fxLayout="column" class="mat-elevation-z3 form-container">
   <mat-form-field>
-    <mat-label>Username</mat-label>
+    <mat-label>{{ 'admin.users_management.users.edit.username' | translate }}</mat-label>
     <input matInput formControlName="username">
   </mat-form-field>
   <mat-form-field>
-    <mat-label>Nom</mat-label>
+    <mat-label>{{ 'admin.users_management.users.edit.last_name' | translate }}</mat-label>
     <input matInput formControlName="lastname">
   </mat-form-field>
   <mat-form-field>
-    <mat-label>Prénom</mat-label>
+    <mat-label>{{ 'admin.users_management.users.edit.first_name' | translate }}</mat-label>
     <input matInput formControlName="name">
   </mat-form-field>
   <mat-form-field>
-    <mat-label>Email</mat-label>
+    <mat-label>{{ 'admin.users_management.users.edit.email' | translate }}</mat-label>
     <input matInput formControlName="email">
   </mat-form-field>
   <div>
-    <mat-slide-toggle formControlName="enabled">Activé</mat-slide-toggle>
+    <mat-slide-toggle formControlName="enabled">{{ 'admin.users_management.users.edit.active' | translate }}</mat-slide-toggle>
   </div>
   <mat-form-field>
-    <mat-label>Role</mat-label>
+    <mat-label>{{ 'admin.users_management.users.edit.role' | translate }}</mat-label>
     <mat-select multiple formControlName="roles">
-      <mat-option value="{{ v[1] }}" *ngFor="let v of roles">{{ v[0] }}</mat-option>
+      <mat-option value="{{ v[1] }}" *ngFor="let v of roles">{{ 'admin.users_management.users.roles.' + v[0] | translate }}</mat-option>
     </mat-select>
   </mat-form-field>
 </div>

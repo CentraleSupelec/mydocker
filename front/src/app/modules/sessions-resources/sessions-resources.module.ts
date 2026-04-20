@@ -14,6 +14,7 @@ import { DatetimePickerModule } from "../utils/datetime-picker/datetime-picker.m
 import { ReactiveFormsModule } from "@angular/forms";
 import { SessionWithResourceEditComponent } from './components/session-with-resource-edit/session-with-resource-edit.component';
 import { SessionsResourcesFormModule } from "../sessions-resources-form/sessions-form.module";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -34,6 +35,7 @@ import { SessionsResourcesFormModule } from "../sessions-resources-form/sessions
     DatetimePickerModule,
     ReactiveFormsModule,
     SessionsResourcesFormModule,
+    TranslateModule
   ]
 })
 export class SessionsResourcesModule { }

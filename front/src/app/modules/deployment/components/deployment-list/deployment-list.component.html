@@ -1,11 +1,11 @@
-<h1 class="mat-display-1">Administration des déploiements</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.deployment.title' | translate }}</h1>
 
 <mat-table mat-table
        [dataSource]="deployments"
        multiTemplateDataRows
        class="mat-elevation-z3">
   <ng-container matColumnDef="type">
-    <mat-header-cell *matHeaderCellDef fxFlex="60px">Type</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef fxFlex="60px">{{ 'admin.resources_management.deployment.columns.type' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element" fxFlex="60px">
       <span [ngSwitch]="element.type">
         <mat-icon
@@ -27,27 +27,27 @@
   </ng-container>
 
   <ng-container matColumnDef="startDateTime">
-    <mat-header-cell *matHeaderCellDef>Date de début</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.startDateTime | date : 'd MMMM y à HH:mm' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.deployment.columns.start_date' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.startDateTime | translatedDate:'d MMMM y':'HH:mm' | capitalizeFirst }}</mat-cell>
   </ng-container>
 
 
   <ng-container matColumnDef="courses">
-    <mat-header-cell *matHeaderCellDef>Cours</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.deployment.columns.courses' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ displayCourse(element.sessions) }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="description">
-    <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.deployment.columns.type' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.description | truncate:30 }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="resources">
-    <mat-header-cell *matHeaderCellDef>Ressources</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.deployment.columns.resources' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element">
         <ul>
           <li *ngFor="let worker of element?.workers">
-          {{ worker.count }} {{ findResource(worker.resource) }} sur {{ worker.region }}<span *ngIf="worker.computeTypeId !== null"> ({{ findComputeType(worker.computeTypeId) }})</span>
+          {{ worker.count }} {{ findResource(worker.resource) }} {{ 'admin.resources_management.deployment.on' | translate }} {{ worker.region }}<span *ngIf="worker.computeTypeId !== null"> ({{ findComputeType(worker.computeTypeId) }})</span>
           </li>
         </ul>
     </mat-cell>
@@ -57,14 +57,14 @@
     <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
       <a mat-raised-button color="primary" [routerLink]="'create'">
         <mat-icon>add</mat-icon>
-        Créer un déploiement
+        {{ 'admin.resources_management.deployment.create' | translate }}
       </a>
     </mat-header-cell>
     <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
-      <a mat-icon-button [routerLink]="[element.id]" matTooltip="Voir le déploiement">
+      <a mat-icon-button [routerLink]="[element.id]" [matTooltip]="'admin.resources_management.deployment.actions.view' | translate">
         <mat-icon>visibility</mat-icon>
       </a>
-      <button mat-icon-button (click)="delete(element)" matTooltip="Voir le déploiement">
+      <button mat-icon-button (click)="delete(element)" [matTooltip]="'admin.resources_management.deployment.actions.delete' | translate">
         <mat-icon>delete</mat-icon>
       </button>
     </mat-cell>
@@ -72,7 +72,7 @@
 
   <ng-container matColumnDef="noData">
     <mat-footer-cell *matFooterCellDef>
-      Aucun déploiement n'a été trouvé
+      {{ 'admin.resources_management.deployment.no_data' | translate }}
     </mat-footer-cell>
   </ng-container>
 

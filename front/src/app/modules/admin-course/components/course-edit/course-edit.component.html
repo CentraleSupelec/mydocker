@@ -1,5 +1,5 @@
 <div fxLayout="row" fxLayoutAlign="space-between start">
-  <h1 class="mat-display-1">Édition du cours: {{ course?.title }}</h1>
+  <h1 class="mat-display-1">{{ 'admin.courses.edit.title' | translate }}: {{ course?.title }}</h1>
   <button
     mat-icon-button
     (click)="openShareDialog()"
@@ -19,6 +19,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="courseForm.invalid || !courseForm.dirty || courseForm.disabled" (click)="submit()" color="primary">
-    Sauvegarder les changements
+    {{ 'admin.courses.edit.save' | translate }}
   </button>
 </div>

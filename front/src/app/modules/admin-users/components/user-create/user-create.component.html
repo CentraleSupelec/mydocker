@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Créer un utilisateur</h1>
+<h1 class="mat-display-1">{{ 'admin.users_management.users.create_new' | translate }}</h1>
 
 <app-user-form
   [formControl]="userForm"
@@ -6,6 +6,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="userForm.invalid" (click)="submit()" color="primary">
-    Créer l'utilisateur
+    {{ 'admin.users_management.users.create_submit' | translate }}
   </button>
 </div>

@@ -26,7 +26,7 @@ const routes: Routes = [
       regions: RegionsResolver,
     },
     data: {
-      breadcrumb: 'Création d\'un type de charge',
+      breadcrumb: 'admin.resources_management.compute_types.create_breadcrumb',
     }
   },
   {
@@ -38,7 +38,7 @@ const routes: Routes = [
       computeType: ComputeTypeResolver,
     },
     data: {
-      breadcrumb: 'Édition d\'un type de charge',
+      breadcrumb: 'admin.resources_management.compute_types.edit.breadcrumb',
     }
   },
 ];

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
-import { ContainerSwarmState, ContainerSwarmStateMessages, IContainer } from "../../shell/interfaces/container";
+import { ContainerSwarmState, IContainer } from "../../shell/interfaces/container";
 import { ClipboardSnackService } from "../../utils/snack-notification/clipboard-snack.service";
 import { ICourseDisplay, IHttpPortDisplay, IPortDisplay } from "../../admin-course/interfaces/course-display";
 import { IContainerPort } from "../../shell/interfaces/container-port";
@@ -114,7 +114,6 @@ export class DisplayContainerComponent implements OnInit {
   }
 
   shouldDisplay(containerPort: IContainerPort): boolean {
-    // console.log(containerPort)
     if (this.displayOptions === undefined || this.displayOptions.displayPorts === undefined) {
       return true
     }
@@ -145,5 +144,4 @@ export class DisplayContainerComponent implements OnInit {
   }
 
   public readonly ContainerSwarmState = ContainerSwarmState;
-  public readonly ContainerSwarmStateMessages = ContainerSwarmStateMessages;
 }

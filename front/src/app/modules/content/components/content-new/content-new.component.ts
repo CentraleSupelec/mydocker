@@ -5,6 +5,7 @@ import {
 } from '../../../utils/snack-notification/observable-snack-notification.service';
 import { ContentsApiService } from '../../services/contents-api.service';
 import { ActivatedRoute } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-content-new',
@@ -19,6 +20,7 @@ export class ContentNewComponent {
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly contentApi: ContentsApiService,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly translate: TranslateService
   ) {
     this.contentForm = fb.control({});
   }
@@ -26,8 +28,8 @@ export class ContentNewComponent {
   submit() {
     this.toasterService.toast(
       this.contentApi.newContent(this.contentForm.value),
-      "Le contenu a bien été créé",
-      "Erreur lors de la création du contenu",
+      this.translate.instant('admin.resources_management.content_management.create_success'),
+      this.translate.instant('admin.resources_management.content_management.create_error'),
       false,
       ['/admin/contents']
     );

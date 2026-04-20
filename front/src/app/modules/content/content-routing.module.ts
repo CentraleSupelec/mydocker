@@ -26,7 +26,7 @@ const routes: Routes = [
       regions: RegionsResolver,
     },
     data: {
-      breadcrumb: 'Création d\'un contenu',
+      breadcrumb: 'admin.resources_management.content_management.create_breadcrumb',
     }
   },
   {
@@ -38,7 +38,7 @@ const routes: Routes = [
       content: ContentResolver,
     },
     data: {
-      breadcrumb: 'Édition d\'un contenu',
+      breadcrumb: 'admin.resources_management.content_management.edit.breadcrumb',
     }
   },
 ];

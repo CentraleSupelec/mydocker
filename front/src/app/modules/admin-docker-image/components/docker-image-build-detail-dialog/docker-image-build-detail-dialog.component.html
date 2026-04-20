@@ -3,14 +3,16 @@
     style="height: 24px; margin-right: 10px"
     [status]="data.status"
   ></app-docker-image-build-status>
-  <h1 style="margin-bottom: 0;">Build du {{ data.updatedOn | date: 'd MMM y à HH:mm' }}</h1>
+  <h1 style="margin-bottom: 0;">
+    {{ 'admin.resources_management.deployment.dialog.build_of' | translate }} {{ data.updatedOn | translatedDate:'d MMM y':'HH:mm': true}}
+  </h1>
 </div>
 
 <div mat-dialog-content fxLayout="column">
-  <h3>Erreurs lors du build:</h3>
+  <h3>{{ 'admin.resources_management.deployment.dialog.build_errors' | translate }}:</h3>
   <pre>{{ data.buildErrors }}</pre>
   <mat-divider></mat-divider>
-  <h3 style="margin-top: 10px">Logs de build:</h3>
+  <h3 style="margin-top: 10px">{{ 'admin.resources_management.deployment.dialog.build_logs' | translate }}:</h3>
   <pre>{{ data.logs }}</pre>
 </div>
 

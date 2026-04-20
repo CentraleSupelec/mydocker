@@ -16,14 +16,25 @@ import { MonacoEditorModule, NgxMonacoEditorConfig } from "ngx-monaco-editor-v2"
 import { registerLocaleData } from "@angular/common";
 import { MatDateFnsModule } from "@angular/material-date-fns-adapter";
 import localeFr from '@angular/common/locales/fr';
+import localeEn from '@angular/common/locales/en';
 import { MAT_DATE_LOCALE } from "@angular/material/core";
 import { fr } from "date-fns/locale";
+import { TranslateCompiler, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { TranslateMessageFormatCompiler } from 'ngx-translate-messageformat-compiler';
+
 
 const monacoConfig: NgxMonacoEditorConfig = {
   baseUrl: 'assets',
 };
 
 registerLocaleData(localeFr, 'fr');
+registerLocaleData(localeEn, 'en');
+
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
 
 @NgModule({
   declarations: [
@@ -44,6 +55,17 @@ registerLocaleData(localeFr, 'fr');
     ProgressBarModule,
     MonacoEditorModule.forRoot(monacoConfig),
     MatDateFnsModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient],
+      },
+      compiler: {
+        provide: TranslateCompiler,
+        useClass: TranslateMessageFormatCompiler
+      }
+    }),
   ],
   providers: [
     {

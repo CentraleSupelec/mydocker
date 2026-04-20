@@ -12,6 +12,7 @@ import { DatetimePickerModule } from "../utils/datetime-picker/datetime-picker.m
 import { ResourceFormComponent } from "./components/resource-form/resource-form.component";
 import { ResourcesFormComponent } from "./components/resources-form/resources-form.component";
 import { MatSelectModule } from "@angular/material/select";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -34,6 +35,7 @@ import { MatSelectModule } from "@angular/material/select";
     MatCheckboxModule,
     DatetimePickerModule,
     MatSelectModule,
+    TranslateModule
   ]
 })
 export class SessionsResourcesFormModule { }

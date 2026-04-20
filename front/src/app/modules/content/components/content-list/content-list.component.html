@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Administration des contenus</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.content_management.title' | translate }}</h1>
 <mat-table [dataSource]="contents" class="mat-elevation-z3">
   <ng-container matColumnDef="id">
     <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
@@ -6,25 +6,25 @@
   </ng-container>
 
   <ng-container matColumnDef="title">
-    <mat-header-cell *matHeaderCellDef>Titre</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.content_management.columns.title' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.title }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="slug">
-    <mat-header-cell *matHeaderCellDef>Slug</mat-header-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.content_management.columns.slug' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element"> {{ element.slug }} </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="enabled">
-    <mat-header-cell *matHeaderCellDef>Activé ?</mat-header-cell>
-    <mat-cell *matCellDef="let element"> {{ element.enabled ? 'Oui' : 'Non' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.content_management.columns.active' | translate }} ?</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.enabled ? ('admin.resources_management.content_management.yes' | translate) :  ('admin.resources_management.content_management.no' | translate) }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="action">
     <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
       <a mat-raised-button color="primary" [routerLink]="'/admin/contents/new'">
         <mat-icon>add</mat-icon>
-        Créer
+        {{ 'admin.resources_management.content_management.create' | translate }}
       </a>
     </mat-header-cell>
 
@@ -32,14 +32,14 @@
       <a
         mat-icon-button
         [routerLink]="[element.id, 'edit']"
-        matTooltip="Editer"
+        [matTooltip]="'admin.resources_management.content_management.actions.edit' | translate"
       >
         <mat-icon>edit</mat-icon>
       </a>
       <button
         mat-icon-button
         (click)="remove(element)"
-        matTooltip="Supprimer"
+        [matTooltip]="'admin.resources_management.content_management.actions.delete' | translate"
         >
         <mat-icon>delete</mat-icon>
       </button>

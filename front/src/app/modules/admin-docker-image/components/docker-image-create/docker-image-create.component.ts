@@ -5,6 +5,7 @@ import { ObservableSnackNotificationService } from "../../../utils/snack-notific
 import { DockerImageApiService } from "../../services/docker-image-api.service";
 import { NgxPermissionsService } from "ngx-permissions";
 import { IDockerImage } from "../../interfaces/docker-image";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-docker-image-create',
@@ -20,6 +21,7 @@ export class DockerImageCreateComponent {
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly permissionService: NgxPermissionsService,
     private readonly router: Router,
+    private readonly translate: TranslateService
   ) {
     this.dockerImageForm = formBuilder.control({});
   }
@@ -27,8 +29,8 @@ export class DockerImageCreateComponent {
   submit() {
     this.toasterService.toastWithCallback(
       this.dockerImageApiService.createDockerImage(this.dockerImageForm.value),
-      "L'image a bien été crée",
-      "Erreur lors de la création de l'image",
+      this.translate.instant('admin.docker_images.create_success'),
+      this.translate.instant('admin.docker_images.create_error'),
       (result: IDockerImage) => {
         this.permissionService.addPermission('docker_image.' + result.id + '.creator');
         this.router.navigate(['/admin/images']);

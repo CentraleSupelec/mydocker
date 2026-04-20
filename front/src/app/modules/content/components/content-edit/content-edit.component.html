@@ -1,10 +1,10 @@
-<h1 class="mat-display-1">Édition d'un contenu "{{ content?.title }}"</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.content_management.edit.header' | translate }} "{{ content?.title }}"</h1>
 <app-content-form
   [formControl]="contentForm"
 ></app-content-form>
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="contentForm.invalid  || contentForm.disabled" (click)="submit()" color="primary">
-    Sauvegarder les changements
+    {{ 'admin.resources_management.content_management.edit.save' | translate }}
   </button>
 </div>

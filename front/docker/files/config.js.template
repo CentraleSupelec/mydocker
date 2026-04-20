@@ -8,15 +8,28 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
   "deployment_enabled": true,
   "default_storage_backend": "LOCAL",
   "oidc_idps": [
-    {"idp_hint": "microsoft-oidc", "title": "CONNEXION ÉTUDIANTS PARIS-SACLAY"},
-    {"idp_hint": "satosa", "title": "CONNEXION VIA FÉDÉRATION RENATER", "tooltip": "Pour enseignants et étudiants d'autres universités"}
+    {
+      "idp_hint": "microsoft-oidc",
+      "title": {
+        "fr": "CONNEXION ÉTUDIANTS PARIS-SACLAY",
+        "en": "PARIS-SACLAY STUDENT CONNECTION"
+      }
+    },
+    {
+      "idp_hint": "satosa",
+      "title": {
+        "fr": "CONNEXION VIA FÉDÉRATION RENATER",
+        "en": "CONNECTION VIA FÉDÉRATION RENATER"
+      },
+      "tooltip": "Pour enseignants et étudiants d'autres universités"
+    }
   ],
   "oidc_client_id": "mydocker-local",
   "oidc_authority": "https://keycloak.centralesupelec.fr/realms/mydocker-cs-preprod",
   "oidc_scope": "openid profile email edu",
   // "auto_login": "OIDC",
   "information": [
-    {"name": "help", "title": "Informations sur le service", "url": "https://nthiery.github.io/mydocker-upsaclay-doc/"},
-    {"name": "support_mail", "title": "Contacter le support", "url": "mailto:mydocker-upsaclay-request@listes.centralesupelec.fr"},
+    {"name": "help", "title": {"fr": "Documentation", "en": "Documentation"}, "url": "https://nthiery.github.io/mydocker-upsaclay-doc/"},
+    {"name": "support_mail", "title": {"fr": "Contacter le support", "en": "Contact support"}, "url": "mailto:mydocker-upsaclay-request@listes.centralesupelec.fr"},
   ],
 };

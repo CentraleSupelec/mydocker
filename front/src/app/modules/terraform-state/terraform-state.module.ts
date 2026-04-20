@@ -5,6 +5,7 @@ import { TerraformStateRoutingModule } from './terraform-state-routing.module';
 import { DisplayTerraformStateComponent } from './components/display-terraform-state/display-terraform-state.component';
 import { FlexModule } from "@angular/flex-layout";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { MatExpansionModule } from "@angular/material/expansion";
     CommonModule,
     TerraformStateRoutingModule,
     FlexModule,
-    MatExpansionModule
+    MatExpansionModule,
+    TranslateModule
   ]
 })
 export class TerraformStateModule { }

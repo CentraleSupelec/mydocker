@@ -37,6 +37,7 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatCardModule } from "@angular/material/card";
 
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
     declarations: [
@@ -77,7 +78,8 @@ import { MatCardModule } from "@angular/material/card";
         MatSortModule,
         MatPaginatorModule,
         MatCardModule,
-        FormsModule
+        FormsModule,
+        TranslateModule
     ],
     providers: [
         {

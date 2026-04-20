@@ -11,6 +11,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSelectModule } from "@angular/material/select";
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
@@ -32,7 +33,8 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
         MatTooltipModule,
         MatIconModule,
         MatSelectModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        TranslateModule
     ]
 })
 export class PortsFormModule { }

@@ -1,4 +1,4 @@
-<h1 class="mat-display-1">Édition de l'utilisateur: {{ user?.lastname + ' ' + user?.name }} </h1>
+<h1 class="mat-display-1">{{ 'admin.users_management.users.edit.title' | translate }}: {{ user?.lastname + ' ' + user?.name }} </h1>
 
 <app-user-form
   [formControl]="userForm"
@@ -6,6 +6,6 @@
 
 <div fxLayout="row" fxLayoutAlign="flex-end">
   <button mat-raised-button [disabled]="userForm.invalid || !userForm.dirty || userForm.disabled" (click)="submit()" color="primary">
-    Éditer l'utilisateur
+    {{ 'admin.users_management.users.edit.save' | translate }}
   </button>
 </div>

@@ -24,6 +24,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { RegionsModule } from '../regions/regions.module';
 import { APP_CONFIG, appConstantFactory } from "../../app-config";
 import { UtilsModule } from '../utils/utils.module';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -54,6 +55,7 @@ import { UtilsModule } from '../utils/utils.module';
     MatSelectModule,
     MatExpansionModule,
     RegionsModule,
+    TranslateModule
   ],
   providers: [
     {

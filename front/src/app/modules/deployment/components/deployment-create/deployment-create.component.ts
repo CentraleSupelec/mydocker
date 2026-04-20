@@ -5,6 +5,7 @@ import { FormBuilder, FormControl } from "@angular/forms";
 import { DeploymentApiService } from "../../services/deployment-api.service";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-deployment-create',
@@ -22,6 +23,7 @@ export class DeploymentCreateComponent implements OnInit {
     private readonly deploymentApiService: DeploymentApiService,
     private readonly toasterService: ObservableSnackNotificationService,
     formBuilder: FormBuilder,
+    private readonly translate: TranslateService
   ) {
     this.deployFormControl = formBuilder.control({});
   }
@@ -39,8 +41,8 @@ export class DeploymentCreateComponent implements OnInit {
   submit(): void {
     this.toasterService.toast(
       this.deploymentApiService.createDeployment(this.deployFormControl.value),
-      "Le déploiement a bien été crée",
-      "Erreur lors de la création du déploiement",
+      this.translate.instant('admin.resources_management.deployment.create_success'),
+      this.translate.instant('admin.resources_management.deployment.create_error'),
       false,
       ['/admin/deployment']
     )

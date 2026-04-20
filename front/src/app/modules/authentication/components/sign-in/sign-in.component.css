@@ -41,10 +41,6 @@
   justify-content: center;
 }
 
-.branding {
-  gap: 1vh;
-}
-
 .login-buttons {
   gap: 1.5vh;
 }
@@ -65,4 +61,16 @@
   justify-content: space-between;
   align-items: center;
   flex-direction: row !important;
+}
+
+.branding {
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: start !important;
+  padding: 20px;
+}
+
+.branding .hidden {
+  opacity: 0;
+  pointer-events: none;
 }

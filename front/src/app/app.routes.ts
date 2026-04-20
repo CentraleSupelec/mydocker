@@ -59,21 +59,21 @@ export const routes: Routes = [
         path: 'courses',
         loadChildren: () => import('./modules/admin-course/admin-course.module').then(m => m.AdminCourseModule),
         data: {
-          breadcrumb: 'Liste des cours',
+          breadcrumb: 'admin.courses.breadcrumb',
         }
       },
       {
         path: 'images',
         loadChildren: () => import('./modules/admin-docker-image/admin-docker-image.module').then(m => m.AdminDockerImageModule),
         data: {
-          breadcrumb: 'Liste des images docker',
+          breadcrumb: 'admin.docker_images.breadcrumb',
         }
       },
       {
         path: 'sessions-resources',
         loadChildren: () => import('./modules/sessions-resources/sessions-resources.module').then(m => m.SessionsResourcesModule),
         data: {
-          breadcrumb: 'Liste des sessions avec les ressources',
+          breadcrumb: 'admin.resources_management.resources_by_session.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
@@ -83,7 +83,7 @@ export const routes: Routes = [
         path: 'state',
         loadChildren: () => import('./modules/terraform-state/terraform-state.module').then(m => m.TerraformStateModule),
         data: {
-          breadcrumb: 'État de l\'infrastructure',
+          breadcrumb: 'admin.resources_management.infrastructure_state.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
@@ -93,7 +93,7 @@ export const routes: Routes = [
         path: 'deployment',
         loadChildren: () => import('./modules/deployment/deployment.module').then(m => m.DeploymentModule),
         data: {
-          breadcrumb: 'Déploiements',
+          breadcrumb: 'admin.resources_management.deployment.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
@@ -103,7 +103,7 @@ export const routes: Routes = [
         path: 'deployment-status',
         loadChildren: () => import('./modules/deployment-status/deployment-status.module').then(m => m.DeploymentStatusModule),
         data: {
-          breadcrumb: 'Statuts des déploiements',
+          breadcrumb: 'admin.resources_management.deployment_status.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
@@ -113,7 +113,7 @@ export const routes: Routes = [
         path: 'compute-types',
         loadChildren: () => import('./modules/compute-type/compute-type.module').then(m => m.ComputeTypeModule),
         data: {
-          breadcrumb: 'Types de charge',
+          breadcrumb: 'admin.resources_management.compute_types.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
@@ -123,7 +123,7 @@ export const routes: Routes = [
         path: 'users',
         loadChildren: () => import('./modules/admin-users/admin-users.module').then(m => m.AdminUsersModule),
         data: {
-          breadcrumb: 'Utilisateurs',
+          breadcrumb: 'admin.users_management.users.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }
@@ -133,7 +133,7 @@ export const routes: Routes = [
         path: 'contents',
         loadChildren: () => import('./modules/content/content.module').then(m => m.ContentModule),
         data: {
-          breadcrumb: 'Contenu',
+          breadcrumb: 'admin.resources_management.content_management.breadcrumb',
           permissions: {
             only: ['ROLE_ADMIN'],
           }

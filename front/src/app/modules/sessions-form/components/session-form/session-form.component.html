@@ -3,23 +3,23 @@
     fxLayout="column" fxFlexFill
   >
     <mat-form-field>
-      <mat-label>Titre</mat-label>
+      <mat-label>{{ 'admin.courses.edit.general_info.sessions.title' | translate }}</mat-label>
       <input matInput formControlName="title">
       <mat-error *ngIf="sessionFormGroup?.get('title')?.hasError('pattern')">
-        Le titre ne doit pas contenir de /
+        {{ 'admin.courses.edit.general_info.sessions.title_error' | translate }}
       </mat-error>
     </mat-form-field>
     <mat-form-field>
-      <mat-label>Nombre d'étudiants</mat-label>
+      <mat-label>{{ 'admin.courses.edit.general_info.sessions.student_count' | translate }}</mat-label>
       <input matInput formControlName="studentNumber" type="number">
     </mat-form-field>
     <div class="grid">
-      <span>Date de début</span>
+      <span>{{ 'admin.courses.edit.general_info.sessions.start_date' | translate }}</span>
       <app-datetime-picker
         formControlName="startDateTime"
       >
       </app-datetime-picker>
-      <span>Date de fin</span>
+      <span>{{ 'admin.courses.edit.general_info.sessions.end_date' | translate }}</span>
       <app-datetime-picker
         formControlName="endDateTime"
       >
@@ -28,12 +28,12 @@
     <mat-checkbox
       formControlName="blockContainerCreationBeforeStartTime"
     >
-      Bloquer la connexion avant l'heure
+      {{ 'admin.courses.edit.general_info.sessions.block' | translate }}
     </mat-checkbox>
     <mat-checkbox
       formControlName="destroyContainerAfterEndTime"
       style="display: none;"
     >
-      Extinction automatique des environnements
+      {{ 'admin.courses.edit.general_info.sessions.destroy' | translate }}
     </mat-checkbox>
   </div>

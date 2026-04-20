@@ -8,6 +8,7 @@ import {
   ObservableSnackNotificationService
 } from '../../../utils/snack-notification/observable-snack-notification.service';
 import { APP_CONFIG, IAppConfig } from "../../../../app-config";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: 'app-compute-type-list',
@@ -24,6 +25,7 @@ export class ComputeTypeListComponent implements OnInit {
     private readonly confirmDialogService: ConfirmDialogService,
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly computeTypesApi: ComputeTypesApiService,
+    private translate: TranslateService,
     @Inject(APP_CONFIG) readonly config: IAppConfig
   ) {
   }
@@ -40,23 +42,30 @@ export class ComputeTypeListComponent implements OnInit {
   }
 
   remove(computeType: IComputeType) {
-    this.toasterService
-      .toast(
-        this.confirmDialogService
-          .confirm({
-            text: `Souhaitez-vous vraiment supprimer le type de charge "${computeType.displayName}" ?`
-          })
-          .pipe(
-            filter((confirm: boolean) => confirm),
-            mergeMap(() => this.computeTypesApi.deleteComputeType(computeType.id)),
-            mergeMap(() => this.computeTypesApi.getComputeTypes()),
-            map((computeTypes) => {
-              this.computeTypes = computeTypes;
+    this.translate
+      .get([
+        'admin.resources_management.compute_types.actions.delete_confirmation',
+        'admin.resources_management.compute_types.actions.delete_success',
+        'admin.resources_management.compute_types.actions.delete_error'
+      ], { name: computeType.displayName })
+      .subscribe(translations => {
+        this.toasterService.toast(
+          this.confirmDialogService
+            .confirm({
+              text: translations['admin.resources_management.compute_types.actions.delete_confirmation']
             })
-          ),
-        `Le type de charge "${computeType.displayName}" a bien été supprimé`,
-        `Impossible de supprimer le type de charge "${computeType.displayName}"`
-      );
+            .pipe(
+              filter((confirm: boolean) => confirm),
+              mergeMap(() => this.computeTypesApi.deleteComputeType(computeType.id)),
+              mergeMap(() => this.computeTypesApi.getComputeTypes()),
+              map((computeTypes) => {
+                this.computeTypes = computeTypes;
+              })
+            ),
+          translations['admin.resources_management.compute_types.actions.delete_success'],
+          translations['admin.resources_management.compute_types.actions.delete_error']
+        );
+      });
   }
 
   mapRegions(regions: Array<IOvhRegion>): Array<String> {

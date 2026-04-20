@@ -20,6 +20,7 @@ import { UserCreateComponent } from './components/user-create/user-create.compon
 import { UserEditComponent } from './components/user-edit/user-edit.component';
 import { SnackNotificationModule } from "../utils/snack-notification/snack-notification.module";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -47,6 +48,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
         MatSelectModule,
         SnackNotificationModule,
         MatSlideToggleModule,
+        TranslateModule
     ],
 })
 export class AdminUsersModule { }

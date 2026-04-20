@@ -2,10 +2,10 @@
   <div fxLayout="row" fxLayoutGap="15px">
     <div fxLayout="column">
       <mat-checkbox formControlName="displayUsername">
-        Afficher l'utilisateur à l'élève
+        {{ 'admin.courses.edit.technical_info.display_options.display_username' | translate }}
       </mat-checkbox>
       <mat-checkbox formControlName="displayPassword">
-        Afficher le mot de passe à l'élève
+        {{ 'admin.courses.edit.technical_info.display_options.display_password' | translate }}
       </mat-checkbox>
     </div>
     <div fxLayout="column">
@@ -22,7 +22,7 @@
   <br>
   <mat-divider></mat-divider>
   <br>
-  <h2>Exemple de rendu</h2>
+  <h2>{{ 'admin.courses.edit.technical_info.display_options.preview' | translate }}</h2>
   <app-display-container
     [container]="container"
     [displayOptions]="formGroup.value"

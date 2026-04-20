@@ -4,6 +4,7 @@ import { UserApiService } from "../../service/user-api.service";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { SnackNotificationService } from "../../../utils/snack-notification/snack-notification.service";
 import { Router } from "@angular/router";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-user-create',
@@ -19,6 +20,7 @@ export class UserCreateComponent {
     private readonly toasterService: ObservableSnackNotificationService,
     private readonly toastService: SnackNotificationService,
     private readonly router: Router,
+    private readonly translate: TranslateService
   ) {
     this.userForm = formBuilder.control({})
   }
@@ -26,16 +28,16 @@ export class UserCreateComponent {
   submit() {
     this.userApiService.createUser(this.userForm.value).subscribe(
       () => {
-        this.toastService.push("L'utilisateur a bien été crée", 'success');
+        this.toastService.push(this.translate.instant('admin.users_management.users.create_success'), 'success');
         this.router.navigate(['/admin/users']);
       },
       (err) => {
         if (err.status === 409) {
-          this.toastService.push("L'utilisateur existe déjà", 'error');
+          this.toastService.push(this.translate.instant('admin.users_management.users.create_duplicate'), 'error');
           this.router.navigate(['/admin/users']);
         }
         else {
-          this.toastService.push("Erreur lors de la création de l'utilisateur", 'error');
+          this.toastService.push(this.translate.instant('admin.users_management.users.create_error'), 'error');
           console.error(err);
         }
       });

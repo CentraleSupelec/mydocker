@@ -9,6 +9,7 @@ import { UserCourseApiService } from "../../services/user-course-api.service";
 import { interval, of, Subject } from "rxjs";
 import { ContentsApiService } from "src/app/modules/content-access/services/contents-api.service";
 import { IContent } from "src/app/modules/content/interfaces/content";
+import { TranslateService } from "@ngx-translate/core";
 
 
 @Component({
@@ -35,7 +36,8 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly userCourseApiService: UserCourseApiService,
-    private readonly contentsApiService: ContentsApiService
+    private readonly contentsApiService: ContentsApiService,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -205,18 +207,28 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   getDaysUntil(date: number | string): string {
-    if (null === date) {
-      return ''
+    if (date === null) {
+      return '';
     }
+
     const startDate = new Date(date);
     const now = new Date();
-    const diffTimeInDays = (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+
+    const diffTimeInDays =
+      (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+
     const absDiffTimeInDays = Math.abs(diffTimeInDays);
-    const prefix = diffTimeInDays >= 0 ? "Dans": "Il y a"
+    const isFuture = diffTimeInDays >= 0;
+
+    const keyBase = isFuture ? 'date.future' : 'date.past';
+
     if (absDiffTimeInDays < 1) {
-      return `${prefix} moins de 24 heures`
+      return this.translate.instant(`container.${keyBase}.lessThanDay`);
     }
-    return `${prefix} ${Math.floor(absDiffTimeInDays)} ${absDiffTimeInDays < 2 ? 'jour': 'jours'}`;
+
+    const count = Math.floor(absDiffTimeInDays);
+
+    return this.translate.instant(`container.${keyBase}.days`, { count });
   }
 
   ngOnDestroy(): void {
