@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { APP_CONFIG, IAppConfig } from "src/app/app-config";
 import { IContent } from "src/app/modules/content/interfaces/content";
 
-
 @Component({
   selector: 'app-content-show',
   templateUrl: './content-show.component.html',
@@ -20,8 +19,11 @@ export class ContentShowComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.data.subscribe(({content}) => {
-      console.log(content);
-      this.content = content
+      if (content) {
+        this.content = content
+      } else {
+        this.router.navigate(['/shell'])
+      }
     })
   }
 }

@@ -4,20 +4,6 @@ import { ContentShowComponent } from "./components/content-show/content-show.com
 import { ContentResolver } from './resolvers/content.resolver';
 
 const routes: Routes = [
-  // {
-  //   path: 'join/:link',
-  //   component: CourseJoinComponent,
-  //   children: [
-  //     {
-  //       path: 'hub/user-redirect/:user_redirect',
-  //       component: CourseJoinComponent
-  //     },
-  //     {
-  //       path: 'user-redirect/:user_redirect',
-  //       component: CourseJoinComponent
-  //     }
-  //   ]
-  // },
   {
     path: ':slug',
     component: ContentShowComponent,

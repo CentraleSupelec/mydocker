@@ -33,8 +33,4 @@ export class ContentsApiService {
   deleteContent(id: number): Observable<void> {
     return this.httClient.delete<void>(`${this.config.back_url}admin/contents/${id}`);
   }
-
-  getContentBySlug(slug: string): Observable<IContent> {
-    return this.httClient.get<IContent>(`${this.config.back_url}content/${slug}`);
-  }
 }
