@@ -93,6 +93,7 @@ func (a *AutoscalingUtils) buildConfigFromExistingInfra() (*TerraformConfig, err
 					Region:          instance.Attributes["region"].AttributeString,
 					Owner:           instance.Attributes["metadata"].AttributeMap["owner"].AttributeString,
 					Labels:          extractLabels(instance.Attributes["metadata"].AttributeMap["labels"]),
+					RequestDatetime: instance.Attributes["metadata"].AttributeMap["request_datetime"].AttributeString,
 				}
 			}
 		}

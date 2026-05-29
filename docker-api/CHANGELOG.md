@@ -7,6 +7,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 ## Added
 - Active courses by user
+- Request datetime for named workers
 
 ## 2.18.13
 ## Added
