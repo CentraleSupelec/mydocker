@@ -19,6 +19,7 @@ type TerraformWorkerConfig struct {
 	Count           uint32   `json:"count"`
 	InstanceImageId string   `json:"instance_image_id"`
 	Labels          []string `json:"labels"`
+	RequestDatetime string   `json:"request_datetime"`
 }
 
 type TerraformConfig struct {

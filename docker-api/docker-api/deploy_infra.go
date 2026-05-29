@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	"github.com/docker/docker/api/types"
@@ -57,6 +58,7 @@ func (s *server) DeployInfra(request *pb.DeployRequest, responseStream pb.Contai
 					Count:           w.Count,
 					InstanceImageId: w.ImageId,
 					Labels:          labels,
+					RequestDatetime: time.Now().UTC().Format("2006-01-02 15:04:05 -0700 MST"),
 				}
 				flavor[w.Owner] = append(flavor[w.Owner], newWorker)
 			}
@@ -65,6 +67,7 @@ func (s *server) DeployInfra(request *pb.DeployRequest, responseStream pb.Contai
 				Count:           w.Count,
 				InstanceImageId: w.ImageId,
 				Labels:          labels,
+				RequestDatetime: time.Now().UTC().Format("2006-01-02 15:04:05 -0700 MST"),
 			}
 			flavor[w.Owner] = []TerraformWorkerConfig{newWorker}
 		}
