@@ -1,4 +1,6 @@
 # MyDocker - CentraleSupélec's virtual lab platform
+[![SWH](https://archive.softwareheritage.org/badge/swh:1:dir:b39e55f13fd1f808cc87cc73d1e4401cbaf69bf9/)](https://archive.softwareheritage.org/swh:1:dir:b39e55f13fd1f808cc87cc73d1e4401cbaf69bf9;origin=https://github.com/CentraleSupelec/mydocker;visit=swh:1:snp:80a7fd8b4ba2f7c3e03357b1f5a32d8f21e83ae5;anchor=swh:1:rev:920ff5d51de5125f84335bd8390536e7e0d75b37)
+
 A scalable virtual labs provider based on Docker with simple integration to your LMS (Learning Management System).
 
 ## Description
