@@ -81,427 +81,6 @@ class MyUserDetailsServiceTest {
     }
 
     @Test
-    void findUser_noUserInDBNoUsernameFirst() throws Exception {
-
-        User result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(null, result.getId());
-        result.setLastname(emailCs).setName(emailCs);
-        User user = userRepository.saveAndFlush(result);
-        Long id = user.getId();
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(id, result.getId());
-        assertEquals(emailCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-
-        result = myUserDetailsService.findUser(usernameCs, emailCs);
-        userRepository.saveAndFlush(result);
-
-        assertEquals(id, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(id, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-    }
-
-    @Test
-    void findUser_noUserInDBUsernameFirst() throws Exception {
-
-        User result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(null, result.getId());
-
-        User user = this.saveUser(usernameCs, emailCs);
-        Long id = user.getId();
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(id, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-
-        result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(id, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-    }
-
-    @Test
-    void findUser_UsernameInDBNoUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, usernameCs);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(usernameCs).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(null, result.getId());
-
-        User user = this.saveUser(emailCs, emailCs);
-        Long createdUserId = user.getId();
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(createdUserId, result.getId());
-        assertEquals(emailCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-
-        result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-
-        User previousUser = userRepository.findById(createdUserId).get();
-        assertFalse(previousUser.getEnabled());
-    }
-
-   @Test
-    void findUser_UsernameInDBUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, usernameCs);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(usernameCs).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-        result.setLastname(emailCs).setName(emailCs);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-    }
-
-    @Test
-    void findUser_EmailInDBNoUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, emailCs);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(emailCs).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(emailCs, result.getEmail());
-        result.setLastname(emailCs).setName(emailCs);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(existingId, result.getId());
-
-        result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-    }
-
-    @Test
-    void findUser_EmailInDBUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, emailCs);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(emailCs).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-        result.setLastname(emailCs).setName(emailCs);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-    }
-
-    @Test
-    void findUser_BothInDBNoUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, emailCs);
-        statement.executeUpdate();
-        User existingEmailUser = userRepository.findByUsername(emailCs).get();
-        Long existingEmailId = existingEmailUser.getId();
-        statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, usernameCs);
-        statement.executeUpdate();
-        User existingUsernameUser = userRepository.findByUsername(usernameCs).get();
-        Long existingUsernameId = existingUsernameUser.getId();
-
-        User result = myUserDetailsService.findUser(null, emailCs);
-
-        assertEquals(existingEmailId, result.getId());
-        assertEquals(emailCs, result.getEmail());
-        result.setLastname(emailCs).setName(emailCs);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(usernameCs, emailCs);
-
-        assertEquals(existingUsernameId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-        User previousUser = userRepository.findById(existingEmailId).get();
-        assertFalse(previousUser.getEnabled());
-    }
-
-    @Test
-    void findUser_BothInDBUsernameFirst() throws Exception {
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, emailCs);
-        statement.executeUpdate();
-        User existingEmailUser = userRepository.findByUsername(emailCs).get();
-        Long existingEmailId = existingEmailUser.getId();
-
-        statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username) VALUES (?)");
-        statement.setString(1, usernameCs);
-        statement.executeUpdate();
-        User existingUsernameUser = userRepository.findByUsername(usernameCs).get();
-        Long existingUsernameId = existingUsernameUser.getId();
-        statement = this.dataSource.getConnection().prepareStatement("SELECT * FROM users");
-        logger.info("Initial Users in DB:");
-        ResultSet rs = statement.executeQuery();
-        while (rs.next()) {
-            logger.info("id: " + rs.getLong("id"));
-            logger.info("username: " + rs.getString("username"));
-            logger.info("email: " + rs.getString("email"));
-            logger.info("enabled: " + rs.getBoolean("enabled"));
-            logger.info("name: " + rs.getString("name"));
-            logger.info("lastname: " + rs.getString("lastname"));
-        }
-
-        User result = myUserDetailsService.findUser(usernameCs, emailCs);
-        assertEquals(existingUsernameId, result.getId());
-        assertEquals(emailCs, result.getEmail());
-        assertEquals(usernameCs, result.getUsername());
-        result.setLastname(emailCs).setName(emailCs);
-        userRepository.save(result);
-        userRepository.flush();
-
-        logger.info("Users in DB:");
-        statement = this.dataSource.getConnection().prepareStatement("SELECT * FROM users");
-        rs = statement.executeQuery();
-        while (rs.next()) {
-            logger.info("id: " + rs.getLong("id"));
-            logger.info("username: " + rs.getString("username"));
-            logger.info("email: " + rs.getString("email"));
-            logger.info("enabled: " + rs.getBoolean("enabled"));
-            logger.info("name: " + rs.getString("name"));
-            logger.info("lastname: " + rs.getString("lastname"));
-        }
-
-
-        result = myUserDetailsService.findUser(null, emailCs);
-        assertEquals(existingUsernameId, result.getId());
-        assertEquals(usernameCs, result.getUsername());
-        assertEquals(emailCs, result.getEmail());
-        User previousUser = userRepository.findById(existingEmailId).get();
-        assertFalse(previousUser.getEnabled());
-        logger.info("Final Users in DB:");
-        statement = this.dataSource.getConnection().prepareStatement("SELECT * FROM users");
-        rs = statement.executeQuery();
-        while (rs.next()) {
-            logger.info("id: " + rs.getLong("id"));
-            logger.info("username: " + rs.getString("username"));
-            logger.info("email: " + rs.getString("email"));
-            logger.info("enabled: " + rs.getBoolean("enabled"));
-            logger.info("name: " + rs.getString("name"));
-            logger.info("lastname: " + rs.getString("lastname"));
-        }
-    }
-
-    @Test
-    void findUser_UpsInDBConnectWithUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username, email) VALUES (?, ?)");
-        statement.setString(1, oldEmailUps);
-        statement.setString(2, newStudentEmailUps);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(oldEmailUps).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(null, oldEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(oldEmailUps, result.getEmail());
-        assertEquals(oldEmailUps, result.getUsername());
-        result.setLastname(newStudentEmailUps).setName(newStudentEmailUps);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(oldEmailUps, oldEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(oldEmailUps, result.getEmail());
-        assertEquals(oldEmailUps, result.getUsername());
-    }
-
-    @Test
-    void findUser_UpsInDBConnectWithEmailFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username, email) VALUES (?, ?)");
-        statement.setString(1, oldEmailUps);
-        statement.setString(2, newStudentEmailUps);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(oldEmailUps).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(oldEmailUps, oldEmailUps);
-        logger.info("result: " + result);
-        assertEquals(existingId, result.getId());
-        assertEquals(oldEmailUps, result.getEmail());
-        assertEquals(oldEmailUps, result.getUsername());
-        result.setLastname(newStudentEmailUps).setName(newStudentEmailUps);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(null, oldEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(oldEmailUps, result.getEmail());
-        assertEquals(oldEmailUps, result.getUsername());
-    }
-
-    @Test
-    void findUser_UpsInDBConnectEmailUpsWithUsernameFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username, email) VALUES (?, ?)");
-        statement.setString(1, oldEmailUps);
-        statement.setString(2, newStudentEmailUps);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(oldEmailUps).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(null, newStudentEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(newStudentEmailUps, result.getEmail());
-        assertEquals(oldEmailUps, result.getUsername());
-        result.setLastname(newStudentEmailUps).setName(newStudentEmailUps);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(newStudentEmailUps, newStudentEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(newStudentEmailUps, result.getEmail());
-        assertEquals(newStudentEmailUps, result.getUsername());
-    }
-
-    @Test
-    void findUser_UpsInDBConnectEmailUpsWithEmailFirst() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username, email) VALUES (?, ?)");
-        statement.setString(1, oldEmailUps);
-        statement.setString(2, newStudentEmailUps);
-        statement.executeUpdate();
-        User existingUser = userRepository.findByUsername(oldEmailUps).get();
-        Long existingId = existingUser.getId();
-
-        User result = myUserDetailsService.findUser(newStudentEmailUps, newStudentEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(newStudentEmailUps, result.getEmail());
-        assertEquals(newStudentEmailUps, result.getUsername());
-        result.setLastname(newStudentEmailUps).setName(newStudentEmailUps);
-        userRepository.saveAndFlush(result);
-
-        result = myUserDetailsService.findUser(null, newStudentEmailUps);
-
-        assertEquals(existingId, result.getId());
-        assertEquals(newStudentEmailUps, result.getEmail());
-        assertEquals(newStudentEmailUps, result.getUsername());
-    }
-
-    @Test
-    void findUser_UpsBothInDBConnectWithEmail() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username, email) VALUES (?, ?)");
-        statement.setString(1, oldEmailUps);
-        statement.setString(2, newStudentEmailUps);
-        statement.executeUpdate();
-        statement.setString(1, newStudentEmailUps);
-        statement.setString(2, null);
-        statement.executeUpdate();
-        User existingUserWithUsername = userRepository.findByUsername(oldEmailUps).get();
-        Long existingUserWithUsernameId = existingUserWithUsername.getId();
-        User existingUserWithEmail = userRepository.findByUsername(newStudentEmailUps).get();
-        Long existingUserWithEmailId = existingUserWithEmail.getId();
-
-        User result = myUserDetailsService.findUser(null, newStudentEmailUps);
-
-        assertEquals(existingUserWithEmailId, result.getId());
-        assertEquals(newStudentEmailUps, result.getEmail());
-        assertEquals(newStudentEmailUps, result.getUsername());
-        result.setLastname(newStudentEmailUps).setName(newStudentEmailUps);
-        userRepository.saveAndFlush(result);
-        User previousUser = userRepository.findById(existingUserWithUsernameId).get();
-        assertFalse(previousUser.getEnabled());
-    }
-
-    @Test
-    void findUser_UpsBothInDBConnectWithUsername() throws Exception {
-
-        PreparedStatement statement = this.dataSource.getConnection()
-                .prepareStatement("INSERT INTO users (username, email) VALUES (?, ?)");
-        statement.setString(1, oldEmailUps);
-        statement.setString(2, newStudentEmailUps);
-        statement.executeUpdate();
-        statement.setString(1, newStudentEmailUps);
-        statement.setString(2, null);
-        statement.executeUpdate();
-        User existingUserWithUsername = userRepository.findByUsername(oldEmailUps).get();
-        Long existingUserWithUsernameId = existingUserWithUsername.getId();
-        User existingUserWithEmail = userRepository.findByUsername(newStudentEmailUps).get();
-        Long existingUserWithEmailId = existingUserWithEmail.getId();
-
-        User result = myUserDetailsService.findUser(newStudentEmailUps, newStudentEmailUps);
-
-        assertEquals(existingUserWithEmailId, result.getId());
-        assertEquals(newStudentEmailUps, result.getEmail());
-        assertEquals(newStudentEmailUps, result.getUsername());
-        result.setLastname(newStudentEmailUps).setName(newStudentEmailUps);
-        userRepository.saveAndFlush(result);
-        User previousUser = userRepository.findById(existingUserWithUsernameId).get();
-        assertFalse(previousUser.getEnabled());
-    }
-
-    @Test
     void upsertUser_duplicateEmailDoesNotFallbackToInsert() {
         User oidcUser = this.saveUser("short@example.com", "first.last@example.com");
         this.saveUser("First.Last@example.com", "First.Last@example.com");
@@ -537,6 +116,51 @@ class MyUserDetailsServiceTest {
         assertEquals(enabledUser.getId(), result.getId());
         assertFalse(userRepository.findById(disabledSibling.getId()).get().getEnabled());
         assertEquals(2, userRepository.count());
+    }
+
+    @Test
+    void upsertUser_disabledUserRejected() {
+        saveUserRole();
+        User banned = this.saveUser("short@example.com", "first.last@example.com");
+        banned.setEnabled(false);
+        userRepository.saveAndFlush(banned);
+
+        assertThrows(
+                DisabledException.class,
+                () -> myUserDetailsService.upsertUser(
+                        "short@example.com",
+                        "first.last@example.com",
+                        "First",
+                        "Last"
+                )
+        );
+        assertEquals(1, userRepository.count());
+    }
+
+    @Test
+    void upsertUser_nullUsernameProviderUsesEmailAsUsername() {
+        // CAS/LTI provide a null username; email must become the username.
+        saveUserRole();
+        User user = myUserDetailsService.upsertUser(null, "first.last@example.com", "First", "Last");
+
+        assertEquals("first.last@example.com", user.getUsername());
+        assertEquals("first.last@example.com", user.getEmail());
+        assertEquals(1, userRepository.count());
+    }
+
+    @Test
+    void upsertUser_nullUsernameProviderDoesNotOverwriteExistingUsername() {
+        // CAS/LTI login resolving an existing OIDC-style row (username != email) must
+        // NOT rewrite username to email.
+        saveUserRole();
+        User existing = this.saveUser("short@example.com", "first.last@example.com");
+
+        User result = myUserDetailsService.upsertUser(null, "first.last@example.com", "First", "Last");
+
+        assertEquals(existing.getId(), result.getId());
+        assertEquals("short@example.com", result.getUsername());
+        assertEquals("first.last@example.com", result.getEmail());
+        assertEquals(1, userRepository.count());
     }
 
     @Test

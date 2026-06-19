@@ -17,8 +17,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String email);
     List<User> findByEmail(String email);
-    Optional<User> findByEnabledTrueAndUsername(String email);
-    List<User> findByEnabledTrueAndEmail(String email);
     List<User> findDistinctByEmailContainingAndRolesNameIsNot(@NotBlank String email, String rolesName);
     Page<User> findDistinctByEmailContainingAndRolesNameIn(
             @NotBlank String email, Collection<String> rolesName, Pageable pageable
