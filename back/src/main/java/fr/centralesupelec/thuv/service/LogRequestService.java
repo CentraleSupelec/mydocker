@@ -1,6 +1,7 @@
 package fr.centralesupelec.thuv.service;
 
 import fr.centralesupelec.gRPC.LogRequest;
+import fr.centralesupelec.gRPC.LogResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import io.grpc.Channel;
 import lombok.RequiredArgsConstructor;
@@ -11,13 +12,13 @@ import org.springframework.stereotype.Service;
 public class LogRequestService {
     private final Channel channel;
 
-    public String getLog(String userId, String courseId) {
+    public LogResponse getLog(String userId, String courseId) {
         containerServiceGrpc.containerServiceBlockingStub stub = containerServiceGrpc.newBlockingStub(channel);
         return stub.getLogs(
                 LogRequest.newBuilder()
                         .setCourseID(courseId)
                         .setUserID(userId)
                         .build()
-        ).getLogs();
+        );
     }
 }

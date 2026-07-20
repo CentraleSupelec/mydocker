@@ -2,9 +2,11 @@ package fr.centralesupelec.thuv.docker_build;
 
 import fr.centralesupelec.gRPC.ContainerRequest;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
+import fr.centralesupelec.thuv.docker_build.dtos.LogResponseDto;
 import fr.centralesupelec.thuv.docker_build.model.DockerImageBuild;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;
+import fr.centralesupelec.thuv.mappers.LogsMapper;
 import fr.centralesupelec.thuv.mappers.PortToGrpcRequestPortMapper;
 import fr.centralesupelec.thuv.security.MyUserDetails;
 import fr.centralesupelec.thuv.service.LogRequestService;
@@ -32,6 +34,7 @@ public class DockerImageTestController {
     private final LogRequestService logRequestService;
     private final ShutdownContainerService shutdownContainerService;
     private final ShutdownStatusStorage shutdownStatusStorage;
+    private final LogsMapper logsMapper;
 
     @RequestMapping(value = "{id}", method = RequestMethod.GET)
     public ContainerDto getContainer(
@@ -68,14 +71,16 @@ public class DockerImageTestController {
     }
 
     @GetMapping(value = "logs/{id}")
-    public String getLogs(
+    public LogResponseDto getLogs(
             @PathVariable("id") DockerImageBuild dockerImageBuild,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
     ) {
         Long userId = principal.getUserId();
-        return logRequestService.getLog(
+        return logsMapper.convertToDTO(
+            logRequestService.getLog(
                 String.valueOf(userId),
                 generateCourseId(dockerImageBuild.getId(), dockerImageBuild.getDockerImage().getId())
+            )
         );
     }
 

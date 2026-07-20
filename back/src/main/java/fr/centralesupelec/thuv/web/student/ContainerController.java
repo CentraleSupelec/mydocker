@@ -6,7 +6,9 @@ import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.gRPC.Metadata;
 import fr.centralesupelec.gRPC.SaveDataRequest;
+import fr.centralesupelec.thuv.docker_build.dtos.LogResponseDto;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
+import fr.centralesupelec.thuv.mappers.LogsMapper;
 import fr.centralesupelec.thuv.mappers.SaveStateMapper;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.CourseSession;
@@ -47,6 +49,7 @@ public class ContainerController {
     private final ShutdownStatusStorage shutdownStatusStorage;
     private final DelayDeletionService delayDeletionService;
     private final ZoneId zoneId;
+    private final LogsMapper logsMapper;
 
     // Saving of student work is disabled on every deployment. Turn on with
     // save.student-work.enabled = true (ansible: save_student_work_enabled).
@@ -67,11 +70,11 @@ public class ContainerController {
 
         if (updateLastStartDate) {
                 userCourseRepository.findByUserIdAndCourseId(
-                        user.getId(), 
+                        user.getId(),
                         courseSession.getCourse().getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now(zoneId))
                 );
         }
-        
+
         ContainerRequest containerRequest = containerRequestCreatorService.createRequest(
                 courseSession, user, forceRecreate
         );
@@ -139,14 +142,16 @@ public class ContainerController {
         return optionalContainer.orElse(null);
     }
 
-    @GetMapping(value = "logs/{courseId}", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String getLogs(
+    @GetMapping(value = "logs/{courseId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public LogResponseDto getLogs(
             @PathVariable("courseId") long courseId,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
     ) {
         Long userId = principal.getUserId();
-        return logRequestService.getLog(
+        return logsMapper.convertToDTO(
+            logRequestService.getLog(
                 String.valueOf(userId), String.valueOf(courseId)
+            )
         );
     }
 
