@@ -35,6 +35,15 @@
     </mat-cell>
   </ng-container>
 
+  <ng-container matColumnDef="id">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      {{ 'admin.users_management.users.columns.id' | translate }}
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element" [title]="element.id">
+      {{ element.id }}
+    </mat-cell>
+  </ng-container>
+
   <ng-container matColumnDef="username">
     <mat-header-cell *matHeaderCellDef mat-sort-header>
       {{ 'admin.users_management.users.columns.username' | translate }}

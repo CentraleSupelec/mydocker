@@ -466,6 +466,7 @@
         "create_error": "An error occurred while creating the user",
         "create_duplicate": "The user already exists",
         "columns": {
+          "id": "ID",
           "username": "Username",
           "first_name": "First name",
           "last_name": "Last name",

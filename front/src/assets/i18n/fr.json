@@ -466,6 +466,7 @@
         "create_duplicate": "L'utilisateur existe déjà",
         "create_breadcrumb":"Création d'un utilisateur",
         "columns": {
+          "id": "ID",
           "username": "Nom d'utilisateur",
           "first_name": "Prénom",
           "last_name": "Nom",

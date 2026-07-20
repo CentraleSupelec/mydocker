@@ -37,9 +37,22 @@
           <p class="information">
             {{ 'container.problem' | translate }}
           </p>
-          <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
-            {{ 'container.shutdown' | translate }}
-          </button>
+          <div fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="center center">
+            <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
+              {{ 'container.shutdown' | translate }}
+            </button>
+            <div
+              style="padding: 10px;"
+              *ngxPermissionsOnly="['course.' + course?.id + '.edit', 'course.' + course?.id + '.creator', 'ROLE_ADMIN']"
+            >
+              <a
+                [href]="'admin/courses/' + course?.id + '/edit'"
+                color="primary"
+              >
+                {{ 'admin.courses.actions.edit' | translate }}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -53,9 +66,22 @@
     <mat-progress-bar mode="buffer" [value]="step"></mat-progress-bar>
     <p style="margin-top: 10px">{{ stepMessage }}</p>
     <div style="margin-top: 30px">
-      <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
-        {{ 'container.shutdown' | translate }}
-      </button>
+      <div fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="center center">
+        <button mat-raised-button color="warn" (click)="deleteEnvWithConfirmationDialog()">
+          {{ 'container.shutdown' | translate }}
+        </button>
+        <div
+          style="padding: 10px;"
+          *ngxPermissionsOnly="['course.' + course?.id + '.edit', 'course.' + course?.id + '.creator', 'ROLE_ADMIN']"
+        >
+          <a
+            [href]="'admin/courses/' + course?.id + '/edit'"
+            color="primary"
+          >
+            {{ 'admin.courses.actions.edit' | translate }}
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -67,9 +93,22 @@
   <div fxLayout="column" fxLayoutAlign="center center" fxFill *ngSwitchCase="'ask'">
     <div *ngIf="canAskContainer(); then thenBlock else elseBlock"></div>
     <ng-template #thenBlock>
-      <button mat-raised-button color="primary" (click)="initGetContainer()">
-        {{ 'container.request_environment' | translate }}
-      </button>
+      <div fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="center center">
+        <button mat-raised-button color="primary" (click)="initGetContainer()">
+          {{ 'container.request_environment' | translate }}
+        </button>
+        <div
+          style="padding: 10px;"
+          *ngxPermissionsOnly="['course.' + course?.id + '.edit', 'course.' + course?.id + '.creator', 'ROLE_ADMIN']"
+        >
+          <a
+            [href]="'admin/courses/' + course?.id + '/edit'"
+            color="primary"
+          >
+            {{ 'admin.courses.actions.edit' | translate }}
+          </a>
+        </div>
+      </div>
     </ng-template>
     <ng-template #elseBlock>
       <strong>{{ 'container.request_blocked' | translate }}</strong>

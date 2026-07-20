@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Custom display types BUTTON (defautl) + TEXT (with Lexical)
 - Poll for active courses to update shell display accordingly
+- ID column in users list
 
 ### Changed
 - OTHER connection type to TCP + its display
+- Edit course button placement
 
 ## 2.28.15
 ### Added
