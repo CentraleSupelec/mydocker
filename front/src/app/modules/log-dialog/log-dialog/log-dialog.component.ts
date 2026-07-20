@@ -8,7 +8,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 export class LogDialogComponent {
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: string,
+    @Inject(MAT_DIALOG_DATA) public data: Record<string, string>,
     private readonly dialogRef: MatDialogRef<LogDialogComponent>,
   ) {}
 

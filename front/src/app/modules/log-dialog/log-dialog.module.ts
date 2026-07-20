@@ -5,6 +5,8 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { FlexModule } from "@angular/flex-layout";
 import { MatButtonModule } from "@angular/material/button";
 import { OpenLogDialogService } from "./open-log-dialog.service";
+import { MatExpansionModule } from '@angular/material/expansion';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
@@ -16,7 +18,9 @@ import { OpenLogDialogService } from "./open-log-dialog.service";
     CommonModule,
     MatDialogModule,
     FlexModule,
-    MatButtonModule
+    MatButtonModule,
+    MatExpansionModule,
+    TranslateModule
   ],
   providers: [
     OpenLogDialogService

@@ -527,7 +527,14 @@
     "wait_creation": "Please wait while we create your access credentials",
     "shutdown": "Shutdown the environment",
     "problem": "If there is a problem or if the environment is unresponsive, you can turn it off and request a new one.",
-    "logs": "Logs",
+    "logs": {
+      "title": "Logs",
+      "environment": "Environment",
+      "image": "Image",
+      "node": "Node",
+      "logs_by_node": "Logs by node",
+      "no_logs": "No logs found."
+    },
     "request_new_environment": "Request a new environment",
     "date": {
       "future": {

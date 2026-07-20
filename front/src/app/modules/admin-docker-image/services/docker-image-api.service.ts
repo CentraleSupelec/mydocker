@@ -5,7 +5,7 @@ import { Observable } from "rxjs";
 import { ICreationDockerImage, IDockerImage, IUpdateDockerImage } from "../interfaces/docker-image";
 import { IDockerImageBuild } from "../interfaces/docker-image-build";
 import { IPort } from "../../ports-form/interfaces/port";
-import { IContainer } from "../../shell/interfaces/container";
+import { IContainer, IServiceLogs } from "../../shell/interfaces/container";
 import { IPageResponse } from "../../utils/page";
 import { IShutdownStatus } from "../interfaces/shutdown-status";
 
@@ -75,11 +75,8 @@ export class DockerImageApiService {
     return this.httClient.get<IContainer>(`${this.config.back_url}images/build/${id}`)
   }
 
-  getLogs(id: number): Observable<string> {
-    return this.httClient.get(`${this.config.back_url}images/build/logs/${id}`, {
-      observe: 'body',
-      responseType: 'text'
-    })
+  getLogs(id: number): Observable<IServiceLogs> {
+    return this.httClient.get<IServiceLogs>(`${this.config.back_url}images/build/logs/${id}`)
   }
 
   shutdownTestContainer(id: number): Observable<void> {

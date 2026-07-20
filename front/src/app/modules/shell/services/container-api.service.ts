@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { APP_CONFIG, IAppConfig } from "../../../app-config";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { IContainer } from "../interfaces/container";
+import { IContainer, IServiceLogs } from "../interfaces/container";
 import { ISaveState } from "../interfaces/save-state";
 import { IShutdownContainer } from '../interfaces/shutdown-container';
 import { IDelayDeletion } from '../interfaces/delay-deletion';
@@ -46,11 +46,8 @@ export class ContainerApiService {
     return this.httpClient.get<IShutdownContainer>(`${this.config.back_url}docker/container/${courseId}/shutdown`);
   }
 
-  getLogs(courseId: number | undefined): Observable<string> {
-    return this.httpClient.get(`${this.config.back_url}docker/logs/${courseId}`,{
-      observe: 'body',
-      responseType: 'text'
-    });
+  getLogs(courseId: number | undefined): Observable<IServiceLogs> {
+    return this.httpClient.get<IServiceLogs>(`${this.config.back_url}docker/logs/${courseId}`);
   }
 
   delayDeletion(sessionId: number | undefined): Observable<IDelayDeletion> {

@@ -527,7 +527,14 @@
     "wait_creation": "Veuillez patienter pendant que nous créons vos accès",
     "shutdown": "Éteindre l'environnement",
     "problem": "En cas de problème ou si l'environnement ne répond pas, vous pouvez l'éteindre et en demander un nouveau.",
-    "logs": "Logs",
+    "logs": {
+      "title": "Logs",
+      "environment": "Environnement",
+      "image": "Image",
+      "node": "Noeud",
+      "logs_by_node": "Logs par noeud",
+      "no_logs": "Aucun log trouvé."
+    },
     "request_new_environment": "Demander un nouvel environnement",
     "date": {
       "future": {

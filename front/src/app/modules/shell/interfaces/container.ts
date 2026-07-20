@@ -35,3 +35,9 @@ export interface IContainer {
   creationError?: string;
   errorParams: { [key: string]: string};
 }
+
+export interface IServiceLogs {
+  name: string;
+  image: string;
+  logsByNode: Record<string, string>;
+}
