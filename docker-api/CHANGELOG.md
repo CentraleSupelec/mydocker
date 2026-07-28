@@ -14,6 +14,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## 2.18.16
 ## Added
 - Mount a list of volumes in readonly mode to all containers
+- Map IP and ports in the command
 
 ## 2.18.15
 ## Added
