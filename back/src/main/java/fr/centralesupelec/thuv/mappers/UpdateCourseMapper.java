@@ -13,12 +13,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UpdateCourseMapper {
+    private static final Pattern COMMAND_PORT_PATTERN = Pattern.compile("\\{\\{PORT\\[['\"]([^'\"]+)['\"]\\]\\}\\}");
     private final PortsMapper portsMapper;
     private final SessionMapper sessionMapper;
     private final ObjectMapper objectMapper;
@@ -27,6 +34,7 @@ public class UpdateCourseMapper {
 
 
     public void updateChanges(Course course, AdminUpdateCourseDto dto) {
+        validateCommandPorts(dto);
         Optional<ComputeType> computeType = computeTypeRepository.findById(dto.getComputeTypeId());
         if (!computeType.isPresent()) {
             throw new ResponseStatusException(
@@ -50,7 +58,7 @@ public class UpdateCourseMapper {
                 .setExternalAccess(dto.isExternalAccess())
                 .setExternalAccessExpirationDate(
                         dto.getExternalAccessExpirationDate() == null
-                                ? null 
+                                ? null
                                 : Instant.ofEpochMilli(dto.getExternalAccessExpirationDate()).atZone(zoneId).toLocalDateTime()
                 )
                 .setDockerImage(
@@ -109,6 +117,39 @@ public class UpdateCourseMapper {
                     );
         } catch (JsonProcessingException e) {
             course.setDisplayOptions("{}");
+        }
+    }
+
+    private void validateCommandPorts(AdminUpdateCourseDto dto) {
+        String command = dto.getCommand();
+        if (command == null || command.isBlank()) {
+            return;
+        }
+
+        Set<String> validPortKeys = new HashSet<>();
+        if (dto.getPorts() != null) {
+            dto.getPorts().forEach(port -> {
+                if (port.getMapPort() != null) {
+                    validPortKeys.add(port.getMapPort().toString());
+                }
+            });
+        }
+
+        Matcher matcher = COMMAND_PORT_PATTERN.matcher(command);
+        List<String> invalidPorts = new ArrayList<>();
+
+        while (matcher.find()) {
+            String extractedPort = matcher.group(1);
+            if (!validPortKeys.contains(extractedPort)) {
+                invalidPorts.add(extractedPort);
+            }
+        }
+
+        if (!invalidPorts.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    String.format("Unknown port(s) referenced in command: %s", String.join(", ", invalidPorts))
+            );
         }
     }
 }
