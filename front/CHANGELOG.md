@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - OTHER connection type to TCP + its display
+- Check if command contains invalid port variables
 
 ## 2.28.15
 ### Added

@@ -9,6 +9,7 @@ import {
   NG_VALUE_ACCESSOR,
   ValidationErrors,
   Validator,
+  ValidatorFn,
   Validators
 } from "@angular/forms";
 import { IAdminCourse } from "../../interfaces/course";
@@ -19,6 +20,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { DockerImageChoiceDialogComponent } from "../docker-image-choice-dialog/docker-image-choice-dialog.component";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
+import { IPort } from 'src/app/modules/ports-form/interfaces/port';
 
 @Component({
   selector: 'app-course-technical-information-form',
@@ -68,6 +70,8 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       uid: null,
 
       displayOptions: formBuilder.control({}),
+    }, {
+      validators: [this.commandPortValidator]
     });
   }
 
@@ -158,4 +162,35 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       }
     )
   }
+
+  commandPortValidator: ValidatorFn = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    const command: string = control.get('command')?.value;
+    const ports: IPort[] = control.get('ports')?.value || [];
+
+    if (!command || typeof command !== 'string') {
+      return null;
+    }
+
+    const portRegex = /\{\{PORT\[['"]([^'"]+)['"]\]\}\}/g;
+    const invalidPorts: string[] = [];
+
+    const validPortKeys = new Set<string>();
+    ports.forEach((p) => {
+      if (p.mapPort != null) validPortKeys.add(p.mapPort.toString());
+    });
+
+    let match: RegExpExecArray | null;
+    while ((match = portRegex.exec(command)) !== null) {
+      const extractedPort = match[1];
+      if (!validPortKeys.has(extractedPort)) {
+        invalidPorts.push(extractedPort);
+      }
+    }
+
+    return invalidPorts.length > 0
+      ? { unknownCommandPorts: { invalidPorts } }
+      : null;
+  };
 }
