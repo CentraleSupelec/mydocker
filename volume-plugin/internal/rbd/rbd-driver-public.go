@@ -215,14 +215,14 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
 
     err = d.errIfRbdImageHasWatchers(imageName)
 	if err != nil {
-        logrus.Warnf("volume-rbd Name=%s Message=MountRbdImage image has watchers:", imageName, err)
+        logrus.Warnf("volume-rbd Name=%s Message=MountRbdImage image has watchers: %s", imageName, err)
 	}
 
 
 
 	err = d.mapImage(imageName)
 	if err != nil {
-		return fmt.Errorf("unable to map: %s", imageName, err), ""
+		return fmt.Errorf("unable to map %s: %s", imageName, err), ""
 	}
 
 
@@ -231,7 +231,7 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
 	err = os.MkdirAll(mountpoint, os.ModeDir | os.FileMode(int(0775)))
 	if err != nil {
 		defer d.FreeUpRbdImage(imageName)
-		return fmt.Errorf("unable to make mountpoint: %s", mountpoint, err), ""
+		return fmt.Errorf("unable to make mountpoint %s: %s", mountpoint, err), ""
 	}
 
 
@@ -260,14 +260,14 @@ func (d *rbdDriver) FreeUpRbdImage(imageName string) error {
     // silently unmount
     err := d.unmountDevice(imageName)
     if err != nil {
-        logrus.Warnf("volume-rbd Name=%s Message=unable to unmount:", imageName, err)
+        logrus.Warnf("volume-rbd Name=%s Message=unable to unmount: %s", imageName, err)
     }
 
 
     // silently unmap
     err = d.unmapImage(imageName)
     if err != nil {
-        logrus.Warnf("volume-rbd Name=%s Message=unable to unmap:", imageName, err)
+        logrus.Warnf("volume-rbd Name=%s Message=unable to unmap: %s", imageName, err)
     }
 
 
