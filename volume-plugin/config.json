@@ -148,6 +148,14 @@
       ]
     },
     {
+      "source": "/run/udev",
+      "destination": "/run/udev",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
+    },
+    {
       "name": "rootPath",
       "description":  "Where all volumes will be created",
       "source": "/mnt/mydocker-fs",
