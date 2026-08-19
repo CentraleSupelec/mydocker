@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
-	wetopi "github.com/wetopi/docker-volume-rbd/lib"
+	rbddriver "gitlab-research.centralesupelec.fr/mydockervolume/internal/rbd"
 	"gitlab-research.centralesupelec.fr/mydockervolume/mydockervolume"
 	"os"
 )
@@ -17,6 +17,7 @@ func main() {
 		log.Infof("Could not parse log level '%s', using Warning instead", providedLogLevel)
 		level = log.WarnLevel
 	}
+	log.SetLevel(level)
 
 	var mydockerDriver volume.Driver
 	switch mode := os.Getenv("DRIVER_MODE"); mode {
@@ -27,7 +28,7 @@ func main() {
 			os.Exit(1)
 		}
 	case "RBD":
-		err, mydockerDriver = wetopi.NewDriver()
+		err, mydockerDriver = rbddriver.NewDriver()
 	default:
 		log.Fatalf("unsupported DRIVER_MODE %s", mode)
 		os.Exit(1)
