@@ -98,6 +98,14 @@
         "value"
       ],
       "value": "22"
+    },
+    {
+      "name": "SHELL_TIMEOUT_SECONDS",
+      "Description": "Timeout for shell commands run by the driver (rbd, mount...). Keep under dockerd's 120s plugin request deadline",
+      "settable": [
+        "value"
+      ],
+      "value": "90"
     }
   ],
   "linux": {
