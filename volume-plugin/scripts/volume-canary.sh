@@ -16,7 +16,14 @@ SIZE_MB="${CANARY_SIZE_MB:-1024}"
 VOL="canary-$(hostname -s)-$$"
 
 rbd_zombies() {
-    ps -eo stat=,comm= | awk '$1 ~ /^Z/ && $2 == "rbd"' | wc -l | tr -d ' '
+    # count only zombies parented to the plugin process; fall back to a
+    # host-wide count if the plugin PID cannot be resolved
+    plugin_pid=$(pgrep -f '/mydockervolume' | head -1)
+    if [ -n "$plugin_pid" ]; then
+        ps -eo stat=,comm=,ppid= | awk -v p="$plugin_pid" '$1 ~ /^Z/ && $2 == "rbd" && $3 == p' | wc -l | tr -d ' '
+    else
+        ps -eo stat=,comm= | awk '$1 ~ /^Z/ && $2 == "rbd"' | wc -l | tr -d ' '
+    fi
 }
 
 fail() {

@@ -1,6 +1,8 @@
 package dockerVolumeRbd
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,49 +29,83 @@ const (
 	unmapPollInterval = 100 * time.Millisecond
 )
 
-func readSysfsAttr(id string, attr string) string {
+func readSysfsAttr(id string, attr string) (string, error) {
 	b, err := os.ReadFile(filepath.Join(rbdSysfsDevicesDir, id, attr))
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return strings.TrimSpace(string(b))
+	return strings.TrimSpace(string(b)), nil
 }
 
 // sysfsDeviceIsOurs reports whether device id currently maps our
-// pool/namespace/image. A vanished entry or one whose attributes no longer
-// match means the id was released (and possibly reused by a concurrent map),
-// so the unmap we were waiting for is done.
-func (d *rbdDriver) sysfsDeviceIsOurs(id string, imageName string) bool {
-	if readSysfsAttr(id, "name") != imageName {
-		return false
+// pool/namespace/image. (false, nil) means released: the entry vanished or
+// the id was reused by a concurrent map. Only ENOENT counts as vanished; any
+// other read failure returns (true, err) so an unknown state is never
+// classified as released.
+func (d *rbdDriver) sysfsDeviceIsOurs(id string, imageName string) (bool, error) {
+	name, err := readSysfsAttr(id, "name")
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return false, nil
+		}
+		return true, err
 	}
-	if readSysfsAttr(id, "pool") != d.conf["pool"] {
-		return false
+	if name != imageName {
+		return false, nil
 	}
-	// namespace attribute is absent on older kernels; both sides read ""
-	return readSysfsAttr(id, "namespace") == d.conf["namespace"]
+
+	pool, err := readSysfsAttr(id, "pool")
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return false, nil
+		}
+		return true, err
+	}
+	if pool != d.conf["pool"] {
+		return false, nil
+	}
+
+	// namespace attribute is absent on older kernels: attr ENOENT with the
+	// device still present means "no namespace support", i.e. ""
+	ns, err := readSysfsAttr(id, "namespace")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return true, err
+	}
+	return ns == d.conf["namespace"], nil
 }
 
 // sysfsMappedDeviceIDs lists the rbd device ids currently mapping imageName.
-func (d *rbdDriver) sysfsMappedDeviceIDs(imageName string) []string {
+// Errors (unreadable sysfs, failed attribute reads) surface to the caller,
+// which falls back to the plain synchronous CLI unmap.
+func (d *rbdDriver) sysfsMappedDeviceIDs(imageName string) ([]string, error) {
 	entries, err := os.ReadDir(rbdSysfsDevicesDir)
 	if err != nil {
-		logrus.Warnf("volume-rbd Name=%s Message=cannot read %s: %s", imageName, rbdSysfsDevicesDir, err)
-		return nil
+		return nil, err
 	}
 
 	var ids []string
 	for _, e := range entries {
-		if d.sysfsDeviceIsOurs(e.Name(), imageName) {
+		ours, err := d.sysfsDeviceIsOurs(e.Name(), imageName)
+		if err != nil {
+			return nil, err
+		}
+		if ours {
 			ids = append(ids, e.Name())
 		}
 	}
-	return ids
+	return ids, nil
 }
 
+// sysfsAllReleased is conservative: a device whose state cannot be verified
+// counts as still mapped, so polling continues and the watchdog reports it.
 func (d *rbdDriver) sysfsAllReleased(ids []string, imageName string) bool {
 	for _, id := range ids {
-		if d.sysfsDeviceIsOurs(id, imageName) {
+		ours, err := d.sysfsDeviceIsOurs(id, imageName)
+		if err != nil {
+			logrus.Warnf("volume-rbd Name=%s Message=cannot verify rbd device %s state: %s", imageName, id, err)
+			return false
+		}
+		if ours {
 			return false
 		}
 	}

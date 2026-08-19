@@ -25,7 +25,6 @@ type rbdDriver struct {
 }
 
 var (
-	rbdUnmapBusyRegexp = regexp.MustCompile(`^exit status 16$`)
     rbdHasNoWatchersRegexp = regexp.MustCompile(`^Watchers: none$`)
 	rbdBusyRegexp = regexp.MustCompile(`ret=-16$`)
 )
@@ -175,7 +174,7 @@ func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fst
 		mkfsArgs = append(mkfsArgs, mkfsOptions)
 	}
 	mkfsArgs = append(mkfsArgs, device)
-	_, err = shWithTimeout(5 * time.Minute, mkfs, mkfsArgs...)
+	_, err = shWithDefaultTimeout(mkfs, mkfsArgs...)
 	if err != nil {
 		d.unmapImage(imageName)
 		defer d.removeRbdImage(imageName)

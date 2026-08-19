@@ -1,6 +1,7 @@
 package dockerVolumeRbd
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -35,17 +36,22 @@ func shWithTimeout(howLong time.Duration, name string, args ...string) (string, 
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, name, args...)
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	// child stderr goes to the plugin's stderr (dockerd plugin logs); the
+	// rbd shim's RBD_SHIM lines and ceph CLI errors must stay visible
+	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error {
 		return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 	}
 	cmd.WaitDelay = 10 * time.Second
 
-	out, err := cmd.Output()
+	err := cmd.Run()
 	if ctx.Err() == context.DeadlineExceeded {
 		return "", errors.New("timeout reached")
 	}
-	return strings.Trim(string(out), " \n"), err
+	return strings.Trim(stdout.String(), " \n"), err
 }
 
 // shWithDefaultTimeout will use the defaultShellTimeout so you dont have to pass one

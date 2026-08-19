@@ -37,6 +37,5 @@ func main() {
 	h := volume.NewHandler(mydockerDriver)
 
 	log.Infof("plugin(mydockervolume) started with log level(%s) attending socket(%s)", level, socketAddress)
-	log.SetLevel(level)
 	log.Error(h.ServeUnix(socketAddress, 0))
 }

@@ -1,11 +1,13 @@
 package dockerVolumeRbd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ceph/go-ceph/rbd"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 )
@@ -18,10 +20,32 @@ func (d *rbdDriver) mapImage(imageName string) error {
 	return err
 }
 
+// isUnmapBusy detects rbd unmap's exit 16: device is still being used -
+// unlike umount. Callers recover differently in that case.
+func isUnmapBusy(err error) bool {
+	var ee *exec.ExitError
+	return errors.As(err, &ee) && ee.ExitCode() == 16
+}
+
 func (d *rbdDriver) unmapImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=rbd unmap", imageName)
 
-	ids := d.sysfsMappedDeviceIDs(imageName)
+	spec := filepath.Join(d.conf["pool"], d.conf["namespace"], imageName)
+
+	ids, err := d.sysfsMappedDeviceIDs(imageName)
+	if err != nil {
+		// no usable sysfs view: fall back to the plain synchronous CLI unmap
+		logrus.Warnf("volume-rbd Name=%s Message=rbd unmap: sysfs unavailable (%s), synchronous CLI fallback", imageName, err)
+		_, err := d.rbdsh("unmap", spec)
+		if err != nil {
+			if isUnmapBusy(err) {
+				return err
+			}
+			logrus.Errorf("volume-rbd Name=%s Message=rbd unmap: %s", imageName, err.Error())
+			// other error, continue and fail safe
+		}
+		return nil
+	}
 	if len(ids) == 0 {
 		logrus.Debugf("volume-rbd Name=%s Message=rbd unmap: not mapped, nothing to do", imageName)
 		return nil
@@ -33,7 +57,7 @@ func (d *rbdDriver) unmapImage(imageName string) error {
 	started := time.Now()
 	cliErr := make(chan error, 1)
 	go func() {
-		_, err := d.rbdsh("unmap", filepath.Join(d.conf["pool"], d.conf["namespace"], imageName))
+		_, err := d.rbdsh("unmap", spec)
 		cliErr <- err
 	}()
 
@@ -46,14 +70,15 @@ func (d *rbdDriver) unmapImage(imageName string) error {
 
 		select {
 		case err := <-cliErr:
+			cliErr = nil // consumed; a nil channel is never selected again
 			if err != nil {
-				// NOTE: rbd unmap exits 16 if device is still being used - unlike umount.  try to recover differently in that case
-				if rbdUnmapBusyRegexp.MatchString(err.Error()) {
+				if isUnmapBusy(err) {
 					return err
 				}
 				logrus.Errorf("volume-rbd Name=%s Message=rbd unmap: %s", imageName, err.Error())
-				// other error, continue and fail safe
-				return nil
+				// keep watching sysfs: the kernel may have released the
+				// device despite the CLI failure, and if it did not the
+				// watchdog must still get a chance to report it
 			}
 		case <-time.After(unmapPollInterval):
 		}
