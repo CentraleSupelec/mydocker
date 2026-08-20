@@ -51,6 +51,10 @@ run() {
     fi
 }
 
+dump_env() {  # every settable env value, one KEY=value per line, sorted
+    docker plugin inspect "$ALIAS" --format '{{range .Settings.Env}}{{println .}}{{end}}' 2>/dev/null | sed '/^$/d' | sort
+}
+
 installed=$(docker plugin inspect "$ALIAS" --format '{{.PluginReference}}' 2>/dev/null || true)
 if [ -z "$installed" ]; then
     echo "plugin '$ALIAS' is not installed on this host" >&2
@@ -58,7 +62,11 @@ if [ -z "$installed" ]; then
     exit 1
 fi
 
+env_before=$(dump_env)
+
 echo "### currently installed: $installed"
+echo "### settings before upgrade:"
+echo "$env_before" | sed 's/^/    /'
 echo "### rollback command if this upgrade goes wrong:"
 echo "    docker plugin disable -f ${ALIAS} && docker plugin upgrade ${ALIAS} ${installed} && docker plugin enable ${ALIAS}"
 echo
@@ -70,6 +78,36 @@ run docker plugin enable "$ALIAS"
 if [ "$DRY_RUN" -eq 0 ]; then
     echo "### now installed: $(docker plugin inspect "$ALIAS" --format '{{.PluginReference}}')"
     docker plugin inspect "$ALIAS" --format '### enabled: {{.Enabled}}'
+
+    # An upgrade that silently drops a setting is worse than a failed upgrade:
+    # a driver that comes back pointing at the wrong pool or keyring fails
+    # every volume operation. Compare, and print the exact repair commands.
+    env_after=$(dump_env)
+    lost=""
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        key=${line%%=*}
+        after=$(echo "$env_after" | grep "^${key}=" || true)
+        if [ "$after" != "$line" ]; then
+            lost="${lost}${line}
+"
+        fi
+    done <<EOF
+$env_before
+EOF
+
+    if [ -n "$lost" ]; then
+        echo
+        echo "### WARNING: settings changed or lost across the upgrade:"
+        echo "$lost" | sed '/^$/d' | sed 's/^/    was: /'
+        echo "### restore them with:"
+        echo "    docker plugin disable -f ${ALIAS}"
+        echo "$lost" | sed '/^$/d' | sed "s|^|    docker plugin set ${ALIAS} |"
+        echo "    docker plugin enable ${ALIAS}"
+        echo "### do not run the smoke test until the settings are correct"
+        exit 1
+    fi
+    echo "### settings carried over unchanged"
 fi
 
 echo "next: scripts/smoke.sh --driver ${ALIAS}"
