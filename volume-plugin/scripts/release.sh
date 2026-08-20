@@ -10,9 +10,15 @@
 # The plugin name must be registry-qualified when pushing anywhere other than
 # Docker Hub; the Makefile default is not, so it is required here.
 #
+# --promote skips the build and re-tags the rootfs already in ./plugin, so the
+# exact bits tested on preprod under a release-candidate version can ship as
+# the final version without a rebuild. Only valid in the same checkout that
+# built them, and only before another build runs `make clean`.
+#
 # Usage:
 #   scripts/release.sh --version 1.4.0 --name registry.example.org/centralesupelec/mydockervolume
 #   scripts/release.sh --version 1.4.0 --name ... --platform linux/arm64 --no-push
+#   scripts/release.sh --version 1.4.0 --name ... --promote
 #   scripts/release.sh --version 1.4.0 --name ... --dry-run
 set -euo pipefail
 
@@ -21,9 +27,10 @@ NAME=""
 PLATFORM="linux/amd64"
 PUSH=1
 DRY_RUN=0
+PROMOTE=0
 
 usage() {
-    sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'
     exit "${1:-0}"
 }
 
@@ -33,6 +40,7 @@ while [ $# -gt 0 ]; do
         --name)     NAME="$2"; shift 2 ;;
         --platform) PLATFORM="$2"; shift 2 ;;
         --no-push)  PUSH=0; shift ;;
+        --promote)  PROMOTE=1; shift ;;
         --dry-run)  DRY_RUN=1; shift ;;
         -h|--help)  usage 0 ;;
         *)          echo "unknown argument: $1" >&2; usage 1 ;;
@@ -47,7 +55,8 @@ case "$NAME" in
     *) [ "$PUSH" -eq 0 ] || { echo "refusing to push '$NAME': not registry-qualified (host/org/name). Use --no-push to build only." >&2; exit 1; } ;;
 esac
 
-# host architecture vs requested platform
+# host architecture vs requested platform. A promotion re-tags an existing
+# rootfs and compiles nothing, so the architecture check does not apply.
 host_arch=$(uname -m)
 case "$host_arch" in
     x86_64|amd64)  host_platform="linux/amd64" ;;
@@ -55,7 +64,7 @@ case "$host_arch" in
     *)             host_platform="unknown/$host_arch" ;;
 esac
 
-if [ "$PLATFORM" != "$host_platform" ]; then
+if [ "$PROMOTE" -eq 0 ] && [ "$PLATFORM" != "$host_platform" ]; then
     cat >&2 <<EOF
 refusing to build $PLATFORM on a $host_platform host.
 
@@ -79,8 +88,18 @@ run() {
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
 
-echo "### building ${NAME}:${VERSION} for ${PLATFORM}"
-run make PLUGIN_NAME="$NAME" PLUGIN_VERSION="$VERSION" PLATFORM="$PLATFORM" all
+if [ "$PROMOTE" -eq 1 ]; then
+    if [ ! -d ./plugin/rootfs ]; then
+        echo "refusing to promote: ./plugin/rootfs does not exist." >&2
+        echo "Promotion re-tags the rootfs an earlier build left here; run the build first, in this checkout." >&2
+        exit 1
+    fi
+    echo "### promoting the rootfs in ./plugin to ${NAME}:${VERSION} (no rebuild)"
+    run make PLUGIN_NAME="$NAME" PLUGIN_VERSION="$VERSION" create
+else
+    echo "### building ${NAME}:${VERSION} for ${PLATFORM}"
+    run make PLUGIN_NAME="$NAME" PLUGIN_VERSION="$VERSION" PLATFORM="$PLATFORM" all
+fi
 
 if [ "$PUSH" -eq 1 ]; then
     echo "### pushing ${NAME}:${VERSION}"
