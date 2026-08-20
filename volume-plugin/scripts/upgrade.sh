@@ -72,7 +72,16 @@ echo "    docker plugin disable -f ${ALIAS} && docker plugin upgrade ${ALIAS} ${
 echo
 
 run docker plugin disable -f "$ALIAS"
-run docker plugin upgrade --grant-all-permissions "$ALIAS" "${NAME}:${VERSION}"
+# --skip-remote-check: the alias repo differs from the target repo by design,
+# and the "Plugin images do not match" prompt would hang a non-interactive run.
+# If the upgrade itself fails (unreachable registry, missing tag), re-enable
+# the previous plugin instead of leaving the node without a volume driver.
+if ! run docker plugin upgrade --grant-all-permissions --skip-remote-check "$ALIAS" "${NAME}:${VERSION}"; then
+    echo "### upgrade FAILED, re-enabling the previous plugin" >&2
+    run docker plugin enable "$ALIAS"
+    docker plugin inspect "$ALIAS" --format '### still installed: {{.PluginReference}}, enabled: {{.Enabled}}' 2>/dev/null || true
+    exit 1
+fi
 run docker plugin enable "$ALIAS"
 
 if [ "$DRY_RUN" -eq 0 ]; then

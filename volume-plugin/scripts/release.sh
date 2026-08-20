@@ -85,6 +85,18 @@ run() {
     fi
 }
 
+# Fail on missing registry credentials BEFORE the build, not after: a push
+# that dies on auth wastes the whole build and leaves the operator mid-flow.
+if [ "$PUSH" -eq 1 ] && [ "$DRY_RUN" -eq 0 ]; then
+    registry=${NAME%%/*}
+    if ! grep -q "\"$registry\"" "${DOCKER_CONFIG:-$HOME/.docker}/config.json" 2>/dev/null; then
+        echo "no credentials for '$registry' found; run first:" >&2
+        echo "    docker login $registry" >&2
+        echo "(or pass --no-push to build without pushing)" >&2
+        exit 1
+    fi
+fi
+
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
 

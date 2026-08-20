@@ -57,13 +57,18 @@ cleanup() {
 trap cleanup EXIT
 
 create_volume() {  # name, size_mb -> prints elapsed ms, returns create status
-    local name="$1" size="$2" start end
+    local name="$1" size="$2" start end drv
     created_volumes+=("$name")
     start=$(now_ms)
     if ! docker volume create -d "$DRIVER" -o size="$size" "$name" >/dev/null 2>&1; then
         return 1
     fi
     end=$(now_ms)
+    # A later `docker run -v` would silently auto-create a local-driver volume
+    # under the same name if this create had failed; make sure what exists
+    # really came from the driver under test.
+    drv=$(docker volume inspect -f '{{.Driver}}' "$name" 2>/dev/null)
+    [ "$drv" = "$DRIVER" ] || return 1
     echo $((end - start))
 }
 
@@ -117,34 +122,43 @@ echo "### smoke test against $DRIVER"
 
 # 1 + 2: creation latency. With discard skipped at format time, size should
 # barely matter; a slow 5 TB create is the signal that nodiscard regressed.
+create_1g_ok=0
 for spec in "1g:1024" "5t:5242880"; do
     label="${spec%%:*}"; size="${spec##*:}"
     if elapsed=$(create_volume "${PREFIX}-${label}" "$size"); then
+        [ "$label" = "1g" ] && create_1g_ok=1
         if [ "$elapsed" -lt $((THRESHOLD * 1000)) ]; then
             pass "create ${label}" "${elapsed}ms"
         else
             fail "create ${label}" "${elapsed}ms (threshold ${THRESHOLD}s)"
         fi
     else
-        fail "create ${label}" "docker volume create failed"
+        fail "create ${label}" "volume create failed or wrong driver"
     fi
 done
 
-# 3: the volume really carries a filesystem, read from the container's mounts
-fstype=$(docker run --rm -v "${PREFIX}-1g:/d" "$IMAGE" \
-    sh -c "awk '\$2 == \"/d\" { print \$3 }' /proc/mounts" 2>/dev/null | head -1)
-case "$fstype" in
-    ext4|ext3|ext2|xfs) pass "filesystem present" "$fstype" ;;
-    "")                 fail "filesystem present" "could not read /proc/mounts in container" ;;
-    *)                  fail "filesystem present" "unexpected type '$fstype'" ;;
-esac
-
-# 4: data survives unmount and remount
-if docker run --rm -v "${PREFIX}-1g:/d" "$IMAGE" sh -c 'echo mydocker-smoke > /d/canary' >/dev/null 2>&1 &&
-   docker run --rm -v "${PREFIX}-1g:/d" "$IMAGE" sh -c 'grep -q mydocker-smoke /d/canary' >/dev/null 2>&1; then
-    pass "write, remount, verify"
+# Checks 3 and 4 mount the 1 GB volume; without it `docker run -v` would
+# auto-create a local-driver volume and test the rootfs instead of the plugin.
+if [ "$create_1g_ok" -eq 0 ]; then
+    fail "filesystem present" "skipped: create 1g failed"
+    fail "write, remount, verify" "skipped: create 1g failed"
 else
-    fail "write, remount, verify" "content did not survive the remount"
+    # 3: the volume really carries a filesystem, read from the container's mounts
+    fstype=$(docker run --rm -v "${PREFIX}-1g:/d" "$IMAGE" \
+        sh -c "awk '\$2 == \"/d\" { print \$3 }' /proc/mounts" 2>/dev/null | head -1)
+    case "$fstype" in
+        ext4|ext3|ext2|xfs) pass "filesystem present" "$fstype" ;;
+        "")                 fail "filesystem present" "could not read /proc/mounts in container" ;;
+        *)                  fail "filesystem present" "unexpected type '$fstype'" ;;
+    esac
+
+    # 4: data survives unmount and remount
+    if docker run --rm -v "${PREFIX}-1g:/d" "$IMAGE" sh -c 'echo mydocker-smoke > /d/canary' >/dev/null 2>&1 &&
+       docker run --rm -v "${PREFIX}-1g:/d" "$IMAGE" sh -c 'grep -q mydocker-smoke /d/canary' >/dev/null 2>&1; then
+        pass "write, remount, verify"
+    else
+        fail "write, remount, verify" "content did not survive the remount"
+    fi
 fi
 
 # 5: repeated cycles must not leak rbd children (the historic zombie bug)
