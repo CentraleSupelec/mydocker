@@ -101,11 +101,27 @@
     },
     {
       "name": "SHELL_TIMEOUT_SECONDS",
-      "Description": "Timeout for shell commands run by the driver (rbd, mount...). Keep under dockerd's 120s plugin request deadline",
+      "Description": "Per-attempt timeout for shell commands run by the driver (rbd, mkfs, mount...). Budget (1+SHELL_RETRIES)*timeout per command, and map+mkfs+30s unmap wait per Create, must stay under dockerd's 120s plugin request deadline",
       "settable": [
         "value"
       ],
-      "value": "90"
+      "value": "10"
+    },
+    {
+      "name": "SHELL_RETRIES",
+      "Description": "How many times a failed/timed-out command attempt is retried on the create and mount paths",
+      "settable": [
+        "value"
+      ],
+      "value": "3"
+    },
+    {
+      "name": "FS_READY_MARKER",
+      "Description": "FS mode only: file name that must exist in the volume root before Create/Mount are allowed. Guards against serving empty volumes when the backing store is not mounted. Empty disables the check",
+      "settable": [
+        "value"
+      ],
+      "value": ""
     }
   ],
   "linux": {

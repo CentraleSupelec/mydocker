@@ -24,17 +24,39 @@ func NewFSDriver(providedRoot string) (error, *MydockerFsDriver) {
 		return err, nil
 	}
 	driver := &MydockerFsDriver{
-		root: root,
+		root:        root,
+		readyMarker: os.Getenv("FS_READY_MARKER"),
 	}
 	return nil, driver
 }
 
 type MydockerFsDriver struct {
-	d    volume.Driver
-	root string
+	d           volume.Driver
+	root        string
+	readyMarker string
+}
+
+// ensureBackingStore guards against serving an empty volume when the backing
+// store (NFS or host directory bound to the plugin root) is not mounted: the
+// container would start with a blank workspace and writes would land on the
+// wrong disk, shadowed once the real store comes back. The operator creates
+// the marker file once on the real backing store; if FS_READY_MARKER is unset
+// the check is disabled.
+func (d *MydockerFsDriver) ensureBackingStore() error {
+	if d.readyMarker == "" {
+		return nil
+	}
+	marker := path.Join(d.root, d.readyMarker)
+	if _, err := os.Stat(marker); err != nil {
+		return fmt.Errorf("backing store not ready: marker %s not readable: %s", marker, err)
+	}
+	return nil
 }
 
 func (d *MydockerFsDriver) Create(request *volume.CreateRequest) error {
+	if err := d.ensureBackingStore(); err != nil {
+		return err
+	}
 	if strings.Contains(request.Name, "/") {
 		return errors.New("name is invalid because it contains '/'")
 	}
@@ -93,6 +115,9 @@ func (d *MydockerFsDriver) Path(request *volume.PathRequest) (*volume.PathRespon
 }
 
 func (d *MydockerFsDriver) Mount(request *volume.MountRequest) (*volume.MountResponse, error) {
+	if err := d.ensureBackingStore(); err != nil {
+		return nil, err
+	}
 	fullPath := path.Join(d.root, request.Name)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("volume %s does not exist", request.Name)

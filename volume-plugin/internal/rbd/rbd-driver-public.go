@@ -174,7 +174,17 @@ func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fst
 		mkfsArgs = append(mkfsArgs, mkfsOptions)
 	}
 	mkfsArgs = append(mkfsArgs, device)
-	_, err = shWithDefaultTimeout(mkfs, mkfsArgs...)
+	// retry is safe here: the image is virgin, a partially written filesystem
+	// from a killed attempt is simply reformatted
+	for attempt := 0; attempt <= shellRetries(); attempt++ {
+		if attempt > 0 {
+			logrus.Warnf("volume-rbd Name=%s Message=mkfs: retry %d after: %s", imageName, attempt, err)
+		}
+		_, err = shWithDefaultTimeout(mkfs, mkfsArgs...)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		d.unmapImage(imageName)
 		defer d.removeRbdImage(imageName)

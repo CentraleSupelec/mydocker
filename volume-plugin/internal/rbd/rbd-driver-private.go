@@ -9,15 +9,49 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 func (d *rbdDriver) mapImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=rbd map", imageName)
 
-	_, err := d.rbdsh("map", filepath.Join(d.conf["pool"], d.conf["namespace"], imageName))
+	spec := filepath.Join(d.conf["pool"], d.conf["namespace"], imageName)
+
+	var err error
+	for attempt := 0; attempt <= shellRetries(); attempt++ {
+		if attempt > 0 {
+			// a killed map attempt may have succeeded kernel-side before the
+			// CLI reported; re-mapping would create a second device
+			if ids, idsErr := d.sysfsMappedDeviceIDs(imageName); idsErr == nil && len(ids) > 0 {
+				logrus.Warnf("volume-rbd Name=%s Message=rbd map: device present in sysfs after failed attempt, treating as mapped", imageName)
+				return nil
+			}
+			logrus.Warnf("volume-rbd Name=%s Message=rbd map: retry %d after: %s", imageName, attempt, err)
+		}
+		_, err = d.rbdsh("map", spec)
+		if err == nil {
+			return nil
+		}
+	}
 
 	return err
+}
+
+// isMountpoint reports whether path is a mount point in our namespace,
+// per /proc/self/mountinfo (field 5 is the mount point).
+func isMountpoint(path string) bool {
+	data, err := os.ReadFile("/proc/self/mountinfo")
+	if err != nil {
+		return false
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 5 && fields[4] == path {
+			return true
+		}
+	}
+	return false
 }
 
 // isUnmapBusy detects rbd unmap's exit 16: device is still being used -
@@ -100,8 +134,23 @@ func (d *rbdDriver) mountImage(imageName string, mountOptions string) error {
 
 	// err := unix.Mount(device, mountpoint, "auto", 0, "")
 	// note unix.Mount does not work with our aliased device, we user the sh version.
-	_, err := shWithDefaultTimeout("mount", mountOptions, device, mountpoint)
-	if err != nil {
+	var err error
+	for attempt := 0; attempt <= shellRetries(); attempt++ {
+		if attempt > 0 {
+			// a killed mount attempt may have completed the syscall;
+			// re-mounting would stack a second mount on the target
+			if isMountpoint(mountpoint) {
+				logrus.Warnf("volume-rbd Name=%s Message=mount: %s already mounted after failed attempt, treating as mounted", imageName, mountpoint)
+				break
+			}
+			logrus.Warnf("volume-rbd Name=%s Message=mount: retry %d after: %s", imageName, attempt, err)
+		}
+		_, err = shWithDefaultTimeout("mount", mountOptions, device, mountpoint)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil && !isMountpoint(mountpoint) {
 		return err
 	}
 
