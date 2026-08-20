@@ -19,7 +19,12 @@
 #   scripts/release.sh --version 1.4.0 --name registry.example.org/centralesupelec/mydockervolume
 #   scripts/release.sh --version 1.4.0 --name ... --platform linux/arm64 --no-push
 #   scripts/release.sh --version 1.4.0 --name ... --promote
+#   scripts/release.sh --version 1.4.0 --name ... --promote --alias centralesupelec/mydockervolume:latest
 #   scripts/release.sh --version 1.4.0 --name ... --dry-run
+#
+# With --alias, a promotion whose ./plugin directory is gone reconstructs it
+# from the plugin currently installed under that alias (its rootfs IS the
+# soaked artifact), so the bits that ran the soak are the bits that ship.
 set -euo pipefail
 
 VERSION=""
@@ -28,6 +33,7 @@ PLATFORM="linux/amd64"
 PUSH=1
 DRY_RUN=0
 PROMOTE=0
+ALIAS=""
 
 usage() {
     sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'
@@ -41,6 +47,7 @@ while [ $# -gt 0 ]; do
         --platform) PLATFORM="$2"; shift 2 ;;
         --no-push)  PUSH=0; shift ;;
         --promote)  PROMOTE=1; shift ;;
+        --alias)    ALIAS="$2"; shift 2 ;;
         --dry-run)  DRY_RUN=1; shift ;;
         -h|--help)  usage 0 ;;
         *)          echo "unknown argument: $1" >&2; usage 1 ;;
@@ -101,9 +108,24 @@ repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
 
 if [ "$PROMOTE" -eq 1 ]; then
+    if [ ! -d ./plugin/rootfs ] && [ -n "$ALIAS" ]; then
+        # the installed plugin's rootfs is the soaked artifact itself
+        plugin_id=$(docker plugin inspect -f '{{.Id}}' "$ALIAS" 2>/dev/null) || {
+            echo "cannot inspect '$ALIAS' to reconstruct the rootfs" >&2; exit 1; }
+        plugin_dir="/var/lib/docker/plugins/${plugin_id}"
+        if [ ! -d "${plugin_dir}/rootfs" ] || [ ! -f "${plugin_dir}/config.json" ]; then
+            echo "installed plugin ${plugin_id} has no readable rootfs/config.json under ${plugin_dir} (need root)" >&2
+            exit 1
+        fi
+        echo "### reconstructing ./plugin from installed ${ALIAS} (${plugin_id})"
+        run mkdir -p ./plugin
+        run cp -a "${plugin_dir}/config.json" ./plugin/
+        run cp -a "${plugin_dir}/rootfs" ./plugin/
+    fi
     if [ ! -d ./plugin/rootfs ]; then
         echo "refusing to promote: ./plugin/rootfs does not exist." >&2
-        echo "Promotion re-tags the rootfs an earlier build left here; run the build first, in this checkout." >&2
+        echo "Promotion re-tags the rootfs an earlier build left here; run the build first in this checkout," >&2
+        echo "or pass --alias <installed-alias> to reconstruct it from the running plugin." >&2
         exit 1
     fi
     echo "### promoting the rootfs in ./plugin to ${NAME}:${VERSION} (no rebuild)"
