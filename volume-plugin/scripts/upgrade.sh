@@ -117,6 +117,44 @@ EOF
         exit 1
     fi
     echo "### settings carried over unchanged"
+
+    # Docker preserves the previous Settings across an upgrade and does NOT
+    # add defaults for env vars that are new in this version's config. A
+    # driver that hard-requires one of them (e.g. VOLUME_SIZE) then fails
+    # every operation with the setting missing. Seed the missing ones from
+    # the new version's own defaults.
+    if command -v python3 >/dev/null 2>&1; then
+        defaults=$(docker plugin inspect "$ALIAS" --format '{{json .Config.Env}}' \
+            | python3 -c "import json,sys
+for e in json.load(sys.stdin):
+    if e.get('Value') is not None:
+        print(e['Name']+'='+str(e['Value']))")
+        seed=""
+        while IFS= read -r def; do
+            [ -n "$def" ] || continue
+            key=${def%%=*}
+            echo "$env_after" | grep -q "^${key}=" || seed="${seed}${def}
+"
+        done <<EOF2
+$defaults
+EOF2
+        if [ -n "$seed" ]; then
+            echo "### seeding settings new in this plugin version:"
+            echo "$seed" | sed '/^$/d' | sed 's/^/    /'
+            run docker plugin disable -f "$ALIAS"
+            while IFS= read -r def; do
+                [ -n "$def" ] || continue
+                run docker plugin set "$ALIAS" "$def"
+            done <<EOF3
+$seed
+EOF3
+            run docker plugin enable "$ALIAS"
+            echo "### seeded; verify with: docker plugin inspect $ALIAS"
+        fi
+    else
+        echo "### python3 not found: cannot check for settings new in this version" >&2
+        echo "### compare manually: docker plugin inspect $ALIAS ({{.Config.Env}} vs {{.Settings.Env}})" >&2
+    fi
 fi
 
 echo "next: scripts/smoke.sh --driver ${ALIAS}"
