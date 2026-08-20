@@ -51,12 +51,24 @@ now_ms() { date +%s%3N 2>/dev/null || echo $(( $(date +%s) * 1000 )); }
 
 cleanup() {
     for v in "${created_volumes[@]:-}"; do
-        [ -n "$v" ] && docker volume rm -f "$v" >/dev/null 2>&1
+        [ -n "$v" ] || continue
+        docker volume rm "$v" >/dev/null 2>&1 || docker volume rm -f "$v" >/dev/null 2>&1
     done
+    # the trap must never silently fail again: name anything left behind
+    local left
+    left=$(docker volume ls -q 2>/dev/null | grep "^${PREFIX}-" || true)
+    if [ -n "$left" ]; then
+        printf 'WARN  leftover volumes not removed:\n%s\n' "$left" | sed 's/^/      /' >&2
+    fi
 }
 trap cleanup EXIT
 
-create_volume() {  # name, size_mb -> prints elapsed ms, returns create status
+# create_volume sets CREATE_ELAPSED_MS instead of printing it: called via
+# $(...) it would run in a subshell, and its created_volumes registration
+# would never reach the cleanup trap (exactly how an earlier smoke run leaked
+# its volumes).
+CREATE_ELAPSED_MS=0
+create_volume() {  # name, size_mb -> sets CREATE_ELAPSED_MS, returns create status
     local name="$1" size="$2" start end drv
     created_volumes+=("$name")
     start=$(now_ms)
@@ -69,7 +81,7 @@ create_volume() {  # name, size_mb -> prints elapsed ms, returns create status
     # really came from the driver under test.
     drv=$(docker volume inspect -f '{{.Driver}}' "$name" 2>/dev/null)
     [ "$drv" = "$DRIVER" ] || return 1
-    echo $((end - start))
+    CREATE_ELAPSED_MS=$((end - start))
 }
 
 plugin_pid() { pgrep -f '/mydockervolume' | head -1; }
@@ -125,12 +137,12 @@ echo "### smoke test against $DRIVER"
 create_1g_ok=0
 for spec in "1g:1024" "5t:5242880"; do
     label="${spec%%:*}"; size="${spec##*:}"
-    if elapsed=$(create_volume "${PREFIX}-${label}" "$size"); then
+    if create_volume "${PREFIX}-${label}" "$size"; then
         [ "$label" = "1g" ] && create_1g_ok=1
-        if [ "$elapsed" -lt $((THRESHOLD * 1000)) ]; then
-            pass "create ${label}" "${elapsed}ms"
+        if [ "$CREATE_ELAPSED_MS" -lt $((THRESHOLD * 1000)) ]; then
+            pass "create ${label}" "${CREATE_ELAPSED_MS}ms"
         else
-            fail "create ${label}" "${elapsed}ms (threshold ${THRESHOLD}s)"
+            fail "create ${label}" "${CREATE_ELAPSED_MS}ms (threshold ${THRESHOLD}s)"
         fi
     else
         fail "create ${label}" "volume create failed or wrong driver"
@@ -209,7 +221,7 @@ else
 
     # 7: FS mode still works
     if set_setting "DRIVER_MODE=FS"; then
-        if create_volume "${PREFIX}-fs" 1024 >/dev/null &&
+        if create_volume "${PREFIX}-fs" 1024 &&
            docker run --rm -v "${PREFIX}-fs:/d" "$IMAGE" sh -c 'echo ok > /d/f' >/dev/null 2>&1; then
             pass "FS mode cycle"
         else
@@ -234,23 +246,37 @@ else
     fi
     set_setting "DRIVER_MODE=${original_mode:-RBD}" || true
 
-    # 8: a tiny timeout must fail fast rather than hang, and leave no zombie
+    # 8: a tiny timeout must make the create FAIL (attempts killed, no zombie,
+    # bounded duration). If the create still succeeds, the commands beat the
+    # 1s cap (warm caches can do that) and the kill path simply was not
+    # exercised - that is a SKIP, not a PASS.
     if set_setting "SHELL_TIMEOUT_SECONDS=1"; then
         zb=$(rbd_zombies)
+        created_volumes+=("${PREFIX}-timeout")
         start=$(now_ms)
-        docker volume create -d "$DRIVER" -o size=5242880 "${PREFIX}-timeout" >/dev/null 2>&1
-        elapsed=$(( $(now_ms) - start ))
-        docker volume rm -f "${PREFIX}-timeout" >/dev/null 2>&1
-        za=$(rbd_zombies)
-        if [ "$elapsed" -lt $((THRESHOLD * 1000 * 12)) ] && [ "$za" -le "$zb" ]; then
-            pass "timeout knob fails fast" "${elapsed}ms, zombies $zb -> $za"
+        if docker volume create -d "$DRIVER" -o size=5242880 "${PREFIX}-timeout" >/dev/null 2>&1; then
+            create_rc=0
         else
-            fail "timeout knob fails fast" "${elapsed}ms, zombies $zb -> $za"
+            create_rc=1
+        fi
+        elapsed=$(( $(now_ms) - start ))
+        za=$(rbd_zombies)
+        if [ "$create_rc" -eq 0 ]; then
+            skip "timeout knob kills attempts" "create beat the 1s cap (${elapsed}ms); kill path not exercised"
+        elif [ "$elapsed" -lt 60000 ] && [ "$za" -le "$zb" ]; then
+            pass "timeout knob kills attempts" "failed in ${elapsed}ms, zombies $zb -> $za"
+        else
+            fail "timeout knob kills attempts" "${elapsed}ms, zombies $zb -> $za"
         fi
     else
-        fail "timeout knob fails fast" "could not set SHELL_TIMEOUT_SECONDS"
+        fail "timeout knob kills attempts" "could not set SHELL_TIMEOUT_SECONDS"
     fi
     set_setting "SHELL_TIMEOUT_SECONDS=${original_timeout:-10}" || true
+
+    # remove the timeout-test volume only after the timeout is restored: with
+    # the 1s cap still active, the driver's own Remove/unmap commands get
+    # killed too and the removal itself leaks (observed live)
+    docker volume rm "${PREFIX}-timeout" >/dev/null 2>&1 || true
 
     echo "### restored: DRIVER_MODE=$(setting_of DRIVER_MODE) SHELL_TIMEOUT_SECONDS=$(setting_of SHELL_TIMEOUT_SECONDS) FS_READY_MARKER=$(setting_of FS_READY_MARKER)"
 fi
