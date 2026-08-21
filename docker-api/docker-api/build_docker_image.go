@@ -321,6 +321,15 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 
 	_, err = d.dockerClient.VolumeCreate(context.Background(), options)
 	if err != nil {
+		// A create that reports an error may still have created the volume: dockerd applies an
+		// HTTP client timeout to volume driver calls and stops waiting for the reply, while the
+		// driver runs to completion. Measured on preprod 2026-08-21: under contention 33 of 100
+		// concurrent creates returned an error and all 100 volumes existed afterwards. buildId is
+		// unique per build, so no retry ever reuses this name and nothing else reclaims it -
+		// without this cleanup each timed-out build leaks a 5 GB rbd image permanently.
+		if rmErr := d.dockerClient.VolumeRemove(context.Background(), volumeName, true); rmErr != nil {
+			log.Errorf("failed to remove volume %s after a failed create: %v", volumeName, rmErr)
+		}
 		return "", err
 	}
 
