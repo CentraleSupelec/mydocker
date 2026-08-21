@@ -18,6 +18,7 @@ import fr.centralesupelec.thuv.security.MyUserDetails;
 import fr.centralesupelec.thuv.service.*;
 import fr.centralesupelec.thuv.storage.ShutdownStatusStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,11 @@ public class ContainerController {
     private final ShutdownStatusStorage shutdownStatusStorage;
     private final DelayDeletionService delayDeletionService;
     private final ZoneId zoneId;
+
+    // Saving of student work is disabled on every deployment. Turn on with
+    // save.student-work.enabled = true (ansible: save_student_work_enabled).
+    @Value("${save.student-work.enabled:false}")
+    private boolean saveStudentWorkEnabled;
 
     @PostMapping(value = "/initGetContainer/{sessionId}")
     @PreAuthorize("@userCoursePermissionService.canAskContainer(#courseSession)")
@@ -79,6 +85,9 @@ public class ContainerController {
             @PathVariable("courseId") Course course,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
     ) {
+        if (!saveStudentWorkEnabled) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         if (!course.isAllowStudentToSubmit()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
