@@ -24,6 +24,8 @@ FS_MARKER=""
 FS_ROOT="/mnt/mydocker-fs"
 UNINSTALL=0
 DRY_RUN=0
+# Passed to `docker plugin enable`. Same default and override as upgrade.sh.
+ENABLE_TIMEOUT="${ENABLE_TIMEOUT:-120}"
 
 usage() {
     sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
@@ -102,7 +104,7 @@ if [ -n "$FS_MARKER" ]; then
     # inherits the daemon default, under which concurrent creates were observed
     # failing at ~40s on preprod while the volumes were in fact created
     # (2026-08-21). Re-enabling without it would silently reimpose that.
-    run docker plugin enable --timeout "${ENABLE_TIMEOUT:-120}" "$DRIVER"
+    run docker plugin enable --timeout "$ENABLE_TIMEOUT" "$DRIVER"
     echo "### FS guard active: ${FS_ROOT}/${FS_MARKER}"
 fi
 

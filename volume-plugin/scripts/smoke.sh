@@ -22,6 +22,8 @@ IMAGE="busybox:latest"
 MUTATE=0
 DRY_RUN=0
 PREFIX="smoke-$(hostname -s)-$$"
+# Passed to `docker plugin enable`. Same default and override as upgrade.sh.
+ENABLE_TIMEOUT="${ENABLE_TIMEOUT:-120}"
 
 usage() {
     sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'
@@ -107,10 +109,9 @@ set_setting() {  # key=value, requires the plugin to be disabled
     # calls, and a bare enable here would leave the host on the daemon default,
     # under which concurrent creates were seen failing at ~40s on preprod while
     # the volumes were in fact created (2026-08-21).
-    local tmo="${ENABLE_TIMEOUT:-120}"
     docker plugin disable -f "$DRIVER" >/dev/null 2>&1 || return 1
-    docker plugin set "$DRIVER" "$1" >/dev/null 2>&1 || { docker plugin enable --timeout "$tmo" "$DRIVER" >/dev/null 2>&1; return 1; }
-    docker plugin enable --timeout "$tmo" "$DRIVER" >/dev/null 2>&1
+    docker plugin set "$DRIVER" "$1" >/dev/null 2>&1 || { docker plugin enable --timeout "$ENABLE_TIMEOUT" "$DRIVER" >/dev/null 2>&1; return 1; }
+    docker plugin enable --timeout "$ENABLE_TIMEOUT" "$DRIVER" >/dev/null 2>&1
 }
 
 if [ "$DRY_RUN" -eq 1 ]; then
