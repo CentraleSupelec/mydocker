@@ -21,6 +21,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	networkTypes "github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/swarm"
+	"github.com/docker/docker/errdefs"
 	volumeTypes "github.com/docker/docker/api/types/volume"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	log "github.com/sirupsen/logrus"
@@ -324,10 +325,23 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 		// A create that reports an error may still have created the volume: dockerd applies an
 		// HTTP client timeout to volume driver calls and stops waiting for the reply, while the
 		// driver runs to completion. Measured on preprod 2026-08-21: under contention 33 of 100
-		// concurrent creates returned an error and all 100 volumes existed afterwards. buildId is
-		// unique per build, so no retry ever reuses this name and nothing else reclaims it -
-		// without this cleanup each timed-out build leaks a 5 GB rbd image permanently.
-		if rmErr := d.dockerClient.VolumeRemove(context.Background(), volumeName, true); rmErr != nil {
+		// concurrent creates returned an error and all 100 volumes existed afterwards. Nothing
+		// else reclaims it, so without cleanup each such build leaks a 5 GB rbd image for good.
+		//
+		// A name conflict is the one error where the volume is NOT ours to remove. buildId comes
+		// from the request, not from this process, so a caller retrying with the same buildId can
+		// collide with an attempt that is still running: removing here would destroy that build's
+		// volume. Docker also refuses to remove a volume already attached to a container, which
+		// covers the same case once the build reaches ContainerCreate, but not the window before.
+		if errdefs.IsConflict(err) {
+			log.Errorf("volume %s already exists, leaving it to its owner: %v", volumeName, err)
+			return "", err
+		}
+		// Bounded: an unbounded remove on the error path can park a worker-pool slot for as long
+		// as the driver holds its lock, and driver-side work outlives the client that cancelled.
+		rmCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if rmErr := d.dockerClient.VolumeRemove(rmCtx, volumeName, true); rmErr != nil {
 			log.Errorf("failed to remove volume %s after a failed create: %v", volumeName, rmErr)
 		}
 		return "", err

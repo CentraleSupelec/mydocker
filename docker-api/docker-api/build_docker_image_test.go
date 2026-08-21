@@ -6,6 +6,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	volumeTypes "github.com/docker/docker/api/types/volume"
+	"github.com/docker/docker/errdefs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -128,6 +129,29 @@ func (suite *BuildDockerImageTestSuite) TestPrepareBuildFilesRemovesVolumeWhenCr
 	assert.Equal(suite.T(), createErr, err)
 	assert.Equal(suite.T(), "", path)
 	// The point of the test: the volume that may exist despite the error is removed.
+	stubClient.AssertExpectations(suite.T())
+}
+
+// A name conflict means another attempt owns the volume - buildId comes from the request, so a
+// caller retrying with the same one collides with a build that may still be running. Removing here
+// would destroy that build's volume, so the cleanup must be skipped.
+func (suite *BuildDockerImageTestSuite) TestPrepareBuildFilesLeavesVolumeOnNameConflict() {
+	stubClient := new(testingBuildImageClient)
+	conflictErr := errdefs.Conflict(errors.New("a volume named volume_build_build-44 already exists"))
+	suite.mocks = append(
+		suite.mocks,
+		stubClient.On("VolumeCreate", mock.Anything, mock.Anything).
+			Return(types.Volume{}, conflictErr).Times(1),
+	)
+	stubDockerUtils := new(testingBuildDockerImageDockerUtils)
+	builder := newDockerImageBuilder(stubClient, stubDockerUtils)
+
+	_, err := builder.prepareBuildFiles("build-44", nil, "FROM scratch", "#!/bin/sh\n")
+
+	assert.Equal(suite.T(), conflictErr, err)
+	// The assertion that matters: VolumeRemove was never called. AssertExpectations only proves the
+	// expected calls happened, so assert the absence explicitly.
+	stubClient.AssertNotCalled(suite.T(), "VolumeRemove", mock.Anything, mock.Anything, mock.Anything)
 	stubClient.AssertExpectations(suite.T())
 }
 
