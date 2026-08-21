@@ -74,7 +74,12 @@ dump_env() {  # every settable env value, one KEY=value per line, sorted
 installed=$(docker plugin inspect "$ALIAS" --format '{{.PluginReference}}' 2>/dev/null || true)
 if [ -z "$installed" ]; then
     echo "plugin '$ALIAS' is not installed on this host" >&2
-    echo "install it first: docker plugin install ${NAME}:${VERSION} --alias ${ALIAS}" >&2
+    # --disable then an explicit timed enable: `docker plugin install` enables the
+    # plugin itself and has no --timeout flag, so a plain install leaves the host
+    # on the daemon default for the life of the plugin.
+    echo "install it first:" >&2
+    echo "  docker plugin install ${NAME}:${VERSION} --alias ${ALIAS} --disable" >&2
+    echo "  docker plugin enable --timeout ${ENABLE_TIMEOUT} ${ALIAS}" >&2
     exit 1
 fi
 

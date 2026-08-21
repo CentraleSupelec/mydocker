@@ -68,15 +68,14 @@ func (d *rbdDriver) unmapImage(imageName string) error {
 
 	ids, err := d.sysfsMappedDeviceIDs(imageName)
 	if err != nil {
-		// no usable sysfs view: fall back to the plain synchronous CLI unmap
+		// No usable sysfs view, so the CLI's own udev wait is the only available confirmation:
+		// fall back to it and report whatever it says. Swallowing the error here would claim a
+		// release nothing observed.
 		logrus.Warnf("volume-rbd Name=%s Message=rbd unmap: sysfs unavailable (%s), synchronous CLI fallback", imageName, err)
 		_, err := d.rbdsh("unmap", spec)
 		if err != nil {
-			if isUnmapBusy(err) {
-				return err
-			}
 			logrus.Errorf("volume-rbd Name=%s Message=rbd unmap: %s", imageName, err.Error())
-			// other error, continue and fail safe
+			return err
 		}
 		return nil
 	}
@@ -118,9 +117,14 @@ func (d *rbdDriver) unmapImage(imageName string) error {
 		}
 
 		if time.Now().After(syncDeadline) {
-			logrus.Errorf("volume-rbd Name=%s Message=RBD_UNMAP_SLOW device(s) %v still mapped after %s, continuing fail-safe; watchdog will report", imageName, ids, unmapSyncWait)
+			// Devices are still mapped and nothing has confirmed a release. Returning nil here
+			// reported success while teardown was demonstrably incomplete, which is how a mapped
+			// device survives a "successful" Create or Remove. The watchdog still runs, because it
+			// is the only thing that will report an eventual release, but the caller is told the
+			// truth now.
+			logrus.Errorf("volume-rbd Name=%s Message=RBD_UNMAP_SLOW device(s) %v still mapped after %s; reporting failure, watchdog continues", imageName, ids, unmapSyncWait)
 			go d.watchUnmapCompletion(ids, imageName, started)
-			return nil
+			return fmt.Errorf("rbd unmap %s: device(s) %v still mapped after %s", imageName, ids, unmapSyncWait)
 		}
 	}
 }

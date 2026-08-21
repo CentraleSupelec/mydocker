@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Volume-driver canary: full create/mount/write/remount/verify/remove cycle.
 # Emits exactly one result line, cron- and Zabbix-UserParameter-friendly:
-#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n>
-#   CANARY FAIL step=<step> rbd_zombies=<n>
+#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n> rbd_mapped=0
+#   CANARY FAIL step=<step> rbd_zombies=<n> rbd_mapped=<n>
 # Exit 0 on success, 1 on failure. The rbd_zombies count catches the historic
 # failure mode where timed-out rbd children were never reaped.
 #
@@ -14,6 +14,21 @@ DRIVER="${DRIVER:-centralesupelec/mydockervolume:latest}"
 IMAGE="${CANARY_IMAGE:-busybox:latest}"
 SIZE_MB="${CANARY_SIZE_MB:-1024}"
 VOL="canary-$(hostname -s)-$$"
+
+# Count rbd devices still mapped for this canary's image. A create or a remove that returned
+# success while its device is still mapped is exactly the failure the zombie count cannot see:
+# the child was reaped correctly, the CLI exited 0, and the kernel still holds the mapping.
+rbd_mapped() {
+    # /sys/bus/rbd/devices/*/name holds the image name of each mapped device.
+    count=0
+    for name_file in /sys/bus/rbd/devices/*/name; do
+        [ -r "$name_file" ] || continue
+        if [ "$(cat "$name_file" 2>/dev/null)" = "$1" ]; then
+            count=$((count + 1))
+        fi
+    done
+    echo "$count"
+}
 
 rbd_zombies() {
     # count only zombies parented to the plugin process; fall back to a
@@ -27,7 +42,7 @@ rbd_zombies() {
 }
 
 fail() {
-    echo "CANARY FAIL step=$1 rbd_zombies=$(rbd_zombies)"
+    echo "CANARY FAIL step=$1 rbd_zombies=$(rbd_zombies) rbd_mapped=$(rbd_mapped "$VOL")"
     docker volume rm -f "$VOL" >/dev/null 2>&1
     exit 1
 }
@@ -38,16 +53,35 @@ docker volume create -d "$DRIVER" -o size="$SIZE_MB" "$VOL" >/dev/null 2>&1 \
     || fail create
 t_created=$(date +%s)
 
+# Create leaves the image unmapped by contract. If a device is still mapped here, the driver
+# reported a success its own teardown did not achieve, and nothing else in this script would
+# notice: the volume works, the zombie count is zero, and the leak is silent.
+[ "$(rbd_mapped "$VOL")" -eq 0 ] || fail create-left-device-mapped
+
 docker run --rm -v "$VOL:/data" "$IMAGE" \
     sh -c 'echo canary > /data/canary' >/dev/null 2>&1 \
     || fail write
+
+# Checked after BOTH container cycles, not just the second: if the first Unmount falsely reported
+# success and left the device mapped, the second mount would reuse that same mapping and the later
+# check would pass, hiding it.
+[ "$(rbd_mapped "$VOL")" -eq 0 ] || fail unmount-after-write-left-device-mapped
 
 docker run --rm -v "$VOL:/data" "$IMAGE" \
     sh -c 'grep -q canary /data/canary' >/dev/null 2>&1 \
     || fail remount-verify
 
+# The container exited and was removed, so Unmount has run and the device must be released. Checking
+# only after create and after remove left a false-success Unmount invisible: the volume still works,
+# the next mount still succeeds, and the mapping simply accumulates.
+[ "$(rbd_mapped "$VOL")" -eq 0 ] || fail unmount-left-device-mapped
+
 docker volume rm "$VOL" >/dev/null 2>&1 \
     || fail remove
 
+# Same check after removal: a Remove that answered success while the device stayed mapped is the
+# other half of the same defect.
+[ "$(rbd_mapped "$VOL")" -eq 0 ] || fail remove-left-device-mapped
+
 t_end=$(date +%s)
-echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies)"
+echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies) rbd_mapped=0"

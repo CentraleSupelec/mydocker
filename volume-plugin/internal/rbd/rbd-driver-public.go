@@ -155,7 +155,10 @@ func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fst
 	// map to kernel to let initialize fs
 	err = d.mapImage(imageName)
 	if err != nil {
-		defer d.removeRbdImage(imageName)
+		// Same reasoning as the other two failure points: Create is about to return an error, so
+		// dockerd will never record this volume and nothing downstream can find the image. A
+		// deferred removeRbdImage discarded its own failure and left it orphaned silently.
+		d.reapImageAfterFailedCreate(imageName, err)
 		return err
 	}
 
@@ -186,16 +189,49 @@ func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fst
 		}
 	}
 	if err != nil {
-		d.unmapImage(imageName)
-		defer d.removeRbdImage(imageName)
+		// mkfs is the failure being reported; an unmap failure on top of it is logged rather than
+		// substituted, but it must not be silent - it means a device is left mapped.
+		if unmapErr := d.unmapImage(imageName); unmapErr != nil {
+			logrus.Errorf("volume-rbd Name=%s Message=unmap after failed mkfs: %s", imageName, unmapErr)
+		}
+		// Checked, not deferred-and-discarded: if this removal fails the image is orphaned, and
+		// that has to be said out loud rather than dropped on the floor.
+		d.reapImageAfterFailedCreate(imageName, err)
 		return err
 	}
 
-
-	// leave the image unmaped
-	defer d.unmapImage(imageName)
+	// Leave the image unmapped. Called explicitly, not deferred: a deferred call discards its
+	// error, which let Create report success with the device still mapped - the volume then looks
+	// healthy while its teardown never completed.
+	if err := d.unmapImage(imageName); err != nil {
+		// Returning an error here means dockerd never records the volume, so from this moment on
+		// nothing downstream can find the image: Docker cannot remove a volume it does not know
+		// about, docker-api's cleanup inspects by volume name and gets not-found, and the unmap
+		// watchdog only observes release. This function is the last place that still knows the
+		// name, so reclaiming it is its job.
+		d.reapImageAfterFailedCreate(imageName, err)
+		return fmt.Errorf("unable to unmap %s after create: %s", imageName, err)
+	}
 
 	return nil
+}
+
+// reapImageAfterFailedCreate removes the image behind a Create that is about to fail.
+//
+// If the removal also fails - most likely because the device is still mapped, which is the very
+// reason we are here - the image is genuinely orphaned in the pool with no owner anywhere in the
+// stack. That case is logged as RBD_ORPHAN_IMAGE with the full spec so it can be reclaimed by hand
+// or by a sweep, because an unreclaimable image nobody knows about is worse than a noisy log line.
+// A durable reaper is the real answer and does not exist yet.
+func (d *rbdDriver) reapImageAfterFailedCreate(imageName string, cause error) {
+	if rmErr := d.RemoveRbdImageWithRetries(imageName); rmErr != nil {
+		logrus.Errorf(
+			"volume-rbd Name=%s Message=RBD_ORPHAN_IMAGE pool=%s namespace=%s image=%s abandoned after failed create (%s), removal also failed: %s",
+			imageName, d.conf["pool"], d.conf["namespace"], imageName, cause, rmErr,
+		)
+		return
+	}
+	logrus.Warnf("volume-rbd Name=%s Message=removed image after failed create: %s", imageName, cause)
 }
 
 
@@ -240,7 +276,11 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
 	mountpoint = d.GetMountPointPath(imageName)
 	err = os.MkdirAll(mountpoint, os.ModeDir | os.FileMode(int(0775)))
 	if err != nil {
-		defer d.FreeUpRbdImage(imageName)
+		// Rollback is best-effort and the mkdir failure is what the caller needs, but a failed
+		// rollback leaves a mapped device and must not vanish into a discarded deferred return.
+		if freeErr := d.FreeUpRbdImage(imageName); freeErr != nil {
+			logrus.Errorf("volume-rbd Name=%s Message=rollback after mountpoint failure left state behind: %s", imageName, freeErr)
+		}
 		return fmt.Errorf("unable to make mountpoint %s: %s", mountpoint, err), ""
 	}
 
@@ -249,7 +289,9 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
 	mountOptions := os.Getenv("MOUNT_OPTIONS")
 	err = d.mountImage(imageName, mountOptions)
 	if err != nil {
-		defer d.FreeUpRbdImage(imageName)
+		if freeErr := d.FreeUpRbdImage(imageName); freeErr != nil {
+			logrus.Errorf("volume-rbd Name=%s Message=rollback after mount failure left state behind: %s", imageName, freeErr)
+		}
 		return fmt.Errorf("unable to mount: %s", err), ""
 	}
 
@@ -261,34 +303,38 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
  * Freeing Up an RBD image means
  * unmount + unmap and remove mountpoint
  *
- * We do all this silently, we want the freeUp process idempotent
+ * Idempotent, but not silent: a state that is already clean is success, while a step that
+ * genuinely failed is reported. Returning nil unconditionally made Unmount and Remove answer
+ * success with the device still mapped and the image still in use, which is indistinguishable
+ * from a real teardown to every caller and to the operator.
  */
 func (d *rbdDriver) FreeUpRbdImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=free up image", imageName)
 
-
-    // silently unmount
-    err := d.unmountDevice(imageName)
-    if err != nil {
-        logrus.Warnf("volume-rbd Name=%s Message=unable to unmount: %s", imageName, err)
-    }
-
-
-    // silently unmap
-    err = d.unmapImage(imageName)
-    if err != nil {
-        logrus.Warnf("volume-rbd Name=%s Message=unable to unmap: %s", imageName, err)
-    }
-
-
-	// silently remove mountpoint
 	mountpoint := d.GetMountPointPath(imageName)
 
-    err = os.Remove(mountpoint)
-    if err != nil {
-        logrus.Warnf("volume-rbd Name=%s Message=unable to remove mountpoint(%s): %s", imageName, mountpoint, err)
-    }
+	// Already unmounted is success; a failure to unmount something still mounted is not.
+	if isMountpoint(mountpoint) {
+		if err := d.unmountDevice(imageName); err != nil {
+			logrus.Errorf("volume-rbd Name=%s Message=unable to unmount: %s", imageName, err)
+			return fmt.Errorf("unable to unmount %s: %s", mountpoint, err)
+		}
+	} else {
+		logrus.Debugf("volume-rbd Name=%s Message=not mounted, nothing to unmount", imageName)
+	}
 
+	// unmapImage already treats "not mapped" as success and only errors when a release could not
+	// be confirmed, so its error is exactly the case worth propagating.
+	if err := d.unmapImage(imageName); err != nil {
+		logrus.Errorf("volume-rbd Name=%s Message=unable to unmap: %s", imageName, err)
+		return fmt.Errorf("unable to unmap %s: %s", imageName, err)
+	}
+
+	// A missing mountpoint is the desired end state, so only a real removal failure counts.
+	if err := os.Remove(mountpoint); err != nil && !os.IsNotExist(err) {
+		logrus.Errorf("volume-rbd Name=%s Message=unable to remove mountpoint(%s): %s", imageName, mountpoint, err)
+		return fmt.Errorf("unable to remove mountpoint %s: %s", mountpoint, err)
+	}
 
 	return nil
 }

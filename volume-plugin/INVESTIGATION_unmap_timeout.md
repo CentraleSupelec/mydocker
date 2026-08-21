@@ -367,8 +367,14 @@ Move `SetLevel` before the first `Infof` so that early debug lines (e.g. `NewFSD
    docker plugin disable -f centralesupelec/mydockervolume
    docker plugin upgrade centralesupelec/mydockervolume \
      jq422pa7.gra7.container-registry.ovh.net/mydocker-public/mydockervolume:latest
-   docker plugin enable centralesupelec/mydockervolume
+   docker plugin enable --timeout 120 centralesupelec/mydockervolume
    ```
+
+   `--timeout` is not optional: it is the HTTP client timeout dockerd applies to
+   every driver call, and a bare enable inherits the daemon default, under which
+   concurrent creates were observed failing while the volumes were in fact
+   created. It is also shorter than the driver's own retry budget, so a create
+   that exhausts its retries can never report the real error.
 6. Smoke test on `tf-preprod-manager` first:
    ```
    time docker volume create --driver centralesupelec/mydockervolume \
