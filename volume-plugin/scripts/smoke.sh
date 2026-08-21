@@ -103,9 +103,14 @@ setting_of() {  # key -> current value ("" if absent)
 }
 
 set_setting() {  # key=value, requires the plugin to be disabled
+    # --timeout on every enable: it is dockerd's HTTP client timeout for driver
+    # calls, and a bare enable here would leave the host on the daemon default,
+    # under which concurrent creates were seen failing at ~40s on preprod while
+    # the volumes were in fact created (2026-08-21).
+    local tmo="${ENABLE_TIMEOUT:-120}"
     docker plugin disable -f "$DRIVER" >/dev/null 2>&1 || return 1
-    docker plugin set "$DRIVER" "$1" >/dev/null 2>&1 || { docker plugin enable "$DRIVER" >/dev/null 2>&1; return 1; }
-    docker plugin enable "$DRIVER" >/dev/null 2>&1
+    docker plugin set "$DRIVER" "$1" >/dev/null 2>&1 || { docker plugin enable --timeout "$tmo" "$DRIVER" >/dev/null 2>&1; return 1; }
+    docker plugin enable --timeout "$tmo" "$DRIVER" >/dev/null 2>&1
 }
 
 if [ "$DRY_RUN" -eq 1 ]; then

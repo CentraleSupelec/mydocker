@@ -8,9 +8,22 @@
 # The plugin is disabled with -f, which briefly makes volume operations on
 # this host fail. Run it on one host at a time.
 #
+# Every `docker plugin enable` passes --timeout. dockerd uses it as the HTTP
+# client timeout for driver calls (moby volume/drivers/extpoint.go hands it to
+# plugins.NewClientWithTimeout), and it caps every call independently of the
+# 2-minute request deadline dockerd grants VolumeDriver.Create.
+#
+# Measured on preprod 2026-08-21: with a bare enable, 33 of 100 concurrent
+# creates failed at ~40s with "Client.Timeout exceeded while awaiting headers"
+# while the volumes were in fact created, so the caller was told a create
+# failed for a volume that exists. After enabling with an explicit --timeout,
+# the same load passed and calls ran to ~120s. Set it explicitly rather than
+# inheriting whatever default is in force.
+#
 # Usage:
 #   scripts/upgrade.sh --name registry.example.org/centralesupelec/mydockervolume --version 1.4.0
 #   scripts/upgrade.sh --name ... --version 1.4.0 --alias centralesupelec/mydockervolume:latest
+#   scripts/upgrade.sh --name ... --version 1.4.0 --enable-timeout 120
 #   scripts/upgrade.sh --name ... --version 1.4.0 --dry-run
 set -euo pipefail
 
@@ -18,9 +31,11 @@ NAME=""
 VERSION=""
 ALIAS=""
 DRY_RUN=0
+# Aligned with dockerd's own longTimeout for VolumeDriver.Create.
+ENABLE_TIMEOUT="${ENABLE_TIMEOUT:-120}"
 
 usage() {
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
     exit "${1:-0}"
 }
 
@@ -29,6 +44,7 @@ while [ $# -gt 0 ]; do
         --name)    NAME="$2"; shift 2 ;;
         --version) VERSION="$2"; shift 2 ;;
         --alias)   ALIAS="$2"; shift 2 ;;
+        --enable-timeout) ENABLE_TIMEOUT="$2"; shift 2 ;;
         --dry-run) DRY_RUN=1; shift ;;
         -h|--help) usage 0 ;;
         *)         echo "unknown argument: $1" >&2; usage 1 ;;
@@ -68,7 +84,7 @@ echo "### currently installed: $installed"
 echo "### settings before upgrade:"
 echo "$env_before" | sed 's/^/    /'
 echo "### rollback command if this upgrade goes wrong:"
-echo "    docker plugin disable -f ${ALIAS} && docker plugin upgrade ${ALIAS} ${installed} && docker plugin enable ${ALIAS}"
+echo "    docker plugin disable -f ${ALIAS} && docker plugin upgrade ${ALIAS} ${installed} && docker plugin enable --timeout ${ENABLE_TIMEOUT} ${ALIAS}"
 echo
 
 run docker plugin disable -f "$ALIAS"
@@ -78,11 +94,11 @@ run docker plugin disable -f "$ALIAS"
 # the previous plugin instead of leaving the node without a volume driver.
 if ! run docker plugin upgrade --grant-all-permissions --skip-remote-check "$ALIAS" "${NAME}:${VERSION}"; then
     echo "### upgrade FAILED, re-enabling the previous plugin" >&2
-    run docker plugin enable "$ALIAS"
+    run docker plugin enable --timeout "$ENABLE_TIMEOUT" "$ALIAS"
     docker plugin inspect "$ALIAS" --format '### still installed: {{.PluginReference}}, enabled: {{.Enabled}}' 2>/dev/null || true
     exit 1
 fi
-run docker plugin enable "$ALIAS"
+run docker plugin enable --timeout "$ENABLE_TIMEOUT" "$ALIAS"
 
 if [ "$DRY_RUN" -eq 0 ]; then
     echo "### now installed: $(docker plugin inspect "$ALIAS" --format '{{.PluginReference}}')"
@@ -112,7 +128,7 @@ EOF
         echo "### restore them with:"
         echo "    docker plugin disable -f ${ALIAS}"
         echo "$lost" | sed '/^$/d' | sed "s|^|    docker plugin set ${ALIAS} |"
-        echo "    docker plugin enable ${ALIAS}"
+        echo "    docker plugin enable --timeout ${ENABLE_TIMEOUT} ${ALIAS}"
         echo "### do not run the smoke test until the settings are correct"
         exit 1
     fi
@@ -148,7 +164,7 @@ EOF2
             done <<EOF3
 $seed
 EOF3
-            run docker plugin enable "$ALIAS"
+            run docker plugin enable --timeout "$ENABLE_TIMEOUT" "$ALIAS"
             echo "### seeded; verify with: docker plugin inspect $ALIAS"
         fi
     else

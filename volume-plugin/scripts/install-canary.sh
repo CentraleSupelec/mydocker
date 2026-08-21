@@ -98,7 +98,11 @@ if [ -n "$FS_MARKER" ]; then
     run touch "${FS_ROOT}/${FS_MARKER}"
     run docker plugin disable -f "$DRIVER"
     run docker plugin set "$DRIVER" "FS_READY_MARKER=${FS_MARKER}"
-    run docker plugin enable "$DRIVER"
+    # --timeout: dockerd's HTTP client timeout for driver calls. A bare enable
+    # inherits the daemon default, under which concurrent creates were observed
+    # failing at ~40s on preprod while the volumes were in fact created
+    # (2026-08-21). Re-enabling without it would silently reimpose that.
+    run docker plugin enable --timeout "${ENABLE_TIMEOUT:-120}" "$DRIVER"
     echo "### FS guard active: ${FS_ROOT}/${FS_MARKER}"
 fi
 

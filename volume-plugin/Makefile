@@ -1,6 +1,12 @@
 PLUGIN_NAME = centralesupelec/mydockervolume
 PLUGIN_VERSION ?= dev
 PLATFORM ?= linux/amd64
+# dockerd applies this as the HTTP client timeout on every driver call. Under
+# the daemon default, concurrent creates were observed failing at ~40s on
+# preprod while the volumes were in fact created (2026-08-21), which is short
+# of the driver's own retry budget (map 40 + mkfs 40 + unmap-sync 30 = 110s).
+# 120 matches the request deadline dockerd already gives VolumeDriver.Create.
+ENABLE_TIMEOUT ?= 120
 
 all: clean rootfs create
 
@@ -35,8 +41,8 @@ push:
 
 .PHONY: enable
 enable:
-	@echo "### enable plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
-	@docker plugin enable ${PLUGIN_NAME}:${PLUGIN_VERSION}
+	@echo "### enable plugin ${PLUGIN_NAME}:${PLUGIN_VERSION} (--timeout ${ENABLE_TIMEOUT})"
+	@docker plugin enable --timeout ${ENABLE_TIMEOUT} ${PLUGIN_NAME}:${PLUGIN_VERSION}
 
 .PHONY: upgrade
 upgrade:
@@ -44,5 +50,5 @@ upgrade:
 	@docker plugin disable -f ${PLUGIN_NAME}
 	@echo "### upgrade plugin ${PLUGIN_NAME} to ${PLUGIN_NAME}:${PLUGIN_VERSION}"
 	@docker plugin upgrade ${PLUGIN_NAME} ${PLUGIN_NAME}:${PLUGIN_VERSION}
-	@echo "### enable plugin ${PLUGIN_NAME}"
-	@docker plugin enable ${PLUGIN_NAME}
+	@echo "### enable plugin ${PLUGIN_NAME} (--timeout ${ENABLE_TIMEOUT})"
+	@docker plugin enable --timeout ${ENABLE_TIMEOUT} ${PLUGIN_NAME}
