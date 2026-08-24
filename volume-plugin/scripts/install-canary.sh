@@ -136,5 +136,8 @@ Triggers:
 
 orphans and unmap_abandoned latch: they stay raised until an operator empties
 ${STATE_DIR}/rbd-orphans.pending or ${STATE_DIR}/rbd-abandoned.pending after reclaiming.
-Response procedure: RUNBOOK_rbd_orphan_image.md in the mydockervolume repository.
+Each latched line carries the pool, namespace and image. Reclaim first, then clear
+the line: the latch is the only lasting record, the journal line ages out. Confirm
+nothing owns the image (no docker volume, not in rbd showmapped, no watcher in
+rbd status) before removing it, and never unmap a device that findmnt shows mounted.
 EOF

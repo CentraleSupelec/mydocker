@@ -59,8 +59,8 @@ latch_count() {
 # is a one-shot line meaning an image or a kernel mapping is stranded until a human reclaims it. A
 # window count falls back to zero one interval later, so a monitor polling in between would see a
 # clean host and the event would be lost. The latch stays raised until an operator empties it after
-# reclaiming, which is the procedure in RUNBOOK_rbd_orphan_image.md. LATE and SLOW are trend
-# signals, not work items, so the window count is the right shape for them.
+# reclaiming the image or the mapping by hand. LATE and SLOW are trend signals, not work items, so
+# the window count is the right shape for them.
 #
 # All four report -1 when the journal cannot be read: a monitoring path that silently answers
 # "nothing wrong" when it is in fact blind is the failure this whole canary exists to prevent.
