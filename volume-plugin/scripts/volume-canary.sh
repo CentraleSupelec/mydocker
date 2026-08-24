@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Volume-driver canary: full create/mount/write/remount/verify/remove cycle.
+# Volume-driver canary: full create/mount/write/remount/verify/remove cycle,
+# plus a scan of the driver's own alerts in the docker journal.
 # Emits exactly one result line, cron- and Zabbix-UserParameter-friendly:
-#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n> rbd_mapped=0
-#   CANARY FAIL step=<step> rbd_zombies=<n> rbd_mapped=<n>
+#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n> rbd_mapped=0 rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n>
+#   CANARY FAIL step=<step> rbd_zombies=<n> rbd_mapped=<n> rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n>
 # Exit 0 on success, 1 on failure. The rbd_zombies count catches the historic
 # failure mode where timed-out rbd children were never reaped.
 #
-# Run on a swarm manager. Override with DRIVER / CANARY_IMAGE / CANARY_SIZE_MB.
+# Run on a swarm manager. Override with DRIVER / CANARY_IMAGE / CANARY_SIZE_MB /
+# CANARY_STATE_DIR.
 
 set -u
 
@@ -14,6 +16,10 @@ DRIVER="${DRIVER:-centralesupelec/mydockervolume:latest}"
 IMAGE="${CANARY_IMAGE:-busybox:latest}"
 SIZE_MB="${CANARY_SIZE_MB:-1024}"
 VOL="canary-$(hostname -s)-$$"
+STATE_DIR="${CANARY_STATE_DIR:-/var/lib/mydocker}"
+CURSOR="${STATE_DIR}/canary-journal.cursor"
+ORPHAN_LATCH="${STATE_DIR}/rbd-orphans.pending"
+ABANDONED_LATCH="${STATE_DIR}/rbd-abandoned.pending"
 
 # Count rbd devices still mapped for this canary's image. A create or a remove that returned
 # success while its device is still mapped is exactly the failure the zombie count cannot see:
@@ -41,8 +47,54 @@ rbd_zombies() {
     fi
 }
 
+latch_count() {
+    [ -f "$1" ] || { echo 0; return; }
+    wc -l < "$1" | tr -d ' '
+}
+
+# Scan the docker journal for the driver's alert lines since the previous run. dockerd forwards
+# plugin stderr to its own unit, so RBD_* lines land in `journalctl -u docker.service`.
+#
+# ORPHAN_IMAGE and UNMAP_ABANDONED are latched to files, not reported as a per-window count: each
+# is a one-shot line meaning an image or a kernel mapping is stranded until a human reclaims it. A
+# window count falls back to zero one interval later, so a monitor polling in between would see a
+# clean host and the event would be lost. The latch stays raised until an operator empties it after
+# reclaiming, which is the procedure in RUNBOOK_rbd_orphan_image.md. LATE and SLOW are trend
+# signals, not work items, so the window count is the right shape for them.
+#
+# All four report -1 when the journal cannot be read: a monitoring path that silently answers
+# "nothing wrong" when it is in fact blind is the failure this whole canary exists to prevent.
+journal_scan() {
+    orphans=0; abandoned=0; late=0; slow=0
+    window=""
+
+    command -v journalctl >/dev/null 2>&1 || { orphans=-1; abandoned=-1; late=-1; slow=-1; return; }
+    mkdir -p "$STATE_DIR" 2>/dev/null
+
+    if [ ! -f "$CURSOR" ]; then
+        # First run: park the cursor at the current end of the journal. Scanning from the start
+        # would latch every historic event, including ones already dealt with, and the operator
+        # would begin by clearing a backlog that says nothing about the running version.
+        journalctl -u docker.service --cursor-file="$CURSOR" -n 1 >/dev/null 2>&1
+    else
+        window=$(journalctl -u docker.service --cursor-file="$CURSOR" --no-pager -o short-iso 2>/dev/null)
+        if [ $? -ne 0 ]; then
+            orphans=-1; abandoned=-1; late=-1; slow=-1
+            return
+        fi
+        printf '%s\n' "$window" | grep -F 'Message=RBD_ORPHAN_IMAGE' >> "$ORPHAN_LATCH" 2>/dev/null
+        printf '%s\n' "$window" | grep -F 'Message=RBD_UNMAP_ABANDONED' >> "$ABANDONED_LATCH" 2>/dev/null
+    fi
+
+    orphans=$(latch_count "$ORPHAN_LATCH")
+    abandoned=$(latch_count "$ABANDONED_LATCH")
+    late=$(printf '%s\n' "$window" | grep -cF 'Message=RBD_UNMAP_LATE')
+    slow=$(printf '%s\n' "$window" | grep -cF 'Message=RBD_UNMAP_SLOW')
+}
+
 fail() {
-    echo "CANARY FAIL step=$1 rbd_zombies=$(rbd_zombies) rbd_mapped=$(rbd_mapped "$VOL")"
+    journal_scan
+    echo "CANARY FAIL step=$1 rbd_zombies=$(rbd_zombies) rbd_mapped=$(rbd_mapped "$VOL") rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow}"
     docker volume rm -f "$VOL" >/dev/null 2>&1
     exit 1
 }
@@ -84,4 +136,5 @@ docker volume rm "$VOL" >/dev/null 2>&1 \
 [ "$(rbd_mapped "$VOL")" -eq 0 ] || fail remove-left-device-mapped
 
 t_end=$(date +%s)
-echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies) rbd_mapped=0"
+journal_scan
+echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies) rbd_mapped=0 rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow}"
