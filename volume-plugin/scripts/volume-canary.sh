@@ -2,8 +2,11 @@
 # Volume-driver canary: full create/mount/write/remount/verify/remove cycle,
 # plus a scan of the driver's own alerts in the docker journal.
 # Emits exactly one result line, cron- and Zabbix-UserParameter-friendly:
-#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n> rbd_mapped=0 rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n>
-#   CANARY FAIL step=<step> rbd_zombies=<n> rbd_mapped=<n> rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n>
+#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n> rbd_mapped=0 rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n> time=<iso>
+#   CANARY FAIL step=<step> rbd_zombies=<n> rbd_mapped=<n> rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n> time=<iso>
+# time is last so the `^CANARY ok` anchor and the field patterns keep matching.
+# cron appends to the log without dates of its own, so a line that cannot be
+# dated cannot be attributed to a plugin version: a soak needs that.
 # Exit 0 on success, 1 on failure. The rbd_zombies count catches the historic
 # failure mode where timed-out rbd children were never reaped.
 #
@@ -94,7 +97,7 @@ journal_scan() {
 
 fail() {
     journal_scan
-    echo "CANARY FAIL step=$1 rbd_zombies=$(rbd_zombies) rbd_mapped=$(rbd_mapped "$VOL") rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow}"
+    echo "CANARY FAIL step=$1 rbd_zombies=$(rbd_zombies) rbd_mapped=$(rbd_mapped "$VOL") rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow} time=$(date -Is)"
     docker volume rm -f "$VOL" >/dev/null 2>&1
     exit 1
 }
@@ -137,4 +140,4 @@ docker volume rm "$VOL" >/dev/null 2>&1 \
 
 t_end=$(date +%s)
 journal_scan
-echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies) rbd_mapped=0 rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow}"
+echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies) rbd_mapped=0 rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow} time=$(date -Is)"

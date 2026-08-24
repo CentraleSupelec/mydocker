@@ -8,6 +8,20 @@
 # The plugin is disabled with -f, which briefly makes volume operations on
 # this host fail. Run it on one host at a time.
 #
+# DRAIN THE NODE FIRST if any task on it uses a volume from this driver:
+#   docker node update --availability drain <node>    # on a manager
+#   ... upgrade, smoke, canary ...
+#   docker node update --availability active <node>
+#
+# Disabling with -f tears the mounts out from under running tasks. Swarm then
+# marks them Rejected and retries, and every retry calls Mount again. The
+# driver maps a device per Mount but unmaps on the first Unmount, so when two
+# tasks share one volume on one node the unmap returns EBUSY and each retry
+# stacks another mapping. Observed on the preprod worker 2026-08-24: five
+# simultaneous mappings of one image, two of them mounted read-write on the
+# same path, and an abandoned-unmap watchdog line every 30 seconds until the
+# owning services were removed and the devices unmapped by hand.
+#
 # Every `docker plugin enable` passes --timeout. dockerd uses it as the HTTP
 # client timeout for driver calls (moby volume/drivers/extpoint.go hands it to
 # plugins.NewClientWithTimeout), and it caps every call independently of the
@@ -35,7 +49,9 @@ DRY_RUN=0
 ENABLE_TIMEOUT="${ENABLE_TIMEOUT:-120}"
 
 usage() {
-    sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
+    # Print the whole comment header, however long it grows. The previous fixed
+    # line range silently truncated the usage examples when the header changed.
+    awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
     exit "${1:-0}"
 }
 
@@ -91,6 +107,23 @@ echo "$env_before" | sed 's/^/    /'
 echo "### rollback command if this upgrade goes wrong:"
 echo "    docker plugin disable -f ${ALIAS} && docker plugin upgrade ${ALIAS} ${installed} && docker plugin enable --timeout ${ENABLE_TIMEOUT} ${ALIAS}"
 echo
+
+# Mapped devices mean volumes from this driver are in use here. Warn rather than
+# refuse: an operator who has already drained, or who is upgrading a node whose
+# only workload is expendable, still needs the upgrade to run unattended.
+mapped=$(rbd showmapped 2>/dev/null | awk 'NR > 1' | wc -l | tr -d ' ')
+if [ "${mapped:-0}" -gt 0 ]; then
+    echo "### WARNING: ${mapped} rbd device(s) mapped on this host, so tasks are using this driver."
+    echo "### Disabling with -f tears their mounts away; swarm retries then stack more mappings."
+    echo "### Drain this node first, from a manager:"
+    echo "###     docker node update --availability drain \$(hostname)"
+    echo "### and set it back to active after the smoke test passes."
+    if [ "$DRY_RUN" -eq 0 ] && [ -t 0 ]; then
+        echo "### continuing in 10s, Ctrl-C to stop"
+        sleep 10
+    fi
+    echo
+fi
 
 run docker plugin disable -f "$ALIAS"
 # --skip-remote-check: the alias repo differs from the target repo by design,
