@@ -125,6 +125,7 @@ Zabbix UserParameter suggestions (add to the agent config on this host):
   UserParameter=mydocker.volume.orphans,tail -1 ${LOG} | sed -n 's/.*rbd_orphans=\(-\{0,1\}[0-9]*\).*/\1/p'
   UserParameter=mydocker.volume.unmap_abandoned,tail -1 ${LOG} | sed -n 's/.*unmap_abandoned=\(-\{0,1\}[0-9]*\).*/\1/p'
   UserParameter=mydocker.volume.unmap_slow,tail -1 ${LOG} | sed -n 's/.*unmap_slow=\(-\{0,1\}[0-9]*\).*/\1/p'
+  UserParameter=mydocker.volume.queueing,tail -1 ${LOG} | sed -n 's/.*queueing=\([0-9]*\).*/\1/p'
 
 Triggers:
   canary is 0                      the volume driver failed a full cycle
@@ -133,6 +134,12 @@ Triggers:
                                    -1 means the journal could not be read, so the check is blind
   unmap_abandoned not 0            a kernel mapping was never released, same handling as orphans
   unmap_slow above 0 repeatedly    unmap is degrading; not itself an incident
+  queueing is 1                    the cycle succeeded but took over 30s, so volume
+                                   operations are queueing host-wide. Warning, not an
+                                   outage: a cascade that failed 17 of 25 concurrent
+                                   removes (2026-08-25) left every other field at 0 and
+                                   this is the only field that moved. Raise the bar with
+                                   CANARY_QUEUEING_SECONDS if a host is legitimately busy
 
 orphans and unmap_abandoned latch: they stay raised until an operator empties
 ${STATE_DIR}/rbd-orphans.pending or ${STATE_DIR}/rbd-abandoned.pending after reclaiming.

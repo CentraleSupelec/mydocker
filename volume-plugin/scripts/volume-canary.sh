@@ -2,7 +2,7 @@
 # Volume-driver canary: full create/mount/write/remount/verify/remove cycle,
 # plus a scan of the driver's own alerts in the docker journal.
 # Emits exactly one result line, cron- and Zabbix-UserParameter-friendly:
-#   CANARY ok create_s=<s> total_s=<s> rbd_zombies=<n> rbd_mapped=0 rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n> time=<iso>
+#   CANARY ok create_s=<s> total_s=<s> queueing=<0|1> rbd_zombies=<n> rbd_mapped=0 rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n> time=<iso>
 #   CANARY FAIL step=<step> rbd_zombies=<n> rbd_mapped=<n> rbd_orphans=<n> unmap_abandoned=<n> unmap_late=<n> unmap_slow=<n> time=<iso>
 # time is last so the `^CANARY ok` anchor and the field patterns keep matching.
 # cron appends to the log without dates of its own, so a line that cannot be
@@ -10,8 +10,15 @@
 # Exit 0 on success, 1 on failure. The rbd_zombies count catches the historic
 # failure mode where timed-out rbd children were never reaped.
 #
+# queueing is 1 when a cycle succeeded but took longer than CANARY_QUEUEING_SECONDS.
+# A cascade does not fail the canary: measured 2026-08-25, a burst that failed 17 of
+# 25 concurrent removes stretched one cycle from 4s to 213s and still reported ok with
+# every counter at 0, so latency was the only evidence and nothing read it. It is a
+# separate field rather than a FAIL because queueing is degradation, not an outage,
+# and paging on it as an outage teaches people to ignore the canary.
+#
 # Run on a swarm manager. Override with DRIVER / CANARY_IMAGE / CANARY_SIZE_MB /
-# CANARY_STATE_DIR.
+# CANARY_STATE_DIR / CANARY_QUEUEING_SECONDS.
 
 set -u
 
@@ -20,6 +27,10 @@ IMAGE="${CANARY_IMAGE:-busybox:latest}"
 SIZE_MB="${CANARY_SIZE_MB:-1024}"
 VOL="canary-$(hostname -s)-$$"
 STATE_DIR="${CANARY_STATE_DIR:-/var/lib/mydocker}"
+# A healthy cycle is 3-5s on preprod. 30 is high enough that ordinary jitter and a
+# busy node do not trip it, low enough to catch a queue forming well before the 60s
+# cap dockerd puts on Remove and Unmount.
+QUEUEING_SECONDS="${CANARY_QUEUEING_SECONDS:-30}"
 CURSOR="${STATE_DIR}/canary-journal.cursor"
 ORPHAN_LATCH="${STATE_DIR}/rbd-orphans.pending"
 ABANDONED_LATCH="${STATE_DIR}/rbd-abandoned.pending"
@@ -140,4 +151,7 @@ docker volume rm "$VOL" >/dev/null 2>&1 \
 
 t_end=$(date +%s)
 journal_scan
-echo "CANARY ok create_s=$((t_created - t_start)) total_s=$((t_end - t_start)) rbd_zombies=$(rbd_zombies) rbd_mapped=0 rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow} time=$(date -Is)"
+total_s=$((t_end - t_start))
+queueing=0
+[ "$total_s" -ge "$QUEUEING_SECONDS" ] && queueing=1
+echo "CANARY ok create_s=$((t_created - t_start)) total_s=${total_s} queueing=${queueing} rbd_zombies=$(rbd_zombies) rbd_mapped=0 rbd_orphans=${orphans} unmap_abandoned=${abandoned} unmap_late=${late} unmap_slow=${slow} time=$(date -Is)"
