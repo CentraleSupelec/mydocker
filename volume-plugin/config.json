@@ -101,7 +101,7 @@
     },
     {
       "name": "SHELL_TIMEOUT_SECONDS",
-      "Description": "Per-attempt timeout for shell commands run by the driver (rbd, mkfs, mount...). Budget (1+SHELL_RETRIES)*timeout per command, and map+mkfs+30s unmap wait per Create, must stay under dockerd's 120s plugin request deadline",
+      "Description": "Per-attempt timeout for shell commands run by the driver (rbd, mkfs, mount...). Budget (1+SHELL_RETRIES)*timeout per command. dockerd caps each plugin call: 120s for Create and Mount, but only 60s for Remove, Unmount and Path, and docker plugin enable --timeout cannot raise those. Size the unmap path against 60s: at the defaults (10s x 4 attempts) plus a 30s unmap wait, teardown already budgets 70s against that 60s cap",
       "settable": [
         "value"
       ],
