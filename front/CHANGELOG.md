@@ -6,13 +6,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
-- Custom display types BUTTON (defautl) + TEXT (with Lexical)
-- Poll for active courses to update shell display accordingly
+- Multi language support (French and English)
 - ID column in users list
 
 ### Changed
-- OTHER connection type to TCP + its display
 - Edit course button placement
+
+### Fixed
+- i18n typos and a key mismatch between en.json and fr.json
+
+## 2.28.17
+### Changed
+- Redirect to homepage if content is deactivated
+
+## 2.28.16
+### Added
+- Content management
+- Custom display types BUTTON (default) + TEXT (with Lexical)
+- Poll for active courses to update shell display accordingly
+- Sorting on computed fields
+- Edit course button in environment view
+- Number of recent users column in courses list
+- Logs text next to the logs button
+
+### Changed
+- OTHER connection type to TCP + its display
 
 ## 2.28.15
 ### Added
