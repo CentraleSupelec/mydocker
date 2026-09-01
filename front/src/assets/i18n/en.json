@@ -40,7 +40,7 @@
           "automatic_shutdown": {
             "label": "Activate automatic shutdown",
             "explanation": "After a certain duration (defined below), the student container will automatically be shutdown. As long as the shutdown has not been initiated, the student can restart the counter to delay the shutdown.",
-            "time_label": "Time before automatic shutdown :",
+            "time_label": "Time before automatic shutdown:",
             "duration_error": "You must input a non null duration",
             "student_warning_explanation": "If you set a duration below, the student will be notified before the shutdown happens.",
             "student_warning_label": "Remaining time before warning the student about the shutdown",
@@ -139,7 +139,7 @@
         "live_user_count": "Live user count",
         "live_user_count_tooltip": "Number of users that have an active environment",
         "recent_user_count": "Recent user count",
-        "recent_user_count_tooltip": "Recent user count"
+        "recent_user_count_tooltip": "Number of users active since the cut-off date"
       },
       "actions": {
         "test": "Test the environment",
@@ -192,7 +192,7 @@
           "ports": "Ports"
         },
           "dockerfile": "Dockerfile",
-        "wrapper_script": "WrapperScript",
+        "wrapper_script": "Wrapper script",
         "success": "The docker image has been successfully updated",
         "error": "An error occurred while updating the docker image",
         "save" : "Save changes"
@@ -283,7 +283,7 @@
         },
         "actions": {
           "delete": "Delete the deployment",
-          "delete_confirmation": "Do you confirm the deletion of the deployment of {date} on {time} ?",
+          "delete_confirmation": "Do you confirm the deletion of the deployment of {date} at {time}?",
           "view": "View the deployment"
         },
         "dialog": {
@@ -348,7 +348,7 @@
         "update_date": "Update date",
         "launch_deployment": "Launch a deployment",
         "refresh": "Refresh",
-        "no_data": "No build has been done",
+        "no_data": "No deployment has been done",
         "view_logs": "View deployment logs",
         "on": "on",
         "at": "at",
@@ -378,7 +378,7 @@
         "columns": {
           "name": "Name",
           "technical_identifier": "Technical identifier",
-          "gpu": "GPU ?",
+          "gpu": "GPU?",
           "storage_backend": "Storage backend",
           "autoscaling": {
             "label": "Autoscaling",
@@ -390,7 +390,7 @@
         "actions": {
           "edit": "Edit",
           "delete": "Delete",
-          "delete_confirmation": "Are you sure you want to delete compute type \"{name}\" ?",
+          "delete_confirmation": "Are you sure you want to delete compute type \"{name}\"?",
           "delete_success": "The compute type \"{name}\" has been deleted successfully",
           "delete_error": "Impossible to delete the compute type \"{name}\""
         },
@@ -434,7 +434,7 @@
         "actions": {
           "edit": "Edit",
           "delete": "Delete",
-          "delete_confirmation": "Are you sure you want to delete the content \"{name}\" ?",
+          "delete_confirmation": "Are you sure you want to delete the content \"{name}\"?",
           "delete_success": "The content \"{name}\" has been deleted successfully",
           "delete_error": "Impossible to delete the content \"{name}\""
         },
@@ -487,7 +487,7 @@
           "role": "Role",
           "success": "The user has been successfully updated",
           "error":"An error occurred while updating the user",
-          "save": "Edit the user"
+          "save": "Save changes"
         },
         "roles": {
           "admin": "Admin",
@@ -573,12 +573,12 @@
     "impossible_to_start_cause_2": "The environment is misconfigured. We recommend contacting the environment authors.",
     "impossible_to_start_cause_3": "All servers allocated to this environment are currently in use. Please try again later.",
     "service_logs": "View service logs",
-    "unknown_error": "An unknown error occurred",
-    "storage_error": "The course is configured with an unsupported file storage type (local).",
-    "image_not_found_error": "The course is configured with a missing template. Please contact the course administrator.",
-    "problem_encountered": "The course encountered an issue: \"{error}\"",
+    "unknown_error": "an unknown error occurred",
+    "storage_error": "the course is configured with an unsupported file storage type (local).",
+    "image_not_found_error": "the course is configured with a missing template. Please contact the course administrator.",
+    "problem_encountered": "the course encountered an issue: \"{error}\"",
     "recently": "recently",
-    "personal_volume_error": "The service <a href=\"{url}\">{course}</a> started {date} is currently using the personal directory. It must be stopped first.",
+    "personal_volume_error": "the service <a href=\"{url}\">{course}</a> started {date} is currently using the personal directory. It must be stopped first.",
     "on": "on",
     "at": "at",
     "save_state": {

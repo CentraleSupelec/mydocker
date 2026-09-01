@@ -55,7 +55,7 @@
             "student_count": "Nombre d'étudiants",
             "start_date": "Date de début",
             "end_date": "Date de fin",
-            "block": "Bloquer la connexion avant l'heure",
+            "block": "Bloquer la connexion avant la date de début",
             "destroy": "Extinction automatique des environnements",
             "missing_deployment": "Déploiement manquant",
             "scheduled_deployments": "Déploiements programmés",
@@ -139,7 +139,7 @@
         "live_user_count": "Nombre d'utilisateurs en cours",
         "live_user_count_tooltip": "Nombre d'utilisateurs ayant un environnement en cours d'exécution",
         "recent_user_count": "Nombre d'utilisateurs récents",
-        "recent_user_count_tooltip": "Nombre d'utilisateurs récents"
+        "recent_user_count_tooltip": "Nombre d'utilisateurs actifs depuis la date limite"
       },
       "actions": {
         "test": "Tester l'environnement",
@@ -154,7 +154,7 @@
       "wait": "Veuillez patienter pendant que nous créons vos accès"
     },
     "docker_images": {
-      "nav_label": "Image docker",
+      "nav_label": "Images docker",
       "title": "Administration des images docker",
       "breadcrumb": "Liste des images docker",
       "search": "Recherche par nom de l'image",
@@ -192,7 +192,7 @@
           "ports": "Ports"
         },
           "dockerfile": "Dockerfile",
-        "wrapper_script": "WrapperScript",
+        "wrapper_script": "Wrapper script",
         "success": "L'image docker a bien été mise à jour",
         "error": "Erreur lors de la sauvegarde de l'image docker",
         "save" : "Sauvegarder les changements"
@@ -308,7 +308,7 @@
           },
           "linked_sessions": {
             "label": "Sessions liées au déploiement",
-            "no_sessions": "Aucune session à",
+            "no_sessions_to": "Aucune session à",
             "launch": "lancer",
             "clean": "nettoyer"
           },
@@ -336,9 +336,9 @@
         "breadcrumb": "État de l'infrastructure",
         "no_instances": "Aucune instance actuellement déployée",
         "flavor": "Flavor",
-        "state": "State",
+        "state": "État",
         "ip": "IP",
-        "owner": "Owner",
+        "owner": "Propriétaire",
         "instances": "instances"
       },
       "deployment_status": {
@@ -348,7 +348,7 @@
         "update_date": "Date de mise à jour",
         "launch_deployment": "Lancer un déploiement",
         "refresh": "Rafraîchir",
-        "no_data": "Aucun build encore effectué",
+        "no_data": "Aucun déploiement encore effectué",
         "view_logs": "Voir les informations sur le déploiement",
         "on": "le",
         "at": "à",
@@ -487,7 +487,7 @@
           "role": "Rôle",
           "success": "L'utilisateur a bien été mis à jour",
           "error":"Erreur lors de la modification de l'utilisateur",
-          "save": "Éditer l'utilisateur"
+          "save": "Sauvegarder les changements"
         },
         "roles": {
           "admin": "Admin",
@@ -504,7 +504,7 @@
     "planified": "Planifiés",
     "planified_tooltip": "Retrouvez ici vos activités prévues dans moins d'une semaine",
     "no_data": "Aucun cours disponible",
-    "no_data_explanation": "L'historique des environnements auxquels vous avez accédés est actuellement vide.",
+    "no_data_explanation": "L'historique des environnements auxquels vous avez accédé est actuellement vide.",
     "find": "Vous trouverez dans notre",
     "documentation": "documentation",
     "propositions": "des propositions d'environnements génériques mis à votre disposition."
@@ -519,7 +519,7 @@
     "to": "à",
     "request_environment": "Demander un environnement",
     "wait_shutdown": "Veuillez patienter pendant l'extinction...",
-    "request_blocked": "Il n'est pas possible de demander un environnement avant l'heure de début de la session",
+    "request_blocked": "Il n'est pas possible de demander un environnement avant l'heure de début de la session.",
     "wait_creation": "Veuillez patienter pendant que nous créons vos accès",
     "shutdown": "Éteindre l'environnement",
     "problem": "En cas de problème ou si l'environnement ne répond pas, vous pouvez l'éteindre et en demander un nouveau.",
@@ -539,7 +539,7 @@
     "confirm_env_request_warning": "Demander un nouvel environnement supprimera l'ancien",
     "confirm_env_request_wait": "Si vous venez d'avoir les accès et que ceux-ci ne fonctionnent pas, attendez quelques minutes avant d'en demander un nouveau.",
     "cannot_shutdown": "Impossible d'éteindre l'environnement",
-    "confirm_shutdown": "Confirmez-vous l'extinction de l'environnement",
+    "confirm_shutdown": "Confirmez-vous l'extinction de l'environnement ?",
     "shutdown_notification": "Votre environnement va s'éteindre",
     "shutdown_delay_explanation": "Si nécessaire, réinitialisez le minuteur pour retarder l'extinction",
     "shutdown_in": "Extinction dans",
@@ -556,7 +556,7 @@
       "pending": "Recherche d'un nœud de calcul",
       "assigned": "Assignation à un nœud",
       "accepted": "Acceptation par le nœud",
-      "preparing": "Téléchargement de l'environnement sur le noeud",
+      "preparing": "Téléchargement de l'environnement sur le nœud",
       "ready": "Environnement prêt à démarrer",
       "starting": "Initialisation en cours",
       "running": "En attente de l'interface",
@@ -568,13 +568,13 @@
       "unknown": "État inconnu"
     },
     "impossible_to_start": "Impossible de démarrer, car",
-    "impossible_to_start_causes" : "Le démarrage de votre environnement a échoué (état : \"{name}\"). Trois causes principales sont à envisager:",
+    "impossible_to_start_causes" : "Le démarrage de votre environnement a échoué (état : \"{name}\"). Trois causes principales sont à envisager :",
     "impossible_to_start_cause_1": "Le téléchargement vers MyDocker de l'image (les logiciels) de l'environnement a pris trop de temps. Ce téléchargement est incrémental et mémorisé d'une fois sur l'autre. Vous pouvez réessayer quelques fois de relancer l'environnement en rechargeant cette page.",
     "impossible_to_start_cause_2": "L'environnement est mal configuré. Nous vous recommandons alors de contacter les auteurs de l'environnement.",
     "impossible_to_start_cause_3": "Tous les serveurs alloués à cet environnement sont actuellement utilisés. Vous pourrez réessayer ultérieurement.",
     "service_logs": "Voir les logs du service",
     "unknown_error": "une erreur inconnue s'est produite",
-    "storage_error": "le cours est configuré avec un type de fichiers non supporté (local).",
+    "storage_error": "le cours est configuré avec un type de stockage de fichiers non supporté (local).",
     "image_not_found_error": "le cours est configuré avec un modèle introuvable. Contactez le responsable du cours.",
     "problem_encountered": "le cours a rencontré un problème : \"{error}\"",
     "recently": "récemment",
