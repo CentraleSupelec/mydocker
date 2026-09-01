@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.stereotype.Component;
 
 import java.security.interfaces.RSAPublicKey;
@@ -62,6 +63,8 @@ public class OIDCService {
             logger.debug("JWT token: " + jwtToken);
             activityLogger.log(LogAction.USER_LOGIN_OIDC, user);
             return jwtToken;
+        } catch (DisabledException e) {
+            throw e;
         } catch (Exception e) {
             OIDCAuthenticationException exception = new OIDCAuthenticationException(
                     String.format("Unable to validate token : %s", e.getMessage())

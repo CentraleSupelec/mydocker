@@ -4,6 +4,7 @@ import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -46,6 +47,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (!userDetails.isEnabled()) {
+                    throw new DisabledException("Account disabled");
+                }
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -55,12 +59,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 securityContext.setAuthentication(authentication);
                 securityContextRepository.saveContext(securityContext, request, response);
             }
+        } catch (DisabledException ex) {
+            logger.warn("Disabled user attempted to authenticate");
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Account disabled");
+            return;
         } catch (Exception ex) {
             logger.error("Could not authenticate user", ex);
             Sentry.captureException(ex);
-        } finally {
-            filterChain.doFilter(request, response);
         }
+        filterChain.doFilter(request, response);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

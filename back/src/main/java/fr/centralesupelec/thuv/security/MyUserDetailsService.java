@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,7 +38,7 @@ public class MyUserDetailsService implements UserDetailsService {
                 .orElseThrow(
                         () -> new UsernameNotFoundException("User " + s + " not found !")
                 );
-        return new MyUserDetails(user.getRoles(), user.getUsername(), user.getId());
+        return new MyUserDetails(user.getRoles(), user.getUsername(), user.getId(), user.getEnabled());
     }
 
     public User findUser(String username, String email) throws UserUpsertException {
@@ -181,13 +182,35 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     public User upsertUser(String username, String email, String name, String lastName) {
-        User user = null;
-        try {
-            user = this.findUser(username, email);
-        } catch (Exception e) {
-            user = new User();
-        }
+        User user = this.findUser(username, email);
+        assertUserEnabled(user);
         return fillUserInformation(user, username, email, name, lastName);
+    }
+
+    public User findOrCreateMagicLinkUser(String email) {
+        // Resolve existing accounts before creating a guest; disabled accounts must be rejected, not hidden.
+        List<User> usersWithCorrectEmail = userRepository.findByEmail(email);
+        if (usersWithCorrectEmail.size() > 1) {
+            throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
+        }
+
+        User user = usersWithCorrectEmail
+                .stream()
+                .findFirst()
+                .or(() -> userRepository.findByUsername(email))
+                .orElse(null);
+
+        if (user == null) {
+            return fillUserInformation(new User(), email, email, "Invité", "Invité");
+        }
+        assertUserEnabled(user);
+        return user;
+    }
+
+    public void assertUserEnabled(User user) {
+        if (Boolean.FALSE.equals(user.getEnabled())) {
+            throw new DisabledException("Account disabled");
+        }
     }
 
     public User fillUserInformation(User user, String username, String email, String name, String lastName) {

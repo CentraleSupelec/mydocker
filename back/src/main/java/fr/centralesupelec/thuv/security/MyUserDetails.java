@@ -15,6 +15,7 @@ public class MyUserDetails implements UserDetails {
     private final Collection<Role> roles;
     private final String email;
     private final Long userId;
+    private final Boolean enabled;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -54,6 +55,6 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !Boolean.FALSE.equals(enabled);
     }
 }

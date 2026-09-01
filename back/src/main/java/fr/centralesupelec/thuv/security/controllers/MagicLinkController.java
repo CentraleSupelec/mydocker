@@ -8,7 +8,6 @@ import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
-import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.JwtTokenProvider;
 import fr.centralesupelec.thuv.security.MyUserDetailsService;
 import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.ott.GenerateOneTimeTokenRequest;
 import org.springframework.security.authentication.ott.OneTimeTokenService;
 import org.springframework.security.authentication.ott.OneTimeToken;
@@ -42,7 +42,6 @@ public class MagicLinkController {
     private final CourseRepository courseRepository;
     private final UserCourseRepository userCourseRepository;
     private final OneTimeTokenService oneTimeTokenService;
-    private final UserRepository userRepository;
     private final MyUserDetailsService myUserDetailsService;
 
     @Value("${app.magic_link.expiration_in_minutes}")
@@ -56,8 +55,7 @@ public class MagicLinkController {
             EmailService emailService,
             CourseRepository courseRepository,
             UserCourseRepository userCourseRepository,
-            OneTimeTokenService oneTimeTokenService,
-            UserRepository userRepository
+            OneTimeTokenService oneTimeTokenService
     ) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.activityLogger = activityLogger;
@@ -65,7 +63,6 @@ public class MagicLinkController {
         this.courseRepository = courseRepository;
         this.userCourseRepository = userCourseRepository;
         this.oneTimeTokenService = oneTimeTokenService;
-        this.userRepository = userRepository;
         this.myUserDetailsService = myUserDetailsService;
     }
 
@@ -121,9 +118,7 @@ public class MagicLinkController {
             String email = parts[0];
             String courseUuid = parts[1];
 
-            User user = userRepository.findByUsername(email)
-                .orElseGet(() -> this.myUserDetailsService.fillUserInformation(new User(), email, email, "Invité", "Invité")
-            );
+            User user = this.myUserDetailsService.findOrCreateMagicLinkUser(email);
             
             Optional<Course> course = courseRepository.findByUuid(UUID.fromString(courseUuid));
             
@@ -159,6 +154,8 @@ public class MagicLinkController {
                     "token", sessionJwt,
                     "courseId", course.get().getId()
             ));
+        } catch (DisabledException ex) {
+            throw ex;
         } catch (Exception ex) {
             Sentry.captureException(ex);
             logger.error("Invalid magic token", ex);
