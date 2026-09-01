@@ -5,9 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Fixed
+- Duplicate user rows created on magic-link and OIDC login
+
+## 2.32.5
+### Changed
+- Return not found if content is disabled
+
+## 2.32.4
 ### Added
+- Content management
 - customDisplayType in display_options
 - Route to get active courses by user
+- Possibility to sort by computed fields
+- Number of recent users in admin course DTO
 
 ### Changed
 - OTHER connection type to TCP
