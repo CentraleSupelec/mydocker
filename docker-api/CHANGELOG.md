@@ -6,6 +6,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 ## Added
+- Mount a list of volumes in readonly mode to all containers
 - Active courses by user
 - Request datetime for named workers
 

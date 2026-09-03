@@ -5,8 +5,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,7 +22,6 @@ import (
 	networkTypes "github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/swarm"
 	volumeTypes "github.com/docker/docker/api/types/volume"
-	"github.com/docker/docker/errdefs"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	log "github.com/sirupsen/logrus"
 )
@@ -70,7 +67,6 @@ type dockerImageBuilderDockerClient interface {
 	ServiceRemove(ctx context.Context, serviceID string) error
 	VolumeRemove(ctx context.Context, volumeID string, force bool) error
 	VolumeCreate(ctx context.Context, options volumeTypes.VolumeCreateBody) (types.Volume, error)
-	VolumeInspect(ctx context.Context, volumeID string) (types.Volume, error)
 	ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error
 	ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error
 	ContainerCreate(ctx context.Context, config *containerTypes.Config, hostConfig *containerTypes.HostConfig, networkingConfig *networkTypes.NetworkingConfig, platform *specs.Platform, containerName string) (containerTypes.ContainerCreateCreatedBody, error)
@@ -288,213 +284,6 @@ func (d *DockerImageBuilder) copyLocalDirToContainer(containerID, localDir, dest
 	return d.dockerClient.CopyToContainer(context.Background(), containerID, "/", bytes.NewReader(buf.Bytes()), copyOpts)
 }
 
-// Diagnostics only: the volume NAME carries the per-attempt token, and that is what cleanup keys
-// on. Volume metadata is not persisted until the driver call returns, so this label is exactly what
-// goes missing on the timed-out create that cleanup exists to handle.
-const buildAttemptLabel = "mydocker.build.attempt"
-
-// The driver keeps working after dockerd stops waiting, so cleanup has to outlast both its own
-// retry budget (SHELL_TIMEOUT_SECONDS x SHELL_RETRIES, 110s by default) and dockerd's request
-// deadline.
-//
-// This is ONE wall-clock budget shared by the whole rollback, not a retry count. Counting attempts
-// was wrong: each attempt can also burn volumeCleanupCallTimeout, so 15 attempts was up to
-// 15 x (30s + 10s) = 10 minutes per helper, and container-then-volume ran that twice - a worker-pool
-// slot held for twenty minutes on an error path.
-//
-// Not a guarantee either way: a volume appearing after the budget still leaks, and a durable reaper
-// is the real answer to that.
-const volumeCleanupCallTimeout = 30 * time.Second
-
-// vars, not consts, so tests do not have to sleep through the real values.
-var (
-	volumeCleanupBudget   = 150 * time.Second
-	volumeCleanupInterval = 10 * time.Second
-)
-
-// cleanupCallTimeout clamps a single API call to whatever is left of the shared budget, and reports
-// false when there is nothing left to spend.
-func cleanupCallTimeout(deadline time.Time) (time.Duration, bool) {
-	remaining := time.Until(deadline)
-	if remaining <= 0 {
-		return 0, false
-	}
-	if remaining > volumeCleanupCallTimeout {
-		return volumeCleanupCallTimeout, true
-	}
-	return remaining, true
-}
-
-// sleepBeforeRetry waits out the retry interval unless the budget would expire first, in which case
-// it reports false so the caller stops instead of sleeping past its own deadline.
-func sleepBeforeRetry(deadline time.Time) bool {
-	remaining := time.Until(deadline)
-	if remaining <= 0 {
-		return false
-	}
-	if remaining < volumeCleanupInterval {
-		time.Sleep(remaining)
-		return false
-	}
-	time.Sleep(volumeCleanupInterval)
-	return true
-}
-
-// newBuildAttemptToken returns a value unique to one call of prepareBuildFiles. It is what makes
-// the volume and copy-container names unique to this attempt, so two attempts sharing a buildId
-// neither collide nor clean up each other's resources.
-func newBuildAttemptToken() (string, error) {
-	buf := make([]byte, 8)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(buf), nil
-}
-
-// removeCopyContainer force-removes the copy container, retrying on the same budget as the volume
-// cleanup. Reports whether it is gone: while it exists it holds the build volume busy, so the caller
-// must not bother trying to remove the volume if this fails.
-// copyContainerState is what rollback needs to know about the copy container, and the three cases
-// behave differently enough that booleans were the wrong shape for it.
-type copyContainerState int
-
-const (
-	// The daemon rejected the request outright, so no container exists or can appear.
-	copyContainerAbsent copyContainerState = iota
-	// The create neither clearly succeeded nor clearly failed - a client timeout, a transport
-	// error - so the daemon may still be creating it.
-	copyContainerUncertain
-	// An ID came back, or the name was already taken: a container by this name exists.
-	copyContainerPresent
-)
-
-// copyContainerStateAfterCreateError classifies a failed ContainerCreate.
-//
-// This distinction is not cosmetic: treating every failure as uncertain made the *common* cases -
-// a bad parameter, a missing image, a rejected credential - wait out the whole cleanup budget and
-// then retain the volume, which leaks it. Those rejections cannot turn into a container later.
-func copyContainerStateAfterCreateError(err error) copyContainerState {
-	switch {
-	case errdefs.IsConflict(err):
-		// The name is taken, which means a container by that name is there to remove.
-		return copyContainerPresent
-	case errdefs.IsInvalidParameter(err), errdefs.IsNotFound(err), errdefs.IsUnauthorized(err):
-		// The daemon rejected the request itself, so nothing was created.
-		return copyContainerAbsent
-	default:
-		// Timeouts, transport failures, anything unclassified: assume it may exist.
-		//
-		// Forbidden lands here deliberately, and not as an oversight. Docker authorization plugins
-		// run in two phases, request and response, and a response-phase denial returns 403 AFTER
-		// the create handler has already executed - so the container can exist despite the error.
-		// Only classify it as absent if this deployment is known never to load an AuthZ plugin, and
-		// write that invariant down here if you do.
-		return copyContainerUncertain
-	}
-}
-
-// existenceConfirmed distinguishes the two rollback cases, because not-found means different things
-// in each. If the container definitely exists, not-found proves it is gone. If the create outcome
-// was uncertain, a first not-found proves nothing: it may still materialise a moment later.
-func (d *DockerImageBuilder) removeCopyContainer(containerRef string, deadline time.Time, existenceConfirmed bool) bool {
-	for {
-		callTimeout, ok := cleanupCallTimeout(deadline)
-		if !ok {
-			return false
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), callTimeout)
-		err := d.dockerClient.ContainerRemove(ctx, containerRef, types.ContainerRemoveOptions{
-			Force:         true,
-			RemoveVolumes: false,
-			RemoveLinks:   false,
-		})
-		cancel()
-
-		switch {
-		case err == nil:
-			// Observed and removed: settled either way.
-			return true
-		case errdefs.IsNotFound(err):
-			if existenceConfirmed {
-				// It existed and is now gone.
-				return true
-			}
-			// Uncertain create: keep watching for it to appear rather than concluding absence.
-		default:
-			log.Errorf("failed to remove copy container %s during rollback, retrying: %v", containerRef, err)
-		}
-
-		if !sleepBeforeRetry(deadline) {
-			return false
-		}
-	}
-}
-
-// removeBuildVolumeWithinDeadline deletes a build volume whose create reported an error.
-//
-// Two things make the obvious "remove it on error" wrong, and both were observed rather than
-// theorised. dockerd applies an HTTP client timeout to volume driver calls and stops waiting while
-// the driver runs to completion, so (1) a create that reported an error may nonetheless have
-// produced the volume, and nothing else reclaims it - the 5 GB rbd image leaks for good - and
-// (2) the volume may not exist *yet* when the error surfaces, so a single immediate remove returns
-// not-found and the leak survives regardless.
-//
-// Hence the poll rather than a single remove.
-//
-// No ownership check is needed or wanted: volumeName carries a per-attempt suffix, so anything found
-// under it was created by this call and nothing else can claim that name. Deliberately NOT keyed on
-// the ownership label - dockerd persists volume metadata only after the driver call returns, so the
-// very volume this exists to reclaim is the one most likely to be rediscovered with no labels, and a
-// label-keyed check would read that as another attempt's and leak it.
-//
-// Shares one wall-clock deadline with the container removal, so the whole rollback is bounded by
-// volumeCleanupBudget rather than by a retry count that ignores per-call timeouts.
-func (d *DockerImageBuilder) removeBuildVolumeWithinDeadline(volumeName string, deadline time.Time) {
-	for {
-		callTimeout, ok := cleanupCallTimeout(deadline)
-		if !ok {
-			break
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), callTimeout)
-		_, err := d.dockerClient.VolumeInspect(ctx, volumeName)
-		cancel()
-
-		if err != nil {
-			if !errdefs.IsNotFound(err) {
-				// Retry rather than abandon: an inspect can fail for the same transient reason the
-				// create did (a driver still busy, a daemon under load), and giving up on the first
-				// one leaks the image for a condition that would have cleared.
-				log.Errorf("cannot inspect volume %s for cleanup, retrying: %v", volumeName, err)
-			}
-			// Either not there yet - the driver may still be creating it after dockerd gave up
-			// waiting - or a transient inspect failure. Both want another look.
-			if !sleepBeforeRetry(deadline) {
-				break
-			}
-			continue
-		}
-
-		rmTimeout, ok := cleanupCallTimeout(deadline)
-		if !ok {
-			break
-		}
-		rmCtx, rmCancel := context.WithTimeout(context.Background(), rmTimeout)
-		err = d.dockerClient.VolumeRemove(rmCtx, volumeName, true)
-		rmCancel()
-		if err == nil {
-			return
-		}
-		// Retry inside the same budget rather than giving up on one failure: a remove can fail
-		// because the driver is still busy with the create it never got to acknowledge, and that
-		// is transient. Giving up here left the image leaked for a reason that would have cleared.
-		log.Errorf("failed to remove volume %s after a failed create, retrying: %v", volumeName, err)
-		if !sleepBeforeRetry(deadline) {
-			break
-		}
-	}
-	log.Errorf("volume %s could not be cleaned up within the window; it may be leaked", volumeName)
-}
-
 func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte, dockerfile string, wrapperScript string) (string, error) {
 	buildFilesPath, err := ioutil.TempDir("", "build-"+buildId)
 
@@ -520,68 +309,20 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 		return "", err
 	}
 
-	// Ownership is encoded in the NAME, not in a label. buildId arrives on the request, so two
-	// attempts can share it, and a shared name is what makes cleanup ambiguous. A per-attempt
-	// suffix makes the name unique to this call, so anything found under it was created here.
-	//
-	// A label cannot carry this: dockerd persists volume metadata only once the driver call
-	// returns, so a create that timed out can leave a volume that is later rediscovered with no
-	// labels at all - and cleanup keyed on labels would read that as another attempt's volume and
-	// leak it. The label below is kept for diagnostics only.
-	attemptToken, err := newBuildAttemptToken()
-	if err != nil {
-		return "", err
-	}
-	volumeName := fmt.Sprintf("volume_build_%s_%s", buildId, attemptToken)
+	volumeName := "volume_build_" + buildId
 	s := strconv.Itoa(5 * 1024)
 	driverOpts := map[string]string{"size": s}
 
 	options := volumeTypes.VolumeCreateBody{
 		Driver:     "centralesupelec/mydockervolume",
 		DriverOpts: driverOpts,
-		Labels:     map[string]string{buildAttemptLabel: attemptToken},
 		Name:       volumeName,
 	}
 
 	_, err = d.dockerClient.VolumeCreate(context.Background(), options)
 	if err != nil {
-		d.removeBuildVolumeWithinDeadline(volumeName, time.Now().Add(volumeCleanupBudget))
 		return "", err
 	}
-
-	// The container name is fixed here, before ContainerCreate is called, precisely because that
-	// call can time out at the client while the daemon still creates the container: no ID comes
-	// back, and a rollback keyed on the ID would skip a container that exists and holds the volume
-	// busy. ContainerRemove accepts a name, so the name is a usable handle from this point on.
-	copyContainerName := fmt.Sprintf("copy_volume_%s_%s", buildId, attemptToken)
-
-	// From here the volume exists, and every remaining failure returns "" - so the caller never
-	// learns the name and can never clean it up. Roll back instead of leaking.
-	succeeded := false
-	// Absent until ContainerCreate is attempted; the call itself sets this from its outcome.
-	copyContainerStatus := copyContainerAbsent
-	defer func() {
-		if succeeded {
-			return
-		}
-		// One wall-clock budget for the whole rollback: container first, then volume. The container
-		// must actually go, because while it exists it holds the volume busy and the volume cleanup
-		// below cannot succeed.
-		deadline := time.Now().Add(volumeCleanupBudget)
-		if copyContainerStatus != copyContainerAbsent &&
-			!d.removeCopyContainer(copyContainerName, deadline, copyContainerStatus == copyContainerPresent) {
-			// Deliberately NOT removing the volume here. Either the container exists and holds it,
-			// or - after a timed-out create - we never managed to prove it does not exist and it
-			// could still appear and mount this volume. Deleting under that uncertainty is the
-			// mistake this rollback exists to avoid, so the leak is reported instead.
-			log.Errorf(
-				"copy container %s neither observed nor removed within the cleanup budget; retaining volume %s because its absence is unproven, both may be leaked",
-				copyContainerName, volumeName,
-			)
-			return
-		}
-		d.removeBuildVolumeWithinDeadline(volumeName, deadline)
-	}()
 
 	contConfig := &containerTypes.Config{
 		Image: SAVE_IMAGE,
@@ -621,23 +362,10 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 		})
 	}
 
-	// Set BEFORE the call, not after: if ContainerCreate times out at the client the daemon may
-	// still have created the container, and a rollback keyed on a returned ID would leave it
-	// holding the volume. The name is the handle in that case.
-	copyContainerStatus = copyContainerUncertain
-	copyContainer, err := d.dockerClient.ContainerCreate(
-		context.TODO(), contConfig, hostConfig, nil, nil, copyContainerName,
-	)
+	copyContainer, err := d.dockerClient.ContainerCreate(context.TODO(), contConfig, hostConfig, nil, nil, "copy_volume_"+buildId)
 	if err != nil {
-		// Downgrade to absent when the daemon rejected the request outright: waiting out the whole
-		// cleanup budget and then retaining the volume would leak it for a container that cannot
-		// exist. Upgrade to present on a name conflict, where one demonstrably does.
-		copyContainerStatus = copyContainerStateAfterCreateError(err)
 		return "", err
 	}
-	// An ID came back, so the container definitely exists: not-found during rollback now proves it
-	// is gone, rather than proving nothing.
-	copyContainerStatus = copyContainerPresent
 
 	if c.DockerConfig.Host != "" {
 		err = d.copyLocalDirToContainer(copyContainer.ID, buildFilesPath, "/tmp/source")
@@ -667,16 +395,10 @@ func (d *DockerImageBuilder) prepareBuildFiles(buildId string, contextZip []byte
 	if err != nil {
 		return "", err
 	}
-	// Removed on the happy path: clear the flag so the rollback does not try again.
-	copyContainerStatus = copyContainerAbsent
-
 	err = os.RemoveAll(buildFilesPath)
 	if err != nil {
 		return "", err
 	}
-
-	// The volume is now the caller's to own and to remove; rollback must not fire.
-	succeeded = true
 	return volumeName, err
 }
 
