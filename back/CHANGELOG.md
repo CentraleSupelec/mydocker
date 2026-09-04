@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.32.8
+### Changed
+- Saving and submitting student work is disabled: the saveData endpoint returns 403 unless `save.student-work.enabled` is true, which defaults to false
+
+## 2.32.7
 ### Fixed
 - Duplicate user rows created on magic-link and OIDC login
 
