@@ -460,23 +460,6 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 		args = commandToParts(command)
 	}
 
-	for _, volumeMount := range c.VolumeMounts {
-		mounts = append(mounts, mount.Mount{
-			Type:     mount.TypeVolume,
-			Source:   volumeMount.Source,
-			Target:   volumeMount.Target,
-			ReadOnly: true,
-			VolumeOptions: &mount.VolumeOptions{
-				DriverConfig: &mount.Driver{
-					Name: "centralesupelec/mydockervolume",
-					Options: map[string]string{
-						"mkfsOptions": "-O ^mmp",
-					},
-				},
-			},
-		})
-	}
-
 	if request.Options != nil {
 		if request.Options.SaveStudentWork {
 			mounts = append(mounts, mount.Mount{
