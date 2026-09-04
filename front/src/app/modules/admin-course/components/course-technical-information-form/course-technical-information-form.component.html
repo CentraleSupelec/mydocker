@@ -38,16 +38,23 @@
       <input matInput formControlName="memoryBytesLimit" type="number">
     </mat-form-field>
   </div>
-  <mat-checkbox formControlName="saveStudentWork" (change)="changeSaveStudentWork($event.checked)">
+  <mat-checkbox
+    *ngIf="config.save_student_work_enabled; else saveStudentWorkRetired"
+    formControlName="saveStudentWork"
+    (change)="changeSaveStudentWork($event.checked)"
+  >
     {{ 'admin.courses.edit.technical_info.save_student_work.label' | translate }}
   </mat-checkbox>
+  <ng-template #saveStudentWorkRetired>
+    <p>{{ 'admin.courses.edit.technical_info.save_student_work.retired' | translate }}</p>
+  </ng-template>
   <div
     fxLayout="row"
     fxFlexFill
     fxLayout.lt-md="column"
     fxLayoutGap="16px"
     fxLayoutAlign="start center"
-     *ngIf="courseTechnicalForm.get('saveStudentWork')?.value"
+     *ngIf="config.save_student_work_enabled && courseTechnicalForm.get('saveStudentWork')?.value"
   >
     <mat-form-field>
       <mat-label>{{ 'admin.courses.edit.technical_info.save_student_work.size' | translate }}</mat-label>

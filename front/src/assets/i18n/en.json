@@ -102,7 +102,8 @@
             "label": "Save student work",
             "size": "Storage size (in MB)",
             "path": "Folder to be saved path",
-            "allow_submit": "Allow students to submit"
+            "allow_submit": "Allow students to submit",
+            "retired": "Saving and submitting student work are disabled on this infrastructure."
           },
           "use_student_volume": {
             "label": "Enable student personal folder",

@@ -1,4 +1,5 @@
-import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, forwardRef, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { APP_CONFIG, IAppConfig } from "../../../../app-config";
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -47,6 +48,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     formBuilder: FormBuilder,
     private readonly dockerImageApiService: DockerImageApiService,
     private readonly dialog: MatDialog,
+    @Inject(APP_CONFIG) readonly config: IAppConfig,
   ) {
     this.courseTechnicalForm = formBuilder.group({
       ports: [[]],

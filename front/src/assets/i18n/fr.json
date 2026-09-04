@@ -102,7 +102,8 @@
             "label": "Sauvegarder le travail de l'étudiant",
             "size": "Taille du stockage (en Mo)",
             "path": "Chemin du dossier à sauvegarder",
-            "allow_submit": "Activer le rendu du travail de l'étudiant"
+            "allow_submit": "Activer le rendu du travail de l'étudiant",
+            "retired": "La sauvegarde et le rendu du travail de l'étudiant sont désactivés sur cette infrastructure."
           },
           "use_student_volume": {
             "label": "Activer le répertoire personnel de l'élève",

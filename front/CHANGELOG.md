@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Edit course button placement
+- Hide the save and submit student work options when the platform has them disabled
 
 ### Fixed
 - i18n typos and a key mismatch between en.json and fr.json

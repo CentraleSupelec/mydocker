@@ -37,6 +37,7 @@ export interface IAppConfig {
   };
   default_storage_backend?: string;
   deployment_enabled: boolean;
+  save_student_work_enabled?: boolean;
   auto_login?: TokenOrigin;
   oidc_idps?: Array<IOIDC_IDP>
   oidc_client_id?: string;
@@ -62,6 +63,7 @@ export function appConstantFactory(): IAppConfig {
     },
     default_storage_backend: appConstants.default_storage_backend,
     deployment_enabled: appConstants.deployment_enabled,
+    save_student_work_enabled: appConstants.save_student_work_enabled,
     auto_login: appConstants.auto_login,
     oidc_idps: appConstants.oidc_idps,
     oidc_client_id: appConstants.oidc_client_id,
