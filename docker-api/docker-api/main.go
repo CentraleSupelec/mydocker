@@ -82,6 +82,7 @@ type config struct {
 	LogsTimestamps          bool
 	LogsDetails             bool
 	Monolithic              bool
+	VolumeMounts            []volumeMount
 }
 
 type dockerConfig struct {
@@ -92,6 +93,11 @@ type registryCredential struct {
 	Username string
 	Password string
 	Address  string
+}
+
+type volumeMount struct {
+	Source string
+	Target string
 }
 
 const defaultMaxRecvMsgSize = 5 * 1024 * 1024 * 1024

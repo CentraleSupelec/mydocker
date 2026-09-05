@@ -46,3 +46,6 @@ CaddyOverlayNetwork: caddy-overlay
 CaddyTlsInternal: true
 ContainerStatusInterval: "1s"
 Monolithic: true
+VolumeMounts: []
+  # - Source: shared
+  #   Target: /shared

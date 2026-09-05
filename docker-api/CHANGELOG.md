@@ -9,6 +9,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 - Roll back the build volume and copy container when preparing a build fails, instead of leaking a 5 GB image
 
 ## Added
+- Mount a list of volumes in readonly mode to all containers
 - Active courses by user
 - Request datetime for named workers
 
