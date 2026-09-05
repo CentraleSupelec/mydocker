@@ -13,7 +13,7 @@ download_dependencies:
 
 
 lint:
-  image: node:14.15.4
+  image: node:22.19.0
   stage: test
   interruptible: true
   dependencies:
@@ -27,7 +27,7 @@ lint:
     - docker
 
 tests:
-  image: illuin/node-chrome:release-14.15.4
+  image: illuin/node-chrome:release-22.14.0
   stage: test
   interruptible: true
   dependencies:
@@ -43,7 +43,7 @@ tests:
     - docker
 
 .build_artifacts_template: &build_artifacts_definition
-  image: node:14.15.4
+  image: node:22.19.0
   stage: build
   interruptible: true
   script:
