@@ -595,7 +595,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 					}
 				Done:
 					if err := dockerClient.ServiceRemove(context.TODO(), resp.ID); err != nil {
-						fmt.Errorf("Failed to remove service %s: %v", resp.ID, err)
+						log.Errorf("Failed to remove service %s: %v", resp.ID, err)
 					}
 				}
 

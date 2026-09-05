@@ -7,6 +7,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 ## Fixed
 - Roll back the build volume and copy container when preparing a build fails, instead of leaking a 5 GB image
+- Log a failed removal of the volume init service instead of discarding the error
 
 ## Added
 - Mount a list of volumes in readonly mode to all containers
