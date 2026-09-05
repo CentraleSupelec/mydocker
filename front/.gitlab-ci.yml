@@ -27,6 +27,7 @@ lint:
     - docker
 
 tests:
+  # Node 22 with Chrome preinstalled for karma; this image publishes no 22.19.0 tag
   image: illuin/node-chrome:release-22.14.0
   stage: test
   interruptible: true

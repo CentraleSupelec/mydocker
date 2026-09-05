@@ -4,11 +4,15 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Installation
 
-There are several issues with npm dependencies for nodes' versions superior to 14. You can use Node version indicated in the file .nvmrc and command `npm install` or use a more recent version of Node and the following command to avoid dependency issues :
+Use the Node version indicated in the file .nvmrc. The lockfile is `lockfileVersion 3`, which npm 6
+cannot read, so npm 7 or later is required to install at all.
 
 ```bash
-npm install --legacy-peer-deps
+npm ci
 ```
+
+The CI pipeline passes `--legacy-peer-deps`. It is not required with npm 10, and the install
+succeeds either way, but using the same flag locally keeps the installed tree identical to CI.
 
 ## Config file
 
