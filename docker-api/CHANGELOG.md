@@ -5,14 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.18.17
 ## Fixed
 - Roll back the build volume and copy container when preparing a build fails, instead of leaking a 5 GB image
 - Log a failed removal of the volume init service instead of discarding the error
 
+## 2.18.16
 ## Added
 - Mount a list of volumes in readonly mode to all containers
-- Active courses by user
+
+## 2.18.15
+## Added
 - Request datetime for named workers
+
+## 2.18.14
+## Added
+- Active courses by user
 
 ## 2.18.13
 ## Added
