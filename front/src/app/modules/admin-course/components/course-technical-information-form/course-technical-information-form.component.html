@@ -17,6 +17,18 @@
     <mat-label>{{ 'admin.courses.edit.technical_info.command' | translate }}</mat-label>
     <input matInput formControlName="command" type="text">
   </mat-form-field>
+  <p>
+    <mat-error *ngIf="courseTechnicalForm?.hasError('malformedCommandPorts')">
+      {{ 'admin.courses.edit.technical_info.command_malformed_ports_error' | translate: {
+        placeholders: courseTechnicalForm.getError('malformedCommandPorts').placeholders.join(', ')
+      } }}
+    </mat-error>
+    <mat-error *ngIf="courseTechnicalForm?.hasError('unknownCommandPorts')">
+      {{ 'admin.courses.edit.technical_info.command_unknown_ports_error' | translate: {
+        ports: courseTechnicalForm.getError('unknownCommandPorts').invalidPorts.join(', ')
+      } }}
+    </mat-error>
+  </p>
   <br>
   <mat-divider></mat-divider>
   <br>

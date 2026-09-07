@@ -163,6 +163,20 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     )
   }
 
+  /**
+   * Canonical grammar for the port placeholder a course may use in its launch command:
+   *
+   *     {{PORT['<digits>']}}   or   {{PORT["<digits>"]}}
+   *
+   * The opening and closing quotes must match and the body must be digits. The back-end
+   * validator and the Go substitution implement the same grammar, so a change here belongs
+   * in all three at once. Anything that opens with {{PORT[ and does not match is malformed:
+   * the Go side leaves it in the command as a literal, so it is rejected here rather than
+   * saved.
+   */
+  private static readonly COMMAND_PORT_PATTERN = /\{\{PORT\[(?:'(\d+)'|"(\d+)")\]\}\}/g;
+  private static readonly MALFORMED_COMMAND_PORT_PATTERN = /\{\{PORT\[[^\]]*\]\}\}/g;
+
   commandPortValidator: ValidatorFn = (
     control: AbstractControl
   ): ValidationErrors | null => {
@@ -173,17 +187,32 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       return null;
     }
 
-    const portRegex = /\{\{PORT\[['"]([^'"]+)['"]\]\}\}/g;
-    const invalidPorts: string[] = [];
+    const malformedPlaceholders: string[] = (
+      command.match(CourseTechnicalInformationFormComponent.MALFORMED_COMMAND_PORT_PATTERN) || []
+    ).filter(
+      (placeholder) =>
+        !new RegExp(
+          `^${CourseTechnicalInformationFormComponent.COMMAND_PORT_PATTERN.source}$`
+        ).test(placeholder)
+    );
+
+    if (malformedPlaceholders.length > 0) {
+      return { malformedCommandPorts: { placeholders: malformedPlaceholders } };
+    }
 
     const validPortKeys = new Set<string>();
     ports.forEach((p) => {
       if (p.mapPort != null) validPortKeys.add(p.mapPort.toString());
     });
 
+    const portPattern = new RegExp(
+      CourseTechnicalInformationFormComponent.COMMAND_PORT_PATTERN.source,
+      'g'
+    );
+    const invalidPorts: string[] = [];
     let match: RegExpExecArray | null;
-    while ((match = portRegex.exec(command)) !== null) {
-      const extractedPort = match[1];
+    while ((match = portPattern.exec(command)) !== null) {
+      const extractedPort = match[1] ?? match[2];
       if (!validPortKeys.has(extractedPort)) {
         invalidPorts.push(extractedPort);
       }

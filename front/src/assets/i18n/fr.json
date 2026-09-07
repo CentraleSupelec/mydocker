@@ -94,6 +94,8 @@
             "required_tooltip": "À cocher si ce port doit être accessible au démarrage de l'environnement de l'élève."
           },
           "command": "Commande",
+          "command_malformed_ports_error": "Variable de port mal formée dans la commande : {{placeholders}}. Le port doit être entouré de guillemets simples ou doubles et ne contenir que des chiffres.",
+          "command_unknown_ports_error": "Port inconnu dans la commande : {{ports}}. Déclarez-le dans la liste des ports ci-dessus.",
           "compute_type": "Charge de travail",
           "compute_type_tooltip": "Choisissez GPU uniquement si l'environnement nécessite une carte graphique.",
           "cpu_limit": "Limite CPU (en VCPU)",

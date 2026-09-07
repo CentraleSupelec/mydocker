@@ -94,6 +94,8 @@
             "required_tooltip": "Check this box if this port must be accessible when the student environment starts up."
           },
           "command": "Command",
+          "command_malformed_ports_error": "Malformed port variable in the command: {{placeholders}}. The port must be wrapped in matching single or double quotes and contain only digits.",
+          "command_unknown_ports_error": "Unknown port in the command: {{ports}}. Declare it in the list of ports above.",
           "compute_type": "Compute type",
           "compute_type_tooltip": "Only choose GPU if the container requires it.",
           "cpu_limit": "CPU limit (in VCPU)",
