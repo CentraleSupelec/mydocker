@@ -166,11 +166,15 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   /**
    * Canonical grammar for the port placeholder a course may use in its launch command:
    *
-   *     {{PORT['<digits>']}}   or   {{PORT["<digits>"]}}
+   *     {{PORT['<port>']}}   or   {{PORT["<port>"]}}
    *
-   * The opening and closing quotes must match and the body must be digits. The back-end
-   * validator and the Go substitution implement the same grammar, so a change here belongs
-   * in all three at once.
+   * The opening and closing quotes must match and the body must be a port written without a
+   * leading zero. The back-end validator and the Go substitution implement the same grammar,
+   * so a change here belongs in all three at once.
+   *
+   * Leading zeros are refused rather than normalised: the Go side would resolve '08080'
+   * numerically to 8080 while this validator compares it as text against the declared ports
+   * and sees an unknown one, so the three would disagree about the same command.
    *
    * Validation works by candidate rather than by shape: every occurrence of the opening
    * {{PORT[ is a candidate, and a candidate that is not a canonical placeholder starting at
@@ -179,7 +183,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
    * Go side leaves in the command as literals.
    */
   private static readonly COMMAND_PORT_PREFIX = '{{PORT[';
-  private static readonly COMMAND_PORT_SOURCE = /\{\{PORT\[(?:'(\d+)'|"(\d+)")\]\}\}/.source;
+  private static readonly COMMAND_PORT_SOURCE = /\{\{PORT\[(?:'([1-9][0-9]*)'|"([1-9][0-9]*)")\]\}\}/.source;
   /** How much of a malformed candidate to quote back to the user. */
   private static readonly CANDIDATE_EXCERPT_LENGTH = 32;
 

@@ -105,6 +105,16 @@ describe('CourseTechnicalInformationFormComponent', () => {
       expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
     });
 
+    it('rejects a port written with a leading zero', () => {
+      setCommandAndPorts("serve --port {{PORT['08080']}}", [8080]);
+      expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
+    });
+
+    it('rejects a zero port', () => {
+      setCommandAndPorts("serve --port {{PORT['0']}}", [8080]);
+      expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
+    });
+
     it('reports malformed placeholders before unknown ports', () => {
       setCommandAndPorts("{{PORT[8080]}} {{PORT['9999']}}", [8080]);
       expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
