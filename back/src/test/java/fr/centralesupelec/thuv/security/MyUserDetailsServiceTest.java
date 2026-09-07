@@ -80,6 +80,27 @@ class MyUserDetailsServiceTest {
         roleRepository.saveAndFlush(role);
     }
 
+    /**
+     * Inserts the row shape left behind by changelog 31: a username holding the person's old
+     * address and no email at all. It has to go in through JDBC because {@link User} declares
+     * email {@code @NotBlank}, so JPA refuses to write a row that 1911 of VD production's 12787
+     * rows are nonetheless in. Bean validation applies to writes, not to what is already stored.
+     */
+    private long saveLegacyUserWithoutEmail(String username) throws SQLException {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "INSERT INTO users (username, name, lastname, enabled) VALUES (?, ?, ?, true) RETURNING id"
+             )) {
+            statement.setString(1, username);
+            statement.setString(2, "Legacy");
+            statement.setString(3, "Account");
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next());
+                return resultSet.getLong("id");
+            }
+        }
+    }
+
     @Test
     void upsertUser_duplicateEmailDoesNotFallbackToInsert() {
         User oidcUser = this.saveUser("short@example.com", "first.last@example.com");
@@ -214,5 +235,49 @@ class MyUserDetailsServiceTest {
         UserDetails result = myUserDetailsService.loadUserByUsername("disabled@example.com");
 
         assertFalse(result.isEnabled());
+    }
+
+    @Test
+    void upsertUser_pairSharingAnEmailIsAmbiguousEvenWhenOneRowIsDisabled() {
+        // This is the case that gates deploying this resolver. Measured on VD production on
+        // 2026-09-07: 43 pairs share an address, 18 of them containing a row that the old
+        // deduplication path had disabled. Those 18 log in today, because the old lookup filtered
+        // on enabled and therefore saw exactly one row. Here the lookup is state-agnostic, so the
+        // pair is ambiguous and the login fails loudly instead of picking a row at random.
+        // The duplicate rows have to be merged in the database before this ships.
+        // If this test ever starts failing because the resolver filters on enabled again, that is
+        // a regression, not a fix: hiding a row is what produced the June 2026 incident.
+        saveUserRole();
+        User enabled = this.saveUser("short@example.com", "first.last@example.com");
+        User disabled = this.saveUser("First.Last@example.com", "first.last@example.com");
+        disabled.setEnabled(false);
+        userRepository.saveAndFlush(disabled);
+
+        assertThrows(
+                UserUpsertException.class,
+                () -> myUserDetailsService.upsertUser(null, "first.last@example.com", "First", "Last")
+        );
+        assertEquals(2, userRepository.count());
+        assertTrue(userRepository.findById(enabled.getId()).get().getEnabled());
+        assertFalse(userRepository.findById(disabled.getId()).get().getEnabled());
+    }
+
+    @Test
+    void upsertUser_legacyRowWithoutEmailIsReusedAndBackfilled() throws SQLException {
+        // 1911 of VD production's 12787 rows carry a NULL email, because changelog 31 renamed the
+        // old email column to username and added an empty one. Those rows are reachable only
+        // through the username fallback, and a CAS or LTI login must reuse and complete such a row
+        // rather than insert a second account for the same person. Inserting a second one is how
+        // the June 2026 duplicates were created.
+        saveUserRole();
+        long legacyId = saveLegacyUserWithoutEmail("first.last@example.com");
+        assertNull(userRepository.findById(legacyId).get().getEmail());
+
+        User result = myUserDetailsService.upsertUser(null, "first.last@example.com", "First", "Last");
+
+        assertEquals(legacyId, result.getId());
+        assertEquals("first.last@example.com", result.getUsername());
+        assertEquals("first.last@example.com", result.getEmail());
+        assertEquals(1, userRepository.count());
     }
 }
