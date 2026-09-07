@@ -14,18 +14,24 @@ import (
 // The front-end and back-end validators implement the same grammar and reject anything
 // else before it can reach here, so the three must be changed together.
 //
-//	{{PORT['<digits>']}}    or    {{PORT["<digits>"]}}
+//	{{PORT['<port>']}}    or    {{PORT["<port>"]}}
 //
-// The opening and closing quotes must match, and <digits> is the container port the
-// course declares as a port to map. It is replaced by the host port that port was
-// mapped to. A placeholder that survives substitution reaches the container as a
-// literal, so every unresolved case is logged.
+// The opening and closing quotes must match, and <port> is the container port the course
+// declares as a port to map, written without a leading zero. It is replaced by the host
+// port that port was mapped to.
+//
+// Leading zeros are refused rather than normalised. This side would resolve "08080"
+// numerically to 8080 while the validators compare it as text against the declared ports
+// and see an unknown one, so the three would disagree about the same command.
+//
+// A placeholder that survives substitution reaches the container as a literal, so every
+// unresolved case is logged.
 const commandPortPrefix = "{{PORT["
 
 // How much of a malformed candidate to quote in the log line.
 const candidateExcerptLength = 32
 
-var commandPortPattern = regexp.MustCompile(`\{\{PORT\[(?:'(\d+)'|"(\d+)")\]\}\}`)
+var commandPortPattern = regexp.MustCompile(`\{\{PORT\[(?:'([1-9][0-9]*)'|"([1-9][0-9]*)")\]\}\}`)
 
 func substituteCommandPorts(command string, ports []*pb.ResponsePort) string {
 	logMalformedCommandPortCandidates(command)

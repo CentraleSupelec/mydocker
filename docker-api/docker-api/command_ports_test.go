@@ -37,6 +37,8 @@ func TestSubstituteCommandPorts(t *testing.T) {
 		{"candidate missing one closing brace stays literal", "serve {{PORT['8080']}", "serve {{PORT['8080']}"},
 		{"bare opening candidate stays literal", "serve {{PORT[", "serve {{PORT["},
 		{"malformed after a valid one", "{{PORT['22']}} {{PORT[8080", "10456 {{PORT[8080"},
+		{"leading zero is not a placeholder", "serve {{PORT['08080']}}", "serve {{PORT['08080']}}"},
+		{"zero is not a placeholder", "serve {{PORT['0']}}", "serve {{PORT['0']}}"},
 	}
 
 	for _, test := range tests {
