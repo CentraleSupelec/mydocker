@@ -15,6 +15,7 @@ func TestSubstituteCommandPorts(t *testing.T) {
 	ports := []*pb.ResponsePort{
 		{PortToMap: 8080, MapTo: 10123},
 		{PortToMap: 22, MapTo: 10456},
+		{PortToMap: 65535, MapTo: 10789},
 	}
 
 	tests := []struct {
@@ -39,6 +40,11 @@ func TestSubstituteCommandPorts(t *testing.T) {
 		{"malformed after a valid one", "{{PORT['22']}} {{PORT[8080", "10456 {{PORT[8080"},
 		{"leading zero is not a placeholder", "serve {{PORT['08080']}}", "serve {{PORT['08080']}}"},
 		{"zero is not a placeholder", "serve {{PORT['0']}}", "serve {{PORT['0']}}"},
+		{"highest valid port", "serve {{PORT['65535']}}", "serve 10789"},
+		{"above the port range stays literal", "serve {{PORT['65536']}}", "serve {{PORT['65536']}}"},
+		{"value that wraps a uint32 stays literal", "serve {{PORT['4294975376']}}", "serve {{PORT['4294975376']}}"},
+		{"nested candidate is left whole", "{{PORT[{{PORT['8080']}}", "{{PORT[{{PORT['8080']}}"},
+		{"malformed candidate then a valid one", "{{PORT[x]}} {{PORT['22']}}", "{{PORT[x]}} 10456"},
 	}
 
 	for _, test := range tests {
