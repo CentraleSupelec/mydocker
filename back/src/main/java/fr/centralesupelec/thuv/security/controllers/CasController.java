@@ -3,6 +3,7 @@ package fr.centralesupelec.thuv.security.controllers;
 import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.exception.CasAuthenticationException;
+import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.cas.AuthenticationSuccessType;
 import fr.centralesupelec.thuv.model.cas.ServiceResponseType;
@@ -134,6 +135,17 @@ public class CasController {
             return ResponseEntity.ok(jwtToken);
         } catch (DisabledException ex) {
             throw ex;
+        } catch (UserUpsertException ex) {
+            // The ticket was valid. Several accounts share this address, so the login cannot be
+            // attributed to one of them. Reported apart from the generic case because the generic
+            // message sends diagnosis to CAS, which is not where the problem is.
+            Sentry.captureException(ex);
+            logger.error("Cannot resolve a single account for this CAS login: " + ex.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Several MyDocker accounts share your email address, "
+                            + "so we cannot tell which one to sign you in to. "
+                            + "Please contact support: the accounts have to be merged.");
         } catch (Exception ex) {
             Sentry.captureException(ex);
             logger.error("An error occured during ticket verification " + ex);

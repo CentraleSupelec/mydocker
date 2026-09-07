@@ -2,6 +2,7 @@ package fr.centralesupelec.thuv.security.controllers;
 
 import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
+import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.mail.EmailService;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.User;
@@ -156,6 +157,18 @@ public class MagicLinkController {
             ));
         } catch (DisabledException ex) {
             throw ex;
+        } catch (UserUpsertException ex) {
+            // The token was neither invalid nor expired: several accounts share this address, so
+            // the login cannot be attributed to one of them. Reported apart from the generic case,
+            // because "invalid or expired magic link" sends diagnosis to the token service rather
+            // than to the duplicate rows.
+            Sentry.captureException(ex);
+            logger.error("Cannot resolve a single account for this magic link: " + ex.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("Several MyDocker accounts share this email address, "
+                            + "so we cannot tell which one to sign you in to. "
+                            + "Please contact support: the accounts have to be merged.");
         } catch (Exception ex) {
             Sentry.captureException(ex);
             logger.error("Invalid magic token", ex);
