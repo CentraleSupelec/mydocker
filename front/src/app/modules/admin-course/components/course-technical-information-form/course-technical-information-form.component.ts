@@ -170,12 +170,18 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
    *
    * The opening and closing quotes must match and the body must be digits. The back-end
    * validator and the Go substitution implement the same grammar, so a change here belongs
-   * in all three at once. Anything that opens with {{PORT[ and does not match is malformed:
-   * the Go side leaves it in the command as a literal, so it is rejected here rather than
-   * saved.
+   * in all three at once.
+   *
+   * Validation works by candidate rather than by shape: every occurrence of the opening
+   * {{PORT[ is a candidate, and a candidate that is not a canonical placeholder starting at
+   * that exact offset is malformed. Matching a "malformed shape" instead would miss the
+   * unterminated cases, {{PORT[8080 and {{PORT['8080']} and a bare {{PORT[, all of which the
+   * Go side leaves in the command as literals.
    */
-  private static readonly COMMAND_PORT_PATTERN = /\{\{PORT\[(?:'(\d+)'|"(\d+)")\]\}\}/g;
-  private static readonly MALFORMED_COMMAND_PORT_PATTERN = /\{\{PORT\[[^\]]*\]\}\}/g;
+  private static readonly COMMAND_PORT_PREFIX = '{{PORT[';
+  private static readonly COMMAND_PORT_SOURCE = /\{\{PORT\[(?:'(\d+)'|"(\d+)")\]\}\}/.source;
+  /** How much of a malformed candidate to quote back to the user. */
+  private static readonly CANDIDATE_EXCERPT_LENGTH = 32;
 
   commandPortValidator: ValidatorFn = (
     control: AbstractControl
@@ -187,14 +193,33 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       return null;
     }
 
-    const malformedPlaceholders: string[] = (
-      command.match(CourseTechnicalInformationFormComponent.MALFORMED_COMMAND_PORT_PATTERN) || []
-    ).filter(
-      (placeholder) =>
-        !new RegExp(
-          `^${CourseTechnicalInformationFormComponent.COMMAND_PORT_PATTERN.source}$`
-        ).test(placeholder)
+    const prefix = CourseTechnicalInformationFormComponent.COMMAND_PORT_PREFIX;
+    const anchored = new RegExp(
+      CourseTechnicalInformationFormComponent.COMMAND_PORT_SOURCE,
+      'y'
     );
+
+    const malformedPlaceholders: string[] = [];
+    const referencedPorts: string[] = [];
+
+    for (
+      let index = command.indexOf(prefix);
+      index !== -1;
+      index = command.indexOf(prefix, index + prefix.length)
+    ) {
+      anchored.lastIndex = index;
+      const match = anchored.exec(command);
+      if (match === null) {
+        malformedPlaceholders.push(
+          command.slice(
+            index,
+            index + CourseTechnicalInformationFormComponent.CANDIDATE_EXCERPT_LENGTH
+          )
+        );
+      } else {
+        referencedPorts.push(match[1] ?? match[2]);
+      }
+    }
 
     if (malformedPlaceholders.length > 0) {
       return { malformedCommandPorts: { placeholders: malformedPlaceholders } };
@@ -205,18 +230,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       if (p.mapPort != null) validPortKeys.add(p.mapPort.toString());
     });
 
-    const portPattern = new RegExp(
-      CourseTechnicalInformationFormComponent.COMMAND_PORT_PATTERN.source,
-      'g'
-    );
-    const invalidPorts: string[] = [];
-    let match: RegExpExecArray | null;
-    while ((match = portPattern.exec(command)) !== null) {
-      const extractedPort = match[1] ?? match[2];
-      if (!validPortKeys.has(extractedPort)) {
-        invalidPorts.push(extractedPort);
-      }
-    }
+    const invalidPorts = referencedPorts.filter((port) => !validPortKeys.has(port));
 
     return invalidPorts.length > 0
       ? { unknownCommandPorts: { invalidPorts } }
