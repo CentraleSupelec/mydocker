@@ -33,15 +33,15 @@ public class UpdateCourseMapper {
      * "08080" numerically to 8080 while this validator compares it as text against the declared
      * ports and sees an unknown one, so the three would disagree about the same command. The front-end
      * validator and the Go substitution implement the same grammar, so a change here belongs
-     * in all three at once. Anything that opens with {@code {{PORT[} and does not match is
-     * malformed: the Go side would leave it in the command as a literal, so it is rejected
+     * in all three at once. Anything that opens with <code>&#123;&#123;PORT[</code> and does not
+     * match is malformed: the Go side would leave it in the command as a literal, so it is rejected
      * here rather than shipped to a container.
-     * <p>
-     * Validation works by candidate rather than by shape: every occurrence of the opening
-     * {@code {{PORT[} is a candidate, and a candidate that is not a canonical placeholder
-     * starting at that exact offset is malformed. Matching a "malformed shape" instead would
-     * miss the unterminated cases, {@code {{PORT[8080} and {@code {{PORT['8080']}} and a bare
-     * {@code {{PORT[}.
+     *
+     * <p>Validation works by candidate rather than by shape: every occurrence of the opening
+     * <code>&#123;&#123;PORT[</code> is a candidate, and a candidate that is not a canonical
+     * placeholder starting at that exact offset is malformed. Matching a "malformed shape" instead
+     * would miss the unterminated cases, <code>&#123;&#123;PORT[8080</code> and
+     * <code>&#123;&#123;PORT['8080']&#125;</code> and a bare <code>&#123;&#123;PORT[</code>.
      */
     private static final Pattern COMMAND_PORT_PATTERN =
             Pattern.compile("\\{\\{PORT\\[(?:'([1-9][0-9]*)'|\"([1-9][0-9]*)\")\\]\\}\\}");
