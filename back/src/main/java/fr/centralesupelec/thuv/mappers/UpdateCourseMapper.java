@@ -25,7 +25,19 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UpdateCourseMapper {
-    private static final Pattern COMMAND_PORT_PATTERN = Pattern.compile("\\{\\{PORT\\[['\"]([^'\"]+)['\"]\\]\\}\\}");
+    /**
+     * Canonical grammar for the port placeholder a course may use in its launch command:
+     * <pre>{@code {{PORT['<digits>']}}   or   {{PORT["<digits>"]}}}</pre>
+     * The opening and closing quotes must match and the body must be digits. The front-end
+     * validator and the Go substitution implement the same grammar, so a change here belongs
+     * in all three at once. Anything that opens with {@code {{PORT[} and does not match is
+     * malformed: the Go side would leave it in the command as a literal, so it is rejected
+     * here rather than shipped to a container.
+     */
+    private static final Pattern COMMAND_PORT_PATTERN =
+            Pattern.compile("\\{\\{PORT\\[(?:'(\\d+)'|\"(\\d+)\")\\]\\}\\}");
+    private static final Pattern MALFORMED_COMMAND_PORT_PATTERN =
+            Pattern.compile("\\{\\{PORT\\[[^\\]]*\\]\\}\\}");
     private final PortsMapper portsMapper;
     private final SessionMapper sessionMapper;
     private final ObjectMapper objectMapper;
@@ -135,11 +147,29 @@ public class UpdateCourseMapper {
             });
         }
 
-        Matcher matcher = COMMAND_PORT_PATTERN.matcher(command);
-        List<String> invalidPorts = new ArrayList<>();
+        List<String> malformedPlaceholders = new ArrayList<>();
+        Matcher malformedMatcher = MALFORMED_COMMAND_PORT_PATTERN.matcher(command);
+        while (malformedMatcher.find()) {
+            String placeholder = malformedMatcher.group();
+            if (!COMMAND_PORT_PATTERN.matcher(placeholder).matches()) {
+                malformedPlaceholders.add(placeholder);
+            }
+        }
 
+        if (!malformedPlaceholders.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    String.format(
+                            "Malformed port placeholder(s) in command: %s. Expected {{PORT['8080']}}.",
+                            String.join(", ", malformedPlaceholders)
+                    )
+            );
+        }
+
+        List<String> invalidPorts = new ArrayList<>();
+        Matcher matcher = COMMAND_PORT_PATTERN.matcher(command);
         while (matcher.find()) {
-            String extractedPort = matcher.group(1);
+            String extractedPort = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
             if (!validPortKeys.contains(extractedPort)) {
                 invalidPorts.add(extractedPort);
             }
