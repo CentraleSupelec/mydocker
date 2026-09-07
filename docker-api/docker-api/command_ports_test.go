@@ -33,6 +33,10 @@ func TestSubstituteCommandPorts(t *testing.T) {
 		{"mismatched quotes are not a placeholder", `serve {{PORT['8080"]}}`, `serve {{PORT['8080"]}}`},
 		{"non numeric is not a placeholder", "serve {{PORT['http']}}", "serve {{PORT['http']}}"},
 		{"other placeholders are untouched", "{{USERNAME}} {{PORT['22']}}", "{{USERNAME}} 10456"},
+		{"unterminated candidate stays literal", "serve {{PORT[8080", "serve {{PORT[8080"},
+		{"candidate missing one closing brace stays literal", "serve {{PORT['8080']}", "serve {{PORT['8080']}"},
+		{"bare opening candidate stays literal", "serve {{PORT[", "serve {{PORT["},
+		{"malformed after a valid one", "{{PORT['22']}} {{PORT[8080", "10456 {{PORT[8080"},
 	}
 
 	for _, test := range tests {
@@ -42,6 +46,9 @@ func TestSubstituteCommandPorts(t *testing.T) {
 	}
 }
 
+// The validators reject malformed candidates before a course can be saved, so these cases
+// only assert that the substitution leaves them alone rather than mangling the command. The
+// warning they log is the only trace they leave.
 func TestSubstituteCommandPortsWithoutPorts(t *testing.T) {
 	assert.Equal(t, "serve {{PORT['8080']}}", substituteCommandPorts("serve {{PORT['8080']}}", nil))
 }
