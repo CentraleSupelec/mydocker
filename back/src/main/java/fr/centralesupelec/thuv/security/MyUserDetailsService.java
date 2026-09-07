@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Primary
 @Service
@@ -41,13 +42,25 @@ public class MyUserDetailsService implements UserDetailsService {
         return new MyUserDetails(user.getRoles(), user.getUsername(), user.getId(), user.getEnabled());
     }
 
+    /**
+     * Names the colliding accounts by id rather than by address. This message reaches ERROR-level
+     * logs and Sentry, so it must not carry an email address; the ids are also what an operator
+     * needs in order to merge the rows.
+     */
+    private static String ambiguousAccounts(Collection<User> users) {
+        String ids = users.stream()
+                .map(user -> String.valueOf(user.getId()))
+                .collect(Collectors.joining(", "));
+        return String.format("More than one account matches this login: %d rows, ids [%s]", users.size(), ids);
+    }
+
     public User findUser(String username, String email) throws UserUpsertException {
         if (username == null) {
             logger.debug("username is null, searching only for email '{}'", email);
             List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
             logger.debug("Found {} users with email '{}'", usersWithCorrectEmail.size(), email);
             if (usersWithCorrectEmail.size() > 1) {
-                throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
+                throw new UserUpsertException(ambiguousAccounts(usersWithCorrectEmail));
             }
             Optional<User> userWithEmailAsUsername = userRepository.findByEnabledTrueAndUsername(email);
             logger.debug("Found user with username '{}': {}", email, userWithEmailAsUsername.orElse(null));
@@ -85,10 +98,10 @@ public class MyUserDetailsService implements UserDetailsService {
         List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
         logger.debug("Found {} users with email '{}'", usersWithCorrectEmail.size(), email);
         if (usersWithCorrectEmail.size() > 1) {
-            throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
+            throw new UserUpsertException(ambiguousAccounts(usersWithCorrectEmail));
         }
         if (usersWithUsernameAsEmail.size() > 1) {
-            throw new UserUpsertException(String.format("More than one user found for email '%s'", username));
+            throw new UserUpsertException(ambiguousAccounts(usersWithUsernameAsEmail));
         }
         if (userWithCorrectUsername.isPresent()) {
             userWithEmailAsUsername.ifPresent(user -> {
@@ -159,10 +172,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
 
         if (usersInDb.size() > 1) {
-            throw new UserUpsertException(String.format(
-                    "Found %d users with matching username '%s' and with matching email '%s'",
-                    usersInDb.size(), username, email
-            ));
+            throw new UserUpsertException(ambiguousAccounts(usersInDb));
         }
         if (usersWithCorrectEmail.size() == 1) {
             User user = usersWithCorrectEmail.get(0);
@@ -191,7 +201,7 @@ public class MyUserDetailsService implements UserDetailsService {
         // Resolve existing accounts before creating a guest; disabled accounts must be rejected, not hidden.
         List<User> usersWithCorrectEmail = userRepository.findByEmail(email);
         if (usersWithCorrectEmail.size() > 1) {
-            throw new UserUpsertException(String.format("More than one user found for email '%s'", email));
+            throw new UserUpsertException(ambiguousAccounts(usersWithCorrectEmail));
         }
 
         User user = usersWithCorrectEmail

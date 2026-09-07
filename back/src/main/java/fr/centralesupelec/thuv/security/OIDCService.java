@@ -10,6 +10,7 @@ import com.google.common.cache.Cache;
 import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.exception.OIDCAuthenticationException;
+import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.stereotype.Component;
 
@@ -64,6 +66,12 @@ public class OIDCService {
             activityLogger.log(LogAction.USER_LOGIN_OIDC, user);
             return jwtToken;
         } catch (DisabledException e) {
+            throw e;
+        } catch (UserUpsertException | DataIntegrityViolationException e) {
+            // Rethrown rather than wrapped: the token validated, and several accounts share this
+            // address. Wrapping it as "Unable to validate token" is the exact misdirection that
+            // cost diagnosis time in the June 2026 incident. AuthenticationExceptionHandler turns
+            // this into a 409.
             throw e;
         } catch (Exception e) {
             OIDCAuthenticationException exception = new OIDCAuthenticationException(
