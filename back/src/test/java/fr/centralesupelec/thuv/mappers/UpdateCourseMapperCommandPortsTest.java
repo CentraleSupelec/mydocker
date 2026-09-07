@@ -145,6 +145,28 @@ class UpdateCourseMapperCommandPortsTest {
     }
 
     @Test
+    void treatsTheHighestValidPortAsWellFormed() {
+        // Not declared by this fixture, so it reaches the unknown-port branch rather than the
+        // malformed one, which is what proves the range check let it through.
+        assertRejected("serve --port {{PORT['65535']}}", "Unknown port(s) referenced in command: 65535");
+    }
+
+    @Test
+    void rejectsPortAboveTheRange() {
+        assertRejected("serve --port {{PORT['65536']}}", "Malformed port placeholder(s)");
+    }
+
+    @Test
+    void rejectsValueThatWrapsAUint32() {
+        assertRejected("serve --port {{PORT['4294975376']}}", "Malformed port placeholder(s)");
+    }
+
+    @Test
+    void rejectsNestedCandidate() {
+        assertRejected("{{PORT[{{PORT['8080']}}", "Malformed port placeholder(s)");
+    }
+
+    @Test
     void rejectsEmptyPlaceholder() {
         assertRejected("serve --port {{PORT[]}}", "Malformed port placeholder(s)");
     }

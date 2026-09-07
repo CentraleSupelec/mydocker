@@ -46,6 +46,9 @@ public class UpdateCourseMapper {
     private static final Pattern COMMAND_PORT_PATTERN =
             Pattern.compile("\\{\\{PORT\\[(?:'([1-9][0-9]*)'|\"([1-9][0-9]*)\")\\]\\}\\}");
     private static final String COMMAND_PORT_PREFIX = "{{PORT[";
+    private static final int MAX_PORT = 65535;
+    /** Digits of the highest port, so a longer run can be refused without parsing it. */
+    private static final int MAX_PORT_DIGITS = 5;
     /** How much of a malformed candidate to quote back to the user. */
     private static final int CANDIDATE_EXCERPT_LENGTH = 32;
     private final PortsMapper portsMapper;
@@ -142,6 +145,15 @@ public class UpdateCourseMapper {
         }
     }
 
+    /**
+     * The grammar bounds the port by value as well as by shape. Without this, a course could
+     * save {@code {{PORT['4294975376']}}}, which the Go side narrowed to a uint32 and resolved
+     * as 8080, substituting a port nobody asked for.
+     */
+    private boolean isWithinPortRange(String port) {
+        return port.length() <= MAX_PORT_DIGITS && Integer.parseInt(port) <= MAX_PORT;
+    }
+
     private void validateCommandPorts(AdminUpdateCourseDto dto) {
         String command = dto.getCommand();
         if (command == null || command.isBlank()) {
@@ -166,8 +178,13 @@ public class UpdateCourseMapper {
                 index >= 0;
                 index = command.indexOf(COMMAND_PORT_PREFIX, index + COMMAND_PORT_PREFIX.length())
         ) {
+            String port = null;
             if (matcher.find(index) && matcher.start() == index) {
-                referencedPorts.add(matcher.group(1) != null ? matcher.group(1) : matcher.group(2));
+                port = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+            }
+
+            if (port != null && isWithinPortRange(port)) {
+                referencedPorts.add(port);
             } else {
                 malformedPlaceholders.add(
                         command.substring(
