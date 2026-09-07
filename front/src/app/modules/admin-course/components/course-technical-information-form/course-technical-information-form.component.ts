@@ -169,7 +169,8 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
    *     {{PORT['<port>']}}   or   {{PORT["<port>"]}}
    *
    * The opening and closing quotes must match and the body must be a port written without a
-   * leading zero. The back-end validator and the Go substitution implement the same grammar,
+   * leading zero and no larger than 65535. The back-end validator and the Go substitution
+   * implement the same grammar,
    * so a change here belongs in all three at once.
    *
    * Leading zeros are refused rather than normalised: the Go side would resolve '08080'
@@ -186,6 +187,12 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   private static readonly COMMAND_PORT_SOURCE = /\{\{PORT\[(?:'([1-9][0-9]*)'|"([1-9][0-9]*)")\]\}\}/.source;
   /** How much of a malformed candidate to quote back to the user. */
   private static readonly CANDIDATE_EXCERPT_LENGTH = 32;
+  /**
+   * The grammar bounds the port by value as well as by shape. Without this a course could save
+   * {{PORT['4294975376']}}, which the Go side narrowed to a uint32 and resolved as 8080,
+   * substituting a port nobody asked for.
+   */
+  private static readonly MAX_PORT = 65535;
 
   commandPortValidator: ValidatorFn = (
     control: AbstractControl
@@ -213,15 +220,17 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     ) {
       anchored.lastIndex = index;
       const match = anchored.exec(command);
-      if (match === null) {
+      const port = match === null ? null : match[1] ?? match[2];
+
+      if (port !== null && Number(port) <= CourseTechnicalInformationFormComponent.MAX_PORT) {
+        referencedPorts.push(port);
+      } else {
         malformedPlaceholders.push(
           command.slice(
             index,
             index + CourseTechnicalInformationFormComponent.CANDIDATE_EXCERPT_LENGTH
           )
         );
-      } else {
-        referencedPorts.push(match[1] ?? match[2]);
       }
     }
 

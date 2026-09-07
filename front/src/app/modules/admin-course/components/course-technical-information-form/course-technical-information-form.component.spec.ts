@@ -115,6 +115,27 @@ describe('CourseTechnicalInformationFormComponent', () => {
       expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
     });
 
+    it('treats the highest valid port as well formed', () => {
+      setCommandAndPorts("serve --port {{PORT['65535']}}", [65535]);
+      expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeFalse();
+      expect(component.courseTechnicalForm.hasError('unknownCommandPorts')).toBeFalse();
+    });
+
+    it('rejects a port above the range', () => {
+      setCommandAndPorts("serve --port {{PORT['65536']}}", [8080]);
+      expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
+    });
+
+    it('rejects a value that wraps a uint32', () => {
+      setCommandAndPorts("serve --port {{PORT['4294975376']}}", [8080]);
+      expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
+    });
+
+    it('rejects a nested candidate', () => {
+      setCommandAndPorts("{{PORT[{{PORT['8080']}}", [8080]);
+      expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
+    });
+
     it('reports malformed placeholders before unknown ports', () => {
       setCommandAndPorts("{{PORT[8080]}} {{PORT['9999']}}", [8080]);
       expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
