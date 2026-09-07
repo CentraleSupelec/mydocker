@@ -33,11 +33,18 @@ public class UpdateCourseMapper {
      * in all three at once. Anything that opens with {@code {{PORT[} and does not match is
      * malformed: the Go side would leave it in the command as a literal, so it is rejected
      * here rather than shipped to a container.
+     * <p>
+     * Validation works by candidate rather than by shape: every occurrence of the opening
+     * {@code {{PORT[} is a candidate, and a candidate that is not a canonical placeholder
+     * starting at that exact offset is malformed. Matching a "malformed shape" instead would
+     * miss the unterminated cases, {@code {{PORT[8080} and {@code {{PORT['8080']}} and a bare
+     * {@code {{PORT[}.
      */
     private static final Pattern COMMAND_PORT_PATTERN =
             Pattern.compile("\\{\\{PORT\\[(?:'(\\d+)'|\"(\\d+)\")\\]\\}\\}");
-    private static final Pattern MALFORMED_COMMAND_PORT_PATTERN =
-            Pattern.compile("\\{\\{PORT\\[[^\\]]*\\]\\}\\}");
+    private static final String COMMAND_PORT_PREFIX = "{{PORT[";
+    /** How much of a malformed candidate to quote back to the user. */
+    private static final int CANDIDATE_EXCERPT_LENGTH = 32;
     private final PortsMapper portsMapper;
     private final SessionMapper sessionMapper;
     private final ObjectMapper objectMapper;
@@ -148,11 +155,23 @@ public class UpdateCourseMapper {
         }
 
         List<String> malformedPlaceholders = new ArrayList<>();
-        Matcher malformedMatcher = MALFORMED_COMMAND_PORT_PATTERN.matcher(command);
-        while (malformedMatcher.find()) {
-            String placeholder = malformedMatcher.group();
-            if (!COMMAND_PORT_PATTERN.matcher(placeholder).matches()) {
-                malformedPlaceholders.add(placeholder);
+        List<String> referencedPorts = new ArrayList<>();
+        Matcher matcher = COMMAND_PORT_PATTERN.matcher(command);
+
+        for (
+                int index = command.indexOf(COMMAND_PORT_PREFIX);
+                index >= 0;
+                index = command.indexOf(COMMAND_PORT_PREFIX, index + COMMAND_PORT_PREFIX.length())
+        ) {
+            if (matcher.find(index) && matcher.start() == index) {
+                referencedPorts.add(matcher.group(1) != null ? matcher.group(1) : matcher.group(2));
+            } else {
+                malformedPlaceholders.add(
+                        command.substring(
+                                index,
+                                Math.min(index + CANDIDATE_EXCERPT_LENGTH, command.length())
+                        )
+                );
             }
         }
 
@@ -167,11 +186,9 @@ public class UpdateCourseMapper {
         }
 
         List<String> invalidPorts = new ArrayList<>();
-        Matcher matcher = COMMAND_PORT_PATTERN.matcher(command);
-        while (matcher.find()) {
-            String extractedPort = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
-            if (!validPortKeys.contains(extractedPort)) {
-                invalidPorts.add(extractedPort);
+        for (String referencedPort : referencedPorts) {
+            if (!validPortKeys.contains(referencedPort)) {
+                invalidPorts.add(referencedPort);
             }
         }
 

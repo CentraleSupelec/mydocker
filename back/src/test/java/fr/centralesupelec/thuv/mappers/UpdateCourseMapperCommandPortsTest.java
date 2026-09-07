@@ -115,6 +115,26 @@ class UpdateCourseMapperCommandPortsTest {
     }
 
     @Test
+    void rejectsUnterminatedCandidate() {
+        assertRejected("serve --port {{PORT[8080", "Malformed port placeholder(s)");
+    }
+
+    @Test
+    void rejectsCandidateMissingOneClosingBrace() {
+        assertRejected("serve --port {{PORT['8080']}", "Malformed port placeholder(s)");
+    }
+
+    @Test
+    void rejectsBareOpeningCandidate() {
+        assertRejected("serve --port {{PORT[", "Malformed port placeholder(s)");
+    }
+
+    @Test
+    void rejectsMalformedCandidateFollowingAValidOne() {
+        assertRejected("{{PORT['8080']}} {{PORT[22", "Malformed port placeholder(s)");
+    }
+
+    @Test
     void rejectsEmptyPlaceholder() {
         assertRejected("serve --port {{PORT[]}}", "Malformed port placeholder(s)");
     }
