@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -460,26 +459,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 		command = strings.Replace(command, "{{PASSWORD}}", response.GetUserPassword().Password, -1)
 		command = strings.Replace(command, "{{IP}}", response.GetIpAddress(), -1)
 
-		re := regexp.MustCompile(`\{\{PORT\['(\d+)'\]\}\}`)
-		command = re.ReplaceAllStringFunc(command, func(match string) string {
-			submatches := re.FindStringSubmatch(match)
-			if len(submatches) != 2 {
-				return match
-			}
-
-			portToMap, err := strconv.Atoi(submatches[1])
-			if err != nil {
-				return match
-			}
-
-			for _, port := range response.Ports {
-				if port.PortToMap == uint32(portToMap) {
-					return fmt.Sprintf("%d", port.MapTo)
-				}
-			}
-
-			return match
-		})
+		command = substituteCommandPorts(command, response.Ports)
 		args = commandToParts(command)
 	}
 
