@@ -27,8 +27,11 @@ import java.util.stream.Collectors;
 public class UpdateCourseMapper {
     /**
      * Canonical grammar for the port placeholder a course may use in its launch command:
-     * <pre>{@code {{PORT['<digits>']}}   or   {{PORT["<digits>"]}}}</pre>
-     * The opening and closing quotes must match and the body must be digits. The front-end
+     * <pre>{@code {{PORT['<port>']}}   or   {{PORT["<port>"]}}}</pre>
+     * The opening and closing quotes must match and the body must be a port written without a
+     * leading zero. Leading zeros are refused rather than normalised: the Go side would resolve
+     * "08080" numerically to 8080 while this validator compares it as text against the declared
+     * ports and sees an unknown one, so the three would disagree about the same command. The front-end
      * validator and the Go substitution implement the same grammar, so a change here belongs
      * in all three at once. Anything that opens with {@code {{PORT[} and does not match is
      * malformed: the Go side would leave it in the command as a literal, so it is rejected
@@ -41,7 +44,7 @@ public class UpdateCourseMapper {
      * {@code {{PORT[}.
      */
     private static final Pattern COMMAND_PORT_PATTERN =
-            Pattern.compile("\\{\\{PORT\\[(?:'(\\d+)'|\"(\\d+)\")\\]\\}\\}");
+            Pattern.compile("\\{\\{PORT\\[(?:'([1-9][0-9]*)'|\"([1-9][0-9]*)\")\\]\\}\\}");
     private static final String COMMAND_PORT_PREFIX = "{{PORT[";
     /** How much of a malformed candidate to quote back to the user. */
     private static final int CANDIDATE_EXCERPT_LENGTH = 32;

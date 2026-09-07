@@ -135,6 +135,16 @@ class UpdateCourseMapperCommandPortsTest {
     }
 
     @Test
+    void rejectsLeadingZeroPort() {
+        assertRejected("serve --port {{PORT['08080']}}", "Malformed port placeholder(s)");
+    }
+
+    @Test
+    void rejectsZeroPort() {
+        assertRejected("serve --port {{PORT['0']}}", "Malformed port placeholder(s)");
+    }
+
+    @Test
     void rejectsEmptyPlaceholder() {
         assertRejected("serve --port {{PORT[]}}", "Malformed port placeholder(s)");
     }
