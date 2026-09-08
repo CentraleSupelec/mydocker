@@ -108,13 +108,22 @@ class UniqueUserEmailConstraintTest {
         saveUser("First.Last@example.com", "First.Last@example.com");
         assertEquals(2, userRepository.count());
 
-        Exception thrown = assertThrows(Exception.class, this::runMigration);
+        try {
+            Exception thrown = assertThrows(Exception.class, this::runMigration);
 
-        assertTrue(
-                stackMentions(thrown, "two accounts share an email address"),
-                "the halt message did not reach the failure: " + thrown
-        );
-        assertEquals(2, userRepository.count(), "the halted run must not have changed any row");
+            assertTrue(
+                    stackMentions(thrown, "two accounts share an email address"),
+                    "the halt message did not reach the failure: " + thrown
+            );
+            assertEquals(2, userRepository.count(), "the halted run must not have changed any row");
+        } finally {
+            // The duplicate has to go before this method returns. The next test class builds a new
+            // Spring context, and that context runs master.xml through the application's own
+            // Liquibase bean before any @BeforeEach can reset the schema, so a colliding pair left
+            // behind here fails an unrelated test with a halted migration.
+            userRepository.deleteAll();
+            runMigration();
+        }
     }
 
     private void runMigration() throws Exception {
