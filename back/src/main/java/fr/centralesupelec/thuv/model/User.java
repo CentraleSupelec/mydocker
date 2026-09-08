@@ -11,7 +11,10 @@ import java.util.*;
 
 @Entity
 @Table(name = "users", indexes = {
-        @Index(columnList = "username", unique = true)
+        @Index(columnList = "username", unique = true),
+        // Named to match changeset 46, so that liquibase:diff sees the constraint the changeset
+        // created rather than proposing to drop it as an unknown extra.
+        @Index(name = "uk_users_email", columnList = "email", unique = true)
 })
 @Data
 @EqualsAndHashCode(of = {"id"})

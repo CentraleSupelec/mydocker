@@ -86,7 +86,9 @@ public class UserController {
         }
         User user = new User();
         userMapper.applyChange(user, updateUserDto);
-        userRepository.save(user);
+        // Flushed rather than saved so that a violation of the unique email constraint surfaces
+        // inside this request, where DuplicateUserEmailExceptionHandler turns it into a 409.
+        userRepository.saveAndFlush(user);
     }
 
     @PutMapping("{id}")

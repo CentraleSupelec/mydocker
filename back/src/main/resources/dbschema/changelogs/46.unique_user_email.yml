@@ -1,0 +1,55 @@
+databaseChangeLog:
+- changeSet:
+    id: 1789230000000-1
+    author: snesiubedreag
+    comment: >-
+      Make users.email unique.
+
+      The column is citext on every deployed platform, so the constraint is case-insensitive
+      by column type: first.last@example.com and First.Last@example.com collide. That is
+      deliberate, because the June 2026 duplicates were exactly the same address in two
+      casings.
+
+      The constraint is named explicitly. Generated names differ per platform, users_pkey on
+      the CentraleSupelec platforms and usersPK on the Virtual Desktop ones, so an
+      auto-generated name would make the rollback unreliable and the exception translation
+      impossible to key on.
+
+      NULL emails are unaffected: Postgres permits any number of NULLs under a unique
+      constraint. Fourteen such rows remain on CentraleSupelec production and two on Virtual
+      Desktop production, all with usernames that hold no address, so they are left alone.
+
+      Once this is applied, an ambiguous login can no longer be created by an insert. The
+      resolver's own 409 stays in place regardless, because a rolling deployment can run the
+      new code against a database where this changeset has not yet been applied.
+    preConditions:
+    - onFail: HALT
+    - onFailMessage: >
+        Unique constraint on users.email halted, and a halted precondition fails the
+        Liquibase run, which fails application startup: at least two accounts share an email
+        address, case-insensitively, so creating the constraint would fail halfway and leave
+        the platform without it. Merge those accounts first, then run the deployment again;
+        nothing has been recorded, so the rerun re-evaluates cleanly. The colliding groups
+        are returned by:
+        SELECT email, count(*) FROM users WHERE email IS NOT NULL GROUP BY email
+        HAVING count(*) != 1;
+    - sqlCheck:
+        expectedResult: "0"
+        sql: |
+          SELECT count(*)
+          FROM (
+              SELECT 1
+              FROM users
+              WHERE email IS NOT NULL
+              GROUP BY email
+              HAVING count(*) != 1
+          ) duplicates
+    changes:
+    - addUniqueConstraint:
+        tableName: users
+        columnNames: email
+        constraintName: uk_users_email
+    rollback:
+    - dropUniqueConstraint:
+        tableName: users
+        constraintName: uk_users_email

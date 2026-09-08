@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.security;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.RoleRepository;
@@ -101,23 +100,8 @@ class MyUserDetailsServiceTest {
         }
     }
 
-    @Test
-    void upsertUser_duplicateEmailDoesNotFallbackToInsert() {
-        User oidcUser = this.saveUser("short@example.com", "first.last@example.com");
-        this.saveUser("First.Last@example.com", "First.Last@example.com");
-
-        assertThrows(
-                UserUpsertException.class,
-                () -> myUserDetailsService.upsertUser(
-                        "short@example.com",
-                        "first.last@example.com",
-                        "First",
-                        "Last"
-                )
-        );
-        assertEquals(2, userRepository.count());
-        assertEquals(oidcUser.getId(), userRepository.findByUsername("short@example.com").get().getId());
-    }
+    // upsertUser_duplicateEmailDoesNotFallbackToInsert moved to MyUserDetailsServiceAmbiguityTest:
+    // changeset 46 makes a colliding pair unstorable, so the pair is stubbed there instead.
 
     @Test
     void upsertUser_disabledSiblingDoesNotBlockResolvedEnabledUser() {
@@ -237,30 +221,9 @@ class MyUserDetailsServiceTest {
         assertFalse(result.isEnabled());
     }
 
-    @Test
-    void upsertUser_pairSharingAnEmailIsAmbiguousEvenWhenOneRowIsDisabled() {
-        // This is the case that gates deploying this resolver. Measured on VD production on
-        // 2026-09-07: 43 pairs share an address, 18 of them containing a row that the old
-        // deduplication path had disabled. Those 18 log in today, because the old lookup filtered
-        // on enabled and therefore saw exactly one row. Here the lookup is state-agnostic, so the
-        // pair is ambiguous and the login fails loudly instead of picking a row at random.
-        // The duplicate rows have to be merged in the database before this ships.
-        // If this test ever starts failing because the resolver filters on enabled again, that is
-        // a regression, not a fix: hiding a row is what produced the June 2026 incident.
-        saveUserRole();
-        User enabled = this.saveUser("short@example.com", "first.last@example.com");
-        User disabled = this.saveUser("First.Last@example.com", "first.last@example.com");
-        disabled.setEnabled(false);
-        userRepository.saveAndFlush(disabled);
-
-        assertThrows(
-                UserUpsertException.class,
-                () -> myUserDetailsService.upsertUser(null, "first.last@example.com", "First", "Last")
-        );
-        assertEquals(2, userRepository.count());
-        assertTrue(userRepository.findById(enabled.getId()).get().getEnabled());
-        assertFalse(userRepository.findById(disabled.getId()).get().getEnabled());
-    }
+    // upsertUser_pairSharingAnEmailIsAmbiguousEvenWhenOneRowIsDisabled moved to
+    // MyUserDetailsServiceAmbiguityTest for the same reason: two rows sharing an address, in any
+    // casing and in any enabled state, can no longer be stored once changeset 46 is applied.
 
     @Test
     void upsertUser_legacyRowWithoutEmailIsReusedAndBackfilled() throws SQLException {
