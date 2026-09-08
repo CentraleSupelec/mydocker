@@ -14,7 +14,7 @@ export interface IBasicCourse {
   displayOptions: ICourseDisplay;
   shutdownAfterMinutes?: number;
   warnShutdownMinutes?: number;
-  lastStartDate: string;
+  lastStartDate: string | null;
   createdAt: string
   externalAccess: boolean;
   externalAccessExpirationDate: string;

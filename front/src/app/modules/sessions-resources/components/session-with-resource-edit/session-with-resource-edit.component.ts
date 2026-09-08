@@ -14,8 +14,7 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./session-with-resource-edit.component.css']
 })
 export class SessionWithResourceEditComponent implements OnInit {
-  // @ts-ignore
-  session: ISessionWithResources;
+  session!: ISessionWithResources;
   resources: IOvhResource[] = [];
   ramSet: number = 0;
   ramRequired: number = 0
