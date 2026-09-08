@@ -5,13 +5,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- The production build fails when the bundle or a component stylesheet exceeds its size budget, instead of only warning
+- Template diagnostics are errors rather than warnings, so a message containing the word Error no longer leaves the job green. The nine existing occurrences are fixed
+- The toolchain is Node 22 everywhere, in `.nvmrc`, lint, tests, build and the development image, and the installation instructions match it. Install with plain `npm ci`
+
+### Fixed
+- The test suite actually runs: an uncompilable spec no longer silently reduces it to zero tests, and an empty run fails the job
+
+## 2.28.20
+### Changed
+- Hide the save and submit student work options when the platform has them disabled
+
+## 2.28.19
 ### Added
 - Multi language support (French and English)
 - ID column in users list
 
 ### Changed
 - Edit course button placement
-- Hide the save and submit student work options when the platform has them disabled
 
 ### Fixed
 - i18n typos and a key mismatch between en.json and fr.json
