@@ -6,6 +6,10 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 
+## 2.18.18
+## Added
+- Substitute `{{PORT['<port>']}}` placeholders in a course command with the host port mapped to that container port, leaving anything malformed or out of range as literal text
+
 ## 2.18.17
 ## Fixed
 - Roll back the build volume and copy container when preparing a build fails, instead of leaking a 5 GB image
@@ -14,7 +18,6 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## 2.18.16
 ## Added
 - Mount a list of volumes in readonly mode to all containers
-- Map IP and ports in the command
 
 ## 2.18.15
 ## Added
