@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.28.22
+### Fixed
+- A login button, tooltip or information link whose title has no entry for the current language falls back to another language instead of rendering an empty label, and a title still declared as a plain string, as on a platform provisioned before the i18n migration, is displayed as it stands
+
+## 2.28.21
 ### Changed
 - The production build fails when the bundle or a component stylesheet exceeds its size budget, instead of only warning
 - Template diagnostics are errors rather than warnings, so a message containing the word Error no longer leaves the job green. The nine existing occurrences are fixed
@@ -12,7 +18,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - The test suite actually runs: an uncompilable spec no longer silently reduces it to zero tests, and an empty run fails the job
-- A login button, tooltip or information link whose title has no entry for the current language falls back to another language instead of rendering an empty label, and a title still declared as a plain string, as on a platform provisioned before the i18n migration, is displayed as it stands
 
 ## 2.28.20
 ### Changed
