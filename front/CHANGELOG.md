@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - The test suite actually runs: an uncompilable spec no longer silently reduces it to zero tests, and an empty run fails the job
+- A login button, tooltip or information link whose title has no entry for the current language falls back to another language instead of rendering an empty label, and a title still declared as a plain string, as on a platform provisioned before the i18n migration, is displayed as it stands
 
 ## 2.28.20
 ### Changed
