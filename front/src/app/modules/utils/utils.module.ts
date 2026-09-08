@@ -15,7 +15,6 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { TranslatedDatePipe } from './translated-date.pipe';
 import { CapitalizeFirstPipe } from './capitalize-first.pipe';
-import { TranslatedPipe } from './translated.pipe';
 
 
 
@@ -29,8 +28,7 @@ import { TranslatedPipe } from './translated.pipe';
     LexicalLinkPopupComponent,
     LexicalImagePopupComponent,
     TranslatedDatePipe,
-    CapitalizeFirstPipe,
-    TranslatedPipe
+    CapitalizeFirstPipe
   ],
   exports: [
     TruncatePipe,
@@ -41,8 +39,7 @@ import { TranslatedPipe } from './translated.pipe';
     LexicalLinkPopupComponent,
     LexicalImagePopupComponent,
     TranslatedDatePipe,
-    CapitalizeFirstPipe,
-    TranslatedPipe
+    CapitalizeFirstPipe
   ],
   imports: [
     FormsModule,

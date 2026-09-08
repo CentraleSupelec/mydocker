@@ -60,9 +60,9 @@
           mat-flat-button
           color="primary"
           (click)="loginOIDC(oidc_idp.idp_hint)"
-          [matTooltip]="oidc_idp.tooltip | translated:currentLang"
+          [matTooltip]="oidc_idp.tooltip ? oidc_idp.tooltip[currentLang] : ''"
           [matTooltipDisabled]="!oidc_idp.tooltip">
-          {{ (oidc_idp.title | translated:currentLang) || ('sign_in.default_oidc' | translate) }}
+          {{ oidc_idp.title ? oidc_idp.title[currentLang] : ('sign_in.default_oidc' | translate) }}
         </button>
       </ng-container>
     </div>
@@ -78,7 +78,7 @@
         color="primary"
         [href]="info.url"
         target="_blank">
-        {{ info.title | translated:currentLang }}
+        {{ info.title[currentLang] }}
       </a>
     </div>
   </div>

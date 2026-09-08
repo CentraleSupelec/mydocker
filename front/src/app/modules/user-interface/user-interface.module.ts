@@ -15,7 +15,6 @@ import { MatListModule } from "@angular/material/list";
 import { BreadcrumbModule } from "../utils/breadcrumb/breadcrumb.module";
 import {DrawerAutosizeHackDirective} from "./components/admin-layout/drawer-autosize-hack.directive";
 import { TranslateModule } from '@ngx-translate/core';
-import { UtilsModule } from '../utils/utils.module';
 
 
 @NgModule({
@@ -26,7 +25,6 @@ import { UtilsModule } from '../utils/utils.module';
   ],
   imports: [
     CommonModule,
-    UtilsModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
