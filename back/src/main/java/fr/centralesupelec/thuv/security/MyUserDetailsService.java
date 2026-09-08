@@ -5,8 +5,6 @@ import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.RoleRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.DisabledException;
@@ -21,7 +19,6 @@ import java.util.stream.Collectors;
 @Primary
 @Service
 public class MyUserDetailsService implements UserDetailsService {
-    private static final Logger logger = LoggerFactory.getLogger(MyUserDetailsService.class);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
