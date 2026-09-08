@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ResourcesFormComponent } from './resources-form.component';
 import { SessionsResourcesFormModule } from "../../sessions-form.module";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SessionsFormComponent', () => {
   let component: ResourcesFormComponent;
@@ -11,6 +12,7 @@ describe('SessionsFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ ResourcesFormComponent ],
       imports: [
+        TranslateTestingModule,
         SessionsResourcesFormModule,
       ]
     })

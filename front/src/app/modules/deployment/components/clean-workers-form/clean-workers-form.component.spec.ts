@@ -5,6 +5,7 @@ import { DeploymentModule } from "../../deployment.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { APP_CONFIG } from "../../../../app-config";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CleanWorkersFormComponent', () => {
   let component: CleanWorkersFormComponent;
@@ -14,6 +15,7 @@ describe('CleanWorkersFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CleanWorkersFormComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentModule,
         HttpClientTestingModule,
         RouterTestingModule,

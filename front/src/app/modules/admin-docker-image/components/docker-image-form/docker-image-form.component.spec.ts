@@ -4,6 +4,7 @@ import { DockerImageFormComponent } from './docker-image-form.component';
 import { AdminDockerImageModule } from "../../admin-docker-image.module";
 import { MonacoEditorModule } from "ngx-monaco-editor-v2";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DockerImageFormComponent', () => {
   let component: DockerImageFormComponent;
@@ -13,6 +14,7 @@ describe('DockerImageFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DockerImageFormComponent ],
       imports: [
+        TranslateTestingModule,
         AdminDockerImageModule,
         MonacoEditorModule.forRoot(),
         NoopAnimationsModule,

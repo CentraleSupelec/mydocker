@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserFormComponent } from './user-form.component';
 import { AdminUsersModule } from "../../admin-users.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('UserFormComponent', () => {
   let component: UserFormComponent;
@@ -12,6 +13,7 @@ describe('UserFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ UserFormComponent ],
       imports: [
+        TranslateTestingModule,
         AdminUsersModule,
         NoopAnimationsModule,
       ]

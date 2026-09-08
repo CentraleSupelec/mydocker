@@ -49,7 +49,7 @@ module.exports = function (config) {
     },
     browserDisconnectTolerance: 3,
     browserNoActivityTimeout: 40000,
-    failOnEmptyTestSuite: false,
+    failOnEmptyTestSuite: true,
     restartOnFileChange: true
   });
 };

@@ -4,6 +4,7 @@ import { DeepLinkingComponent } from './deep-linking.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { APP_CONFIG } from '../../../../app-config';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeepLinkingComponent', () => {
   let component: DeepLinkingComponent;
@@ -13,6 +14,7 @@ describe('DeepLinkingComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeepLinkingComponent ],
       imports: [
+        TranslateTestingModule,
         HttpClientTestingModule,
         RouterTestingModule,
       ],

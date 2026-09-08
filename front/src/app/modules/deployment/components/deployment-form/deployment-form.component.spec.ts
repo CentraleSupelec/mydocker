@@ -6,6 +6,7 @@ import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { MatNativeDateModule } from "@angular/material/core";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeploymentFormComponent', () => {
   let component: DeploymentFormComponent;
@@ -15,6 +16,7 @@ describe('DeploymentFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeploymentFormComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentModule,
         HttpClientTestingModule,
         MatNativeDateModule,

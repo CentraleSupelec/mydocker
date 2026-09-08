@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HttpConnectionGuideComponent } from './http-connection-guide.component';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('HttpConnexionGuideComponent', () => {
   let component: HttpConnectionGuideComponent;
@@ -8,6 +9,7 @@ describe('HttpConnexionGuideComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [TranslateTestingModule],
       declarations: [ HttpConnectionGuideComponent ]
     })
     .compileComponents();

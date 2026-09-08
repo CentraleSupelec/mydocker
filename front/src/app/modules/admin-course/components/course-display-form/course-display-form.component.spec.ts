@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CourseDisplayFormComponent } from './course-display-form.component';
 import { AdminCourseModule } from "../../admin-course.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseDisplayFormComponent', () => {
   let component: CourseDisplayFormComponent;
@@ -12,6 +13,7 @@ describe('CourseDisplayFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CourseDisplayFormComponent ],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule,
         NoopAnimationsModule
       ]

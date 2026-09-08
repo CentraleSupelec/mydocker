@@ -4,6 +4,7 @@ import { SaveStateComponent } from './save-state.component';
 import { ShellModule } from "../../shell.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SaveStateComponent', () => {
   let component: SaveStateComponent;
@@ -13,6 +14,7 @@ describe('SaveStateComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ SaveStateComponent ],
       imports: [
+        TranslateTestingModule,
         ShellModule,
         HttpClientTestingModule,
         RouterTestingModule,

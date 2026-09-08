@@ -12,6 +12,7 @@ import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import localEn from '@angular/common/locales/en';
 import { LOCALE_ID } from '@angular/core';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 registerLocaleData(localeFr);
 registerLocaleData(localEn);
@@ -24,6 +25,7 @@ describe('CoursesListComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [CoursesListComponent],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule,
         HttpClientTestingModule,
         NgxPermissionsModule.forRoot(),

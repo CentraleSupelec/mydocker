@@ -4,7 +4,7 @@ import { CourseTechnicalInformationFormComponent } from './course-technical-info
 import { AdminCourseModule } from "../../admin-course.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseTechnicalInformationFormComponent', () => {
   let component: CourseTechnicalInformationFormComponent;
@@ -14,12 +14,10 @@ describe('CourseTechnicalInformationFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CourseTechnicalInformationFormComponent ],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule,
         NoopAnimationsModule,
         HttpClientTestingModule,
-        // The i18n migration left this spec without a TranslateService provider, so the
-        // fixture could not be created at all before this was added.
-        TranslateModule.forRoot(),
       ]
     })
     .compileComponents();

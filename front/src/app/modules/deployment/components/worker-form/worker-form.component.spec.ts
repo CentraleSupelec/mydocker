@@ -4,6 +4,7 @@ import { WorkerFormComponent } from './worker-form.component';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { MatNativeDateModule } from "@angular/material/core";
 import { DeploymentModule } from "../../deployment.module";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SessionFormComponent', () => {
   let component: WorkerFormComponent;
@@ -13,6 +14,7 @@ describe('SessionFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ WorkerFormComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentModule,
         NoopAnimationsModule,
         MatNativeDateModule,

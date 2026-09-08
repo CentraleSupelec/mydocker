@@ -4,6 +4,7 @@ import { SessionFormComponent } from './session-form.component';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { SessionsFormModule } from "../../sessions-form.module";
 import { MatNativeDateModule } from "@angular/material/core";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SessionFormComponent', () => {
   let component: SessionFormComponent;
@@ -13,6 +14,7 @@ describe('SessionFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ SessionFormComponent ],
       imports: [
+        TranslateTestingModule,
         SessionsFormModule,
         NoopAnimationsModule,
         MatNativeDateModule,

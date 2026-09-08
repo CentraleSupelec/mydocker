@@ -6,6 +6,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CoursesAdminComponent', () => {
   let component: CoursesAdminComponent;
@@ -15,6 +16,7 @@ describe('CoursesAdminComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CoursesAdminComponent ],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule,
         HttpClientTestingModule,
         NgxPermissionsModule.forRoot(),

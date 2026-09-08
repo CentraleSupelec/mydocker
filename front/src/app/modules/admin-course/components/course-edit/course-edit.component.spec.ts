@@ -6,6 +6,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxPermissionsAllowStubModule, NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseEditComponent', () => {
   let component: CourseEditComponent;
@@ -15,6 +16,7 @@ describe('CourseEditComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CourseEditComponent ],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule,
         RouterTestingModule,
         HttpClientTestingModule,

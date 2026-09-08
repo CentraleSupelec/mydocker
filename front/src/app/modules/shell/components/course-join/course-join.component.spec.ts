@@ -5,6 +5,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseJoinComponent', () => {
   let component: CourseJoinComponent;
@@ -14,6 +15,7 @@ describe('CourseJoinComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CourseJoinComponent ],
       imports: [
+        TranslateTestingModule,
         RouterTestingModule,
         HttpClientTestingModule,
         MatProgressSpinnerModule,

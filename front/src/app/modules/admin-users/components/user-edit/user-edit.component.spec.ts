@@ -6,6 +6,7 @@ import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { AdminUsersModule } from "../../admin-users.module";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('UserEditComponent', () => {
   let component: UserEditComponent;
@@ -19,6 +20,7 @@ describe('UserEditComponent', () => {
         useValue: {}
       }],
       imports: [
+        TranslateTestingModule,
         HttpClientTestingModule,
         AdminUsersModule,
         RouterTestingModule,

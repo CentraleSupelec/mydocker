@@ -7,6 +7,7 @@ import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { MonacoEditorModule } from "ngx-monaco-editor-v2";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DockerImageEditComponent', () => {
   let component: DockerImageEditComponent;
@@ -16,6 +17,7 @@ describe('DockerImageEditComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DockerImageEditComponent ],
       imports: [
+        TranslateTestingModule,
         AdminDockerImageModule,
         RouterTestingModule,
         HttpClientTestingModule,

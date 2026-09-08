@@ -5,6 +5,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterTestingModule } from "@angular/router/testing";
 import { DisplayContainerModule } from "../display-container.module";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SshConnexionGuideComponent', () => {
   let component: SshConnectionGuideComponent;
@@ -14,6 +15,7 @@ describe('SshConnexionGuideComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ SshConnectionGuideComponent ],
       imports: [
+        TranslateTestingModule,
         DisplayContainerModule,
         RouterTestingModule,
       ]

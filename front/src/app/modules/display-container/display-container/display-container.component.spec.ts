@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DisplayContainerComponent } from './display-container.component';
 import { DisplayContainerModule } from '../display-container.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DisplayContainerComponent', () => {
   let component: DisplayContainerComponent;
@@ -10,7 +11,11 @@ describe('DisplayContainerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DisplayContainerComponent],
-      imports: [DisplayContainerModule, NoopAnimationsModule],
+      imports: [
+        TranslateTestingModule,
+        DisplayContainerModule,
+        NoopAnimationsModule,
+      ],
     }).compileComponents();
   });
 

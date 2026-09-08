@@ -5,6 +5,7 @@ import { AdminDockerImageModule } from "../../admin-docker-image.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DockerImageListComponent', () => {
   let component: DockerImageListComponent;
@@ -14,6 +15,7 @@ describe('DockerImageListComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DockerImageListComponent ],
       imports: [
+        TranslateTestingModule,
         AdminDockerImageModule,
         HttpClientTestingModule,
         RouterTestingModule,

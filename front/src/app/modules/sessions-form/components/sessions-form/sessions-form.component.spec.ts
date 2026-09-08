@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SessionsFormComponent } from './sessions-form.component';
 import { SessionsFormModule } from "../../sessions-form.module";
 import { NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SessionsFormComponent', () => {
   let component: SessionsFormComponent;
@@ -12,6 +13,7 @@ describe('SessionsFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ SessionsFormComponent ],
       imports: [
+        TranslateTestingModule,
         SessionsFormModule,
         NgxPermissionsModule.forRoot(),
       ]

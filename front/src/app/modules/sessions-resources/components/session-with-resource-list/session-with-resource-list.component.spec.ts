@@ -10,6 +10,7 @@ import localeFr from '@angular/common/locales/fr';
 import localeEn from '@angular/common/locales/en';
 import { registerLocaleData } from "@angular/common";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SessionWithResourceListComponent', () => {
   let component: SessionWithResourceListComponent;
@@ -21,6 +22,7 @@ describe('SessionWithResourceListComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ SessionWithResourceListComponent ],
       imports: [
+        TranslateTestingModule,
         SessionsResourcesModule,
         HttpClientTestingModule,
         RouterTestingModule,

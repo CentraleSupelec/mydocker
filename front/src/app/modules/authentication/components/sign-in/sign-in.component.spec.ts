@@ -10,6 +10,7 @@ import { AuthModule } from "angular-auth-oidc-client";
 import { RouterTestingModule } from "@angular/router/testing";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SignInComponent', () => {
   let component: SignInComponent;
@@ -47,6 +48,7 @@ describe('SignInComponent', () => {
         },
       ],
       imports: [
+        TranslateTestingModule,
         MatProgressSpinnerModule,
         RouterTestingModule,
         MatTooltipModule,

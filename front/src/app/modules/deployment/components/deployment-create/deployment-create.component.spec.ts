@@ -8,6 +8,7 @@ import { APP_CONFIG } from "../../../../app-config";
 import { SnackNotificationModule } from "../../../utils/snack-notification/snack-notification.module";
 import { MatNativeDateModule } from "@angular/material/core";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeploymentCreateComponent', () => {
   let component: DeploymentCreateComponent;
@@ -17,6 +18,7 @@ describe('DeploymentCreateComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeploymentCreateComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentModule,
         HttpClientTestingModule,
         RouterTestingModule,

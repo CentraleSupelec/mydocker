@@ -5,6 +5,7 @@ import { ComputeTypeModule } from '../../compute-type.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { APP_CONFIG } from '../../../../app-config';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('ComputeTypeListComponent', () => {
   let component: ComputeTypeListComponent;
@@ -18,6 +19,7 @@ describe('ComputeTypeListComponent', () => {
       }],
       declarations: [ ComputeTypeListComponent ],
       imports: [
+        TranslateTestingModule,
         ComputeTypeModule,
         HttpClientTestingModule,
         RouterTestingModule

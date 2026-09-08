@@ -5,6 +5,7 @@ import { DeploymentStatusModule } from "../../deployment-status.module";
 import { DeploymentStatusDetailDialogComponent } from "./deployment-status-detail-dialog.component";
 import { APP_CONFIG } from "../../../../app-config";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeploymentStatusDetailDialogComponent', () => {
   let component: DeploymentStatusDetailDialogComponent;
@@ -14,6 +15,7 @@ describe('DeploymentStatusDetailDialogComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeploymentStatusDetailDialogComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentStatusModule,
         HttpClientTestingModule,
       ],

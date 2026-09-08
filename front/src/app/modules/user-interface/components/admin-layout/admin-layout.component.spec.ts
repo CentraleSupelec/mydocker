@@ -8,6 +8,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { AuthModule } from "angular-auth-oidc-client";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('AdminLayoutComponent', () => {
   let component: AdminLayoutComponent;
@@ -17,6 +18,7 @@ describe('AdminLayoutComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ AdminLayoutComponent ],
       imports: [
+        TranslateTestingModule,
         UserInterfaceModule,
         NgxPermissionsModule.forRoot(),
         HttpClientTestingModule,

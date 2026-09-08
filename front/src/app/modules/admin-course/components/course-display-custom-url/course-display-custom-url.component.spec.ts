@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CourseDisplayCustomUrlComponent } from './course-display-custom-url.component';
 import { AdminCourseModule } from "../../admin-course.module";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseDisplayCustomUrlComponent', () => {
   let component: CourseDisplayCustomUrlComponent;
@@ -11,6 +12,7 @@ describe('CourseDisplayCustomUrlComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CourseDisplayCustomUrlComponent ],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule
       ]
     })

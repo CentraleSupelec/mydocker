@@ -6,6 +6,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DockerImageDetailComponent', () => {
   let component: DockerImageDetailComponent;
@@ -15,6 +16,7 @@ describe('DockerImageDetailComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DockerImageDetailComponent ],
       imports: [
+        TranslateTestingModule,
         AdminDockerImageModule,
         RouterTestingModule,
         HttpClientTestingModule,

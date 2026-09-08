@@ -4,6 +4,7 @@ import { DeploymentViewComponent } from './deployment-view.component';
 import { DeploymentModule } from "../../deployment.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeploymentViewComponent', () => {
   let component: DeploymentViewComponent;
@@ -13,6 +14,7 @@ describe('DeploymentViewComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeploymentViewComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentModule,
         HttpClientTestingModule,
         RouterTestingModule,

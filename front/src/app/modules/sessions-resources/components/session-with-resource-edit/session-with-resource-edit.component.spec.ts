@@ -8,6 +8,7 @@ import { APP_CONFIG } from "../../../../app-config";
 import { SnackNotificationModule } from "../../../utils/snack-notification/snack-notification.module";
 import { ActivatedRoute } from "@angular/router";
 import { of } from "rxjs";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('SessionWithResourceEditComponent', () => {
   let component: SessionWithResourceEditComponent;
@@ -17,6 +18,7 @@ describe('SessionWithResourceEditComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ SessionWithResourceEditComponent ],
       imports: [
+        TranslateTestingModule,
         SessionsResourcesModule,
         HttpClientTestingModule,
         RouterTestingModule,

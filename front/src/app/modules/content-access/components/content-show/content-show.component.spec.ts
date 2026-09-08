@@ -1,46 +1,33 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
-import { CourseListComponent } from './course-list.component';
-import { RouterTestingModule } from "@angular/router/testing";
-import { ActivatedRoute, convertToParamMap } from "@angular/router";
-import { of } from "rxjs";
-import { MatExpansionModule } from "@angular/material/expansion";
 import { APP_CONFIG } from 'src/app/app-config';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ContentShowComponent } from './content-show.component';
 
-describe('CourseListComponent', () => {
-  let component: CourseListComponent;
-  let fixture: ComponentFixture<CourseListComponent>;
+describe('ContentShowComponent', () => {
+  let component: ContentShowComponent;
+  let fixture: ComponentFixture<ContentShowComponent>;
 
-  const sessions = of({ sessions: [] });
-  const queryParamMap = of(convertToParamMap({}));
+  const data = of({ content: { richText: '<p>content</p>' } });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CourseListComponent],
+      declarations: [ContentShowComponent],
       imports: [
         RouterTestingModule,
-        HttpClientTestingModule,
-        MatExpansionModule,
       ],
-      providers: [{
-        provide: ActivatedRoute,
-        useValue: {
-          data: sessions,
-          queryParamMap: queryParamMap
-        }
-      },
-      {
-        provide: APP_CONFIG,
-        useValue: {}
-      }
-      ]
+      providers: [
+        { provide: ActivatedRoute, useValue: { data } },
+        { provide: APP_CONFIG, useValue: {} },
+      ],
     })
       .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CourseListComponent);
+    fixture = TestBed.createComponent(ContentShowComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

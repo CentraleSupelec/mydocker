@@ -7,6 +7,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { APP_CONFIG } from "../../../../app-config";
 import { ActivatedRoute } from "@angular/router";
 import { of } from "rxjs";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeploymentListComponent', () => {
   let component: DeploymentListComponent;
@@ -16,6 +17,7 @@ describe('DeploymentListComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeploymentListComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentModule,
         HttpClientTestingModule,
         RouterTestingModule,

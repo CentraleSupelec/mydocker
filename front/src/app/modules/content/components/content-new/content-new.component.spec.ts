@@ -6,6 +6,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { APP_CONFIG } from '../../../../app-config';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('ContentNewComponent', () => {
   let component: ContentNewComponent;
@@ -21,6 +22,7 @@ describe('ContentNewComponent', () => {
       }],
       declarations: [ ContentNewComponent ],
       imports: [
+        TranslateTestingModule,
         ContentModule,
         HttpClientTestingModule,
         RouterTestingModule,

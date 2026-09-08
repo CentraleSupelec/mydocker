@@ -7,6 +7,7 @@ import { NgxPermissionsModule } from "ngx-permissions";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { AuthModule } from "angular-auth-oidc-client";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('BasicLayoutComponent', () => {
   let component: BasicLayoutComponent;
@@ -16,6 +17,7 @@ describe('BasicLayoutComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ BasicLayoutComponent ],
       imports: [
+        TranslateTestingModule,
         UserInterfaceModule,
         NgxPermissionsModule.forRoot(),
         HttpClientTestingModule,

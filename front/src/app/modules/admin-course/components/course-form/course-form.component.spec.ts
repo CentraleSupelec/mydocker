@@ -5,6 +5,7 @@ import { AdminCourseModule } from "../../admin-course.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseFormComponent', () => {
   let component: CourseFormComponent;
@@ -14,6 +15,7 @@ describe('CourseFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ CourseFormComponent ],
       imports: [
+        TranslateTestingModule,
         AdminCourseModule,
         NoopAnimationsModule,
         HttpClientTestingModule,

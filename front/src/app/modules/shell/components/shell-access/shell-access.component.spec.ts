@@ -6,6 +6,7 @@ import { ShellModule } from "../../shell.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NgxPermissionsModule } from "ngx-permissions";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('ShellAccessComponent', () => {
   let component: ShellAccessComponent;
@@ -21,6 +22,7 @@ describe('ShellAccessComponent', () => {
         },
       ],
       imports: [
+        TranslateTestingModule,
         ShellModule,
         HttpClientTestingModule,
         RouterTestingModule,

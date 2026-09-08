@@ -7,6 +7,7 @@ import { of } from "rxjs";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { APP_CONFIG } from 'src/app/app-config';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseListComponent', () => {
   let component: CourseListComponent;
@@ -19,6 +20,7 @@ describe('CourseListComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [CourseListComponent],
       imports: [
+        TranslateTestingModule,
         RouterTestingModule,
         HttpClientTestingModule,
         MatExpansionModule,

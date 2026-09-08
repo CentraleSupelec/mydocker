@@ -6,6 +6,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { APP_CONFIG } from '../../../../app-config';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('ContentEditComponent', () => {
   let component: ContentEditComponent;
@@ -21,6 +22,7 @@ describe('ContentEditComponent', () => {
       }],
       declarations: [ ContentEditComponent ],
       imports: [
+        TranslateTestingModule,
         ContentModule,
         HttpClientTestingModule,
         RouterTestingModule,

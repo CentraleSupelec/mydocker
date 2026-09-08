@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ContentFormComponent } from './content-form.component';
 import { ContentModule } from '../../content.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('ContentFormComponent', () => {
   let component: ContentFormComponent;
@@ -12,6 +13,7 @@ describe('ContentFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ ContentFormComponent ],
       imports: [
+        TranslateTestingModule,
         ContentModule,
         NoopAnimationsModule
       ]

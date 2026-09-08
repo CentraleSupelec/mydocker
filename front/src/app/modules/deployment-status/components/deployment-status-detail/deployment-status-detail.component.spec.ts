@@ -6,6 +6,7 @@ import { DeploymentStatusDetailComponent } from "./deployment-status-detail.comp
 import { DeploymentStatusModule } from "../../deployment-status.module";
 import { APP_CONFIG } from "../../../../app-config";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DeploymentStatusDetailComponent', () => {
   let component: DeploymentStatusDetailComponent;
@@ -15,6 +16,7 @@ describe('DeploymentStatusDetailComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DeploymentStatusDetailComponent ],
       imports: [
+        TranslateTestingModule,
         DeploymentStatusModule,
         RouterTestingModule,
         HttpClientTestingModule,

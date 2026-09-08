@@ -2,13 +2,18 @@ import { RenderCreationErrorPipe } from "./render-creation-error.pipe";
 import { TestBed } from "@angular/core/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { IContainer } from "../shell/interfaces/container";
+import { TranslateFrenchTestingModule } from 'src/testing/translate-testing.module';
 
+// The two expectations below follow src/assets/i18n/fr.json rather than the wording this spec was
+// written against: the catalogue lost a trailing period and gained "de stockage" while the suite
+// was never executed.
 describe("RenderCreationErrorPipe", () => {
   let pipe: RenderCreationErrorPipe;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
+        TranslateFrenchTestingModule,
         RouterTestingModule,
       ],
       providers: [RenderCreationErrorPipe],
@@ -29,14 +34,14 @@ describe("RenderCreationErrorPipe", () => {
   const testCases = [
     {
       container: null,
-      expected: "une erreur inconnue s'est produite.",
+      expected: "une erreur inconnue s'est produite",
     },
     {
       container: {
         ...defaultContainer,
         creationError: "student-volume.local-storage",
       },
-      expected: "le cours est configuré avec un type de fichiers non supporté (local).",
+      expected: "le cours est configuré avec un type de stockage de fichiers non supporté (local).",
     },
     {
       container: {

@@ -5,6 +5,7 @@ import { APP_CONFIG } from '../../../../app-config';
 import { ShellModule } from '../../shell.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CountdownComponent', () => {
   let component: CountdownComponent;
@@ -20,6 +21,7 @@ describe('CountdownComponent', () => {
         },
       ],
       imports: [
+        TranslateTestingModule,
         ShellModule,
         HttpClientTestingModule,
         RouterTestingModule,

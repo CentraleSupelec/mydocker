@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PortFormComponent } from './port-form.component';
 import { PortsFormModule } from "../../ports-form.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('PortFormComponent', () => {
   let component: PortFormComponent;
@@ -12,6 +13,7 @@ describe('PortFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ PortFormComponent ],
       imports: [
+        TranslateTestingModule,
         PortsFormModule,
         NoopAnimationsModule,
       ]

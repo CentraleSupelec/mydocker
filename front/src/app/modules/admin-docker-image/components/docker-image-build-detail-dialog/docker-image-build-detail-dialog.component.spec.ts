@@ -5,6 +5,7 @@ import { AdminDockerImageModule } from "../../admin-docker-image.module";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { APP_CONFIG } from "../../../../app-config";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('DockerImageBuildDetailDialogComponent', () => {
   let component: DockerImageBuildDetailDialogComponent;
@@ -14,6 +15,7 @@ describe('DockerImageBuildDetailDialogComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ DockerImageBuildDetailDialogComponent ],
       imports: [
+        TranslateTestingModule,
         AdminDockerImageModule,
         HttpClientTestingModule,
       ],

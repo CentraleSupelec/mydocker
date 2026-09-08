@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PortsFormComponent } from './ports-form.component';
 import { PortsFormModule } from "../../ports-form.module";
+import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('PortsFormComponent', () => {
   let component: PortsFormComponent;
@@ -11,6 +12,7 @@ describe('PortsFormComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ PortsFormComponent ],
       imports: [
+        TranslateTestingModule,
         PortsFormModule,
       ]
     })
