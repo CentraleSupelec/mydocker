@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 2.33.0
 ### Added
 - Course commands are validated against the `{{PORT['<port>']}}` placeholder grammar: matching quotes, a port between 1 and 65535 with no leading zeros, and a port the course declares. Malformed or unknown placeholders are rejected instead of reaching the container as literal text
 - The `users.email` column carries a unique index, so two accounts can no longer share an address. The migration halts and applies nothing if duplicates are already present, naming the query that finds them
