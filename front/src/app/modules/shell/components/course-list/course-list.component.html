@@ -31,7 +31,7 @@
           <b>{{ element.title }}</b>
           <div>
             <span
-              [matTooltip]="element.sessions[0].startDateTime | translatedDate:'dd/MM/yyyy':'HH\'h\'mm' "
+              [matTooltip]="element.sessions?.[0]?.startDateTime | translatedDate:'dd/MM/yyyy':'HH\'h\'mm' "
               [matTooltipPosition]="'above'"
             >
               {{ getDaysUntil(element.sessions[0].startDateTime) }}</span>

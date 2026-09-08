@@ -1,16 +1,16 @@
-<h1 class="mat-display-1">{{ 'admin.resources_management.resources_by_session.edit.title' | translate }} "{{ session.title }}" {{ 'admin.resources_management.resources_by_session.edit.of' | translate }} "{{ session.course.title }}"</h1>
+<h1 class="mat-display-1">{{ 'admin.resources_management.resources_by_session.edit.title' | translate }} "{{ session?.title }}" {{ 'admin.resources_management.resources_by_session.edit.of' | translate }} "{{ session?.course?.title }}"</h1>
 
 <div class="mat-elevation-z3 form-container">
   <div fxLayout="row" fxLayoutAlign="space-around center">
     <p>
       <strong>{{ 'admin.resources_management.resources_by_session.edit.start_date' | translate }}:</strong>
-      {{ session.startDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
+      {{ session?.startDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
     </p>
     <p>
       <strong>{{ 'admin.resources_management.resources_by_session.edit.end_date' | translate }}:</strong>
-      {{ session.endDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
+      {{ session?.endDateTime | translatedDate:'dd/MM/y':'HH:mm'}}
     </p>
-    <p><strong>{{ 'admin.resources_management.resources_by_session.edit.student_count' | translate }}:</strong> {{ session.studentNumber }}</p>
+    <p><strong>{{ 'admin.resources_management.resources_by_session.edit.student_count' | translate }}:</strong> {{ session?.studentNumber }}</p>
   </div>
   <br>
   <div style="padding: 20px;">

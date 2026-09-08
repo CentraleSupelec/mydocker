@@ -26,7 +26,7 @@
                         fxFlex="grow">
           <input matInput
                  [placeholder]="'admin.docker_images.edit.general.upload_placeholder' | translate"
-                 [value]="form.get('contextFolder')?.value?.name"
+                 [value]="form?.get('contextFolder')?.value?.name"
                  readonly/>
         </mat-form-field>
         <button mat-icon-button color="primary" *ngIf="form?.get('contextFolder')?.value?.name"
