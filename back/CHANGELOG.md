@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - Course commands are validated against the `{{PORT['<port>']}}` placeholder grammar: matching quotes, a port between 1 and 65535 with no leading zeros, and a port the course declares. Malformed or unknown placeholders are rejected instead of reaching the container as literal text
+- The `users.email` column carries a unique index, so two accounts can no longer share an address. The migration halts and applies nothing if duplicates are already present, naming the query that finds them
+
+### Changed
+- A login that matches more than one account answers 409 Conflict, instead of 500 or a misleading 401
+- An account creation whose email collides with an existing account answers 409 Conflict
+- User resolution during authentication goes through a single email-primary resolver shared by the CAS, LTI, OIDC and magic-link paths, so the same login always resolves to the same account
+- The `enabled` column means "banned or not" and is no longer consulted when resolving which account a login belongs to
 
 ## 2.32.8
 ### Changed
