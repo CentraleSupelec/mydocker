@@ -3,7 +3,6 @@ package fr.centralesupelec.thuv.security.controllers;
 import fr.centralesupelec.thuv.exception.UserUpsertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.DisabledException;
@@ -26,16 +25,18 @@ public class AuthenticationExceptionHandler {
     }
 
     /**
-     * Covers the login paths that do not catch this themselves: LTI, which has no try/catch at all,
-     * and any future caller. CAS and magic link catch it locally because their own catch-all would
-     * otherwise swallow it first.
+     * Owns the translation for every login path. CAS and magic link rethrow the exception past
+     * their own catch-all so that it arrives here; LTI has no try/catch at all and arrives here
+     * directly.
      *
-     * <p>DataIntegrityViolationException is handled here too: once the unique constraint on
-     * users.email exists, an ambiguous login surfaces at insert time rather than at lookup time,
-     * and the two failures mean the same thing to the person logging in.
+     * <p>Database integrity failures are deliberately not translated here. There is no unique
+     * constraint on users.email yet, so an ambiguous login cannot surface at insert time, and a
+     * blanket mapping of DataIntegrityViolationException would turn unrelated foreign-key and
+     * not-null failures across the whole API into this message. When the constraint is added, its
+     * violation gets translated in the same changeset that creates it, keyed on the constraint name.
      */
-    @ExceptionHandler({UserUpsertException.class, DataIntegrityViolationException.class})
-    public ResponseEntity<String> handleAmbiguousAccount(Exception ex) {
+    @ExceptionHandler(UserUpsertException.class)
+    public ResponseEntity<String> handleAmbiguousAccount(UserUpsertException ex) {
         LOGGER.error("Cannot resolve a single account for this login: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(AMBIGUOUS_ACCOUNT_MESSAGE);
     }

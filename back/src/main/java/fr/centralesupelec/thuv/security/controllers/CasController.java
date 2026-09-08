@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.DisabledException;
@@ -136,16 +135,12 @@ public class CasController {
             return ResponseEntity.ok(jwtToken);
         } catch (DisabledException ex) {
             throw ex;
-        } catch (UserUpsertException | DataIntegrityViolationException ex) {
-            // The ticket was valid. Several accounts share this address, so the login cannot be
-            // attributed to one of them. Reported apart from the generic case because the generic
-            // message sends diagnosis to CAS, which is not where the problem is. Caught here rather
-            // than left to AuthenticationExceptionHandler because the catch-all below would
-            // otherwise swallow it first. The message names account ids, never an address.
-            logger.error("Cannot resolve a single account for this CAS login: {}", ex.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(AuthenticationExceptionHandler.AMBIGUOUS_ACCOUNT_MESSAGE);
+        } catch (UserUpsertException ex) {
+            // The ticket was valid: several accounts share this address, so the login cannot be
+            // attributed to one of them. Rethrown past the catch-all below, exactly as
+            // DisabledException is, so that AuthenticationExceptionHandler owns the status, the
+            // message and the logging for every login path rather than each path repeating them.
+            throw ex;
         } catch (Exception ex) {
             Sentry.captureException(ex);
             logger.error("An error occured during ticket verification " + ex);

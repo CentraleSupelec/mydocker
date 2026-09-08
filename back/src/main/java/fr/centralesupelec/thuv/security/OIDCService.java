@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.stereotype.Component;
 
@@ -67,7 +66,7 @@ public class OIDCService {
             return jwtToken;
         } catch (DisabledException e) {
             throw e;
-        } catch (UserUpsertException | DataIntegrityViolationException e) {
+        } catch (UserUpsertException e) {
             // Rethrown rather than wrapped: the token validated, and several accounts share this
             // address. Wrapping it as "Unable to validate token" is the exact misdirection that
             // cost diagnosis time in the June 2026 incident. AuthenticationExceptionHandler turns

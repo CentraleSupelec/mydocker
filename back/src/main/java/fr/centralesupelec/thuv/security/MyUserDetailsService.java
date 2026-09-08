@@ -47,7 +47,7 @@ public class MyUserDetailsService implements UserDetailsService {
      * logs and Sentry, so it must not carry an email address; the ids are also what an operator
      * needs in order to merge the rows.
      */
-    private static String ambiguousAccounts(Collection<User> users) {
+    private static String formatAmbiguousAccountsMessage(Collection<User> users) {
         String ids = users.stream()
                 .map(user -> String.valueOf(user.getId()))
                 .collect(Collectors.joining(", "));
@@ -60,7 +60,7 @@ public class MyUserDetailsService implements UserDetailsService {
             List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
             logger.debug("Found {} users with email '{}'", usersWithCorrectEmail.size(), email);
             if (usersWithCorrectEmail.size() > 1) {
-                throw new UserUpsertException(ambiguousAccounts(usersWithCorrectEmail));
+                throw new UserUpsertException(formatAmbiguousAccountsMessage(usersWithCorrectEmail));
             }
             Optional<User> userWithEmailAsUsername = userRepository.findByEnabledTrueAndUsername(email);
             logger.debug("Found user with username '{}': {}", email, userWithEmailAsUsername.orElse(null));
@@ -98,10 +98,10 @@ public class MyUserDetailsService implements UserDetailsService {
         List<User> usersWithCorrectEmail = userRepository.findByEnabledTrueAndEmail(email);
         logger.debug("Found {} users with email '{}'", usersWithCorrectEmail.size(), email);
         if (usersWithCorrectEmail.size() > 1) {
-            throw new UserUpsertException(ambiguousAccounts(usersWithCorrectEmail));
+            throw new UserUpsertException(formatAmbiguousAccountsMessage(usersWithCorrectEmail));
         }
         if (usersWithUsernameAsEmail.size() > 1) {
-            throw new UserUpsertException(ambiguousAccounts(usersWithUsernameAsEmail));
+            throw new UserUpsertException(formatAmbiguousAccountsMessage(usersWithUsernameAsEmail));
         }
         if (userWithCorrectUsername.isPresent()) {
             userWithEmailAsUsername.ifPresent(user -> {
@@ -172,7 +172,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
 
         if (usersInDb.size() > 1) {
-            throw new UserUpsertException(ambiguousAccounts(usersInDb));
+            throw new UserUpsertException(formatAmbiguousAccountsMessage(usersInDb));
         }
         if (usersWithCorrectEmail.size() == 1) {
             User user = usersWithCorrectEmail.get(0);
@@ -201,7 +201,7 @@ public class MyUserDetailsService implements UserDetailsService {
         // Resolve existing accounts before creating a guest; disabled accounts must be rejected, not hidden.
         List<User> usersWithCorrectEmail = userRepository.findByEmail(email);
         if (usersWithCorrectEmail.size() > 1) {
-            throw new UserUpsertException(ambiguousAccounts(usersWithCorrectEmail));
+            throw new UserUpsertException(formatAmbiguousAccountsMessage(usersWithCorrectEmail));
         }
 
         User user = usersWithCorrectEmail

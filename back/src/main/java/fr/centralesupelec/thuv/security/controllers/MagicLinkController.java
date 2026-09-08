@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.DisabledException;
@@ -158,17 +157,13 @@ public class MagicLinkController {
             ));
         } catch (DisabledException ex) {
             throw ex;
-        } catch (UserUpsertException | DataIntegrityViolationException ex) {
+        } catch (UserUpsertException ex) {
             // The token was neither invalid nor expired: several accounts share this address, so
-            // the login cannot be attributed to one of them. Reported apart from the generic case,
-            // because "invalid or expired magic link" sends diagnosis to the token service rather
-            // than to the duplicate rows. Caught here rather than left to
-            // AuthenticationExceptionHandler because the catch-all below would otherwise swallow it
-            // first. The message names account ids, never an address.
-            logger.error("Cannot resolve a single account for this magic link: {}", ex.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(AuthenticationExceptionHandler.AMBIGUOUS_ACCOUNT_MESSAGE);
+            // the login cannot be attributed to one of them. Rethrown past the catch-all below,
+            // exactly as DisabledException is, so that AuthenticationExceptionHandler owns the
+            // status, the message and the logging. Without this the catch-all would answer
+            // "Invalid or expired magic link" and send diagnosis to the token service.
+            throw ex;
         } catch (Exception ex) {
             Sentry.captureException(ex);
             logger.error("Invalid magic token", ex);
