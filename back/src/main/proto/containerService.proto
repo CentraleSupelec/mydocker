@@ -54,11 +54,15 @@ enum StorageBackend {
 }
 
 message OwnerAutoscalingConfig {
-    string instanceType = 2;
     int64 minIdleNodesCount = 3;
     int64 maxNodesCount = 4;
     int64 manualNodesCount = 6;
-    repeated ScalingRegion regions = 7;
+    repeated InstanceRegionsConfig instancesRegions = 8;
+}
+
+message InstanceRegionsConfig {
+    string instanceType = 1;
+    repeated ScalingRegion regions = 2;
 }
 
 message ScalingRegion {

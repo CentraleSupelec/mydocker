@@ -1,0 +1,132 @@
+databaseChangeLog:
+- changeSet:
+    id: 1779745457814-1
+    author: mohamedalibarka (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: resourcePK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: compute_type_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: region_region
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: resource_id
+            type: BIGINT
+        tableName: resource
+- changeSet:
+    id: 1779745457814-2
+    author: mohamedalibarka (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: compute_type_id, resource_id, region_region
+        constraintName: UKtnu6ov9dxn4crsik8m1v7o4qy
+        tableName: resource
+- changeSet:
+    id: 1779745457814-3
+    author: mohamedalibarka (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: resource_id
+        baseTableName: resource
+        constraintName: FK8gtkr4vwx2n9e5egydiufkemx
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: ovh_ressource
+        validate: true
+- changeSet:
+    id: 1779745457814-4
+    author: mohamedalibarka (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: region_region
+        baseTableName: resource
+        constraintName: FKh14i13qm16yxao3c7o6eqch2u
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: region
+        referencedTableName: ovh_region
+        validate: true
+- changeSet:
+    id: 1779745457814-5
+    author: mohamedalibarka (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: compute_type_id
+        baseTableName: resource
+        constraintName: FKm1hssuyw7x74qknxtqapr47fq
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: compute_types
+        validate: true
+- changeSet:
+    id: 1779745457814-6
+    author: mohamedalibarka
+    changes:
+      - sql:
+          sql: |
+            INSERT INTO resource (
+                compute_type_id,
+                resource_id,
+                region_region
+            )
+            SELECT
+                ct.id,
+                ct.autoscaling_resource_id,
+                car.autoscaling_regions_region
+            FROM compute_types ct
+            INNER JOIN compute_types_autoscaling_regions car
+                ON car.compute_type_id = ct.id
+            WHERE ct.autoscaling_resource_id IS NOT NULL;
+- changeSet:
+    id: 1779745457814-7
+    author: mohamedalibarka (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: compute_types_autoscaling_regions
+        constraintName: FK96o5pxn581941sg7o39lafcn5
+- changeSet:
+    id: 1779745457814-8
+    author: mohamedalibarka (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: compute_types
+        constraintName: FKb3mpm20m6205nge9hrt6d86m4
+- changeSet:
+    id: 1779745457814-9
+    author: mohamedalibarka (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: compute_types_autoscaling_regions
+        constraintName: FKlwnrxl5b95x0c2fo21h13jc7l
+- changeSet:
+    id: 1779745457814-10
+    author: mohamedalibarka (generated)
+    changes:
+    - dropTable:
+        tableName: compute_types_autoscaling_regions
+- changeSet:
+    id: 1779745457814-11
+    author: mohamedalibarka (generated)
+    changes:
+    - dropColumn:
+        columnName: autoscaling_resource_id
+        tableName: compute_types
+

@@ -1,7 +1,5 @@
 package fr.centralesupelec.thuv.model;
 
-import fr.centralesupelec.thuv.scale_up.model.OVHRegion;
-import fr.centralesupelec.thuv.scale_up.model.OVHResource;
 import lombok.Data;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -26,13 +24,15 @@ public class ComputeType {
     private String technicalName;
     private boolean gpu = false;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @OneToMany(
+        mappedBy = "computeType",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.EAGER
+    )
     @EqualsAndHashCode.Exclude
-    private Set<OVHRegion> autoscalingRegions = new HashSet<>();
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @EqualsAndHashCode.Exclude
-    private OVHResource autoscalingResource;
+    private Set<ResourceRegion> autoscalingResourcesRegions =
+        new HashSet<>();
 
     @Column(columnDefinition = "INT8 DEFAULT 0", nullable = false)
     private Long minIdleNodesCount = 0L;
@@ -46,8 +46,7 @@ public class ComputeType {
     private StorageBackend storageBackend;
 
     public boolean isAutoscalingConfigured() {
-        return (!this.getAutoscalingRegions().isEmpty())
-                && this.getAutoscalingResource() != null
+        return (!this.getAutoscalingResourcesRegions().isEmpty())
                 && this.getMaxNodesCount() > 0;
     }
 }

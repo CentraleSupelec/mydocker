@@ -1,21 +1,21 @@
 package fr.centralesupelec.thuv.dtos;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
-public class ComputeTypeUpdateDto {
+public class ComputeTypeDto {
+    @NotNull
+    private Long id;
     @NotNull
     private String displayName;
     @NotNull
     private String technicalName;
     private boolean gpu = false;
-    @Valid
-    private List<ResourceRegionsDto> autoscalingResourcesRegions;
+    private Set<ResourceRegionsDto> autoscalingResourcesRegions;
     private Long minIdleNodesCount;
     private Long maxNodesCount;
     private Long manualNodesCount;

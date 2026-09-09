@@ -1,6 +1,8 @@
 package fr.centralesupelec.thuv.web.admin;
 
+import fr.centralesupelec.thuv.dtos.ComputeTypeDto;
 import fr.centralesupelec.thuv.dtos.ComputeTypeUpdateDto;
+import fr.centralesupelec.thuv.mappers.ComputeTypeMapper;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
 import fr.centralesupelec.thuv.service.ComputeTypeService;
@@ -18,37 +20,47 @@ import java.util.List;
 public class ComputeTypeController {
     private final ComputeTypeRepository computeTypeRepository;
     private final ComputeTypeService computeTypeService;
+    private final ComputeTypeMapper computeTypeMapper;
 
     @PreAuthorize("hasRole('TEACHER')")
     @GetMapping(value = "/")
-    public List<ComputeType> getComputeTypes() {
-        return computeTypeRepository.findAll(Sort.by("id"));
+    public List<ComputeTypeDto> getComputeTypes() {
+        return computeTypeRepository.findAll(Sort.by("id"))
+            .stream()
+            .map(ct -> computeTypeMapper.convertToComputeTypeDto(ct))
+            .toList()
+        ;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/{id}")
-    public ComputeType getComputeType(
+    public ComputeTypeDto getComputeType(
             @PathVariable("id") ComputeType computeType
     ) {
-        return computeType;
+        return computeTypeMapper.convertToComputeTypeDto(computeType);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "")
-    public ComputeType newComputeType(
+    public ComputeTypeDto newComputeType(
             @RequestBody @Valid ComputeTypeUpdateDto dto
     ) {
         ComputeType computeType = new ComputeType();
-        return computeTypeService.updateComputeType(dto, computeType);
+        // Returns the DTO rather than the entity, as the PUT below does. ComputeType owns a
+        // Set<ResourceRegion> and each ResourceRegion points back at its ComputeType with no
+        // Jackson back-reference, so serialising the entity recurses.
+        return computeTypeMapper.convertToComputeTypeDto(
+                computeTypeService.updateComputeType(dto, computeType)
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{id}")
-    public ComputeType editComputeType(
+    public ComputeTypeDto editComputeType(
             @PathVariable("id") ComputeType computeType,
             @RequestBody @Valid ComputeTypeUpdateDto dto
     ) {
-        return computeTypeService.updateComputeType(dto, computeType);
+        return computeTypeMapper.convertToComputeTypeDto(computeTypeService.updateComputeType(dto, computeType));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
