@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"sync"
+
 	pb "github.com/centralesupelec/mydocker/docker-api/protobuf"
 	log "github.com/sirupsen/logrus"
-	"sync"
 )
 
 var scaleUpConfig = ScaleUpConfig{ScaleUpOwners: make(map[string]scaleUpOwner)}
@@ -20,20 +21,26 @@ func (s *server) InitAutoscaling(ctx context.Context, request *pb.InitAutoscalin
 			delete(scaleUpConfig.ScaleUpOwners, owner)
 		}
 	}
-	for owner, ownerConfig := range request.GetOwners() {
-		regions := []ScalingRegion{}
-		for _, region := range ownerConfig.GetRegions() {
-			regions = append(regions, ScalingRegion{
-				ImageId: region.GetImageId(),
-				Region:  region.GetRegion(),
+	for owner, ownerConfig := range request.GetOwners() { // GPU
+		instancesRegions := []InstanceRegions{}
+		for _, instanceRegions := range ownerConfig.GetInstancesRegions() {
+			regions := []ScalingRegion{}
+			for _, region := range instanceRegions.GetRegions() {
+				regions = append(regions, ScalingRegion{
+					ImageId: region.GetImageId(),
+					Region:  region.GetRegion(),
+				})
+			}
+			instancesRegions = append(instancesRegions, InstanceRegions{
+				InstanceType: instanceRegions.GetInstanceType(),
+				Regions:      regions,
 			})
 		}
 		scaleUpConfig.ScaleUpOwners[owner] = scaleUpOwner{
-			InstanceType:      ownerConfig.GetInstanceType(),
 			MinIdleNodesCount: ownerConfig.GetMinIdleNodesCount(),
 			MaxNodesCount:     ownerConfig.GetMaxNodesCount(),
 			ManualNodesCount:  ownerConfig.GetManualNodesCount(),
-			Regions:           regions,
+			InstancesRegions:  instancesRegions,
 		}
 	}
 	scaleUpConfig.Lock.Unlock()

@@ -219,21 +219,36 @@ func (s *scaleUpService) createTerraformConfig(missingGpus map[string]int64) (*T
 			s.logger.Errorf("Missing config for owner '%s'", owner)
 			continue
 		}
-		regions := s.scaleUpConfig.ScaleUpOwners[owner].Regions
+		instancesRegions := make([]*InstanceRegions, 0, len(s.scaleUpConfig.ScaleUpOwners[owner].InstancesRegions))
+		for i := range s.scaleUpConfig.ScaleUpOwners[owner].InstancesRegions {
+			instanceRegions := &s.scaleUpConfig.ScaleUpOwners[owner].InstancesRegions[i]
+			if len(instanceRegions.Regions) == 0 {
+				s.logger.Errorf("No region configured for instance type '%s' of owner '%s'", instanceRegions.InstanceType, owner)
+				continue
+			}
+			instancesRegions = append(instancesRegions, instanceRegions)
+		}
+		if len(instancesRegions) == 0 {
+			s.logger.Errorf("No instance type with a region configured for owner '%s'", owner)
+			continue
+		}
+
 		for i := int64(0); i < gpuCount; i++ {
-			region := &regions[rand.Intn(len(regions))]
-			s.logger.Debugf("Choosing %s among %d regions for owner %s", region.Region, len(regions), owner)
+			instanceRegions := instancesRegions[rand.Intn(len(instancesRegions))]
+			s.logger.Debugf("Choosing %s among %d instance types for owner %s", instanceRegions.InstanceType, len(instancesRegions), owner)
+			region := &instanceRegions.Regions[rand.Intn(len(instanceRegions.Regions))]
+			s.logger.Debugf("Choosing %s among %d regions for instance %s for owner %s", region.Region, len(instanceRegions.Regions), instanceRegions.InstanceType, owner)
 			name := fmt.Sprintf(
 				"%s-%s-%s-%s-%s",
 				owner,
 				c.Environment,
 				region.Region,
-				s.scaleUpConfig.ScaleUpOwners[owner].InstanceType,
+				instanceRegions.InstanceType,
 				RandomString(5),
 			)
 			terraformConfig.NamedWorkers[name] = TerraformNamedWorker{
 				InstanceImageId: region.ImageId,
-				InstanceType:    s.scaleUpConfig.ScaleUpOwners[owner].InstanceType,
+				InstanceType:    instanceRegions.InstanceType,
 				Name:            name,
 				Region:          region.Region,
 				Owner:           owner,

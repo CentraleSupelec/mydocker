@@ -112,16 +112,20 @@ func extractLabels(attr Attribute) []string {
 }
 
 type scaleUpOwner struct {
-	InstanceType      string
 	MinIdleNodesCount int64
 	MaxNodesCount     int64
 	ManualNodesCount  int64
-	Regions           []ScalingRegion
+	InstancesRegions  []InstanceRegions
 }
 
 type ScaleUpConfig struct {
 	Lock          sync.Mutex
 	ScaleUpOwners map[string]scaleUpOwner
+}
+
+type InstanceRegions struct {
+	InstanceType string
+	Regions      []ScalingRegion
 }
 
 type ScalingRegion struct {

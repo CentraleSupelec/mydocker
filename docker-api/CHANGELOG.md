@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- The autoscaler draws an instance type at random among those configured for the owner, then a region at random within that instance type. `OwnerAutoscalingConfig` carries `instancesRegions` in place of a single `instanceType` and a shared region list, which is not wire compatible with earlier back end releases
+
 ## 2.19.0
 ### Changed
 - Return logs by node, and add the image and environment name to the logs response

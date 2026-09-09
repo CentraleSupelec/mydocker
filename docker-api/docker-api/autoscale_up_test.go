@@ -1,14 +1,15 @@
 package main
 
 import (
+	"sync"
+	"testing"
+
 	tasksTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/net/context"
-	"sync"
-	"testing"
 )
 
 type testingAutoscaleUpClient struct {
@@ -91,13 +92,15 @@ func (suite *AutoscaleUpTestSuite) TestOneScaledNoNewNoError() {
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  0,
-					Regions: []ScalingRegion{{
-						ImageId: "imageId",
-						Region:  "GRA0",
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions: []ScalingRegion{{
+							ImageId: "imageId",
+							Region:  "GRA0",
+						}},
 					}},
 				},
 			},
@@ -151,13 +154,15 @@ func (suite *AutoscaleUpTestSuite) TestOneScaledOneNewNoError() {
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  0,
-					Regions: []ScalingRegion{{
-						ImageId: "imageId",
-						Region:  "GRA0",
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions: []ScalingRegion{{
+							ImageId: "imageId",
+							Region:  "GRA0",
+						}},
 					}},
 				},
 			},
@@ -211,13 +216,15 @@ func (suite *AutoscaleUpTestSuite) TestOneScaledNoNewError() {
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  0,
-					Regions: []ScalingRegion{{
-						ImageId: "imageId",
-						Region:  "GRA0",
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions: []ScalingRegion{{
+							ImageId: "imageId",
+							Region:  "GRA0",
+						}},
 					}},
 				},
 			},
@@ -267,13 +274,15 @@ func (suite *AutoscaleUpTestSuite) TestNoScaledNoNewNoError() {
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  0,
-					Regions: []ScalingRegion{{
-						ImageId: "imageId",
-						Region:  "GRA0",
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions: []ScalingRegion{{
+							ImageId: "imageId",
+							Region:  "GRA0",
+						}},
 					}},
 				},
 			},
@@ -289,6 +298,58 @@ func (suite *AutoscaleUpTestSuite) TestNoScaledNoNewNoError() {
 		suite.T().Error(err)
 	}
 	stubDockerUtils.AssertExpectations(suite.T())
+}
+
+func (suite *AutoscaleUpTestSuite) TestInstanceTypeWithoutRegionIsSkippedWithoutLosingWorkers() {
+	/*
+		Un type d'instance sans region est ignore, et le nombre de workers demande est quand meme cree
+	*/
+	stubAutoscalingUtils := new(testingAutoscaleUpAutoscalingUtils)
+	stubAutoscalingUtils.On("buildConfigFromExistingInfra").Return(&TerraformConfig{
+		NamedWorkers: map[string]TerraformNamedWorker{},
+	}, nil)
+
+	logger := log.New()
+	logger.SetLevel(log.DebugLevel)
+
+	scaleUpService := newScaleUpService(
+		nil,
+		log.NewEntry(logger),
+		&sync.Mutex{},
+		&ScaleUpConfig{
+			Lock: sync.Mutex{},
+			ScaleUpOwners: map[string]scaleUpOwner{
+				"my-owner": {
+					MaxNodesCount: 10,
+					InstancesRegions: []InstanceRegions{
+						{
+							InstanceType: "t1-45",
+							Regions:      []ScalingRegion{},
+						},
+						{
+							InstanceType: "t2-45",
+							Regions: []ScalingRegion{{
+								ImageId: "imageId",
+								Region:  "GRA0",
+							}},
+						},
+					},
+				},
+			},
+		},
+		nil,
+		stubAutoscalingUtils,
+	)
+
+	terraformConfig, err := scaleUpService.createTerraformConfig(map[string]int64{"my-owner": 10})
+	if err != nil {
+		suite.T().Fatal(err)
+	}
+	suite.Len(terraformConfig.NamedWorkers, 10)
+	for _, worker := range terraformConfig.NamedWorkers {
+		suite.Equal("t2-45", worker.InstanceType)
+		suite.Equal("GRA0", worker.Region)
+	}
 }
 
 func TestAutoscaleUpTestSuite(t *testing.T) {

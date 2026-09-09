@@ -1,6 +1,9 @@
 package main
 
 import (
+	"sync"
+	"testing"
+
 	tasksTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	log "github.com/sirupsen/logrus"
@@ -8,8 +11,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/net/context"
-	"sync"
-	"testing"
 )
 
 type autoscaleDownTestingClient struct {
@@ -85,11 +86,13 @@ func (suite *AutoscaleDownTestSuite) TestZeroManualOneScaledWithServiceZeroIdle(
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  0,
-					Regions:           []ScalingRegion{},
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions:      []ScalingRegion{},
+					}},
 				},
 			},
 		},
@@ -148,12 +151,13 @@ func (suite *AutoscaleDownTestSuite) TestOneManualZeroScaledZeroIdle() {
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  0,
-					Regions:           []ScalingRegion{},
-				},
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions:      []ScalingRegion{},
+					}}},
 			},
 		},
 		nil,
@@ -233,12 +237,13 @@ func (suite *AutoscaleDownTestSuite) TestOneManualWithServiceOneScaledZeroIdle()
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  1,
-					Regions:           []ScalingRegion{},
-				},
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions:      []ScalingRegion{},
+					}}},
 			},
 		},
 		nil,
@@ -319,12 +324,13 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledWithServiceZeroIdleDe
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  1,
-					Regions:           []ScalingRegion{},
-				},
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions:      []ScalingRegion{},
+					}}},
 			},
 		},
 		nil,
@@ -405,12 +411,13 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledWithServiceZeroIdleFo
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  1,
-					Regions:           []ScalingRegion{},
-				},
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions:      []ScalingRegion{},
+					}}},
 			},
 		},
 		nil,
@@ -488,12 +495,13 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledZeroIdle() {
 			Lock: sync.Mutex{},
 			ScaleUpOwners: map[string]scaleUpOwner{
 				"my-owner": {
-					InstanceType:      "t1-45",
 					MinIdleNodesCount: 0,
 					MaxNodesCount:     3,
 					ManualNodesCount:  1,
-					Regions:           []ScalingRegion{},
-				},
+					InstancesRegions: []InstanceRegions{{
+						InstanceType: "t1-45",
+						Regions:      []ScalingRegion{},
+					}}},
 			},
 		},
 		nil,
