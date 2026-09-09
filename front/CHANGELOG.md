@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Every label in the log dialog is translated, including the close button and the heading, which were hardcoded French
 - The log dialog says when an attempt's output could not be read, and how many older attempts were not read at all, instead of showing either as empty
 
+### Fixed
+- Loading the dashboard no longer starts an environment nor connects to one. An environment that is already running has its panel opened and its details displayed, and a browser tab is opened only when the student asks for the environment on the page or arrives through a course link. The launch parameter is removed from the address once it has been carried out, so reloading the page does nothing
+- A course with both a past and a future session is listed once, under the planified environments, instead of appearing in both lists and polling itself twice
+- When the state of an environment cannot be read, the panel tries again a bounded number of times and then says so and offers to try again, instead of re-issuing a creation request every three seconds without end. A refusal from the back end stops it at once
 
 ## 2.28.22
 ### Fixed

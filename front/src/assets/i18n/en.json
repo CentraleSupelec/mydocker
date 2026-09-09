@@ -563,6 +563,8 @@
     "reinitialze_countdown_failure": "Unable to delay the environment shutdown",
     "step": "step",
     "join_error": "The requested environment is not available.",
+    "status_unavailable": "The state of this environment cannot be read at the moment",
+    "retry": "Try again",
     "fetch_error": "Error fetching container:",
     "initializing_error": "Error initializing container",
     "creation_error": "We encountered a problem while creating the environment...",

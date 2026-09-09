@@ -18,6 +18,7 @@ import { NgxPermissionsObject, NgxPermissionsService } from "ngx-permissions";
 import { Roles } from "../../../admin-users/interfaces/roles";
 import { TranslateService } from '@ngx-translate/core';
 import { LaunchIntent } from '../../interfaces/launch-intent';
+import { nextRetryDecision } from './next-retry-decision';
 
 
 const ContainerSwarmStateOrder = [
@@ -34,6 +35,7 @@ const ContainerSwarmStateOrder = [
 interface IPolling {
   container: IContainer | null;
   recovered: boolean;
+  error?: { status?: number };
 }
 
 @Component({
@@ -53,10 +55,12 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   container: IContainer | null = null;
   /** True only after the student asked for this environment in this page session. */
   userStarted = false;
-  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' = 'ask';
+  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' | 'unavailable' = 'ask';
   step: number = 0;
   stepMessage: string = '';
   recovering = false;
+  private failedAttempts = 0;
+  private recoveryPosted = false;
 
   private readonly stopInitPolling$: Subject<void> = new Subject<void>();
   private readonly stopShutdownPolling$: Subject<void> = new Subject<void>();
@@ -178,7 +182,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
             map(() => ({ container: null, recovered: true } as  IPolling)),
             catchError(err => {
               console.error(this.translate.instant('container.initializing_error'), err);
-              return of({ container: null, recovered: false } as  IPolling);
+              return of({ container: null, recovered: false, error: err } as  IPolling);
             })
           );
         } else {
@@ -186,8 +190,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
             map(container => ({ container, recovered: false } as  IPolling)),
             catchError(err => {
               console.error(this.translate.instant('container.fetch_error'), err);
-              this.recovering = true;
-              return of({ container: null, recovered: false } as  IPolling);
+              return of({ container: null, recovered: false, error: err } as  IPolling);
             })
           );
         }
@@ -196,10 +199,18 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     .subscribe(
       (pollingResult: IPolling) => {
         let container = pollingResult.container
+        if (pollingResult.error) {
+          this.handlePollingFailure(pollingResult.error);
+          return;
+        }
+
         if (pollingResult.recovered && this.recovering) {
           this.recovering = false;
           return;
         }
+
+        this.failedAttempts = 0;
+        this.recoveryPosted = false;
 
         if (container) {
           this.container = container;
@@ -219,6 +230,33 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
         }
       }
     )
+  }
+
+  /**
+   * A failed status read used to switch the loop to re-creating the environment every three seconds,
+   * with no end. One creation request may recover a lost environment; the rest is reading, and after
+   * a bounded number of failures the panel says so and waits for the student.
+   */
+  private handlePollingFailure(error: { status?: number }): void {
+    this.failedAttempts++;
+
+    if ('retry' === nextRetryDecision(error, this.failedAttempts)) {
+      this.recovering = !this.recoveryPosted;
+      this.recoveryPosted = true;
+      return;
+    }
+
+    this.recovering = false;
+    this.stopInitPolling$.next();
+    this.state = 'unavailable';
+    this.snackNotificationService.push(this.translate.instant('container.status_unavailable'), 'error');
+  }
+
+  retryAfterFailure(): void {
+    this.failedAttempts = 0;
+    this.recoveryPosted = false;
+    this.recovering = false;
+    this.startInitPolling();
   }
 
   private async setWarningTimeout() {

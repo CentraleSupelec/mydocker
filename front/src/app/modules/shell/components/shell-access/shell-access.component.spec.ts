@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ShellAccessComponent } from './shell-access.component';
 import { APP_CONFIG } from "../../../../app-config";
@@ -11,6 +11,8 @@ import { SimpleChange } from '@angular/core';
 import { ISession } from '../../interfaces/session';
 import { IBasicCourse } from '../../interfaces/course';
 import { IContainer } from '../../interfaces/container';
+import { SnackNotificationService } from '../../../utils/snack-notification/snack-notification.service';
+import { MAX_STATUS_ATTEMPTS } from './next-retry-decision';
 
 const CONTAINER_URL = 'http://back/docker/container/42';
 const INIT_URL = 'http://back/docker/initGetContainer/7';
@@ -31,6 +33,10 @@ function startedSession(): ISession {
 
 function runningContainer(): IContainer {
   return { status: 'OK', state: 'RUNNING', ports: [] } as unknown as IContainer;
+}
+
+function startingContainer(): IContainer {
+  return { status: 'PENDING', state: 'STARTING', ports: [] } as unknown as IContainer;
 }
 
 describe('ShellAccessComponent', () => {
@@ -155,5 +161,82 @@ describe('ShellAccessComponent', () => {
     expect(component.state).toBe('ask');
     expect(component.container).toBeNull();
     expect(component.userStarted).toBeFalse();
+  });
+
+  describe('when the status of a starting environment cannot be read', () => {
+    let snack: jasmine.Spy;
+
+    function startCreation(): void {
+      component.session = startedSession();
+      component.intent = 'start';
+      component.ngOnChanges({ intent: new SimpleChange('none', 'start', false) });
+      httpMock.expectOne(initRequest).flush(null);
+    }
+
+    function failNextPoll(): string {
+      tick(3000);
+      const pending = httpMock.match(() => true);
+      expect(pending.length).toBe(1);
+      const method = pending[0].request.method;
+      pending[0].flush('', { status: 503, statusText: 'Service Unavailable' });
+      return method;
+    }
+
+    beforeEach(() => {
+      snack = spyOn(TestBed.inject(SnackNotificationService), 'push');
+    });
+
+    it('gives up after five failures, notifies once and offers a retry', fakeAsync(() => {
+      startCreation();
+
+      const methods: string[] = [];
+      for (let attempt = 0; attempt < MAX_STATUS_ATTEMPTS; attempt++) {
+        methods.push(failNextPoll());
+      }
+
+      expect(methods.filter((method) => 'POST' === method).length).toBe(1);
+      expect(component.state).toBe('unavailable');
+      expect(snack).toHaveBeenCalledTimes(1);
+
+      tick(3000);
+      httpMock.expectNone(() => true);
+
+      discardPeriodicTasks();
+    }));
+
+    it('stops at once, without recovering, when the back end refuses the read', fakeAsync(() => {
+      startCreation();
+
+      tick(3000);
+      httpMock.expectOne(CONTAINER_URL).flush('', { status: 401, statusText: 'Unauthorized' });
+
+      expect(component.state).toBe('unavailable');
+      expect(snack).toHaveBeenCalledTimes(1);
+
+      tick(3000);
+      httpMock.expectNone(() => true);
+
+      discardPeriodicTasks();
+    }));
+
+    it('forgets earlier failures once a read succeeds', fakeAsync(() => {
+      startCreation();
+
+      failNextPoll();
+
+      tick(3000);
+      httpMock.expectOne(initRequest).flush(null);
+      tick(3000);
+      httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
+
+      for (let attempt = 0; attempt < MAX_STATUS_ATTEMPTS - 1; attempt++) {
+        failNextPoll();
+      }
+
+      expect(component.state).toBe('pending');
+      expect(snack).not.toHaveBeenCalled();
+
+      discardPeriodicTasks();
+    }));
   });
 });

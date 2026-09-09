@@ -563,6 +563,8 @@
     "reinitialze_countdown_failure": "Impossible de retarder l'extinction de l'environnement",
     "step": "étape",
     "join_error": "L'environnement demandé n'est pas disponible.",
+    "status_unavailable": "L'état de cet environnement est illisible pour le moment",
+    "retry": "Réessayer",
     "fetch_error": "Erreur lors de la récupération du conteneur :",
     "initializing_error": "Erreur lors de l'initialisation du conteneur",
     "creation_error": "Nous avons rencontré un problème lors de la création de l'environnement ...",
