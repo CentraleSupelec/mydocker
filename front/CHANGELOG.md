@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.29.0
 ### Changed
 - Show logs by node, and show the environment and image names in the log dialog
 - The log dialog lists each attempt of an environment in order, under a header naming its node, attempt number and start time, instead of one block per node. It reads the new `logs/{courseId}/tasks` endpoint, says when output was truncated, and shows the image without its registry host
