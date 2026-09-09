@@ -23,7 +23,9 @@ type logCollectorDockerClient interface {
 }
 
 func (s *server) GetLogs(ctx context.Context, request *pb.LogRequest) (*pb.LogResponse, error) {
-	return collectLogs(ctx, s.dockerClient, request.GetUserID(), request.GetCourseID(), c.LogsTailLines)
+	return collectLogs(
+		ctx, s.dockerClient, request.GetUserID(), request.GetCourseID(), c.LogsTailLines, c.LogsMaxTasks,
+	)
 }
 
 func collectLogs(
@@ -32,6 +34,7 @@ func collectLogs(
 	userID string,
 	courseID string,
 	tailLines int,
+	maxTasks int,
 ) (*pb.LogResponse, error) {
 	service, err := findServiceFor(ctx, dockerClient, userID, courseID)
 	if err != nil {
@@ -55,10 +58,27 @@ func collectLogs(
 		return tasks[i].CreatedAt.Before(tasks[j].CreatedAt)
 	})
 
+	// One request reads one log stream per task, so the number of tasks bounds
+	// its latency. Swarm keeps terminated tasks per slot, and an environment that
+	// has crash-looped can hold many, so the oldest are dropped and counted
+	// rather than read.
+	omitted := 0
+	if maxTasks > 0 && len(tasks) > maxTasks {
+		omitted = len(tasks) - maxTasks
+		tasks = tasks[omitted:]
+	}
+
 	nodeNames := make(map[string]string)
 	taskLogs := make([]*pb.TaskLog, 0, len(tasks))
 
 	for _, task := range tasks {
+		entry := &pb.TaskLog{
+			TaskID:    task.ID,
+			Slot:      uint32(task.Slot),
+			Node:      resolveNodeName(ctx, dockerClient, task, nodeNames),
+			CreatedAt: timestamppb.New(task.CreatedAt),
+		}
+
 		reader, err := dockerClient.TaskLogs(ctx, task.ID, types.ContainerLogsOptions{
 			ShowStdout: true,
 			ShowStderr: true,
@@ -67,7 +87,11 @@ func collectLogs(
 			Details:    c.LogsDetails,
 		})
 		if err != nil {
+			// Reported rather than skipped: "we could not read this" and "this
+			// printed nothing" are different answers.
 			log.Warnf("failed to read logs of task %s: %v", task.ID, err)
+			entry.ReadError = err.Error()
+			taskLogs = append(taskLogs, entry)
 			continue
 		}
 
@@ -75,29 +99,27 @@ func collectLogs(
 		_ = reader.Close()
 		if err != nil {
 			log.Warnf("failed to decode logs of task %s: %v", task.ID, err)
+			entry.ReadError = err.Error()
+			taskLogs = append(taskLogs, entry)
 			continue
 		}
 
-		// A task with no output is noise in a modal; a failed task with output is
-		// usually the reason the modal was opened.
+		// A task that printed nothing is noise in a modal; a failed task with
+		// output is usually the reason the modal was opened.
 		if logs == "" {
 			continue
 		}
 
-		taskLogs = append(taskLogs, &pb.TaskLog{
-			TaskID:    task.ID,
-			Slot:      uint32(task.Slot),
-			Node:      resolveNodeName(ctx, dockerClient, task, nodeNames),
-			CreatedAt: timestamppb.New(task.CreatedAt),
-			Logs:      logs,
-			Truncated: truncated,
-		})
+		entry.Logs = logs
+		entry.Truncated = truncated
+		taskLogs = append(taskLogs, entry)
 	}
 
 	return &pb.LogResponse{
-		Name:  service.Spec.Name,
-		Image: service.Spec.TaskTemplate.ContainerSpec.Image,
-		Logs:  taskLogs,
+		Name:         service.Spec.Name,
+		Image:        service.Spec.TaskTemplate.ContainerSpec.Image,
+		Logs:         taskLogs,
+		OmittedTasks: uint32(omitted),
 	}, nil
 }
 

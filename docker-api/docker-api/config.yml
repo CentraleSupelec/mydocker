@@ -35,6 +35,8 @@ EmailTo:
 LogsTimeout: 500ms
 # Most recent lines kept per task when reading an environment's logs.
 LogsTailLines: 2000
+# Most recent tasks whose logs are read for one request.
+LogsMaxTasks: 20
 DeployEnvSecrets:
   - "AWS_ACCESS_KEY_ID="
   - "AWS_SECRET_ACCESS_KEY="

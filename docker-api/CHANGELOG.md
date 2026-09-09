@@ -11,7 +11,9 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 - Read log streams with the Docker stream decoder on the environment and deploy paths, which keeps lines of eight bytes or fewer, stops truncating output at a read gap, and no longer leaks a goroutine per read
 
 ### Added
-- `LogsTailLines`, default 2000, caps the lines kept per task and flags a truncated entry
+- `LogsTailLines`, default 2000, caps the lines kept per task and flags a truncated entry, and a single line is capped at 64 KiB so output with no newline cannot grow without bound
+- `LogsMaxTasks`, default 20, caps how many task log streams one request reads; older attempts are counted in `omittedTasks` rather than dropped silently
+- A task whose output cannot be read is returned with `readError` set instead of being skipped, so an unreadable attempt is distinguishable from one that printed nothing
 - `make proto` regenerates the Go binding with the pinned toolchain, protoc 26.1, protoc-gen-go v1.33.0, protoc-gen-go-grpc v1.3.0
 
 ## 2.18.18

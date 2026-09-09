@@ -82,6 +82,7 @@ type config struct {
 	LogsTimestamps          bool
 	LogsDetails             bool
 	LogsTailLines           int
+	LogsMaxTasks            int
 	Monolithic              bool
 	VolumeMounts            []volumeMount
 }
@@ -106,6 +107,11 @@ const defaultMaxRecvMsgSize = 5 * 1024 * 1024 * 1024
 // Keeps a chatty environment from filling a gRPC message and a browser modal.
 // Applied per task, so the whole response can still hold several of these.
 const defaultLogsTailLines = 2000
+
+// Bounds how many task log streams one logs request reads. Swarm's own task
+// history limit is usually five per slot, so this only bites an environment that
+// has churned unusually.
+const defaultLogsMaxTasks = 20
 
 var c config
 
@@ -444,6 +450,7 @@ func main() {
 	viper.SetDefault("LogsTimestamps", true)
 	viper.SetDefault("LogsDetails", false)
 	viper.SetDefault("LogsTailLines", defaultLogsTailLines)
+	viper.SetDefault("LogsMaxTasks", defaultLogsMaxTasks)
 	viper.SetDefault("Monolithic", true)
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

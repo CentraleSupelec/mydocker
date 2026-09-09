@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
+	"strings"
 	"testing"
 	"time"
 
@@ -115,7 +117,7 @@ func (s *GetLogsTestSuite) TestReturnsNameAndImageUntouched() {
 	s.client.On("TaskLogs", mock.Anything, "t1", mock.Anything).
 		Return(dockerStream("hello\n"), nil)
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	assert.Equal(s.T(), "42-7", response.GetName())
@@ -135,7 +137,7 @@ func (s *GetLogsTestSuite) TestOrdersBySlotThenCreationTime() {
 			Return(dockerStream("output\n"), nil)
 	}
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	require.Len(s.T(), response.GetLogs(), 3)
@@ -155,7 +157,7 @@ func (s *GetLogsTestSuite) TestKeepsARestartAsItsOwnEntry() {
 	s.client.On("TaskLogs", mock.Anything, "t-second", mock.Anything).
 		Return(dockerStream("recovered\n"), nil)
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	require.Len(s.T(), response.GetLogs(), 2)
@@ -177,14 +179,14 @@ func (s *GetLogsTestSuite) TestSkipsTasksWithoutOutputAndKeepsFailedOnesThatHave
 	s.client.On("TaskLogs", mock.Anything, "t-failed", mock.Anything).
 		Return(dockerStream("panic: it broke\n"), nil)
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	require.Len(s.T(), response.GetLogs(), 1)
 	assert.Equal(s.T(), "t-failed", response.GetLogs()[0].GetTaskID())
 }
 
-func (s *GetLogsTestSuite) TestOneUnreadableTaskDoesNotLoseTheOthers() {
+func (s *GetLogsTestSuite) TestAnUnreadableTaskIsReportedRatherThanDropped() {
 	base := time.Now()
 	s.client.On("TaskList", mock.Anything, mock.Anything).Return([]swarm.Task{
 		task("t-broken", 1, "node-a", base),
@@ -195,11 +197,68 @@ func (s *GetLogsTestSuite) TestOneUnreadableTaskDoesNotLoseTheOthers() {
 	s.client.On("TaskLogs", mock.Anything, "t-fine", mock.Anything).
 		Return(dockerStream("still here\n"), nil)
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
+
+	require.NoError(s.T(), err)
+	require.Len(s.T(), response.GetLogs(), 2)
+	// Unreadable is not the same answer as empty, so it keeps its place and says why.
+	assert.Equal(s.T(), "t-broken", response.GetLogs()[0].GetTaskID())
+	assert.Equal(s.T(), "no such task", response.GetLogs()[0].GetReadError())
+	assert.Equal(s.T(), "", response.GetLogs()[0].GetLogs())
+	assert.Equal(s.T(), "t-fine", response.GetLogs()[1].GetTaskID())
+	assert.Equal(s.T(), "", response.GetLogs()[1].GetReadError())
+}
+
+func (s *GetLogsTestSuite) TestASilentTaskCarriesNoReadError() {
+	base := time.Now()
+	s.client.On("TaskList", mock.Anything, mock.Anything).Return([]swarm.Task{
+		task("t-silent", 1, "node-a", base),
+		task("t-loud", 2, "node-a", base),
+	}, nil)
+	s.client.On("TaskLogs", mock.Anything, "t-silent", mock.Anything).
+		Return(dockerStream(), nil)
+	s.client.On("TaskLogs", mock.Anything, "t-loud", mock.Anything).
+		Return(dockerStream("output\n"), nil)
+
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	require.Len(s.T(), response.GetLogs(), 1)
-	assert.Equal(s.T(), "t-fine", response.GetLogs()[0].GetTaskID())
+	assert.Equal(s.T(), "t-loud", response.GetLogs()[0].GetTaskID())
+}
+
+func (s *GetLogsTestSuite) TestReadsOnlyTheMostRecentTasksAndCountsTheRest() {
+	base := time.Now()
+	tasks := []swarm.Task{}
+	for index := 0; index < 5; index++ {
+		id := fmt.Sprintf("t%d", index)
+		tasks = append(tasks, task(id, 1, "node-a", base.Add(time.Duration(index)*time.Minute)))
+		s.client.On("TaskLogs", mock.Anything, id, mock.Anything).
+			Return(dockerStream("output\n"), nil)
+	}
+	s.client.On("TaskList", mock.Anything, mock.Anything).Return(tasks, nil)
+
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 2)
+
+	require.NoError(s.T(), err)
+	require.Len(s.T(), response.GetLogs(), 2)
+	assert.Equal(s.T(), "t3", response.GetLogs()[0].GetTaskID())
+	assert.Equal(s.T(), "t4", response.GetLogs()[1].GetTaskID())
+	assert.Equal(s.T(), uint32(3), response.GetOmittedTasks())
+	s.client.AssertNumberOfCalls(s.T(), "TaskLogs", 2)
+}
+
+func (s *GetLogsTestSuite) TestNothingIsOmittedWhenTheCapIsNotReached() {
+	base := time.Now()
+	s.client.On("TaskList", mock.Anything, mock.Anything).
+		Return([]swarm.Task{task("t1", 1, "node-a", base)}, nil)
+	s.client.On("TaskLogs", mock.Anything, "t1", mock.Anything).
+		Return(dockerStream("output\n"), nil)
+
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
+
+	require.NoError(s.T(), err)
+	assert.Equal(s.T(), uint32(0), response.GetOmittedTasks())
 }
 
 func (s *GetLogsTestSuite) TestTruncatesToTheTailAndSaysSo() {
@@ -209,7 +268,7 @@ func (s *GetLogsTestSuite) TestTruncatesToTheTailAndSaysSo() {
 	s.client.On("TaskLogs", mock.Anything, "t1", mock.Anything).
 		Return(dockerStream("first\n", "second\n", "third\n"), nil)
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2, 20)
 
 	require.NoError(s.T(), err)
 	require.Len(s.T(), response.GetLogs(), 1)
@@ -224,7 +283,7 @@ func (s *GetLogsTestSuite) TestUntruncatedOutputIsNotFlagged() {
 	s.client.On("TaskLogs", mock.Anything, "t1", mock.Anything).
 		Return(dockerStream("only line\n"), nil)
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	assert.False(s.T(), response.GetLogs()[0].GetTruncated())
@@ -239,7 +298,7 @@ func (s *GetLogsTestSuite) TestFallsBackToTheNodeIdWhenInspectFails() {
 	s.client.On("NodeInspectWithRaw", mock.Anything, "node-missing").
 		Return(swarm.Node{}, errors.New("node is gone"))
 
-	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	response, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	assert.Equal(s.T(), "node-missing", response.GetLogs()[0].GetNode())
@@ -257,7 +316,7 @@ func (s *GetLogsTestSuite) TestInspectsEachNodeOnceForSeveralTasks() {
 			Return(dockerStream("output\n"), nil)
 	}
 
-	_, err := collectLogs(context.Background(), s.client, "42", "7", 2000)
+	_, err := collectLogs(context.Background(), s.client, "42", "7", 2000, 20)
 
 	require.NoError(s.T(), err)
 	s.client.AssertNumberOfCalls(s.T(), "NodeInspectWithRaw", 1)
@@ -288,6 +347,15 @@ func TestReadTaskLogsHandlesAFrameSplitAcrossLines(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "one\ntwo\nthree", logs)
+}
+
+func TestReadTaskLogsBoundsASingleEnormousLine(t *testing.T) {
+	// No newline anywhere, so the line limit alone would not bound memory.
+	logs, truncated, err := readTaskLogs(dockerStream(strings.Repeat("x", 200*1024)), 2000)
+
+	require.NoError(t, err)
+	assert.Equal(t, maxLineBytes, len(logs))
+	assert.True(t, truncated)
 }
 
 func TestReadTaskLogsReturnsEmptyForNoOutput(t *testing.T) {

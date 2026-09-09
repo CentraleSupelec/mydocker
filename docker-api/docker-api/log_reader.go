@@ -32,6 +32,11 @@ func readTaskLogs(reader io.Reader, tailLines int) (string, bool, error) {
 	return sink.String(), sink.truncated, nil
 }
 
+// maxLineBytes bounds a single line, because the line limit alone does not: a
+// container that prints megabytes with no newline would otherwise accumulate all
+// of it in one pending line and defeat the bound.
+const maxLineBytes = 64 * 1024
+
 // tailWriter keeps the last max lines written to it, so memory stays bounded by
 // the limit rather than by how much the container printed.
 type tailWriter struct {
@@ -58,11 +63,22 @@ func (w *tailWriter) Write(p []byte) (int, error) {
 		buffer = buffer[index+1:]
 	}
 
+	// Keep the head of an over-long pending line and drop the rest, rather than
+	// holding everything a container prints between two newlines.
+	if len(buffer) > maxLineBytes {
+		buffer = buffer[:maxLineBytes]
+		w.truncated = true
+	}
+
 	w.partial = append([]byte(nil), buffer...)
 	return written, nil
 }
 
 func (w *tailWriter) appendLine(line []byte) {
+	if len(line) > maxLineBytes {
+		line = line[:maxLineBytes]
+		w.truncated = true
+	}
 	w.lines = append(w.lines, append([]byte(nil), line...))
 	if w.max > 0 && len(w.lines) > w.max {
 		w.lines = w.lines[len(w.lines)-w.max:]

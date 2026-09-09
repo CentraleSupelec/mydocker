@@ -267,11 +267,13 @@ func (d *DeployUtils) retrieveLogsAndSend(
 	if err != nil {
 		log.Error("failed to read logs for deploy container")
 	} else {
+		// Closed here rather than after a successful decode, so a decoding error does not leak
+		// the stream.
+		defer func() { _ = reader.Close() }()
 		logs, _, err := readTaskLogs(reader, 0)
 		if err != nil {
 			log.Error("failed to convert logs for deploy container")
 		} else {
-			_ = reader.Close()
 			response.Logs = logs
 			errSending := callback(response)
 			if errSending != nil {
