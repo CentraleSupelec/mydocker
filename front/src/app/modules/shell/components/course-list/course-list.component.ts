@@ -10,6 +10,7 @@ import { interval, of, Subject } from "rxjs";
 import { ContentsApiService } from "src/app/modules/content-access/services/contents-api.service";
 import { IContent } from "src/app/modules/content/interfaces/content";
 import { TranslateService } from "@ngx-translate/core";
+import { excludePlanifiedFromPast } from "./exclude-planified-from-past";
 
 
 @Component({
@@ -76,7 +77,7 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
             - b.sessions.sort((a: ISession, b: ISession) => a.startDateTime - b.startDateTime)[0].startDateTime
           )
         ;
-        this.past = routeData.courses?.map(((course: IBasicCourseWithSession) => {
+        const past = routeData.courses?.map(((course: IBasicCourseWithSession) => {
             const startOfToday = new Date()
             startOfToday.setHours(0, 0, 0, 0);
             return {
@@ -90,6 +91,7 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
           .sort((a: IBasicCourseWithSession, b: IBasicCourseWithSession) =>
             (b.lastStartDate ? new Date(b.lastStartDate).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0))
             - (a.lastStartDate ? new Date(a.lastStartDate).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0)));
+        this.past = excludePlanifiedFromPast(this.planified, past);
         return this.route.queryParamMap;
       }),
       take(1),
