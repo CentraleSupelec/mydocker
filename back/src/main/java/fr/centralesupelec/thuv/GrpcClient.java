@@ -15,21 +15,29 @@ public class GrpcClient {
     private final String goAddress;
     private final int goPort;
     private final boolean debug;
+    private final int maxInboundMessageSize;
 
     @Autowired
     public GrpcClient(
             @Value("${go.app.address}") String goAddress,
             @Value("${go.app.port}") int goPort,
-            @Value("${go.debug}") boolean debug
+            @Value("${go.debug}") boolean debug,
+            @Value("${go.app.max-inbound-message-size}") int maxInboundMessageSize
     ) {
         this.goAddress = goAddress;
         this.goPort = goPort;
         this.debug = debug;
+        this.maxInboundMessageSize = maxInboundMessageSize;
     }
 
     @Bean
     public ManagedChannel channel() {
-        ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forAddress(goAddress, goPort).usePlaintext();
+        // Without this the limit is gRPC's own 4 MiB default, which nobody here chose and which
+        // fails a whole call rather than degrading. Environment logs are the response that can
+        // approach it, and they are also capped per task on the Go side.
+        ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forAddress(goAddress, goPort)
+                .usePlaintext()
+                .maxInboundMessageSize(maxInboundMessageSize);
         if (debug) {
             builder
                     .intercept(new ClientInterceptor() {

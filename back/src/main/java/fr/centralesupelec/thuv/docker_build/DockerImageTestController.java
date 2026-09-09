@@ -2,7 +2,7 @@ package fr.centralesupelec.thuv.docker_build;
 
 import fr.centralesupelec.gRPC.ContainerRequest;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
-import fr.centralesupelec.thuv.docker_build.dtos.LogResponseDto;
+import fr.centralesupelec.thuv.dtos.LogResponseDto;
 import fr.centralesupelec.thuv.docker_build.model.DockerImageBuild;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;

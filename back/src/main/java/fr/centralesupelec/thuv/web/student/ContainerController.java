@@ -6,7 +6,7 @@ import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.gRPC.Metadata;
 import fr.centralesupelec.gRPC.SaveDataRequest;
-import fr.centralesupelec.thuv.docker_build.dtos.LogResponseDto;
+import fr.centralesupelec.thuv.dtos.LogResponseDto;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.mappers.LogsMapper;
 import fr.centralesupelec.thuv.mappers.SaveStateMapper;
@@ -142,13 +142,34 @@ public class ContainerController {
         return optionalContainer.orElse(null);
     }
 
-    @GetMapping(value = "logs/{courseId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public LogResponseDto getLogs(
+    @GetMapping(value = "logs/{courseId}/tasks", produces = MediaType.APPLICATION_JSON_VALUE)
+    public LogResponseDto getLogsByTask(
             @PathVariable("courseId") long courseId,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
     ) {
         Long userId = principal.getUserId();
         return logsMapper.convertToDTO(
+            logRequestService.getLog(
+                String.valueOf(userId), String.valueOf(courseId)
+            )
+        );
+    }
+
+    /**
+     * Retired in favour of {@code logs/{courseId}/tasks}, kept for one release only.
+     * The two components deploy in the same window, but a browser that already holds the previous
+     * bundle keeps calling this path until the student reloads, and it expects plain text. Delete
+     * this method, {@link fr.centralesupelec.thuv.mappers.LogsMapper#convertToText} and its test in
+     * the release after 2.34.0.
+     */
+    @Deprecated
+    @GetMapping(value = "logs/{courseId}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getLogs(
+            @PathVariable("courseId") long courseId,
+            @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
+    ) {
+        Long userId = principal.getUserId();
+        return logsMapper.convertToText(
             logRequestService.getLog(
                 String.valueOf(userId), String.valueOf(courseId)
             )

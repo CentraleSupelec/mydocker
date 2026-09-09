@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Environment logs are returned per task rather than as one block, each with its node, slot and start time, so a restarted environment reads as separate attempts. Served at `logs/{courseId}/tasks`; the previous `logs/{courseId}` text endpoint answers for one more release so an open browser tab keeps working, and is removed after that
+
+### Added
+- `go.app.max-inbound-message-size`, default 16 MiB, replaces gRPC's own 4 MiB default for responses from the Go API
+
 
 ## 2.33.0
 ### Added

@@ -1,5 +1,6 @@
 package fr.centralesupelec.thuv.web.student;
 
+import fr.centralesupelec.thuv.mappers.LogsMapper;
 import fr.centralesupelec.thuv.mappers.SaveStateMapper;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
@@ -43,7 +44,8 @@ class ContainerControllerSaveDataGateTest {
                 mock(ShutdownContainerService.class),
                 mock(ShutdownStatusStorage.class),
                 mock(DelayDeletionService.class),
-                ZoneId.of("UTC")
+                ZoneId.of("UTC"),
+                new LogsMapper()
         );
         ReflectionTestUtils.setField(controller, "saveStudentWorkEnabled", false);
 
