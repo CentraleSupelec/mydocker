@@ -7,6 +7,12 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 ### Changed
 - Return logs by node, and add the image and environment name to the logs response
+- Return environment logs per task instead of per node, ordered by slot then creation time, so a restart reads as its own entry; `LogResponse.logs` is now a repeated message and field 1 is reserved
+- Read log streams with the Docker stream decoder on the environment and deploy paths, which keeps lines of eight bytes or fewer, stops truncating output at a read gap, and no longer leaks a goroutine per read
+
+### Added
+- `LogsTailLines`, default 2000, caps the lines kept per task and flags a truncated entry
+- `make proto` regenerates the Go binding with the pinned toolchain, protoc 26.1, protoc-gen-go v1.33.0, protoc-gen-go-grpc v1.3.0
 
 ## 2.18.18
 ### Added

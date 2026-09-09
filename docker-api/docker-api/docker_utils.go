@@ -68,10 +68,20 @@ func (d *DockerUtils) waitForContainer(containerID string) error {
 }
 
 func (d *DockerUtils) findService(ctx context.Context, userId string, courseId string) (*swarm.Service, error) {
+	return findServiceFor(ctx, d.dockerClient, userId, courseId)
+}
+
+// serviceLister is the only capability looking a service up needs, so callers
+// that do nothing else can depend on that alone.
+type serviceLister interface {
+	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
+}
+
+func findServiceFor(ctx context.Context, dockerClient serviceLister, userId string, courseId string) (*swarm.Service, error) {
 	name := createContainerName(userId, courseId)
 	filtersArgs := filters.NewArgs()
 	filtersArgs.Add("name", name)
-	services, err := d.dockerClient.ServiceList(ctx, types.ServiceListOptions{Filters: filtersArgs})
+	services, err := dockerClient.ServiceList(ctx, types.ServiceListOptions{Filters: filtersArgs})
 	if err != nil {
 		return nil, err
 	}

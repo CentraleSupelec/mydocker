@@ -33,6 +33,8 @@ EmailFrom: "noreply@example.com"
 EmailTo:
   - monitoring@example.com
 LogsTimeout: 500ms
+# Most recent lines kept per task when reading an environment's logs.
+LogsTailLines: 2000
 DeployEnvSecrets:
   - "AWS_ACCESS_KEY_ID="
   - "AWS_SECRET_ACCESS_KEY="

@@ -267,7 +267,7 @@ func (d *DeployUtils) retrieveLogsAndSend(
 	if err != nil {
 		log.Error("failed to read logs for deploy container")
 	} else {
-		logs, err := readLogs(reader)
+		logs, _, err := readTaskLogs(reader, 0)
 		if err != nil {
 			log.Error("failed to convert logs for deploy container")
 		} else {

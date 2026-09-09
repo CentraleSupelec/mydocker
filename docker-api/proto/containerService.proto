@@ -3,6 +3,7 @@ option java_multiple_files = true;
 option go_package = '.;protobuf';
 package fr.centralesupelec.gRPC;
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 service containerService {
     rpc getContainer(stream ContainerRequest) returns (stream ContainerResponse);
@@ -74,10 +75,24 @@ message LogRequest {
     string courseID = 2;
 }
 
+message TaskLog {
+    string taskID = 1;
+    uint32 slot = 2;
+    string node = 3;
+    google.protobuf.Timestamp createdAt = 4;
+    string logs = 5;
+    bool truncated = 6;
+}
+
 message LogResponse {
-    string name = 1;
-    string image = 2;
-    map<string, string> logs = 3;
+    // Field 1 held the whole log body as a single string, which is what every
+    // deployed version still reads. It stays reserved so a version mismatch
+    // during a rolling deploy yields an empty list rather than a plausible
+    // wrong answer.
+    reserved 1;
+    string name = 2;
+    string image = 3;
+    repeated TaskLog logs = 4;
 }
 
 message UserPasswordMethod {

@@ -81,6 +81,7 @@ type config struct {
 	StudentVolumeSize       int
 	LogsTimestamps          bool
 	LogsDetails             bool
+	LogsTailLines           int
 	Monolithic              bool
 	VolumeMounts            []volumeMount
 }
@@ -101,6 +102,10 @@ type volumeMount struct {
 }
 
 const defaultMaxRecvMsgSize = 5 * 1024 * 1024 * 1024
+
+// Keeps a chatty environment from filling a gRPC message and a browser modal.
+// Applied per task, so the whole response can still hold several of these.
+const defaultLogsTailLines = 2000
 
 var c config
 
@@ -438,6 +443,7 @@ func main() {
 	viper.SetDefault("PortWorkerInterval", "5s")
 	viper.SetDefault("LogsTimestamps", true)
 	viper.SetDefault("LogsDetails", false)
+	viper.SetDefault("LogsTailLines", defaultLogsTailLines)
 	viper.SetDefault("Monolithic", true)
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
