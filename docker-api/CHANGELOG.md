@@ -7,44 +7,44 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 
 ## 2.18.18
-## Added
+### Added
 - Substitute `{{PORT['<port>']}}` placeholders in a course command with the host port mapped to that container port, leaving anything malformed or out of range as literal text
 
 ## 2.18.17
-## Fixed
+### Fixed
 - Roll back the build volume and copy container when preparing a build fails, instead of leaking a 5 GB image
 - Log a failed removal of the volume init service instead of discarding the error
 
 ## 2.18.16
-## Added
+### Added
 - Mount a list of volumes in readonly mode to all containers
 
 ## 2.18.15
-## Added
+### Added
 - Request datetime for named workers
 
 ## 2.18.14
-## Added
+### Added
 - Active courses by user
 
 ## 2.18.13
-## Added
+### Added
 - Number of users that have an environment running by course
 
 ## 2.18.12
-## Fixed
+### Fixed
 - Bug in handling containers with failed tasks
 
 ## 2.18.11
-## Changed
+### Changed
 - Make the mount path of the student volume into the container that fixes permissions a fixed path instead of student volume path
 
 ## 2.18.10
-## Fixed
+### Fixed
 - Filter nodes that are down when checking if a node with course-id label exists
 
 ## 2.18.9
-## Fixed
+### Fixed
 - Get Node IP
 
 ## 2.18.8
