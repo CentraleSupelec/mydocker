@@ -124,11 +124,9 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
 
         if(queryParamMap.has('error_message')) {
           this.errorMessage = queryParamMap.get('error_message');
-          const currentParams: { [key: string]: string | null } = { ...queryParamMap.keys.reduce((acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}) };
-          delete currentParams['error_message'];
 
           this.router.navigate([], {
-            queryParams: currentParams,
+            queryParams: this.paramsWithout(queryParamMap, 'error_message'),
             replaceUrl: true
           });
         }
@@ -175,15 +173,19 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
    * also decides which connection button may be clicked for the student.
    */
   private stripConsumedCourseId(queryParamMap: ParamMap): void {
-    const currentParams: { [key: string]: string | null } = queryParamMap.keys.reduce(
-      (acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}
-    );
-    delete currentParams['course_id'];
-
     this.router.navigate([], {
-      queryParams: currentParams,
+      queryParams: this.paramsWithout(queryParamMap, 'course_id'),
       replaceUrl: true
     });
+  }
+
+  private paramsWithout(queryParamMap: ParamMap, consumed: string): { [key: string]: string | null } {
+    const params: { [key: string]: string | null } = queryParamMap.keys.reduce(
+      (acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}
+    );
+    delete params[consumed];
+
+    return params;
   }
 
   ngAfterViewInit() {

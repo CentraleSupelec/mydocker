@@ -7,6 +7,11 @@ describe('nextRetryDecision', () => {
     expect(nextRetryDecision({ status: 404 }, 1)).toBe('stop');
   });
 
+  it('stops on any answer that is neither a server error nor a lost connection', () => {
+    expect(nextRetryDecision({ status: 302 }, 1)).toBe('stop');
+    expect(nextRetryDecision({ status: 200 }, 1)).toBe('stop');
+  });
+
   it('retries a server error until the last allowed attempt', () => {
     for (let attempts = 1; attempts < MAX_STATUS_ATTEMPTS; attempts++) {
       expect(nextRetryDecision({ status: 500 }, attempts)).toBe('retry');

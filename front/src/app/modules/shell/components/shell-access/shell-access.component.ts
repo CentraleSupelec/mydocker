@@ -61,6 +61,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   recovering = false;
   private failedAttempts = 0;
   private recoveryPosted = false;
+  /** A creation request is only ever re-issued by a panel that was asked to create one. */
+  private recoveryAllowed = false;
 
   private readonly stopInitPolling$: Subject<void> = new Subject<void>();
   private readonly stopShutdownPolling$: Subject<void> = new Subject<void>();
@@ -85,10 +87,14 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!(this.state == 'ask') && changes.active && !this.active) {
-      this.container = null;
-      this.state = 'ask';
+    if (changes.active && !this.active) {
+      // Unconditionally: a start whose environment has stopped is spent, even if the panel is still
+      // in the ask state because its read has not come back yet.
       this.userStarted = false;
+      if (!(this.state == 'ask')) {
+        this.container = null;
+        this.state = 'ask';
+      }
     }
 
     if (changes.intent && 'start' === this.intent && this.canAskContainer()) {
@@ -139,8 +145,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   private discoverRunningContainer(): void {
     this.containerApiService.getContainer(this.sessionCourseOrCourse?.id).subscribe({
       next: (container) => {
-        if (!container) {
-          // The list and this read disagree; the next list poll settles it, no retry here.
+        if (!container || !this.active) {
+          // Either the list and this read disagree, or the environment stopped while the read was in
+          // flight. The next list poll settles it; nothing is retried here.
           return;
         }
         this.container = container;
@@ -150,8 +157,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
           // silently drop the warning for every student who reloads the dashboard.
           this.setWarningTimeout();
         } else {
-          // Still starting: show the existing progress, which reads and never creates.
-          this.startInitPolling();
+          // Still starting: show the existing progress. Read-only, hence no recovery request: this
+          // panel was never asked to create anything.
+          this.startInitPolling(false);
         }
       },
       error: () => {
@@ -172,7 +180,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       );
   }
 
-  private startInitPolling() {
+  private startInitPolling(allowRecovery: boolean = true) {
+    this.recoveryAllowed = allowRecovery;
     this.state = 'loading_init';
     interval(3000).pipe(
       takeUntil(this.stopInitPolling$),
@@ -241,8 +250,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     this.failedAttempts++;
 
     if ('retry' === nextRetryDecision(error, this.failedAttempts)) {
-      this.recovering = !this.recoveryPosted;
-      this.recoveryPosted = true;
+      this.recovering = this.recoveryAllowed && !this.recoveryPosted;
+      this.recoveryPosted = this.recoveryPosted || this.recovering;
       return;
     }
 
@@ -256,7 +265,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     this.failedAttempts = 0;
     this.recoveryPosted = false;
     this.recovering = false;
-    this.startInitPolling();
+    // Retrying keeps the panel in the mode it was in: a watcher stays a watcher.
+    this.startInitPolling(this.recoveryAllowed);
   }
 
   private async setWarningTimeout() {

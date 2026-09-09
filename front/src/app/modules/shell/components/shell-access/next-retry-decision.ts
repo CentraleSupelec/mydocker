@@ -4,9 +4,10 @@ export type RetryDecision = 'retry' | 'give_up' | 'stop';
 export const MAX_STATUS_ATTEMPTS = 5;
 
 /**
- * Decides what a failing status read leads to. A refusal is an answer: the back end will keep
- * refusing, so retrying it, and above all re-issuing a creation request, only multiplies the load.
- * A server or network error may pass, so it is read again a bounded number of times.
+ * Decides what a failing status read leads to. Only a server error, or a network error, which
+ * carries no status, is worth reading again, and then a bounded number of times. Anything else is an
+ * answer: the back end will keep giving it, so retrying it, and above all re-issuing a creation
+ * request on it, only multiplies the load.
  *
  * @param attempts failures in a row so far, including the one being decided on.
  */
@@ -16,7 +17,7 @@ export function nextRetryDecision(
 ): RetryDecision {
   const status = error?.status ?? 0;
 
-  if (status >= 400 && status < 500) {
+  if (0 !== status && status < 500) {
     return 'stop';
   }
 

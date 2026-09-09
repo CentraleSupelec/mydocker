@@ -6,7 +6,7 @@ import { ActivatedRoute, convertToParamMap, Router } from "@angular/router";
 import { of } from "rxjs";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { APP_CONFIG } from 'src/app/app-config';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 
 describe('CourseListComponent', () => {
@@ -56,6 +56,7 @@ describe('CourseListComponent, consuming the launch parameter', () => {
   let component: CourseListComponent;
   let fixture: ComponentFixture<CourseListComponent>;
   let router: Router;
+  let httpMock: HttpTestingController;
 
   const tomorrow = new Date().getTime() + 24 * 3600 * 1000;
   const courses = [{
@@ -94,15 +95,20 @@ describe('CourseListComponent, consuming the launch parameter', () => {
       .compileComponents();
 
     router = TestBed.inject(Router);
+    httpMock = TestBed.inject(HttpTestingController);
   });
+
+  function loadDashboard(): void {
+    fixture = TestBed.createComponent(CourseListComponent);
+    component = fixture.componentInstance;
+    // ngOnInit rather than detectChanges: none of this is about the template.
+    component.ngOnInit();
+  }
 
   it('strips course_id once consumed and keeps session_id and user_redirect', () => {
     const navigate = spyOn(router, 'navigate');
 
-    fixture = TestBed.createComponent(CourseListComponent);
-    component = fixture.componentInstance;
-    // ngOnInit rather than detectChanges: the URL rewrite is what is under test, not the template.
-    component.ngOnInit();
+    loadDashboard();
 
     expect(component.courseId).toBe(42);
     expect(navigate).toHaveBeenCalledTimes(1);
@@ -113,5 +119,23 @@ describe('CourseListComponent, consuming the launch parameter', () => {
       },
       replaceUrl: true
     });
+  });
+
+  it('carries a start intent for the course the link named', () => {
+    loadDashboard();
+
+    httpMock.expectOne('http://back/courses/42/isGpu').flush(false);
+
+    expect(component.launchSessionId).toBe(7);
+    expect(component.intentFor(component.planified[0])).toBe('start');
+  });
+
+  it('carries no start intent for a GPU course, an exception this change preserves', () => {
+    loadDashboard();
+
+    httpMock.expectOne('http://back/courses/42/isGpu').flush(true);
+
+    expect(component.launchSessionId).toBeUndefined();
+    expect(component.intentFor(component.planified[0])).toBe('none');
   });
 });

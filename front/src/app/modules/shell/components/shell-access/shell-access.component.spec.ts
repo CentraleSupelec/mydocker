@@ -145,6 +145,25 @@ describe('ShellAccessComponent', () => {
     expect(component.userStarted).toBeTrue();
   });
 
+  it('spends the start when the environment stops while the read is in flight', () => {
+    component.session = startedSession();
+    component.active = true;
+    component.intent = 'start';
+    component.ngOnChanges({
+      intent: new SimpleChange('none', 'start', false),
+      active: new SimpleChange(false, true, false),
+    });
+    const request = httpMock.expectOne(CONTAINER_URL);
+
+    component.active = false;
+    component.ngOnChanges({ active: new SimpleChange(true, false, false) });
+    request.flush(runningContainer());
+
+    expect(component.userStarted).toBeFalse();
+    expect(component.state).toBe('ask');
+    expect(component.container).toBeNull();
+  });
+
   it('requires a fresh start once the environment has stopped', () => {
     component.session = startedSession();
     component.active = true;
@@ -215,6 +234,23 @@ describe('ShellAccessComponent', () => {
 
       tick(3000);
       httpMock.expectNone(() => true);
+
+      discardPeriodicTasks();
+    }));
+
+    it('never posts a creation request while it is only watching', fakeAsync(() => {
+      component.session = startedSession();
+      component.active = true;
+      component.ngOnChanges({ active: new SimpleChange(false, true, false) });
+      httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
+
+      const methods: string[] = [];
+      for (let attempt = 0; attempt < MAX_STATUS_ATTEMPTS; attempt++) {
+        methods.push(failNextPoll());
+      }
+
+      expect(methods.filter((method) => 'POST' === method).length).toBe(0);
+      expect(component.state).toBe('unavailable');
 
       discardPeriodicTasks();
     }));
