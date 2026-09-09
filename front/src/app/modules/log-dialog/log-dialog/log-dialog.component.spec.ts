@@ -14,6 +14,7 @@ function taskLog(overrides: Partial<ITaskLog> = {}): ITaskLog {
     createdAt: '2026-09-09T08:00:00Z',
     logs: 'first attempt',
     truncated: false,
+    readError: '',
     ...overrides,
   };
 }
@@ -36,7 +37,7 @@ function render(data: IServiceLogs): ComponentFixture<LogDialogComponent> {
 describe('LogDialogComponent', () => {
 
   it('should create', () => {
-    const fixture = render({ name: '42-7', image: 'ns/img', tasks: [] });
+    const fixture = render({ name: '42-7', image: 'ns/img', tasks: [], omittedTasks: 0 });
     expect(fixture.componentInstance).toBeTruthy();
   });
 
@@ -48,6 +49,7 @@ describe('LogDialogComponent', () => {
         taskLog({ taskId: 'first', logs: 'attempt one' }),
         taskLog({ taskId: 'second', slot: 2, node: 'worker-02', logs: 'attempt two' }),
       ],
+      omittedTasks: 0,
     });
 
     const outputs = fixture.nativeElement.querySelectorAll('.log-dialog__output');
@@ -61,6 +63,7 @@ describe('LogDialogComponent', () => {
       name: '42-7',
       image: 'harbor.centralesupelec.fr/mydocker-vd-pp/test-mailhog-2',
       tasks: [],
+      omittedTasks: 0,
     });
 
     expect(fixture.componentInstance.imageReference).toBe('mydocker-vd-pp/test-mailhog-2');
@@ -73,13 +76,44 @@ describe('LogDialogComponent', () => {
       name: '42-7',
       image: 'ns/img',
       tasks: [taskLog({ truncated: true }), taskLog({ taskId: 'other', truncated: false })],
+      omittedTasks: 0,
     });
 
     expect(fixture.nativeElement.querySelectorAll('.log-dialog__truncated').length).toBe(1);
   });
 
+  it('says why an attempt could not be read, instead of showing it as empty', () => {
+    const fixture = render({
+      name: '42-7',
+      image: 'ns/img',
+      tasks: [taskLog({ logs: '', readError: 'no such task' })],
+      omittedTasks: 0,
+    });
+
+    expect(fixture.nativeElement.querySelector('.log-dialog__read-error')).toBeTruthy();
+    // Nothing is shown as output, because there was none to read.
+    expect(fixture.nativeElement.querySelectorAll('.log-dialog__output').length).toBe(0);
+  });
+
+  it('reports attempts that were not read at all', () => {
+    const fixture = render({
+      name: '42-7',
+      image: 'ns/img',
+      tasks: [taskLog()],
+      omittedTasks: 3,
+    });
+
+    expect(fixture.nativeElement.querySelector('.log-dialog__omitted')).toBeTruthy();
+  });
+
+  it('says nothing about omitted attempts when there are none', () => {
+    const fixture = render({ name: '42-7', image: 'ns/img', tasks: [taskLog()], omittedTasks: 0 });
+
+    expect(fixture.nativeElement.querySelector('.log-dialog__omitted')).toBeNull();
+  });
+
   it('shows the empty message when there are no tasks', () => {
-    const fixture = render({ name: '42-7', image: 'ns/img', tasks: [] });
+    const fixture = render({ name: '42-7', image: 'ns/img', tasks: [], omittedTasks: 0 });
 
     expect(fixture.nativeElement.querySelector('.log-dialog__empty')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('.log-dialog__output').length).toBe(0);
@@ -90,6 +124,7 @@ describe('LogDialogComponent', () => {
       name: '42-7',
       image: 'ns/img',
       tasks: [taskLog({ node: '', createdAt: null })],
+      omittedTasks: 0,
     });
 
     expect(fixture.nativeElement.querySelectorAll('.log-dialog__output').length).toBe(1);

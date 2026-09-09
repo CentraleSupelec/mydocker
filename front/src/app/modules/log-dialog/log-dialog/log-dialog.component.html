@@ -10,6 +10,10 @@
     </p>
   </div>
 
+  <p class="log-dialog__omitted" *ngIf="data?.omittedTasks">
+    {{ 'container.logs.omitted_tasks' | translate:{ count: data.omittedTasks } }}
+  </p>
+
   <ng-container *ngIf="data?.tasks?.length; else noLogs">
     <div class="log-dialog__task" *ngFor="let task of data.tasks">
       <h4 class="log-dialog__task-header">
@@ -24,7 +28,10 @@
       <p class="log-dialog__truncated" *ngIf="task.truncated">
         {{ 'container.logs.truncated' | translate }}
       </p>
-      <pre class="log-dialog__output">{{ task.logs }}</pre>
+      <p class="log-dialog__read-error" *ngIf="task.readError">
+        {{ 'container.logs.read_error' | translate:{ reason: task.readError } }}
+      </p>
+      <pre class="log-dialog__output" *ngIf="!task.readError">{{ task.logs }}</pre>
     </div>
   </ng-container>
 

@@ -31,6 +31,12 @@
   margin-left: 8px;
 }
 
+.log-dialog__read-error,
+.log-dialog__omitted {
+  color: #b3261e;
+  margin: 0 0 4px;
+}
+
 .log-dialog__truncated {
   color: #666;
   font-style: italic;

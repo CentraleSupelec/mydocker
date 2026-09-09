@@ -43,10 +43,12 @@ export interface ITaskLog {
   createdAt: string | null;
   logs: string;
   truncated: boolean;
+  readError: string;
 }
 
 export interface IServiceLogs {
   name: string;
   image: string;
   tasks: ITaskLog[];
+  omittedTasks: number;
 }

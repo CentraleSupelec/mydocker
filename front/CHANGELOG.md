@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Show logs by node, and show the environment and image names in the log dialog
 - The log dialog lists each attempt of an environment in order, under a header naming its node, attempt number and start time, instead of one block per node. It reads the new `logs/{courseId}/tasks` endpoint, says when output was truncated, and shows the image without its registry host
 - Every label in the log dialog is translated, including the close button and the heading, which were hardcoded French
+- The log dialog says when an attempt's output could not be read, and how many older attempts were not read at all, instead of showing either as empty
 
 
 ## 2.28.22

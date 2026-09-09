@@ -534,6 +534,8 @@
       "task_header": "Nœud {{node}}, tentative {{slot}}",
       "unknown_node": "nœud inconnu",
       "truncated": "Seules les dernières lignes sont affichées.",
+      "read_error": "La sortie de cette tentative n'a pas pu être lue : {{reason}}",
+      "omitted_tasks": "{{count}} tentatives plus anciennes ne sont pas affichées.",
       "no_logs": "Aucun log trouvé.",
       "close": "Fermer"
     },

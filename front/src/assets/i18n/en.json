@@ -534,6 +534,8 @@
       "task_header": "Node {{node}}, attempt {{slot}}",
       "unknown_node": "unknown node",
       "truncated": "Only the most recent lines are shown.",
+      "read_error": "This attempt's output could not be read: {{reason}}",
+      "omitted_tasks": "{{count}} earlier attempts are not shown.",
       "no_logs": "No logs found.",
       "close": "Close"
     },
