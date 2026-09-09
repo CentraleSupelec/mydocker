@@ -17,6 +17,7 @@ import { DesktopNotificationService } from '../../../utils/services/desktop-noti
 import { NgxPermissionsObject, NgxPermissionsService } from "ngx-permissions";
 import { Roles } from "../../../admin-users/interfaces/roles";
 import { TranslateService } from '@ngx-translate/core';
+import { LaunchIntent } from '../../interfaces/launch-intent';
 
 
 const ContainerSwarmStateOrder = [
@@ -45,11 +46,13 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   @Input() $reset: Subject<void> = new Subject<void>();
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
-  @Input() launch: boolean = false;
+  @Input() intent: LaunchIntent = 'none';
   @Input() active: boolean = false;
   @Input() userRedirect: string | undefined = undefined;
 
   container: IContainer | null = null;
+  /** True only after the student asked for this environment in this page session. */
+  userStarted = false;
   state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' = 'ask';
   step: number = 0;
   stepMessage: string = '';
@@ -78,13 +81,25 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.launch && this.launch && this.canAskContainer()) {
-      this.initGetContainer(false, !this.active);
-    }
-
     if (!(this.state == 'ask') && changes.active && !this.active) {
       this.container = null;
       this.state = 'ask';
+      this.userStarted = false;
+    }
+
+    if (changes.intent && 'start' === this.intent && this.canAskContainer()) {
+      this.userStarted = true;
+      if (this.active) {
+        // Already running: there is nothing to create, only details to read.
+        this.discoverRunningContainer();
+      } else {
+        this.initGetContainer();
+      }
+      return;
+    }
+
+    if (changes.active && this.active && 'ask' === this.state) {
+      this.discoverRunningContainer();
     }
   }
 
@@ -110,6 +125,40 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
     this.userPermissions = this.ngxPermissionsService.getPermissions();
     this.desktopNotificationService.askPermissions();
+  }
+
+  /**
+   * Reads the details of an environment the dashboard already reports as running. A read only: a
+   * dashboard load must never create an environment, and must never open a tab on its own, which is
+   * why autoclick follows `userStarted` and not this path.
+   */
+  private discoverRunningContainer(): void {
+    this.containerApiService.getContainer(this.sessionCourseOrCourse?.id).subscribe({
+      next: (container) => {
+        if (!container) {
+          // The list and this read disagree; the next list poll settles it, no retry here.
+          return;
+        }
+        this.container = container;
+        if (this.isReady(container)) {
+          this.state = 'container_created';
+          // Reaching the created state is what schedules the shutdown warning; skipping it would
+          // silently drop the warning for every student who reloads the dashboard.
+          this.setWarningTimeout();
+        } else {
+          // Still starting: show the existing progress, which reads and never creates.
+          this.startInitPolling();
+        }
+      },
+      error: () => {
+        this.container = null;
+      }
+    });
+  }
+
+  private isReady(container: IContainer): boolean {
+    return container.status === ContainerStatus.OK
+      || (container.state === ContainerSwarmState.RUNNING && container.status !== ContainerStatus.CHECKING);
   }
 
   initGetContainer(forceRecreate: boolean = false, updateLastStartDate: boolean = true) {
@@ -157,7 +206,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
           const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
           this.step =  index * 100 / ContainerSwarmStateOrder.length;
           this.stepMessage = `${this.translate.instant(`container.steps.${(container.state ?? ContainerSwarmState.UNKNOWN).toLowerCase()}`)} (${this.translate.instant('container.step')} ${index + 1}/${ContainerSwarmStateOrder.length})`;
-          if (container.status === ContainerStatus.OK || (container.state === ContainerSwarmState.RUNNING && container.status !== ContainerStatus.CHECKING)) {
+          if (this.isReady(container)) {
             this.state = 'container_created';
             this.stopInitPolling$.next();
             this.setWarningTimeout();

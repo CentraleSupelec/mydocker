@@ -24,7 +24,7 @@
         [container]="container"
         [displayOptions]="sessionCourseOrCourse?.displayOptions"
         [userRedirect]="userRedirect"
-        [enableAutoClick]="true"
+        [enableAutoClick]="userStarted"
         (deleteEnv)="deleteEnv()"
       ></app-display-container>
       <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="15px">

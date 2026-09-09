@@ -142,6 +142,24 @@ describe('DisplayContainerComponent', () => {
     expect(component.shouldAutoclick()).toBeFalse();
   });
 
+  it('does not autoclick when the caller has not enabled it', () => {
+    component.displayOptions = {
+      customPortsDisplay: [] as any[],
+      displayUsername: false,
+      displayPassword: false,
+    } as any;
+
+    component.container = {
+      ports: [{ mapPort: 80 }],
+    } as any;
+
+    component.enableAutoClick = false;
+    component.ngOnInit();
+
+    expect(component.shouldAutoclick()).toBeTrue();
+    expect(component.autoClick).toBeFalse();
+  });
+
   // --------------------------------------------------------
   // Tests for shouldDisplay()
   // --------------------------------------------------------

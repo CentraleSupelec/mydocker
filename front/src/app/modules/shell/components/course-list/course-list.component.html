@@ -41,7 +41,7 @@
       </mat-expansion-panel-header>
       <app-course-detail
         [session]="element.sessions[0]"
-        [launch]="isToBeLaunched(element)"
+        [intent]="intentFor(element)"
         [active]="isActive(element)"
         [course]="element"
         [userRedirect]="element.id === courseId? userRedirect: undefined"
@@ -78,7 +78,7 @@
       </mat-expansion-panel-header>
       <app-course-detail
         [session]="element.sessions[0]"
-        [launch]="isToBeLaunched(element)"
+        [intent]="intentFor(element)"
         [active]="isActive(element)"
         [course]="element"
         [userRedirect]="element.id === courseId? userRedirect: undefined"

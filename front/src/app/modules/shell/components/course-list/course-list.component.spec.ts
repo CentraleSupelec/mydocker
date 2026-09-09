@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CourseListComponent } from './course-list.component';
 import { RouterTestingModule } from "@angular/router/testing";
-import { ActivatedRoute, convertToParamMap } from "@angular/router";
+import { ActivatedRoute, convertToParamMap, Router } from "@angular/router";
 import { of } from "rxjs";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { APP_CONFIG } from 'src/app/app-config';
@@ -49,5 +49,69 @@ describe('CourseListComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+});
+
+describe('CourseListComponent, consuming the launch parameter', () => {
+  let component: CourseListComponent;
+  let fixture: ComponentFixture<CourseListComponent>;
+  let router: Router;
+
+  const tomorrow = new Date().getTime() + 24 * 3600 * 1000;
+  const courses = [{
+    id: 42,
+    title: 'Course 42',
+    sessions: [{ id: 7, startDateTime: tomorrow }],
+  }];
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [CourseListComponent],
+      imports: [
+        TranslateTestingModule,
+        RouterTestingModule,
+        HttpClientTestingModule,
+        MatExpansionModule,
+      ],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            data: of({ courses }),
+            queryParamMap: of(convertToParamMap({
+              course_id: '42',
+              session_id: '7',
+              user_redirect: '/git_clone?repo=lab',
+            }))
+          }
+        },
+        {
+          provide: APP_CONFIG,
+          useValue: { back_url: 'http://back/', polling_interval_in_milliseconds: 60000 }
+        }
+      ]
+    })
+      .compileComponents();
+
+    router = TestBed.inject(Router);
+  });
+
+  it('strips course_id once consumed and keeps session_id and user_redirect', () => {
+    const navigate = spyOn(router, 'navigate');
+
+    fixture = TestBed.createComponent(CourseListComponent);
+    component = fixture.componentInstance;
+    // ngOnInit rather than detectChanges: the URL rewrite is what is under test, not the template.
+    component.ngOnInit();
+
+    expect(component.courseId).toBe(42);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith([], {
+      queryParams: {
+        session_id: '7',
+        user_redirect: '/git_clone?repo=lab',
+      },
+      replaceUrl: true
+    });
   });
 });

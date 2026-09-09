@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { IBasicCourse } from "../../interfaces/course";
 import { ISession } from "../../interfaces/session";
 import { Router } from '@angular/router';
+import { LaunchIntent } from "../../interfaces/launch-intent";
 
 @Component({
   selector: 'app-course-detail',
@@ -11,7 +12,7 @@ import { Router } from '@angular/router';
 export class CourseDetailComponent {
   @Input() session: ISession | null = null;
   @Input() course: IBasicCourse | undefined = undefined;
-  @Input() launch: boolean = false;
+  @Input() intent: LaunchIntent = 'none';
   @Input() userRedirect: string | undefined = undefined;
   @Input() active: boolean = false;
 

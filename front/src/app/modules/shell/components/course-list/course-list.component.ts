@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, ParamMap, Router } from "@angular/router";
 import { ISession } from "../../interfaces/session";
 import { IBasicCourseWithSession } from "../../interfaces/course";
 import { FormControl } from "@angular/forms";
@@ -11,6 +11,8 @@ import { ContentsApiService } from "src/app/modules/content-access/services/cont
 import { IContent } from "src/app/modules/content/interfaces/content";
 import { TranslateService } from "@ngx-translate/core";
 import { excludePlanifiedFromPast } from "./exclude-planified-from-past";
+import { launchIntentFor } from "./launch-intent";
+import { LaunchIntent } from "../../interfaces/launch-intent";
 
 
 @Component({
@@ -109,6 +111,7 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
               tap(() => this.launchSessionId = sessionId)
             ).subscribe();
           }
+          this.stripConsumedCourseId(queryParamMap);
         }
         this.userRedirect = queryParamMap.get("user_redirect") ?? undefined;
       })
@@ -164,6 +167,23 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   dismiss() {
     this.errorMessage = null;
+  }
+
+  /**
+   * The launch parameter is an instruction, and it has now been carried out. Left in the URL, a
+   * reload would carry it out again. `user_redirect` stays: on its own it starts nothing, and it
+   * also decides which connection button may be clicked for the student.
+   */
+  private stripConsumedCourseId(queryParamMap: ParamMap): void {
+    const currentParams: { [key: string]: string | null } = queryParamMap.keys.reduce(
+      (acc, key) => ({ ...acc, [key]: queryParamMap.get(key) }), {}
+    );
+    delete currentParams['course_id'];
+
+    this.router.navigate([], {
+      queryParams: currentParams,
+      replaceUrl: true
+    });
   }
 
   ngAfterViewInit() {
@@ -245,11 +265,8 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  isToBeLaunched(element: IBasicCourseWithSession): boolean {
-    return (
-      element.sessions[0].id === this.launchSessionId ||
-      this.isActive(element)
-    );
+  intentFor(element: IBasicCourseWithSession): LaunchIntent {
+    return launchIntentFor(element, this.launchSessionId);
   }
 
   isActive(element: IBasicCourseWithSession): boolean {
