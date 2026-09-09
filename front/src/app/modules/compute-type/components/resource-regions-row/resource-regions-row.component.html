@@ -1,0 +1,19 @@
+<div
+  [formGroup]="resourceRegionsFormGroup"
+  fxLayout="row" fxFlexFill fxLayoutGap="10px" fxLayout.sm="column"
+>
+  <mat-form-field style="width: 300px;">
+    <mat-label>{{ 'admin.resources_management.resources_by_session.edit.resource' | translate }}</mat-label>
+    <mat-select formControlName="ovhResourceId">
+      <mat-option value="{{ r.id }}" *ngFor="let r of resources">{{ r.type }} | {{ r.ramInGo }} Go {{ 'admin.resources_management.resources_by_session.edit.of' | translate }} RAM | {{ r.coreNumber }} CPUs</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>{{ 'admin.resources_management.compute_types.edit.autoscaling.region' | translate }}</mat-label>
+    <mat-select formControlName="regions" multiple>
+      <mat-option *ngFor="let region of regions" [value]="region">
+        {{ region }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

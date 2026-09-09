@@ -1,4 +1,4 @@
-import { IOvhResource } from '../../sessions-resources/interfaces/ovh-resource';
+import { IResourceRegions } from '../../sessions-resources/interfaces/session-with-resources';
 
 export interface IOvhRegion {
   region: string;
@@ -16,8 +16,7 @@ export interface IComputeType {
   minIdleNodesCount: number;
   maxNodesCount: number;
   id: number;
-  autoscalingResource: IOvhResource;
-  autoscalingRegions: Array<IOvhRegion>;
+  autoscalingResourcesRegions: Array<IResourceRegions>;
   manualNodesCount: number;
   storageBackend: IStorageBackend;
 }

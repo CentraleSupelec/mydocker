@@ -1,0 +1,18 @@
+<div class="mat-elevation-z3 form-container">
+  <div
+    *ngFor="let control of computeTypeFormArray.controls; let index = index"
+    fxLayout="row" fxFlexFill fxLayoutAlign="space-between center" class="mat-elevation-z4 form-container"
+  >
+    <app-resource-regions-row
+      [resources]="resources"
+      [regions]="regions"
+      [formControl]="$any(control)"
+    ></app-resource-regions-row>
+    <button mat-icon-button (click)="remove(index)" [matTooltip]="'admin.resources_management.resources_by_session.edit.delete_resource' | translate">
+      <mat-icon>clear</mat-icon>
+    </button>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="flex-end">
+    <button mat-raised-button color="accent" (click)="addResource()">{{ 'admin.resources_management.resources_by_session.edit.add_resource' | translate }}</button>
+  </div>
+</div>

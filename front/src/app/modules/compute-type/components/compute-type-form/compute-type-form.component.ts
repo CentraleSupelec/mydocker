@@ -4,6 +4,7 @@ import {
   AbstractControl,
   ControlValueAccessor,
   FormBuilder,
+  FormControl,
   FormGroup,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR, ValidationErrors,
@@ -49,8 +50,7 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
       displayName: ['', Validators.required],
       technicalName: [''],
       gpu: [false, Validators.required],
-      autoscalingRegions: [null],
-      autoscalingResource: [null],
+      autoscalingResourcesRegions: [null],
       minIdleNodesCount: [null],
       maxNodesCount: [null],
       manualNodesCount: [null],
@@ -98,8 +98,7 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
       displayName: obj?.displayName || '',
       technicalName: obj?.technicalName || '',
       gpu: obj?.gpu || false,
-      autoscalingRegions: obj?.autoscalingRegions?.map(ovhRegion => ovhRegion.region) || [],
-      autoscalingResource: obj?.autoscalingResource || null,
+      autoscalingResourcesRegions: obj?.autoscalingResourcesRegions || null,
       minIdleNodesCount: obj?.minIdleNodesCount == null ? null : obj?.minIdleNodesCount,
       maxNodesCount: obj?.maxNodesCount == null ? null : obj?.maxNodesCount,
       manualNodesCount: obj?.manualNodesCount == null ? null : obj?.manualNodesCount,
@@ -107,4 +106,9 @@ export class ComputeTypeFormComponent implements OnInit, ControlValueAccessor, O
     })
   }
 
+  get autoscalingResourcesRegionsControl(): FormControl {
+    return this.computeTypeForm.get(
+      'autoscalingResourcesRegions'
+    ) as FormControl;
+  }
 }

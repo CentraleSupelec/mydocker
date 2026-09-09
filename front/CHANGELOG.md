@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- The compute type form takes several autoscaling resources, each with its own regions, as rows, in place of a single resource and one region list
+
 ## 2.29.0
 ### Changed
 - Show logs by node, and show the environment and image names in the log dialog

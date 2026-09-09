@@ -10,3 +10,8 @@ export interface ISessionWithResources extends IAdminSession {
   course: IAdminCourse;
   resources: IResourceDescription[];
 }
+
+export interface IResourceRegions {
+  ovhResourceId: number;
+  regions: string[];
+}

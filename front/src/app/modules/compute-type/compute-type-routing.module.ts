@@ -16,6 +16,7 @@ const routes: Routes = [
     component: ComputeTypeListComponent,
     resolve: {
       computeTypes: ComputeTypesResolver,
+      resources: OvhResourceResolver,
     }
   },
   {

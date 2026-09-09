@@ -9,6 +9,7 @@ import {
 } from '../../../utils/snack-notification/observable-snack-notification.service';
 import { APP_CONFIG, IAppConfig } from "../../../../app-config";
 import { TranslateService } from "@ngx-translate/core";
+import { IOvhResource } from "src/app/modules/sessions-resources/interfaces/ovh-resource";
 
 @Component({
   selector: 'app-compute-type-list',
@@ -18,6 +19,7 @@ import { TranslateService } from "@ngx-translate/core";
 export class ComputeTypeListComponent implements OnInit {
 
   computeTypes: IComputeType[] = [];
+  resources: IOvhResource[] = [];
   columnsToDisplay = ['id', 'displayName', 'technicalName', 'gpu', 'storageBackend']
 
   constructor(
@@ -31,8 +33,9 @@ export class ComputeTypeListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.data.subscribe(({computeTypes}) => {
+    this.route.data.subscribe(({computeTypes, resources}) => {
       this.computeTypes = computeTypes;
+      this.resources = resources;
     });
     if (this.config.deployment_enabled) {
       this.columnsToDisplay.push('autoscaling', 'action');
@@ -70,5 +73,9 @@ export class ComputeTypeListComponent implements OnInit {
 
   mapRegions(regions: Array<IOvhRegion>): Array<String> {
     return regions.map(region => region.region);
+  }
+
+  getResourceType(resourceId: number): string | undefined {
+    return this.resources.find(resource => resource.id == resourceId)?.type;
   }
 }

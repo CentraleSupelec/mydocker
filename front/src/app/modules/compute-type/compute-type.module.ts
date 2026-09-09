@@ -24,6 +24,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { RegionsModule } from '../regions/regions.module';
 import { APP_CONFIG, appConstantFactory } from "../../app-config";
 import { TranslateModule } from '@ngx-translate/core';
+import { ResourceRegionsRowComponent } from './components/resource-regions-row/resource-regions-row.component';
+import { ResourcesRegionsFormComponent } from './components/resources-regions-form/resources-regions-form.component';
 
 
 @NgModule({
@@ -31,7 +33,9 @@ import { TranslateModule } from '@ngx-translate/core';
     ComputeTypeListComponent,
     ComputeTypeFormComponent,
     ComputeTypeNewComponent,
-    ComputeTypeEditComponent
+    ComputeTypeEditComponent,
+    ResourceRegionsRowComponent,
+    ResourcesRegionsFormComponent
   ],
   imports: [
     CommonModule,

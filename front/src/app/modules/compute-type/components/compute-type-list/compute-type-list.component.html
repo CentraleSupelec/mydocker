@@ -28,8 +28,10 @@
   <ng-container matColumnDef="autoscaling">
     <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.compute_types.columns.autoscaling.label' | translate }}</mat-header-cell>
     <mat-cell *matCellDef="let element">
-      <ng-container *ngIf="element.autoscalingRegions?.length && element.autoscalingResource">
-        {{ mapRegions(element.autoscalingRegions).join(' / ') }} - {{ element.autoscalingResource.type }}<br />
+      <ng-container *ngIf="element.autoscalingResourcesRegions?.length">
+        <ng-container *ngFor="let autoscalingResourceRegions of element.autoscalingResourcesRegions">
+            {{ autoscalingResourceRegions.regions.join(' / ') }} - {{ getResourceType(autoscalingResourceRegions.ovhResourceId) }}<br />
+        </ng-container>
         {{ element.minIdleNodesCount }} {{ 'admin.resources_management.compute_types.columns.autoscaling.instances_to_be_reserved' | translate }}<br />
         {{ element.maxNodesCount }} {{ 'admin.resources_management.compute_types.columns.autoscaling.max_instances' | translate }}<br />
         {{ element.manualNodesCount }} {{ 'admin.resources_management.compute_types.columns.autoscaling.manual_instances' | translate }}<br />
