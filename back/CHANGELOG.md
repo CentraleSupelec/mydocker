@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.34.0
 ### Changed
 - Environment logs are returned per task rather than as one block, each with its node, slot and start time, so a restarted environment reads as separate attempts. Served at `logs/{courseId}/tasks`; the previous `logs/{courseId}` text endpoint answers for one more release so an open browser tab keeps working, and is removed after that
 
