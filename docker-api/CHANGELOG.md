@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.19.0
 ### Changed
 - Return logs by node, and add the image and environment name to the logs response
 - Return environment logs per task instead of per node, ordered by slot then creation time, so a restart reads as its own entry; `LogResponse.logs` is now a repeated message and field 1 is reserved
