@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - A login button, tooltip or information link whose title has no entry for the current language falls back to another language instead of rendering an empty label, and a title still declared as a plain string, as on a platform provisioned before the i18n migration, is displayed as it stands
 
 ## 2.28.21
+### Added
+- The course form reports an invalid `{{PORT['<port>']}}` placeholder in a command before saving: mismatched quotes, a port outside 1 to 65535, a leading zero, or a port the course does not declare. The grammar matches the back end's, so a command the form accepts is a command the back end accepts
+
 ### Changed
 - The production build fails when the bundle or a component stylesheet exceeds its size budget, instead of only warning
 - Template diagnostics are errors rather than warnings, so a message containing the word Error no longer leaves the job green. The nine existing occurrences are fixed
@@ -50,7 +53,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - OTHER connection type to TCP + its display
-- Check if command contains invalid port variables
 
 ## 2.28.15
 ### Added
