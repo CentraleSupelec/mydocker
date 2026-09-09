@@ -82,6 +82,10 @@ message TaskLog {
     google.protobuf.Timestamp createdAt = 4;
     string logs = 5;
     bool truncated = 6;
+    // Set when this task's output could not be read. An entry with an empty
+    // logs field and no readError means the task genuinely printed nothing,
+    // which is a different thing to say to a student.
+    string readError = 7;
 }
 
 message LogResponse {
@@ -93,6 +97,9 @@ message LogResponse {
     string name = 2;
     string image = 3;
     repeated TaskLog logs = 4;
+    // Number of older attempts dropped to bound how many task log streams one
+    // request reads. Zero for every environment that has not churned.
+    uint32 omittedTasks = 5;
 }
 
 message UserPasswordMethod {

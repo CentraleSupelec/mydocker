@@ -9,4 +9,5 @@ public class LogResponseDto {
     private String name;
     private String image;
     private List<TaskLogDto> tasks;
+    private long omittedTasks;
 }

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - `go.app.max-inbound-message-size`, default 16 MiB, replaces gRPC's own 4 MiB default for responses from the Go API
+- A log entry carries the reason its output could not be read, and the response reports how many older attempts were not read at all
 
 
 ## 2.33.0

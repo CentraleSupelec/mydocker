@@ -12,4 +12,5 @@ public class TaskLogDto {
     private Instant createdAt;
     private String logs;
     private boolean truncated;
+    private String readError;
 }

@@ -16,7 +16,8 @@ public class LogsMapper {
         return new LogResponseDto()
                 .setName(logResponse.getName())
                 .setImage(logResponse.getImage())
-                .setTasks(convertTasks(logResponse.getLogsList()));
+                .setTasks(convertTasks(logResponse.getLogsList()))
+                .setOmittedTasks(logResponse.getOmittedTasks());
     }
 
     /**
@@ -49,10 +50,12 @@ public class LogsMapper {
                                 : null
                 )
                 .setLogs(task.getLogs())
-                .setTruncated(task.getTruncated());
+                .setTruncated(task.getTruncated())
+                .setReadError(task.getReadError());
     }
 
     private static String renderTask(TaskLog task) {
-        return String.format("--- %s (slot %d) ---%n%s", task.getNode(), task.getSlot(), task.getLogs());
+        String body = task.getReadError().isEmpty() ? task.getLogs() : task.getReadError();
+        return String.format("--- %s (slot %d) ---%n%s", task.getNode(), task.getSlot(), body);
     }
 }
