@@ -531,9 +531,11 @@
       "title": "Logs",
       "environment": "Environment",
       "image": "Image",
-      "node": "Node",
-      "logs_by_node": "Logs by node",
-      "no_logs": "No logs found."
+      "task_header": "Node {{node}}, attempt {{slot}}",
+      "unknown_node": "unknown node",
+      "truncated": "Only the most recent lines are shown.",
+      "no_logs": "No logs found.",
+      "close": "Close"
     },
     "request_new_environment": "Request a new environment",
     "date": {

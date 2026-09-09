@@ -1,43 +1,38 @@
-<div mat-dialog-content fxLayout="column" style="min-width: 500px; padding-top: 10px;">
-  <div style="margin-bottom: 24px; font-size: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 16px;">
-    <p style="margin: 4px 0;">
-      <strong style="color: #333;">{{ 'container.logs.environment' | translate }} :</strong>
-      <span style="color: #666; margin-left: 8px;">{{ data.name }}</span>
+<div mat-dialog-content fxLayout="column" class="log-dialog">
+  <div class="log-dialog__summary">
+    <p>
+      <strong>{{ 'container.logs.environment' | translate }} :</strong>
+      <span>{{ data.name }}</span>
     </p>
-    <p style="margin: 4px 0;">
-      <strong style="color: #333;">{{ 'container.logs.image' | translate }} :</strong>
-      <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-left: 8px; color: #e91e63;">{{ data.image }}</code>
+    <p>
+      <strong>{{ 'container.logs.image' | translate }} :</strong>
+      <code>{{ imageReference }}</code>
     </p>
   </div>
 
-  <h3 style="font-weight: bold; margin-bottom: 16px; color: #333;">{{ 'container.logs.logs_by_node' | translate }}</h3>
+  <ng-container *ngIf="data?.tasks?.length; else noLogs">
+    <div class="log-dialog__task" *ngFor="let task of data.tasks">
+      <h4 class="log-dialog__task-header">
+        {{ 'container.logs.task_header' | translate:{
+          node: task.node || ('container.logs.unknown_node' | translate),
+          slot: task.slot
+        } }}
+        <span class="log-dialog__task-date" *ngIf="task.createdAt">
+          {{ task.createdAt | date:'short' }}
+        </span>
+      </h4>
+      <p class="log-dialog__truncated" *ngIf="task.truncated">
+        {{ 'container.logs.truncated' | translate }}
+      </p>
+      <pre class="log-dialog__output">{{ task.logs }}</pre>
+    </div>
+  </ng-container>
 
-  <mat-accordion multi="true" *ngIf="data?.logsByNode && (data.logsByNode | keyvalue).length > 0">
-    <mat-expansion-panel
-      *ngFor="let node of data.logsByNode | keyvalue"
-      style="margin-bottom: 8px; box-shadow: none; border: 1px solid #e0e0e0; border-radius: 4px !important;"
-      [expanded]="true"
-    >
-
-      <mat-expansion-panel-header style="height: 48px;">
-        <mat-panel-title>
-          <strong style="color: #3f51b5; font-size: 15px;">{{ 'container.logs.node' | translate }} :</strong>
-          <span style="font-weight: 600; margin-left: 6px; color: #444;">{{ node.key }}</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-
-      <div style="padding-top: 8px;">
-        <pre style="background: #1e1e1e; color: #f8f8f2; padding: 14px; border-radius: 4px; overflow-x: auto; max-height: 400px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; margin: 0;">{{ node.value }}</pre>
-      </div>
-
-    </mat-expansion-panel>
-  </mat-accordion>
-
-  <div *ngIf="!data?.logsByNode || (data.logsByNode | keyvalue).length === 0" style="padding: 20px 0; text-align: center; color: #888;">
-    <p>{{ 'container.logs.no_logs' | translate }}</p>
-  </div>
+  <ng-template #noLogs>
+    <p class="log-dialog__empty">{{ 'container.logs.no_logs' | translate }}</p>
+  </ng-template>
 </div>
 
-<div mat-dialog-actions fxLayout="row" fxLayoutAlign="end center" style="border-top: 1px solid #e0e0e0; padding-top: 12px;">
-  <button mat-flat-button color="primary" (click)="close()">Fermer</button>
+<div mat-dialog-actions fxLayout="row" fxLayoutAlign="end center">
+  <button mat-flat-button color="primary" (click)="close()">{{ 'container.logs.close' | translate }}</button>
 </div>

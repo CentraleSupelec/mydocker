@@ -36,8 +36,17 @@ export interface IContainer {
   errorParams: { [key: string]: string};
 }
 
+export interface ITaskLog {
+  taskId: string;
+  slot: number;
+  node: string;
+  createdAt: string | null;
+  logs: string;
+  truncated: boolean;
+}
+
 export interface IServiceLogs {
   name: string;
   image: string;
-  logsByNode: Record<string, string>;
+  tasks: ITaskLog[];
 }

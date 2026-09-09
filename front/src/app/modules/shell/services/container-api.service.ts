@@ -47,7 +47,7 @@ export class ContainerApiService {
   }
 
   getLogs(courseId: number | undefined): Observable<IServiceLogs> {
-    return this.httpClient.get<IServiceLogs>(`${this.config.back_url}docker/logs/${courseId}`);
+    return this.httpClient.get<IServiceLogs>(`${this.config.back_url}docker/logs/${courseId}/tasks`);
   }
 
   delayDeletion(sessionId: number | undefined): Observable<IDelayDeletion> {

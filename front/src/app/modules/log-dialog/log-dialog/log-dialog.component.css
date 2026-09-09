@@ -1,4 +1,55 @@
-pre {
-  width: 100%;
+.log-dialog {
+  min-width: 500px;
+  padding-top: 10px;
+}
+
+.log-dialog__summary {
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+
+.log-dialog__summary p {
+  margin: 4px 0;
+}
+
+.log-dialog__summary code {
+  background: #f4f4f4;
+  border-radius: 4px;
+  margin-left: 8px;
+  padding: 2px 6px;
+}
+
+.log-dialog__task-header {
+  font-weight: bold;
+  margin: 16px 0 4px;
+}
+
+.log-dialog__task-date {
+  color: #666;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.log-dialog__truncated {
+  color: #666;
+  font-style: italic;
+  margin: 0 0 4px;
+}
+
+.log-dialog__output {
+  background: #1e1e1e;
+  border-radius: 4px;
+  color: #f8f8f2;
+  line-height: 1.5;
+  margin: 0;
+  overflow-x: auto;
+  padding: 12px;
   white-space: pre-wrap;
+}
+
+.log-dialog__empty {
+  color: #888;
+  padding: 20px 0;
+  text-align: center;
 }

@@ -531,9 +531,11 @@
       "title": "Logs",
       "environment": "Environnement",
       "image": "Image",
-      "node": "Noeud",
-      "logs_by_node": "Logs par noeud",
-      "no_logs": "Aucun log trouvé."
+      "task_header": "Nœud {{node}}, tentative {{slot}}",
+      "unknown_node": "nœud inconnu",
+      "truncated": "Seules les dernières lignes sont affichées.",
+      "no_logs": "Aucun log trouvé.",
+      "close": "Fermer"
     },
     "request_new_environment": "Demander un nouvel environnement",
     "date": {
