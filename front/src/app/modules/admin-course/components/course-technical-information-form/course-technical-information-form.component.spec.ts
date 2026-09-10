@@ -5,6 +5,7 @@ import { AdminCourseModule } from "../../admin-course.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
+import { APP_CONFIG, IAppConfig } from '../../../../app-config';
 
 describe('CourseTechnicalInformationFormComponent', () => {
   let component: CourseTechnicalInformationFormComponent;
@@ -139,5 +140,65 @@ describe('CourseTechnicalInformationFormComponent', () => {
       expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
       expect(component.courseTechnicalForm.hasError('unknownCommandPorts')).toBeFalse();
     });
+  });
+});
+
+// save_student_work_enabled retires the rsync save and the submission it fed. It must not reach
+// the work volume: the volume is a plain per-environment mount, configured through the same
+// checkbox, and gating it here once left every platform unable to set one up at all.
+describe('CourseTechnicalInformationFormComponent work volume gating', () => {
+  async function renderWithSaveEnabled(
+    saveStudentWorkEnabled: boolean
+  ): Promise<ComponentFixture<CourseTechnicalInformationFormComponent>> {
+    await TestBed.configureTestingModule({
+      declarations: [ CourseTechnicalInformationFormComponent ],
+      imports: [
+        TranslateTestingModule,
+        AdminCourseModule,
+        NoopAnimationsModule,
+        HttpClientTestingModule,
+      ],
+      providers: [
+        {
+          provide: APP_CONFIG,
+          useValue: { save_student_work_enabled: saveStudentWorkEnabled } as IAppConfig,
+        },
+      ],
+    })
+    .compileComponents();
+
+    const fixture = TestBed.createComponent(CourseTechnicalInformationFormComponent);
+    // The size and path fields only appear once the volume itself is asked for.
+    fixture.componentInstance.courseTechnicalForm.get('saveStudentWork')?.setValue(true);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  const volumeFields = (fixture: ComponentFixture<CourseTechnicalInformationFormComponent>) => ({
+    size: fixture.nativeElement.querySelector('input[formcontrolname="workdirSize"]'),
+    path: fixture.nativeElement.querySelector('input[formcontrolname="workdirPath"]'),
+    submit: fixture.nativeElement.querySelector('mat-checkbox[formcontrolname="allowStudentToSubmit"]'),
+  });
+
+  it('offers the volume size and path when saving is disabled', async () => {
+    const fields = volumeFields(await renderWithSaveEnabled(false));
+
+    expect(fields.size).toBeTruthy();
+    expect(fields.path).toBeTruthy();
+  });
+
+  it('offers the volume size and path when saving is enabled', async () => {
+    const fields = volumeFields(await renderWithSaveEnabled(true));
+
+    expect(fields.size).toBeTruthy();
+    expect(fields.path).toBeTruthy();
+  });
+
+  it('withholds the submission checkbox when saving is disabled', async () => {
+    expect(volumeFields(await renderWithSaveEnabled(false)).submit).toBeNull();
+  });
+
+  it('offers the submission checkbox when saving is enabled', async () => {
+    expect(volumeFields(await renderWithSaveEnabled(true)).submit).toBeTruthy();
   });
 });

@@ -8,6 +8,7 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 import { SimpleChange } from '@angular/core';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ISession } from '../../interfaces/session';
 import { IBasicCourse } from '../../interfaces/course';
 import { IContainer } from '../../interfaces/container';
@@ -274,5 +275,65 @@ describe('ShellAccessComponent', () => {
 
       discardPeriodicTasks();
     }));
+  });
+});
+
+// The rsync save is retired on every platform. Its button used to be gated on the course fields
+// alone, so a course still carrying them offered a button the back end answers with 403.
+describe('ShellAccessComponent save button gating', () => {
+  function submittableSession(): ISession {
+    return {
+      id: 7,
+      startDateTime: new Date().getTime() - 60000,
+      blockContainerCreationBeforeStartTime: false,
+      course: { id: 42, allowStudentToSubmit: true, studentWorkIsSaved: true } as IBasicCourse,
+    } as ISession;
+  }
+
+  async function renderRunningWithSaveEnabled(
+    saveStudentWorkEnabled: boolean
+  ): Promise<ComponentFixture<ShellAccessComponent>> {
+    await TestBed.configureTestingModule({
+      declarations: [ ShellAccessComponent ],
+      providers: [
+        {
+          provide: APP_CONFIG,
+          useValue: { back_url: 'http://back/', save_student_work_enabled: saveStudentWorkEnabled },
+        },
+      ],
+      imports: [
+        TranslateTestingModule,
+        ShellModule,
+        HttpClientTestingModule,
+        RouterTestingModule,
+        NgxPermissionsModule.forRoot(),
+        // The running panel renders material form fields, which animate.
+        NoopAnimationsModule,
+      ]
+    })
+    .compileComponents();
+
+    const fixture = TestBed.createComponent(ShellAccessComponent);
+    const component = fixture.componentInstance;
+    component.session = submittableSession();
+    component.active = true;
+    component.ngOnChanges({ active: new SimpleChange(false, true, false) });
+
+    TestBed.inject(HttpTestingController).expectOne(CONTAINER_URL).flush(runningContainer());
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('withholds the save button on an infrastructure where saving is disabled', async () => {
+    const fixture = await renderRunningWithSaveEnabled(false);
+
+    expect(fixture.componentInstance.state).toBe('container_created');
+    expect(fixture.nativeElement.querySelector('app-save-state')).toBeNull();
+  });
+
+  it('offers the save button when saving is enabled', async () => {
+    const fixture = await renderRunningWithSaveEnabled(true);
+
+    expect(fixture.nativeElement.querySelector('app-save-state')).toBeTruthy();
   });
 });

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { APP_CONFIG, IAppConfig } from '../../../../app-config';
 import { interval, of, Subject } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
 import { catchError, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
@@ -82,7 +83,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     private readonly snackNotificationService: SnackNotificationService,
     private readonly desktopNotificationService: DesktopNotificationService,
     private readonly ngxPermissionsService: NgxPermissionsService,
-    private readonly translate: TranslateService
+    private readonly translate: TranslateService,
+    @Inject(APP_CONFIG) readonly config: IAppConfig,
   ) {
   }
 

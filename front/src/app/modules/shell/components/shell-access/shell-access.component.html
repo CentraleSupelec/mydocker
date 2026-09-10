@@ -30,7 +30,7 @@
       <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="15px">
         <app-save-state
           [course]="sessionCourseOrCourse"
-          *ngIf="container?.status === 'OK' && sessionCourseOrCourse?.allowStudentToSubmit && sessionCourseOrCourse?.studentWorkIsSaved"
+          *ngIf="config.save_student_work_enabled && container?.status === 'OK' && sessionCourseOrCourse?.allowStudentToSubmit && sessionCourseOrCourse?.studentWorkIsSaved"
         >
         </app-save-state>
         <div fxLayout="column" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="container?.status === 'OK'">

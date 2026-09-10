@@ -51,22 +51,22 @@
     </mat-form-field>
   </div>
   <mat-checkbox
-    *ngIf="config.save_student_work_enabled; else saveStudentWorkRetired"
     formControlName="saveStudentWork"
     (change)="changeSaveStudentWork($event.checked)"
   >
-    {{ 'admin.courses.edit.technical_info.save_student_work.label' | translate }}
+    <span
+      [matTooltip]="'admin.courses.edit.technical_info.save_student_work.tooltip' | translate"
+    >
+      {{ 'admin.courses.edit.technical_info.save_student_work.label' | translate }}
+    </span>
   </mat-checkbox>
-  <ng-template #saveStudentWorkRetired>
-    <p>{{ 'admin.courses.edit.technical_info.save_student_work.retired' | translate }}</p>
-  </ng-template>
   <div
     fxLayout="row"
     fxFlexFill
     fxLayout.lt-md="column"
     fxLayoutGap="16px"
     fxLayoutAlign="start center"
-     *ngIf="config.save_student_work_enabled && courseTechnicalForm.get('saveStudentWork')?.value"
+     *ngIf="courseTechnicalForm.get('saveStudentWork')?.value"
   >
     <mat-form-field>
       <mat-label>{{ 'admin.courses.edit.technical_info.save_student_work.size' | translate }}</mat-label>
@@ -76,9 +76,15 @@
       <mat-label>{{ 'admin.courses.edit.technical_info.save_student_work.path' | translate }}</mat-label>
       <input matInput formControlName="workdirPath">
     </mat-form-field>
-    <mat-checkbox formControlName="allowStudentToSubmit">
+    <mat-checkbox
+      formControlName="allowStudentToSubmit"
+      *ngIf="config.save_student_work_enabled; else saveStudentWorkRetired"
+    >
       {{ 'admin.courses.edit.technical_info.save_student_work.allow_submit' | translate }}
     </mat-checkbox>
+    <ng-template #saveStudentWorkRetired>
+      <p>{{ 'admin.courses.edit.technical_info.save_student_work.retired' | translate }}</p>
+    </ng-template>
   </div>
   <br>
   <mat-checkbox

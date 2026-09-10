@@ -101,11 +101,12 @@
           "cpu_limit": "CPU limit (in VCPU)",
           "memory_limit": "RAM limit (in GB)",
           "save_student_work": {
-            "label": "Save student work",
+            "label": "Enable a work volume for this environment",
+            "tooltip": "This volume is dedicated to this environment and is not shared between courses.",
             "size": "Storage size (in MB)",
-            "path": "Folder to be saved path",
+            "path": "Volume mount path",
             "allow_submit": "Allow students to submit",
-            "retired": "Saving and submitting student work are disabled on this infrastructure."
+            "retired": "Submitting student work is disabled on this infrastructure."
           },
           "use_student_volume": {
             "label": "Enable student personal folder",

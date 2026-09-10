@@ -101,11 +101,12 @@
           "cpu_limit": "Limite CPU (en VCPU)",
           "memory_limit": "Limite RAM (en Go)",
           "save_student_work": {
-            "label": "Sauvegarder le travail de l'étudiant",
+            "label": "Activer un volume de travail dédié à cet environnement",
+            "tooltip": "Ce volume est propre à cet environnement et n’est pas partagé entre les cours.",
             "size": "Taille du stockage (en Mo)",
-            "path": "Chemin du dossier à sauvegarder",
+            "path": "Chemin de montage du volume",
             "allow_submit": "Activer le rendu du travail de l'étudiant",
-            "retired": "La sauvegarde et le rendu du travail de l'étudiant sont désactivés sur cette infrastructure."
+            "retired": "Le rendu du travail de l'étudiant est désactivé sur cette infrastructure."
           },
           "use_student_volume": {
             "label": "Activer le répertoire personnel de l'élève",

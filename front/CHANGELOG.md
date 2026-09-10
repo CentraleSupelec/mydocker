@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- The per environment work volume, its size and its mount path are configurable again on platforms where saving student work is disabled. Only the submission that the save used to feed is withheld
+- The save button, the "access students' work" admin action and the submission checkbox are withheld on platforms where saving student work is disabled, instead of being offered and then refused by the back end
+
+### Changed
+- The work volume checkbox and its path field are labelled as a volume rather than as a save
+
 ## 2.30.0
 ### Changed
 - The compute type form takes several autoscaling resources, each with its own regions, as rows, in place of a single resource and one region list

@@ -54,7 +54,7 @@
       mat-menu-item
       [matTooltip]="'admin.courses.actions.access_students_work' | translate"
       (click)="askAdminContainer($event, element)"
-      *ngIf="element?.saveStudentWork && element?.allowStudentToSubmit"
+      *ngIf="config.save_student_work_enabled && element?.saveStudentWork && element?.allowStudentToSubmit"
     >
       <mat-icon class="material-symbols-outlined">home_storage</mat-icon>
       <span>{{ 'admin.courses.actions.access_students_work' | translate }}</span>
