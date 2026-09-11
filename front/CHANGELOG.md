@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.30.3
 ### Changed
 - The course form no longer explains that submitting student work is retired on the platform. The submission checkbox is simply absent, and the work volume, its size and its mount path stay where they were
 
