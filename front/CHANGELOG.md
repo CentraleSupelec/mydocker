@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.30.2
 ### Fixed
 - Starting an environment from the dashboard button connects to its interface again when there is a single connection button, as arriving through a course link already did. Loading the dashboard still connects to nothing
 
