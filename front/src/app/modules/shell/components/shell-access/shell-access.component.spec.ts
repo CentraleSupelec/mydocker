@@ -8,6 +8,8 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 import { SimpleChange } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { DisplayContainerComponent } from '../../../display-container/display-container/display-container.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ISession } from '../../interfaces/session';
 import { IBasicCourse } from '../../interfaces/course';
@@ -60,6 +62,8 @@ describe('ShellAccessComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule,
         NgxPermissionsModule.forRoot(),
+        // Rendering the created state reaches material form fields, which use animations.
+        NoopAnimationsModule,
       ]
     })
     .compileComponents();
@@ -144,6 +148,43 @@ describe('ShellAccessComponent', () => {
     const request = httpMock.expectOne(initRequest);
     expect(request.request.method).toBe('POST');
     expect(component.userStarted).toBeTrue();
+  });
+
+  it('treats the request button as a start the student asked for', () => {
+    component.session = startedSession();
+    fixture.detectChanges();
+
+    const button: HTMLButtonElement = fixture.debugElement
+      .query(By.css('button[color="primary"]')).nativeElement;
+    button.click();
+
+    const request = httpMock.expectOne(initRequest);
+    expect(request.request.method).toBe('POST');
+    expect(component.userStarted).toBeTrue();
+  });
+
+  it('enables autoclick on the environment it was asked to create', () => {
+    component.session = startedSession();
+
+    component.initGetContainer();
+    httpMock.expectOne(initRequest).flush({});
+    component.container = runningContainer();
+    component.state = 'container_created';
+    fixture.detectChanges();
+
+    const display = fixture.debugElement.query(By.directive(DisplayContainerComponent));
+    expect(display.componentInstance.enableAutoClick).toBeTrue();
+  });
+
+  it('leaves autoclick off on an environment it only discovered running', () => {
+    component.session = startedSession();
+    component.active = true;
+    component.ngOnChanges({ active: new SimpleChange(false, true, false) });
+    httpMock.expectOne(CONTAINER_URL).flush(runningContainer());
+    fixture.detectChanges();
+
+    const display = fixture.debugElement.query(By.directive(DisplayContainerComponent));
+    expect(display.componentInstance.enableAutoClick).toBeFalse();
   });
 
   it('spends the start when the environment stops while the read is in flight', () => {

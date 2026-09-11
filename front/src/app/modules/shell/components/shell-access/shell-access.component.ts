@@ -176,6 +176,10 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   initGetContainer(forceRecreate: boolean = false, updateLastStartDate: boolean = true) {
+    // A creation request issued by this panel only ever comes from the student: the button, the
+    // recreate dialog, or a start carried in the address. The read-only discovery path never gets
+    // here, which is what keeps a dashboard load from connecting.
+    this.userStarted = true;
     this.containerApiService.initGetContainer(this.session?.id, forceRecreate, updateLastStartDate)
       .subscribe(
         () => this.startInitPolling()
