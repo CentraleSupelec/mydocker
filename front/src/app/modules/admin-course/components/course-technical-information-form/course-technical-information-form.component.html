@@ -78,13 +78,10 @@
     </mat-form-field>
     <mat-checkbox
       formControlName="allowStudentToSubmit"
-      *ngIf="config.save_student_work_enabled; else saveStudentWorkRetired"
+      *ngIf="config.save_student_work_enabled"
     >
       {{ 'admin.courses.edit.technical_info.save_student_work.allow_submit' | translate }}
     </mat-checkbox>
-    <ng-template #saveStudentWorkRetired>
-      <p>{{ 'admin.courses.edit.technical_info.save_student_work.retired' | translate }}</p>
-    </ng-template>
   </div>
   <br>
   <mat-checkbox

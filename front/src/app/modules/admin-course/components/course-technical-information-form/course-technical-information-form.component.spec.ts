@@ -201,4 +201,10 @@ describe('CourseTechnicalInformationFormComponent work volume gating', () => {
   it('offers the submission checkbox when saving is enabled', async () => {
     expect(volumeFields(await renderWithSaveEnabled(true)).submit).toBeTruthy();
   });
+
+  it('says nothing about the retired submission when saving is disabled', async () => {
+    const fixture = await renderWithSaveEnabled(false);
+
+    expect(fixture.nativeElement.textContent).not.toContain('save_student_work.retired');
+  });
 });

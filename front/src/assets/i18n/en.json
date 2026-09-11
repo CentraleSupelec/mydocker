@@ -105,8 +105,7 @@
             "tooltip": "This volume is dedicated to this environment and is not shared between courses.",
             "size": "Storage size (in MB)",
             "path": "Volume mount path",
-            "allow_submit": "Allow students to submit",
-            "retired": "Submitting student work is disabled on this infrastructure."
+            "allow_submit": "Allow students to submit"
           },
           "use_student_volume": {
             "label": "Enable student personal folder",

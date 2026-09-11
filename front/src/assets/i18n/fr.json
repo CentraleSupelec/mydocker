@@ -105,8 +105,7 @@
             "tooltip": "Ce volume est propre à cet environnement et n’est pas partagé entre les cours.",
             "size": "Taille du stockage (en Mo)",
             "path": "Chemin de montage du volume",
-            "allow_submit": "Activer le rendu du travail de l'étudiant",
-            "retired": "Le rendu du travail de l'étudiant est désactivé sur cette infrastructure."
+            "allow_submit": "Activer le rendu du travail de l'étudiant"
           },
           "use_student_volume": {
             "label": "Activer le répertoire personnel de l'élève",
