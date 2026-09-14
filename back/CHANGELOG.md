@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.35.1
+### Fixed
+- An environment that was already ready is no longer sent round the connection test again on every status response. It was marked as being checked, tested, marked ready and written to the activity log once a second for as long as the Go API watched it, which is what filled `activity_log_records`
+- An environment keeps its place in the connection-test schedule until its test finishes, so a status response arriving mid-test no longer queues a second test for it with the retry counter starting again at zero
+
 ## 2.35.0
 ### Changed
 - A compute type now holds several autoscaling resources, each with its own regions, in place of a single resource and one shared region list. Existing configurations are migrated into the new table. The autoscaling configuration sent over gRPC carries `instancesRegions` instead of `instanceType` and `regions`, so this release and the matching Go API release must be deployed in the same window

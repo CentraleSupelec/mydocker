@@ -49,7 +49,19 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
                 );
             }
             case RUNNING -> {
-                if (containerDto.getStatus() != ContainerStatusDto.CHECKING) {
+                // Only an environment still waiting for its first connection test gets one
+                // scheduled, and only if it has none scheduled already. The status stream ticks
+                // once a second per watched environment: sending an environment that is already
+                // OK round again marked it CHECKING, ran the test, marked it OK, and wrote one
+                // activity row, every second, for as long as it was watched.
+                if (containerDto.getStatus() == ContainerStatusDto.PENDING
+                        && !containerTestConnectionTaskScheduler.containerScheduledDtoExists(
+                                ContainerUtilsService.generateKey(
+                                        containerStatusResponse.getUserID(),
+                                        containerStatusResponse.getCourseID()
+                                )
+                        )
+                ) {
                     containerDto.setStatus(ContainerStatusDto.CHECKING);
                     containerTestConnectionTaskScheduler.addContainerScheduledDto(
                             new ContainerScheduledDto()
