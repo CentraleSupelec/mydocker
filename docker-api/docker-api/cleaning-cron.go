@@ -20,22 +20,30 @@ func addCleaningCron(s *gocron.Scheduler, dockerClient *client.Client) {
 		})
 }
 
-func findServiceToDeleteAndDoIt(dockerClient *client.Client) {
+type scheduledServiceCleanerClient interface {
+	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
+	ServiceRemove(ctx context.Context, serviceID string) error
+}
+
+func findServiceToDeleteAndDoIt(dockerClient scheduledServiceCleanerClient) {
 	nowSec := time.Now().Unix()
 	filtersArgs := filters.NewArgs()
 	filtersArgs.Add("label", "deleteAfter=true")
 	services, err := dockerClient.ServiceList(context.TODO(), types.ServiceListOptions{Filters: filtersArgs})
 	if err != nil {
 		log.Errorf("Failed to get service to delete: %s", err)
+		return
 	}
 	for _, service := range services {
 		deletionDateStr, exist := service.Spec.Labels["deletionTime"]
 		if !exist {
 			log.Errorf("Failed to find deletion time for service %s", service.ID)
+			continue
 		}
 		deletionDate, err := strconv.Atoi(deletionDateStr)
 		if err != nil {
 			log.Errorf("Failed to parse deletion time for service %s, deletion time: %s", service.ID, deletionDateStr)
+			continue
 		}
 
 		if int64(deletionDate) < nowSec {

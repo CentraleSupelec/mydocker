@@ -7,6 +7,8 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 ### Fixed
 - The cleaning cron removed any swarm service whose task exited 0, including services this API never created. On a reboot it deleted caddy, postgres and the frontend 22 seconds after boot, leaving the platform down; the service object is gone in that case, so no restart policy or replica count recovers it. Completed tasks are now reaped only for services labelled `mydocker.oneshot`, which the three one-shot jobs set on the services they create: the image build, the data save and the student-volume init. Each already removed its own service on its happy path, so the reaper is the fallback for a job this process stopped following. Student labs are unaffected: they carry `deleteAfter`/`deletionTime` and belong to the other sweep
+- A lab whose `deletionTime` label was missing or unparseable was deleted on the next tick instead of kept: the sweep logged the parse failure and carried on with a deletion date of zero, which is always in the past. Those labels arrive from the back end with the create request, so a caller that omitted or mangled the field lost the environment within five minutes. Such a service is now left alone, and a failure to list services stops that sweep rather than falling through it
+
 
 ## 2.20.0
 ### Changed
