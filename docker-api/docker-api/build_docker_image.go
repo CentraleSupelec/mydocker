@@ -150,6 +150,12 @@ func (d *DockerImageBuilder) doDockerImageBuild(volumeName string, imageName str
 	}
 	one := uint64(1)
 	spec := swarm.ServiceSpec{
+		// A build runs once and is finished when its task completes. Nothing else about the
+		// service says so, and without this label the reaper below cannot tell a finished job
+		// from a long-running service that merely exited cleanly.
+		Annotations: swarm.Annotations{
+			Labels: map[string]string{oneShotLabel: "true"},
+		},
 		TaskTemplate: swarm.TaskSpec{
 			RestartPolicy: &swarm.RestartPolicy{
 				Condition:   "on-failure",

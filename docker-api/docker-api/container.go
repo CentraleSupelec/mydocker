@@ -257,6 +257,13 @@ func doSaveData(dockerClient *client.Client, request *pb.SaveDataRequest) error 
 	one := uint64(1)
 	userDir := fmt.Sprintf("%s-%s", strings.Split(request.GetUserEmail(), "@")[0], request.GetUserID())
 	spec := swarm.ServiceSpec{
+		// A save runs once and is finished when its task completes. The happy path removes
+		// this service further down; the label is what lets the reaper clean up after a
+		// docker-api that stopped between the two, which the unscoped reaper used to do by
+		// accident.
+		Annotations: swarm.Annotations{
+			Labels: map[string]string{oneShotLabel: "true"},
+		},
 		TaskTemplate: swarm.TaskSpec{
 			Placement: &swarm.Placement{
 				Constraints: []string{fmt.Sprintf("node.id==%s", nodeId)},
@@ -537,6 +544,11 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 					serviceSpec := swarm.ServiceSpec{
 						Annotations: swarm.Annotations{
 							Name: fmt.Sprintf("volume-init-%s", name),
+							// One-shot, like the save and the build: removed below once it
+							// completes, and reaped by label if this process never gets
+							// there. A leaked volume-init also keeps a mount on the student
+							// volume, which stops the plugin unmapping it.
+							Labels: map[string]string{oneShotLabel: "true"},
 						},
 						TaskTemplate: swarm.TaskSpec{
 							ContainerSpec: &swarm.ContainerSpec{

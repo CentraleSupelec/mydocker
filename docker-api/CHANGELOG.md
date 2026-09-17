@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- The cleaning cron removed any swarm service whose task exited 0, including services this API never created. On a reboot it deleted caddy, postgres and the frontend 22 seconds after boot, leaving the platform down; the service object is gone in that case, so no restart policy or replica count recovers it. Completed tasks are now reaped only for services labelled `mydocker.oneshot`, which the three one-shot jobs set on the services they create: the image build, the data save and the student-volume init. Each already removed its own service on its happy path, so the reaper is the fallback for a job this process stopped following. Student labs are unaffected: they carry `deleteAfter`/`deletionTime` and belong to the other sweep
+
 ## 2.20.0
 ### Changed
 - The autoscaler draws an instance type at random among those configured for the owner, then a region at random within that instance type. `OwnerAutoscalingConfig` carries `instancesRegions` in place of a single `instanceType` and a shared region list, which is not wire compatible with earlier back end releases
