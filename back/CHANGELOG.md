@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- A course whose `display_options` is empty in the database no longer makes the student course list fail. `GET /courses/joined` and `GET /courses-sessions/joined` answered 500 for every user enrolled in such a course, and the web interface showed that as having no courses at all
+
 ## 2.35.1
 ### Fixed
 - An environment that was already ready is no longer sent round the connection test again on every status response. It was marked as being checked, tested, marked ready and written to the activity log once a second for as long as the Go API watched it, which is what filled `activity_log_records`

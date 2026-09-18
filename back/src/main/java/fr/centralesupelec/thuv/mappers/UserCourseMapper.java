@@ -71,13 +71,18 @@ public class UserCourseMapper {
                                 .collect(Collectors.toList())
                 );
 
+        // display_options is nullable, and readValue rejects a null argument with
+        // IllegalArgumentException rather than JsonProcessingException. Catching only the
+        // latter let one such row fail GET /courses/joined for every student enrolled in that
+        // course, with the front end rendering the 500 as "no courses available".
+        // AdminCourseMapper already catches both.
         try {
             dto.setDisplayOptions(
                     objectMapper.readValue(
                             course.getDisplayOptions(), new TypeReference<>() {}
                     )
             );
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | IllegalArgumentException e) {
             dto.setDisplayOptions(
                     new HashMap<>()
             );
