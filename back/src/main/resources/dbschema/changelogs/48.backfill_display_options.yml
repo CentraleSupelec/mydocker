@@ -1,0 +1,49 @@
+databaseChangeLog:
+- changeSet:
+    id: 1789300000000-1
+    author: snesiubedreag
+    comment: >-
+      Give every existing course a usable display_options document, and default the inserts
+      that omit the column.
+
+      A course whose display_options was NULL made GET /courses/joined answer 500 for every
+      student enrolled in it, and the web interface rendered that as "no courses available".
+      The mapper now catches the case, so the list survives, but the rows are still there and
+      every read of them goes through a catch block. An empty JSON document is what the
+      mapper produces for them anyway, so writing it once is both the repair and the
+      simplification.
+
+      Empty strings are included deliberately. NULL and "" fail on different exceptions,
+      IllegalArgumentException and JsonProcessingException, and both were being caught, so
+      both exist in the data.
+
+      The default covers inserts that omit the column. It does not cover inserts that send
+      NULL explicitly, which is what the JPA entity does today while the field has no
+      initialiser, so no NOT NULL constraint is added here: it would fail those inserts, and
+      during a rolling deployment it would fail them from the instance still running the old
+      jar. Making the column NOT NULL wants the entity to default the field first, in a
+      release of its own.
+
+      The mapper keeps its tolerance regardless of this changeset, because a rolling
+      deployment runs new code against a database where this has not been applied yet, and
+      an old instance against one where it has.
+
+      The rollback drops the default and stops there. Which rows held NULL and which held an
+      empty string is not recoverable once they are written, and a rollback that pretends
+      otherwise would be worse than one that says so.
+    changes:
+    - update:
+        tableName: courses
+        columns:
+        - column:
+            name: display_options
+            value: "{}"
+        where: display_options IS NULL OR btrim(display_options) = ''
+    - addDefaultValue:
+        tableName: courses
+        columnName: display_options
+        defaultValue: "{}"
+    rollback:
+    - dropDefaultValue:
+        tableName: courses
+        columnName: display_options

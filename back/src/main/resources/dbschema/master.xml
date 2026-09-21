@@ -49,4 +49,5 @@
     <include file="changelogs/42.add_content_table.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/46.unique_user_email.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/47.multiple_compute_type_resources_x_regions.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/48.backfill_display_options.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
