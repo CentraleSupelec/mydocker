@@ -31,6 +31,11 @@ public class LtiConfig {
         public static final String CONTENT_ITEMS = "https://purl.imsglobal.org/spec/lti-dl/claim/content_items";
         public static final String DATA = "https://purl.imsglobal.org/spec/lti/claim/data";
         public static final String ERROR_MESSAGE = "https://purl.imsglobal.org/spec/lti/claim/errormsg";
+        public static final String ROLES = "https://purl.imsglobal.org/spec/lti/claim/roles";
+    }
+
+    public static final class Roles {
+        public static final String INSTRUCTOR = "http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor";
     }
 
     @Value("${lti.base-path}")

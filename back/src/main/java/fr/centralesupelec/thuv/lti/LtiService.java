@@ -109,7 +109,21 @@ public class LtiService {
         return jsonNode.get("client_id").asText();
     }
 
-    public DecodedJWT getValidatedJWT(String idToken, String state, String origin, HttpSession session) {
+    /**
+     * Seam for the key lookup: package-private so a test can supply a key without a network call,
+     * and the single place an outbound-request allowlist will need to sit.
+     */
+    Jwk getJwk(String jwksUri, String keyId) throws Exception {
+        UrlJwkProvider provider = new UrlJwkProvider(new URL(jwksUri));
+        return provider.get(keyId);
+    }
+
+    private ResponseStatusException rejectLaunch(String check, String message) {
+        logger.warn("LTI launch rejected by check '{}'", check);
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+    }
+
+    public DecodedJWT getValidatedJWT(String idToken, String state, HttpSession session) {
         DecodedJWT jwt;
         ToolDeployment toolDeployment = null;
         /**
@@ -130,10 +144,8 @@ public class LtiService {
             if (null == toolDeployment) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Audience invalid");
             }
-            UrlJwkProvider provider = new UrlJwkProvider(new URL(toolDeployment.getJwksUri()));
-            logger.debug("Keys from URL '{}': {}", toolDeployment.getJwksUri(), provider.getAll());
-            logger.debug("Retrieving key of id '{}'", jwt.getKeyId());
-            Jwk jwk = provider.get(jwt.getKeyId());
+            logger.debug("Retrieving key of id '{}' from '{}'", jwt.getKeyId(), toolDeployment.getJwksUri());
+            Jwk jwk = getJwk(toolDeployment.getJwksUri(), jwt.getKeyId());
             Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
             JWTVerifier verifier = JWT.require(algorithm).build();
             verifier.verify(idToken);
@@ -148,8 +160,10 @@ public class LtiService {
          * 2. The Issuer Identifier for the Platform MUST exactly match the value of the iss (Issuer) Claim
          * (therefore the Tool MUST previously have been made aware of this identifier);
          */
-        if (!jwt.getIssuer().equals(origin)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer invalid");
+        // Against the platform we registered, never against a header the caller controls: comparing
+        // the token's issuer with the request's Origin compares two attacker-supplied values.
+        if (!jwt.getIssuer().equals(toolDeployment.getIss())) {
+            throw rejectLaunch("issuer", "Issuer invalid");
         }
 
         /** 3. The Tool MUST validate that the aud (audience) Claim contains its client_id value registered as an
@@ -219,16 +233,17 @@ public class LtiService {
          *
          */
         if (jwt.getClaim("nonce").isMissing() || jwt.getClaim("nonce").isNull()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nonce not present");
+            throw rejectLaunch("nonce-missing", "Nonce not present");
         }
         String nonce = jwt.getClaim("nonce").asString();
-        if (Boolean.TRUE.equals(this.noncesCache.getIfPresent(nonce))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nonce already used");
+        // One atomic transition from issued to consumed. Rejects a nonce we never issued (absent
+        // from the cache) and a nonce already used, and cannot be won twice concurrently.
+        if (!this.noncesCache.asMap().replace(nonce, false, true)) {
+            throw rejectLaunch("nonce", "Nonce invalid");
         }
-        this.noncesCache.put(nonce, true);
 
         if (!state.equals(session.getAttribute(STATE_ATTRIBUTE))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong state");
+            throw rejectLaunch("state", "Wrong state");
         }
         return jwt;
     }

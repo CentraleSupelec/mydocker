@@ -48,6 +48,7 @@ public class LtiController {
     private final String baseUrl;
     private final LtiJwtService ltiJwtService;
     private final ActivityLogger activityLogger;
+    private final LtiTrustPolicy ltiTrustPolicy;
 
 
     @GetMapping(REGISTER_PATH)
@@ -134,22 +135,27 @@ public class LtiController {
     public ResponseEntity<String> launch(
             @RequestParam("id_token") String idToken,
             @RequestParam("state") String state,
-            @RequestHeader("origin") String origin,
             HttpSession session
     ) {
-        logger.debug("Lti token : {}", idToken);
-        DecodedJWT jwt = this.ltiService.getValidatedJWT(idToken, state, origin, session);
+        DecodedJWT jwt = this.ltiService.getValidatedJWT(idToken, state, session);
 
-        User user = myUserDetailsService.upsertUser(
+        User user = myUserDetailsService.upsertUserFromUntrustedOrigin(
                 null,
                 jwt.getClaim("email").asString(),
                 jwt.getClaim("given_name").asString(),
-                jwt.getClaim("family_name").asString()
+                jwt.getClaim("family_name").asString(),
+                TokenOrigin.LTI
         );
 
-        List<String> lmsRoles = jwt.getClaim("https://purl.imsglobal.org/spec/lti/claim/roles").asList(String.class);
-        if (lmsRoles.contains("http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor")) {
-            myUserDetailsService.ensureTeacher(user);
+        List<String> lmsRoles = jwt.getClaim(Claims.ROLES).asList(String.class);
+        if (null != lmsRoles && lmsRoles.contains(Roles.INSTRUCTOR)) {
+            // Registered is not trusted: a platform we do not operate does not get to say who
+            // teaches here.
+            if (this.ltiTrustPolicy.mayGrantTeacherRole(jwt.getIssuer())) {
+                myUserDetailsService.ensureTeacher(user);
+            } else {
+                logger.warn("Ignored Instructor claim from untrusted issuer '{}'", jwt.getIssuer());
+            }
         }
 
         String localToken = jwtTokenProvider
