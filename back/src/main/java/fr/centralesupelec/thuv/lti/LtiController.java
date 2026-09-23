@@ -19,6 +19,7 @@ import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -87,7 +88,20 @@ public class LtiController {
                 .authorizationEndpoint(openIdConfiguration.getAuthorizationEndpoint())
                 .build();
 
-        this.toolDeploymentRepository.saveAndFlush(newTool);
+        try {
+            this.toolDeploymentRepository.saveAndFlush(newTool);
+        } catch (DataIntegrityViolationException ex) {
+            // Two registrations of the same pair can both pass the check above before either
+            // writes. The unique constraint is what keeps the data correct; this turns the
+            // resulting failure into the same answer the check gives, rather than a 500.
+            logger.warn(
+                    "Concurrent registration of an existing deployment for issuer '{}'",
+                    openIdConfiguration.getIssuer()
+            );
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "A deployment for this platform and client already exists"
+            );
+        }
     }
 
     @GetMapping(value = JWKS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -192,9 +206,18 @@ public class LtiController {
             }
         }
 
+        // The email claim is the only identity this launch carries: it is both the lookup key and
+        // the stored address. Without it the upsert resolves nothing, creates a row with a null
+        // username and a null email, and saves it, so a token with no email would write a junk
+        // account before the session is minted.
+        String email = jwt.getClaim("email").asString();
+        if (null == email || email.isBlank()) {
+            throw rejectLaunch("email-missing", "Email not present");
+        }
+
         User user = myUserDetailsService.upsertUserFromUntrustedOrigin(
                 null,
-                jwt.getClaim("email").asString(),
+                email,
                 jwt.getClaim("given_name").asString(),
                 jwt.getClaim("family_name").asString(),
                 TokenOrigin.LTI

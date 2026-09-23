@@ -199,6 +199,25 @@ class LtiServiceLaunchValidationTest {
         assertEquals("Audience invalid", exception.getReason());
     }
 
+    /**
+     * The state is checked before the nonce is consumed, so a launch refused on state can be retried
+     * with the same nonce once the session is right. Consuming first would spend it on a request
+     * that fails anyway.
+     */
+    @Test
+    void aWrongStateDoesNotConsumeTheNonce() {
+        String nonce = issuedNonce();
+        String token = launchToken(ISSUER, nonce);
+
+        ResponseStatusException refused = assertThrows(
+                ResponseStatusException.class,
+                () -> service.getValidatedJWT(token, "not-the-state", session)
+        );
+        assertEquals("Wrong state", refused.getReason());
+
+        assertDoesNotThrow(() -> service.getValidatedJWT(token, STATE, session));
+    }
+
     @Test
     void aNonceWeNeverIssuedIsRejected() {
         String token = launchToken(ISSUER, UUID.randomUUID().toString());

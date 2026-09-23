@@ -188,7 +188,7 @@ public class LtiService {
          */
         final List<String> audiences = jwt.getAudience();
         if (!audiences.contains(toolDeployment.getClientId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Audience invalid");
+            throw rejectLaunch("audience", "Audience invalid");
         }
 
         /**
@@ -196,7 +196,7 @@ public class LtiService {
          */
         if (audiences.size() > 1) {
             if (jwt.getClaim("azp").isMissing() || jwt.getClaim("azp").isNull()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Azp claim is not present");
+                throw rejectLaunch("azp-missing", "Azp claim is not present");
             }
         }
 
@@ -206,7 +206,7 @@ public class LtiService {
          */
         if (!jwt.getClaim("azp").isMissing() && !jwt.getClaim("azp").isNull()) {
             if (!toolDeployment.getClientId().equals(jwt.getClaim("azp").asString())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Azp invalid");
+                throw rejectLaunch("azp", "Azp invalid");
             }
         }
 
@@ -218,7 +218,7 @@ public class LtiService {
          *
          */
         if (!jwt.getAlgorithm().equals("RS256")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported algorithm");
+            throw rejectLaunch("algorithm", "Unsupported algorithm");
         }
 
         /**
@@ -257,16 +257,21 @@ public class LtiService {
         if (jwt.getClaim("nonce").isMissing() || jwt.getClaim("nonce").isNull()) {
             throw rejectLaunch("nonce-missing", "Nonce not present");
         }
+        // The state is checked before the nonce is consumed. Consuming first would spend a valid
+        // nonce on a request that is refused anyway, so a user whose browser lost the session
+        // attribute could not retry the same launch.
+        if (!state.equals(session.getAttribute(STATE_ATTRIBUTE))) {
+            throw rejectLaunch("state", "Wrong state");
+        }
+
         String nonce = jwt.getClaim("nonce").asString();
         // One atomic transition from issued to consumed. Rejects a nonce we never issued (absent
-        // from the cache) and a nonce already used, and cannot be won twice concurrently.
+        // from the cache) and a nonce already used, and cannot be won twice concurrently. This is
+        // the last check, and the only one that changes state.
         if (!this.noncesCache.asMap().replace(nonce, false, true)) {
             throw rejectLaunch("nonce", "Nonce invalid");
         }
 
-        if (!state.equals(session.getAttribute(STATE_ATTRIBUTE))) {
-            throw rejectLaunch("state", "Wrong state");
-        }
         return jwt;
     }
 }

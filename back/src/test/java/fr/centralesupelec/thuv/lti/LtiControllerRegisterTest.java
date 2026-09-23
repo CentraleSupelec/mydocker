@@ -11,6 +11,7 @@ import fr.centralesupelec.thuv.security.MyUserDetailsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -87,6 +88,26 @@ class LtiControllerRegisterTest {
         verify(toolDeploymentRepository).saveAndFlush(saved.capture());
         assertEquals(ISSUER, saved.getValue().getIss());
         assertEquals("client-2", saved.getValue().getClientId());
+    }
+
+    /**
+     * Two registrations of the same pair can both pass the lookup before either writes. The unique
+     * constraint is what keeps the data correct; the caller must still see the same answer the
+     * lookup gives rather than a 500.
+     */
+    @Test
+    void aConcurrentDuplicateRegistrationIsAConflictRatherThanAServerError() throws Exception {
+        platformAnnounces("client-3");
+        when(toolDeploymentRepository.findByIssAndClientId(ISSUER, "client-3")).thenReturn(Optional.empty());
+        when(toolDeploymentRepository.saveAndFlush(any()))
+                .thenThrow(new DataIntegrityViolationException("uk_tool_deployments_iss_client_id"));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.register(CONFIGURATION_URL, REGISTRATION_TOKEN)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
     }
 
     /**

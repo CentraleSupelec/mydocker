@@ -93,6 +93,17 @@ class LtiControllerLaunchTest {
         return JWT.decode(token);
     }
 
+    private DecodedJWT launchJwtWithoutEmail() {
+        String token = JWT.create()
+                .withIssuer(ISSUER)
+                .withClaim("given_name", "Some")
+                .withClaim("family_name", "One")
+                .withClaim(LtiConfig.Claims.MESSAGE_TYPE, "LtiResourceLinkRequest")
+                .withClaim(LtiConfig.Claims.TARGET_LINK_URI, "https://mydocker.example.org")
+                .sign(Algorithm.HMAC256("test"));
+        return JWT.decode(token);
+    }
+
     private DecodedJWT launchJwtWithMessageType(String messageType) {
         var builder = JWT.create()
                 .withIssuer(ISSUER)
@@ -138,6 +149,24 @@ class LtiControllerLaunchTest {
         verify(jwtTokenProvider, never()).generateToken(any(), any(), any());
         verify(myUserDetailsService, never()).ensureTeacher(any());
         verify(activityLogger, never()).log(any(), any());
+    }
+
+    /**
+     * The email claim is the launch's only identity, used as both lookup key and stored address.
+     * Without it the upsert resolves nothing and saves a row with a null username and null email,
+     * so the refusal has to come before the write rather than after it.
+     */
+    @Test
+    void aLaunchWithNoEmailClaimWritesNothing() {
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(launchJwtWithoutEmail());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.launch(ID_TOKEN, STATE, session)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertNothingWasWritten();
     }
 
     @Test
