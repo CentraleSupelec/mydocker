@@ -41,10 +41,11 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -149,17 +150,25 @@ class LtiEndToEndLaunchTest {
 
     /** Registers the platform through the live route, exactly as an administrator would. */
     private ToolDeployment registerPlatform() throws Exception {
+        // The row this call creates is identified by comparing before and after: findAllByIss
+        // promises no order, so neither the first nor the last element is the new one.
+        Set<Long> before = toolDeploymentRepository.findAllByIss(platformUrl)
+                .stream()
+                .map(ToolDeployment::getId)
+                .collect(Collectors.toSet());
+
         mockMvc.perform(get(LtiConfig.REGISTER_PATH)
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
                                 .user("admin").roles("ADMIN"))
                         .param("openid_configuration", platformUrl + "/.well-known/openid-configuration")
                         .param("registration_token", "registration-token"))
                 .andExpect(status().isOk());
-        List<ToolDeployment> registered = toolDeploymentRepository.findAllByIss(platformUrl);
-        assertFalse(registered.isEmpty(), "the route stores what the platform returned");
-        // The simulator issues a fresh client id per registration, as a Moodle does per espace de
-        // cours, so the last row is the one this call created.
-        return registered.get(registered.size() - 1);
+        List<ToolDeployment> created = toolDeploymentRepository.findAllByIss(platformUrl)
+                .stream()
+                .filter(deployment -> !before.contains(deployment.getId()))
+                .toList();
+        assertEquals(1, created.size(), "one call to the route stores exactly one new deployment");
+        return created.get(0);
     }
 
     /** Runs the OIDC login initiation and returns the state and nonce the platform must echo back. */

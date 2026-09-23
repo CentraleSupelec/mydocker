@@ -24,11 +24,15 @@ databaseChangeLog:
         Unique constraint on tool_deployments (iss, client_id) halted, and a halted
         precondition fails the Liquibase run, which fails application startup: at least two
         deployment rows share an issuer and a client id, so creating the constraint would
-        fail halfway and leave the platform without it. Remove the redundant rows first,
-        keeping the lowest id of each group, then run the deployment again; nothing has been
-        recorded, so the rerun re-evaluates cleanly. The colliding groups are returned by:
-        SELECT iss, client_id, count(*), array_agg(id ORDER BY id) FROM tool_deployments
-        GROUP BY iss, client_id HAVING count(*) > 1;
+        fail halfway and leave the platform without it. Resolve the collision first, then run
+        the deployment again; nothing has been recorded, so the rerun re-evaluates cleanly.
+        Do not delete by id: rows sharing a pair can hold different jwks_uri or
+        authorization_endpoint values, so inspect them and keep the one whose endpoints match
+        the registration the platform is actually using. The colliding rows, with the values
+        that distinguish them, are returned by:
+        SELECT id, iss, client_id, jwks_uri, authorization_endpoint FROM tool_deployments
+        WHERE (iss, client_id) IN (SELECT iss, client_id FROM tool_deployments GROUP BY iss,
+        client_id HAVING count(*) > 1) ORDER BY iss, client_id, id;
     - sqlCheck:
         expectedResult: "0"
         sql: |
