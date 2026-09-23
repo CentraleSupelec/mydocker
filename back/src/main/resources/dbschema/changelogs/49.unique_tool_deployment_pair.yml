@@ -1,0 +1,50 @@
+databaseChangeLog:
+- changeSet:
+    id: 1789320000000-1
+    author: snesiubedreag
+    comment: >-
+      Make (iss, client_id) unique on tool_deployments.
+
+      A deployment is identified by the pair, not by either half. Integrations are registered
+      per espace de cours, each with its own client id, so one issuer legitimately carries
+      many rows: on CentraleSupelec production, ecampus.paris-saclay.fr holds eighteen. A
+      client id is chosen by the platform that issues it, so it is unique only within its
+      issuer.
+
+      The table was created with no unique constraint at all, so nothing has ever stopped the
+      same pair being stored twice. The registration route now refuses a repeat pair with a
+      409, but that check reads and writes in two steps and a rolling deployment can run the
+      old code alongside the new, so the constraint is what actually holds.
+
+      The constraint is named explicitly, because a generated name would make the rollback
+      unreliable across platforms.
+    preConditions:
+    - onFail: HALT
+    - onFailMessage: >
+        Unique constraint on tool_deployments (iss, client_id) halted, and a halted
+        precondition fails the Liquibase run, which fails application startup: at least two
+        deployment rows share an issuer and a client id, so creating the constraint would
+        fail halfway and leave the platform without it. Remove the redundant rows first,
+        keeping the lowest id of each group, then run the deployment again; nothing has been
+        recorded, so the rerun re-evaluates cleanly. The colliding groups are returned by:
+        SELECT iss, client_id, count(*), array_agg(id ORDER BY id) FROM tool_deployments
+        GROUP BY iss, client_id HAVING count(*) > 1;
+    - sqlCheck:
+        expectedResult: "0"
+        sql: |
+          SELECT count(*)
+          FROM (
+              SELECT 1
+              FROM tool_deployments
+              GROUP BY iss, client_id
+              HAVING count(*) > 1
+          ) duplicates
+    changes:
+    - addUniqueConstraint:
+        tableName: tool_deployments
+        columnNames: iss, client_id
+        constraintName: uk_tool_deployments_iss_client_id
+    rollback:
+    - dropUniqueConstraint:
+        tableName: tool_deployments
+        constraintName: uk_tool_deployments_iss_client_id
