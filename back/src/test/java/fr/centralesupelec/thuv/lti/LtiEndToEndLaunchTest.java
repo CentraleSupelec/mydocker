@@ -153,7 +153,9 @@ class LtiEndToEndLaunchTest {
                         .param("openid_configuration", platformUrl + "/.well-known/openid-configuration")
                         .param("registration_token", "registration-token"))
                 .andExpect(status().isOk());
-        return toolDeploymentRepository.findByIss(platformUrl).orElseThrow();
+        List<ToolDeployment> registered = toolDeploymentRepository.findAllByIss(platformUrl);
+        assertEquals(1, registered.size(), "one registration per call to the route");
+        return registered.get(0);
     }
 
     /** Runs the OIDC login initiation and returns the state and nonce the platform must echo back. */

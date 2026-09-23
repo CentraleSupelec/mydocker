@@ -63,20 +63,30 @@ public class LtiController {
         assert openIdConfiguration != null;
         logger.debug("Fetched openIdConfiguration {}", openIdConfiguration);
 
-        if (this.toolDeploymentRepository.findByIss(openIdConfiguration.getIssuer()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "A deployment for this platform already exists");
+        String clientId = this.ltiService.registerTool(registrationToken, openIdConfiguration);
+
+        // The guard cannot run before registerTool, because that call is what yields the client id,
+        // and the pair identifies a deployment: an issuer carries one row per espace de cours, so a
+        // second registration on a platform we already know is the normal case, not a duplicate.
+        // Refusing here leaves the registration the platform just recorded on its own side with no
+        // counterpart. That is the accepted cost of never rewriting an existing trust record: the
+        // configuration URL is caller-supplied and the client id comes back from the endpoint it
+        // names, so overwriting a stored row on a repeated pair would let one caller repoint another
+        // platform's jwks_uri.
+        if (this.toolDeploymentRepository.findByIssAndClientId(openIdConfiguration.getIssuer(), clientId).isPresent()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "A deployment for this platform and client already exists"
+            );
         }
 
         ToolDeployment newTool = ToolDeployment
                 .builder()
                 .iss(openIdConfiguration.getIssuer())
+                .clientId(clientId)
                 .jwksUri(openIdConfiguration.getJwksUri())
                 .authorizationEndpoint(openIdConfiguration.getAuthorizationEndpoint())
                 .build();
 
-
-        String clientId = this.ltiService.registerTool(registrationToken, openIdConfiguration);
-        newTool.setClientId(clientId);
         this.toolDeploymentRepository.saveAndFlush(newTool);
     }
 

@@ -53,6 +53,7 @@ class LtiServiceLaunchValidationTest {
 
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
+    private ToolDeploymentRepository repository;
     private Cache<String, Boolean> noncesCache;
     private LtiService service;
     private HttpSession session;
@@ -73,8 +74,8 @@ class LtiServiceLaunchValidationTest {
                 .authorizationEndpoint("https://moodle.example.org/auth")
                 .build();
 
-        ToolDeploymentRepository repository = mock(ToolDeploymentRepository.class);
-        when(repository.findByClientId(CLIENT_ID)).thenReturn(Optional.of(deployment));
+        repository = mock(ToolDeploymentRepository.class);
+        when(repository.findByIssAndClientId(ISSUER, CLIENT_ID)).thenReturn(Optional.of(deployment));
 
         noncesCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
 
@@ -137,6 +138,11 @@ class LtiServiceLaunchValidationTest {
         assertDoesNotThrow(() -> service.getValidatedJWT(token, STATE, session));
     }
 
+    /**
+     * The deployment is resolved on the pair, so a token from an issuer we never registered matches
+     * no row at all, whatever client id it names as its audience. The refusal therefore comes from
+     * the audience check rather than from the issuer comparison that follows it.
+     */
     @Test
     void aTokenWhoseIssuerIsNotTheRegisteredOneIsRejected() {
         String token = launchToken("https://attacker.example.com", issuedNonce());
@@ -144,9 +150,37 @@ class LtiServiceLaunchValidationTest {
                 ResponseStatusException.class,
                 () -> service.getValidatedJWT(token, STATE, session)
         );
+        assertEquals("Audience invalid", exception.getReason());
+    }
+
+    /**
+     * The issuer comparison is redundant while the lookup uses the pair, which is exactly why it is
+     * worth a test: a stored row whose issuer disagrees with the token must still be refused, so a
+     * later change to the lookup cannot remove the check silently.
+     */
+    @Test
+    void aStoredRowWhoseIssuerDisagreesWithTheTokenIsRejected() {
+        ToolDeployment inconsistent = ToolDeployment
+                .builder()
+                .iss("https://elsewhere.example.org")
+                .clientId(CLIENT_ID)
+                .jwksUri("https://moodle.example.org/jwks")
+                .authorizationEndpoint("https://moodle.example.org/auth")
+                .build();
+        when(repository.findByIssAndClientId(ISSUER, CLIENT_ID)).thenReturn(Optional.of(inconsistent));
+
+        String token = launchToken(ISSUER, issuedNonce());
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.getValidatedJWT(token, STATE, session)
+        );
         assertEquals("Issuer invalid", exception.getReason());
     }
 
+    /**
+     * A token with no issuer resolves no deployment, since the lookup takes the pair. It must still
+     * be a controlled refusal rather than a null dereference answered as a 500.
+     */
     @Test
     void aTokenWithNoIssuerAtAllIsRejected() {
         Date now = new Date();
@@ -162,7 +196,7 @@ class LtiServiceLaunchValidationTest {
                 ResponseStatusException.class,
                 () -> service.getValidatedJWT(token, STATE, session)
         );
-        assertEquals("Issuer invalid", exception.getReason());
+        assertEquals("Audience invalid", exception.getReason());
     }
 
     @Test

@@ -19,8 +19,4 @@ public interface ToolDeploymentRepository extends JpaRepository<ToolDeployment, 
     Optional<ToolDeployment> findByIssAndClientId(String iss, String clientId);
 
     List<ToolDeployment> findAllByIss(String iss);
-
-    Optional<ToolDeployment> findByIss(String iss);
-
-    Optional<ToolDeployment> findByClientId(String clientId);
 }

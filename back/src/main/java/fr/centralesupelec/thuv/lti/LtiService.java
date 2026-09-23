@@ -134,8 +134,11 @@ public class LtiService {
         try {
             jwt = JWT.decode(idToken);
             for (int i = 0; i < jwt.getAudience().size(); i++) {
-                Optional<ToolDeployment> optionalToolDeployment = this.toolDeploymentRepository.findByClientId(
-                        jwt.getAudience().get(i)
+                // By the pair, never by the client id alone: a client id is chosen by the platform
+                // that issues it, so the same value can exist under two issuers and resolving on it
+                // alone would verify the token against the wrong platform's keys.
+                Optional<ToolDeployment> optionalToolDeployment = this.toolDeploymentRepository.findByIssAndClientId(
+                        jwt.getIssuer(), jwt.getAudience().get(i)
                 );
                 if (optionalToolDeployment.isPresent()) {
                     toolDeployment = optionalToolDeployment.get();
@@ -151,6 +154,11 @@ public class LtiService {
             JWTVerifier verifier = JWT.require(algorithm).build();
             verifier.verify(idToken);
 
+        } catch (ResponseStatusException ex) {
+            // A refusal decided in this block is already the answer we want to send. Letting the
+            // catch-all below relabel it as "Invalid token" loses which check refused the launch,
+            // which is the only thing the logs have to go on when a platform reports a failure.
+            throw ex;
         } catch (Throwable ex) {
             logger.warn(ex.toString());
             logger.debug(ExceptionUtils.getStackTrace(ex));
