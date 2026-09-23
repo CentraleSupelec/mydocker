@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -154,8 +156,10 @@ class LtiEndToEndLaunchTest {
                         .param("registration_token", "registration-token"))
                 .andExpect(status().isOk());
         List<ToolDeployment> registered = toolDeploymentRepository.findAllByIss(platformUrl);
-        assertEquals(1, registered.size(), "one registration per call to the route");
-        return registered.get(0);
+        assertFalse(registered.isEmpty(), "the route stores what the platform returned");
+        // The simulator issues a fresh client id per registration, as a Moodle does per espace de
+        // cours, so the last row is the one this call created.
+        return registered.get(registered.size() - 1);
     }
 
     /** Runs the OIDC login initiation and returns the state and nonce the platform must echo back. */
@@ -202,6 +206,51 @@ class LtiEndToEndLaunchTest {
         String location = result.getResponse().getHeader(HttpHeaders.LOCATION);
         assertNotNull(location);
         return UriComponentsBuilder.fromUriString(location).build().getQueryParams().getFirst("idtoken");
+    }
+
+    /**
+     * One integration per espace de cours, against the real repository rather than a stub: two
+     * registrations on the same Moodle must both be stored and must each resolve to their own row.
+     * Without a first row in the database, nothing distinguishes the pair lookup from the issuer
+     * lookup it replaced.
+     */
+    @Test
+    void twoIntegrationsOnOnePlatformCoexistAndResolveSeparately() throws Exception {
+        ToolDeployment first = registerPlatform();
+        ToolDeployment second = registerPlatform();
+
+        assertNotEquals(first.getClientId(), second.getClientId());
+        assertEquals(2, toolDeploymentRepository.findAllByIss(platformUrl).size());
+
+        assertEquals(
+                first.getClientId(),
+                clientIdInLoginRedirect(first),
+                "the first integration must not resolve to the second"
+        );
+        assertEquals(second.getClientId(), clientIdInLoginRedirect(second));
+
+        // The same request without a client id can no longer name one of the two.
+        mockMvc.perform(post(LtiConfig.INIT_PATH)
+                        .session(new MockHttpSession())
+                        .param("iss", platformUrl)
+                        .param("target_link_uri", "https://mydocker.example.org/course")
+                        .param("login_hint", "login-hint"))
+                .andExpect(status().isBadRequest());
+    }
+
+    private String clientIdInLoginRedirect(ToolDeployment deployment) throws Exception {
+        MvcResult result = mockMvc.perform(post(LtiConfig.INIT_PATH)
+                        .session(new MockHttpSession())
+                        .param("iss", platformUrl)
+                        .param("target_link_uri", "https://mydocker.example.org/course")
+                        .param("login_hint", "login-hint")
+                        .param("client_id", deployment.getClientId()))
+                .andExpect(status().isFound())
+                .andReturn();
+
+        String location = result.getResponse().getHeader(HttpHeaders.LOCATION);
+        assertNotNull(location);
+        return UriComponentsBuilder.fromUriString(location).build().getQueryParams().getFirst("client_id");
     }
 
     @Test

@@ -157,7 +157,10 @@ public class LtiService {
         } catch (ResponseStatusException ex) {
             // A refusal decided in this block is already the answer we want to send. Letting the
             // catch-all below relabel it as "Invalid token" loses which check refused the launch,
-            // which is the only thing the logs have to go on when a platform reports a failure.
+            // which is the only thing the logs have to go on when a platform reports a failure. It
+            // is logged here rather than at the throw, so that adding a refusal above cannot make
+            // one silent.
+            logger.warn("Refused launch: {}", ex.getReason());
             throw ex;
         } catch (Throwable ex) {
             logger.warn(ex.toString());
