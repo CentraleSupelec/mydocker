@@ -91,7 +91,7 @@ public class MyUserDetailsService implements UserDetailsService {
      * simply registered by mistake can claim any address it likes, so it must not be able to claim
      * one that belongs to a privileged account.
      *
-     * The refusal happens on the resolved account, before any write. {@link #fillUserInformation}
+     * <p>The refusal happens on the resolved account, before any write. {@link #fillUserInformation}
      * updates name and lastname on the row it is given, so a check placed after the upsert would
      * let a refused login still rewrite an administrator's profile. One resolution, one entity,
      * no second lookup.

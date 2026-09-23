@@ -88,7 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * principal.getAuthorities() rather than the authentication's, so filtering one and not the
      * other would leave administrator decisions reachable from a session that must not have them.
      *
-     * A new MyUserDetails is built; the role collection it was given belongs to the user entity and
+     * <p>A new MyUserDetails is built; the role collection it was given belongs to the user entity and
      * is never mutated.
      */
     private UserDetails effectivePrincipal(UserDetails userDetails, String origin, String username) {

@@ -89,7 +89,8 @@ public class CourseController {
             .anyMatch(order -> computedFields.contains(order.getProperty()));
 
         if (sortByComputedField) {
-            List<AdminCourseDto> dtos = courseListService.getViewableCourse(user, principal.hasAdminAuthority(), decodedSearch, status, Pageable.unpaged())
+            List<AdminCourseDto> dtos = courseListService
+                    .getViewableCourse(user, principal.hasAdminAuthority(), decodedSearch, status, Pageable.unpaged())
                     .getContent()
                     .stream()
                     .map(course -> {
