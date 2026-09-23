@@ -12,7 +12,17 @@ import org.springframework.web.client.RestTemplate;
 
 import com.auth0.jwk.JwkProvider;
 import fr.centralesupelec.thuv.lti.dtos.OpenIdConfigurationDto;
+import fr.centralesupelec.thuv.model.Role;
+import fr.centralesupelec.thuv.model.User;
+import fr.centralesupelec.thuv.repository.RoleRepository;
+import fr.centralesupelec.thuv.repository.UserRepository;
+import fr.centralesupelec.thuv.security.JwtTokenProvider;
 import fr.centralesupelec.thuv.security.OIDCConfig;
+import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.util.UUID;
 
@@ -25,12 +35,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * The gate on the route the report was about. Registering an LTI platform is what let any account
- * introduce a signing key the launch path would then trust, so this is the authorization decision
- * the whole chain hung on.
+ * The two authorization decisions the reported chain hung on, exercised through the real web and
+ * security stack: who may register an LTI platform, and what authority a session opened through LTI
+ * can exercise once it exists.
+ *
+ * Transactional so the registration case rolls back the row it writes.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 @TestPropertySource(
         locations = "classpath:application-test.properties",
         // Pin the key pair the context starts with, so this test does not depend on whichever
@@ -52,6 +65,28 @@ class LtiRegisterRouteSecurityTest {
     // network at startup, which would make this test depend on an external service being up.
     @MockitoBean(name = OIDCConfig.JWK_BEAN_NAME)
     private JwkProvider jwkProvider;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    private User createAdministrator() {
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseThrow();
+        String identity = "admin-" + UUID.randomUUID() + "@example.org";
+        User admin = new User();
+        admin.setEmail(identity);
+        admin.setUsername(identity);
+        admin.setName("Real");
+        admin.setLastname("Administrator");
+        admin.setEnabled(true);
+        admin.setRoles(new ArrayList<>(List.of(adminRole)));
+        return userRepository.saveAndFlush(admin);
+    }
 
     @Test
     @WithMockUser(roles = "USER")
@@ -104,5 +139,36 @@ class LtiRegisterRouteSecurityTest {
         verify(ltiRestTemplate).getForObject(
                 issuer + "/.well-known/openid-configuration", OpenIdConfigurationDto.class
         );
+    }
+
+    @Test
+    void anLtiSessionCannotReachAnAdministratorEndpoint() throws Exception {
+        User admin = createAdministrator();
+        String token = jwtTokenProvider.generateToken(admin.getUsername(), admin.getEmail(), TokenOrigin.LTI);
+
+        // The account really is an administrator; the origin of the session is what withholds the
+        // authority, which is the property the reported chain turned on.
+        mockMvc.perform(get("/admin/contents/").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void aMagicLinkSessionCannotReachAnAdministratorEndpointEither() throws Exception {
+        User admin = createAdministrator();
+        String token = jwtTokenProvider.generateToken(
+                admin.getUsername(), admin.getEmail(), TokenOrigin.MAGIC_LINK
+        );
+
+        mockMvc.perform(get("/admin/contents/").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void theSameAccountReachesItThroughOurOwnIdentityProvider() throws Exception {
+        User admin = createAdministrator();
+        String token = jwtTokenProvider.generateToken(admin.getUsername(), admin.getEmail(), TokenOrigin.CAS);
+
+        mockMvc.perform(get("/admin/contents/").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
     }
 }
