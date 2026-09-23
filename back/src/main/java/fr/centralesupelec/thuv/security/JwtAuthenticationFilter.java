@@ -1,5 +1,6 @@
 package fr.centralesupelec.thuv.security;
 
+import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Bearer ";
     private static final Set<String> PRIVILEGED_AUTHORITIES = Set.of("ROLE_ADMIN");
+    private static final Set<String> PRIVILEGED_ROLES = Set.of("ROLE_ADMIN");
 
     @Autowired
     private JwtTokenProvider tokenProvider;
@@ -57,10 +59,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (!userDetails.isEnabled()) {
                     throw new DisabledException("Account disabled");
                 }
+                String origin = tokenProvider.getOriginFromJWT(jwt);
+                UserDetails principal = effectivePrincipal(userDetails, origin, username);
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        principal,
                         null,
-                        authoritiesFor(userDetails, tokenProvider.getOriginFromJWT(jwt), username)
+                        authoritiesFor(principal, origin, username)
                 );
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 securityContext.setAuthentication(authentication);
@@ -79,10 +83,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
+     * The principal, not only the Authentication, has to carry the effective roles: permission
+     * services such as CoursePermissionService and CourseUpdateService read
+     * principal.getAuthorities() rather than the authentication's, so filtering one and not the
+     * other would leave administrator decisions reachable from a session that must not have them.
+     *
+     * A new MyUserDetails is built; the role collection it was given belongs to the user entity and
+     * is never mutated.
+     */
+    private UserDetails effectivePrincipal(UserDetails userDetails, String origin, String username) {
+        if (TokenOrigin.grantsPrivilegedAuthority(origin) || !(userDetails instanceof MyUserDetails details)) {
+            return userDetails;
+        }
+        List<Role> retained = details
+                .getRoles()
+                .stream()
+                .filter(role -> !PRIVILEGED_ROLES.contains(role.getName()))
+                .collect(Collectors.toList());
+        if (retained.size() == details.getRoles().size()) {
+            return userDetails;
+        }
+        logger.warn("Dropped privileged roles for {}: token origin '{}' does not grant them", username, origin);
+        return new MyUserDetails(retained, details.getEmail(), details.getUserId(), details.getEnabled());
+    }
+
+    /**
      * Roles are re-read from the database on every request, so a token minted before an account was
-     * promoted would otherwise carry the new authority. The origin the token was issued from decides
-     * whether privileged authority applies at all, and a new list is built rather than the one the
-     * UserDetails hands over, which is backed by the user entity.
+     * promoted would otherwise carry the new authority. Belt and braces for any principal that is
+     * not a MyUserDetails: a new list is built rather than the one the UserDetails hands over.
      */
     private Collection<? extends GrantedAuthority> authoritiesFor(
             UserDetails userDetails, String origin, String username

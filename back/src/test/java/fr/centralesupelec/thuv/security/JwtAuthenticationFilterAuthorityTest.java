@@ -11,6 +11,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -62,6 +63,19 @@ class JwtAuthenticationFilterAuthorityTest {
         SecurityContextHolder.clearContext();
     }
 
+    private Set<String> principalAuthoritiesForOrigin(String origin) throws Exception {
+        authoritiesForOrigin(origin);
+        UserDetails principal = (UserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        return principal
+                .getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+    }
+
     private Set<String> authoritiesForOrigin(String origin) throws Exception {
         when(tokenProvider.getOriginFromJWT(TOKEN)).thenReturn(origin);
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -102,5 +116,24 @@ class JwtAuthenticationFilterAuthorityTest {
     @Test
     void anUnrecognisedOriginFailsClosed() throws Exception {
         assertFalse(authoritiesForOrigin("SOMETHING_ELSE").contains("ROLE_ADMIN"));
+    }
+
+    @Test
+    void thePrincipalItselfLosesPrivilegedRolesOnAFederatedOrigin() throws Exception {
+        // Permission services read principal.getAuthorities(), not the authentication's, so the
+        // principal has to carry the effective roles or those decisions stay reachable.
+        Set<String> authorities = principalAuthoritiesForOrigin(TokenOrigin.LTI.toString());
+        assertFalse(authorities.contains("ROLE_ADMIN"));
+        assertEquals(Set.of("ROLE_USER"), authorities);
+    }
+
+    @Test
+    void thePrincipalFailsClosedOnAMissingOrigin() throws Exception {
+        assertFalse(principalAuthoritiesForOrigin(null).contains("ROLE_ADMIN"));
+    }
+
+    @Test
+    void thePrincipalKeepsPrivilegedRolesThroughOurOwnProviders() throws Exception {
+        assertTrue(principalAuthoritiesForOrigin(TokenOrigin.CAS.toString()).contains("ROLE_ADMIN"));
     }
 }
