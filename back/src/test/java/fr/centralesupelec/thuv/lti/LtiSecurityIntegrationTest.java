@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import com.auth0.jwk.JwkProvider;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import fr.centralesupelec.thuv.lti.dtos.OpenIdConfigurationDto;
 import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
@@ -18,6 +20,7 @@ import fr.centralesupelec.thuv.repository.RoleRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.JwtTokenProvider;
 import fr.centralesupelec.thuv.security.OIDCConfig;
+import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +34,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -53,7 +59,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "lti.public-key-path=classpath:lti-test-public.pem"
         }
 )
-class LtiRegisterRouteSecurityTest {
+class LtiSecurityIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -74,6 +80,14 @@ class LtiRegisterRouteSecurityTest {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    // The launch checks have their own unit tests; what is under test here is what the handler does
+    // with a token that has already passed them.
+    @MockitoBean
+    private LtiService ltiService;
+
+    @MockitoBean
+    private ActivityLogger activityLogger;
 
     private User createAdministrator() {
         Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseThrow();
@@ -127,8 +141,8 @@ class LtiRegisterRouteSecurityTest {
         configuration.setRegistrationEndpoint(issuer + "/register");
         when(ltiRestTemplate.getForObject(anyString(), eq(OpenIdConfigurationDto.class)))
                 .thenReturn(configuration);
-        when(ltiRestTemplate.postForObject(anyString(), any(), eq(String.class)))
-                .thenReturn("{\"client_id\": \"client-abc\"}");
+        when(ltiService.registerTool(anyString(), any(OpenIdConfigurationDto.class)))
+                .thenReturn("client-abc");
 
         mockMvc.perform(get(LtiConfig.REGISTER_PATH)
                         .param("openid_configuration", issuer + "/.well-known/openid-configuration")
@@ -170,5 +184,29 @@ class LtiRegisterRouteSecurityTest {
 
         mockMvc.perform(get("/admin/contents/").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void aLaunchClaimingAnAdministratorEmailIsRefusedAtTheEndpoint() throws Exception {
+        User admin = createAdministrator();
+        String platformToken = JWT.create()
+                .withIssuer("https://moodle.example.org")
+                .withClaim("email", admin.getEmail())
+                .withClaim("given_name", "Attacker")
+                .withClaim("family_name", "Attacker")
+                .withClaim(LtiConfig.Claims.ROLES, List.of(LtiConfig.Roles.INSTRUCTOR))
+                .withClaim(LtiConfig.Claims.MESSAGE_TYPE, "LtiResourceLinkRequest")
+                .withClaim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri", "https://mydocker.example.org")
+                .sign(Algorithm.HMAC256("irrelevant-to-this-test"));
+        when(ltiService.getValidatedJWT(anyString(), nullable(String.class), any()))
+                .thenReturn(JWT.decode(platformToken));
+
+        mockMvc.perform(post(LtiConfig.LAUNCH_PATH)
+                        .param("id_token", "platform-token")
+                        .param("state", "state-value"))
+                .andExpect(status().isForbidden());
+
+        // No session was opened and nothing was recorded as a login.
+        verify(activityLogger, never()).log(any(), any());
     }
 }
