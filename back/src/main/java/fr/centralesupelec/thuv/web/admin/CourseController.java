@@ -89,7 +89,7 @@ public class CourseController {
             .anyMatch(order -> computedFields.contains(order.getProperty()));
 
         if (sortByComputedField) {
-            List<AdminCourseDto> dtos = courseListService.getViewableCourse(user, decodedSearch, status, Pageable.unpaged())
+            List<AdminCourseDto> dtos = courseListService.getViewableCourse(user, principal.hasAdminAuthority(), decodedSearch, status, Pageable.unpaged())
                     .getContent()
                     .stream()
                     .map(course -> {
@@ -128,7 +128,7 @@ public class CourseController {
             return new PageImpl<>(pageContent, pageable, dtos.size());
         }
 
-        return courseListService.getViewableCourse(user, decodedSearch, status, pageable)
+        return courseListService.getViewableCourse(user, principal.hasAdminAuthority(), decodedSearch, status, pageable)
                 .map(course -> {
                     int connectedCount = connectedUsersByCourseIdMap.getOrDefault(course.getId().toString(), 0);
                     int recentUsers = recentUsersByCourseId.getOrDefault(course.getId(), 0);

@@ -105,7 +105,7 @@ public class DockerImageController {
             Pageable pageable
     ) {
         User user = userRepository.getReferenceById(principal.getUserId());
-        return dockerImageListService.getViewableDockerImage(user, search, pageable)
+        return dockerImageListService.getViewableDockerImage(user, principal.hasAdminAuthority(), search, pageable)
                 .map(dockerImageMapper::convertToDto);
     }
 

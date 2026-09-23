@@ -18,8 +18,15 @@ import java.util.List;
 public class CourseListService {
     private final CourseRepository courseRepository;
 
-    public Page<Course> getViewableCourse(User user, String search, List<CourseStatus> status, Pageable pageable) {
-        if (user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"))) {
+    /**
+     * hasAdminAuthority comes from the session, not from the user row: an account may hold
+     * ROLE_ADMIN in the database while the session it is using was opened through a provider that
+     * does not grant administrator authority.
+     */
+    public Page<Course> getViewableCourse(
+            User user, boolean hasAdminAuthority, String search, List<CourseStatus> status, Pageable pageable
+    ) {
+        if (hasAdminAuthority) {
             return courseRepository.searchCoursesByTitleOrCreatorName(search, status, pageable);
         }
 

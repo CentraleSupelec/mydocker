@@ -14,8 +14,13 @@ import com.auth0.jwk.JwkProvider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import fr.centralesupelec.thuv.lti.dtos.OpenIdConfigurationDto;
+import fr.centralesupelec.thuv.model.ComputeType;
+import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
+import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
+import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.RoleRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.JwtTokenProvider;
@@ -81,6 +86,12 @@ class LtiSecurityIntegrationTest {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private ComputeTypeRepository computeTypeRepository;
+
     // The launch checks have their own unit tests; what is under test here is what the handler does
     // with a token that has already passed them.
     @MockitoBean
@@ -88,6 +99,36 @@ class LtiSecurityIntegrationTest {
 
     @MockitoBean
     private ActivityLogger activityLogger;
+
+    private User createUser(String prefix, String... roleNames) {
+        List<Role> roles = new ArrayList<>();
+        for (String roleName : roleNames) {
+            roles.add(roleRepository.findByName(roleName).orElseThrow());
+        }
+        String identity = prefix + "-" + UUID.randomUUID() + "@example.org";
+        User user = new User();
+        user.setEmail(identity);
+        user.setUsername(identity);
+        user.setName("Test");
+        user.setLastname("User");
+        user.setEnabled(true);
+        user.setRoles(roles);
+        return userRepository.saveAndFlush(user);
+    }
+
+    private Course createCourseOwnedBy(User creator) {
+        ComputeType computeType = computeTypeRepository.findAll().stream().findFirst().orElseThrow();
+        Course course = new Course();
+        course.setTitle("Course " + UUID.randomUUID());
+        course.setDescription("description");
+        course.setLink("https://example.org");
+        course.setDockerImage("example/image:1");
+        course.setCommand("bash");
+        course.setComputeType(computeType);
+        course.setStatus(CourseStatus.READY);
+        course.setCreator(creator);
+        return courseRepository.saveAndFlush(course);
+    }
 
     private User createAdministrator() {
         Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseThrow();
@@ -210,4 +251,28 @@ class LtiSecurityIntegrationTest {
         verify(activityLogger, never()).log(any(), any());
     }
 
+
+    @Test
+    void aPermissionServiceRouteIsClosedToAnLtiSessionAndOpenToOurOwnProvider() throws Exception {
+        // Read access to someone else's course is decided by CoursePermissionService, which reads
+        // the principal rather than hasRole(). The account is a genuine administrator; only the
+        // origin of the session differs between the two calls.
+        User administrator = createAdministrator();
+        User someoneElse = createUser("owner", "ROLE_TEACHER");
+        Course theirCourse = createCourseOwnedBy(someoneElse);
+
+        String ltiToken = jwtTokenProvider.generateToken(
+                administrator.getUsername(), administrator.getEmail(), TokenOrigin.LTI
+        );
+        mockMvc.perform(get("/admin/courses/" + theirCourse.getId())
+                        .header("Authorization", "Bearer " + ltiToken))
+                .andExpect(status().isForbidden());
+
+        String casToken = jwtTokenProvider.generateToken(
+                administrator.getUsername(), administrator.getEmail(), TokenOrigin.CAS
+        );
+        mockMvc.perform(get("/admin/courses/" + theirCourse.getId())
+                        .header("Authorization", "Bearer " + casToken))
+                .andExpect(status().isOk());
+    }
 }

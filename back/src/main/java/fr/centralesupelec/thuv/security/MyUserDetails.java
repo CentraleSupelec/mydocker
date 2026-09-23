@@ -17,6 +17,16 @@ public class MyUserDetails implements UserDetails {
     private final Long userId;
     private final Boolean enabled;
 
+    /**
+     * The authority the session actually carries. The authentication filter rebuilds this principal
+     * without privileged roles when the token was not issued by one of our own identity providers,
+     * so this answers "may this session act as an administrator", which is not the same question as
+     * "does this account hold ROLE_ADMIN in the database".
+     */
+    public boolean hasAdminAuthority() {
+        return getAuthorities().stream().anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getGrantedAuthorities();

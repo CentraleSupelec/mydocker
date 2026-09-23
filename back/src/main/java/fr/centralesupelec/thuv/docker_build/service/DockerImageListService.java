@@ -14,8 +14,15 @@ import org.springframework.stereotype.Service;
 public class DockerImageListService {
     private final DockerImageRepository dockerImageRepository;
 
-    public Page<DockerImage> getViewableDockerImage(User user, String search, Pageable pageable) {
-        if (user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"))) {
+    /**
+     * hasAdminAuthority comes from the session, not from the user row: an account may hold
+     * ROLE_ADMIN in the database while the session it is using was opened through a provider that
+     * does not grant administrator authority.
+     */
+    public Page<DockerImage> getViewableDockerImage(
+            User user, boolean hasAdminAuthority, String search, Pageable pageable
+    ) {
+        if (hasAdminAuthority) {
             if (search != null && !search.isEmpty()) {
                 return dockerImageRepository.findAllByNameContainingIgnoreCase(search, pageable);
             }
