@@ -96,12 +96,24 @@ public class LtiController {
             HttpSession session
     ) {
         Optional<ToolDeployment> optionalToolDeployment;
-        // LTI protocol specifies to use iss because client_id is not required, but using client_id enables multiple
-        // tool deployments on the same platform.
+        // The pair identifies the deployment. Resolving on the client id alone would let a request
+        // name one issuer and a client id registered under another, and the redirect would then be
+        // built from the second platform's authorization endpoint, carrying this platform's
+        // login_hint and lti_message_hint to it.
         if (clientId.isPresent()) {
-            optionalToolDeployment = this.toolDeploymentRepository.findByClientId(clientId.get());
+            optionalToolDeployment = this.toolDeploymentRepository.findByIssAndClientId(iss, clientId.get());
         } else {
-            optionalToolDeployment = this.toolDeploymentRepository.findByIss(iss);
+            // client_id is optional in the protocol, so the single-integration platforms keep
+            // working. An issuer with several espace de cours integrations cannot be resolved this
+            // way, and guessing one of them would send the hints to the wrong course.
+            List<ToolDeployment> deploymentsForIssuer = this.toolDeploymentRepository.findAllByIss(iss);
+            if (1 < deploymentsForIssuer.size()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("client_id is required for platform %s", iss)
+                );
+            }
+            optionalToolDeployment = deploymentsForIssuer.stream().findFirst();
         }
         if (!optionalToolDeployment.isPresent()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Platform %s not configured", iss));
