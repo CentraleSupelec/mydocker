@@ -148,6 +148,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(REGISTER_PATH).hasRole("ADMIN")
                         .requestMatchers(JWKS_PATH).permitAll()
                         .requestMatchers(LAUNCH_PATH).permitAll()
                         .requestMatchers(INIT_PATH).permitAll()
