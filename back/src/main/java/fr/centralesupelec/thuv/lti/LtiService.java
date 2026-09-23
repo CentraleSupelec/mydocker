@@ -119,6 +119,20 @@ public class LtiService {
         return provider.get(keyId);
     }
 
+    /**
+     * Spends the nonce, as the last check before anything is written. Kept out of token validation
+     * on purpose: validation answers whether the token is acceptable and changes nothing, so a
+     * launch refused by any later check can be retried with the same nonce. One atomic transition
+     * from issued to consumed, which refuses a nonce we never issued as well as a replay, and
+     * cannot be won twice by concurrent launches.
+     */
+    public void consumeNonce(DecodedJWT jwt) {
+        String nonce = jwt.getClaim("nonce").asString();
+        if (!this.noncesCache.asMap().replace(nonce, false, true)) {
+            throw rejectLaunch("nonce", "Nonce invalid");
+        }
+    }
+
     private ResponseStatusException rejectLaunch(String check, String message) {
         logger.warn("LTI launch rejected by check '{}'", check);
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
@@ -257,19 +271,8 @@ public class LtiService {
         if (jwt.getClaim("nonce").isMissing() || jwt.getClaim("nonce").isNull()) {
             throw rejectLaunch("nonce-missing", "Nonce not present");
         }
-        // The state is checked before the nonce is consumed. Consuming first would spend a valid
-        // nonce on a request that is refused anyway, so a user whose browser lost the session
-        // attribute could not retry the same launch.
         if (!state.equals(session.getAttribute(STATE_ATTRIBUTE))) {
             throw rejectLaunch("state", "Wrong state");
-        }
-
-        String nonce = jwt.getClaim("nonce").asString();
-        // One atomic transition from issued to consumed. Rejects a nonce we never issued (absent
-        // from the cache) and a nonce already used, and cannot be won twice concurrently. This is
-        // the last check, and the only one that changes state.
-        if (!this.noncesCache.asMap().replace(nonce, false, true)) {
-            throw rejectLaunch("nonce", "Nonce invalid");
         }
 
         return jwt;

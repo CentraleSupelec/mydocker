@@ -41,6 +41,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LtiController {
     private static final Logger logger = LoggerFactory.getLogger(LtiController.class);
+    /** Named in 49.unique_tool_deployment_pair.yml, so the name is stable across platforms. */
+    private static final String DEPLOYMENT_PAIR_CONSTRAINT = "uk_tool_deployments_iss_client_id";
     private final ToolDeploymentRepository toolDeploymentRepository;
     private final LtiService ltiService;
     private final Cache<String, Boolean> noncesCache;
@@ -92,8 +94,12 @@ public class LtiController {
             this.toolDeploymentRepository.saveAndFlush(newTool);
         } catch (DataIntegrityViolationException ex) {
             // Two registrations of the same pair can both pass the check above before either
-            // writes. The unique constraint is what keeps the data correct; this turns the
-            // resulting failure into the same answer the check gives, rather than a 500.
+            // writes, and the unique constraint is what keeps the data correct. Only that
+            // constraint becomes a 409: any other violation, a value too long for its column for
+            // instance, is a different fault and must not be reported as a duplicate.
+            if (!violatesDeploymentPair(ex)) {
+                throw ex;
+            }
             logger.warn(
                     "Concurrent registration of an existing deployment for issuer '{}'",
                     openIdConfiguration.getIssuer()
@@ -102,6 +108,16 @@ public class LtiController {
                     HttpStatus.CONFLICT, "A deployment for this platform and client already exists"
             );
         }
+    }
+
+    /** Whether a write failure is the deployment-pair constraint rather than some other rule. */
+    private static boolean violatesDeploymentPair(DataIntegrityViolationException ex) {
+        for (Throwable cause = ex; null != cause; cause = cause.getCause()) {
+            if (null != cause.getMessage() && cause.getMessage().contains(DEPLOYMENT_PAIR_CONSTRAINT)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @GetMapping(value = JWKS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -214,6 +230,11 @@ public class LtiController {
         if (null == email || email.isBlank()) {
             throw rejectLaunch("email-missing", "Email not present");
         }
+
+        // Last check, and the only one that changes anything: every refusal above leaves the nonce
+        // spendable, so a launch refused on state, message type, target or a missing email can be
+        // retried unchanged once the cause is fixed. A replay is still refused before any write.
+        this.ltiService.consumeNonce(jwt);
 
         User user = myUserDetailsService.upsertUserFromUntrustedOrigin(
                 null,

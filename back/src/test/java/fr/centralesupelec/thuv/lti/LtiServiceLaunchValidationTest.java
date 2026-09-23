@@ -126,6 +126,15 @@ class LtiServiceLaunchValidationTest {
                 .sign(Algorithm.RSA256(publicKey, privateKey));
     }
 
+    /**
+     * Validation then consumption, in the order the controller runs them. Consumption is no longer
+     * part of validating the token, so a test that wants the replay behaviour has to spend the
+     * nonce the way the launch handler does.
+     */
+    private void validateAndConsume(String token, String state) {
+        service.consumeNonce(service.getValidatedJWT(token, state, session));
+    }
+
     private String issuedNonce() {
         String nonce = UUID.randomUUID().toString();
         noncesCache.put(nonce, false);
@@ -135,7 +144,7 @@ class LtiServiceLaunchValidationTest {
     @Test
     void aLaunchFromTheRegisteredPlatformIsAccepted() {
         String token = launchToken(ISSUER, issuedNonce());
-        assertDoesNotThrow(() -> service.getValidatedJWT(token, STATE, session));
+        assertDoesNotThrow(() -> validateAndConsume(token, STATE));
     }
 
     /**
@@ -211,11 +220,11 @@ class LtiServiceLaunchValidationTest {
 
         ResponseStatusException refused = assertThrows(
                 ResponseStatusException.class,
-                () -> service.getValidatedJWT(token, "not-the-state", session)
+                () -> validateAndConsume(token, "not-the-state")
         );
         assertEquals("Wrong state", refused.getReason());
 
-        assertDoesNotThrow(() -> service.getValidatedJWT(token, STATE, session));
+        assertDoesNotThrow(() -> validateAndConsume(token, STATE));
     }
 
     @Test
@@ -223,7 +232,7 @@ class LtiServiceLaunchValidationTest {
         String token = launchToken(ISSUER, UUID.randomUUID().toString());
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> service.getValidatedJWT(token, STATE, session)
+                () -> validateAndConsume(token, STATE)
         );
         assertEquals("Nonce invalid", exception.getReason());
     }
@@ -231,10 +240,10 @@ class LtiServiceLaunchValidationTest {
     @Test
     void aReplayedLaunchIsRejected() {
         String token = launchToken(ISSUER, issuedNonce());
-        assertDoesNotThrow(() -> service.getValidatedJWT(token, STATE, session));
+        assertDoesNotThrow(() -> validateAndConsume(token, STATE));
         assertThrows(
                 ResponseStatusException.class,
-                () -> service.getValidatedJWT(token, STATE, session)
+                () -> validateAndConsume(token, STATE)
         );
     }
 
@@ -251,7 +260,7 @@ class LtiServiceLaunchValidationTest {
             executor.submit(() -> {
                 try {
                     start.await();
-                    service.getValidatedJWT(token, STATE, session);
+                    validateAndConsume(token, STATE);
                     accepted.incrementAndGet();
                 } catch (Exception ex) {
                     rejections.add(ex);

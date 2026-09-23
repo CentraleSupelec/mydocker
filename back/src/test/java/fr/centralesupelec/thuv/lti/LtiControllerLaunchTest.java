@@ -118,12 +118,17 @@ class LtiControllerLaunchTest {
     }
 
     private void assertNothingWasWritten() {
+        // any(), not anyString(): a null email is exactly the call this has to catch, and
+        // anyString() does not match null, so the verification would pass without proving anything.
         verify(myUserDetailsService, never()).upsertUserFromUntrustedOrigin(
-                any(), anyString(), any(), any(), any()
+                any(), any(), any(), any(), any()
         );
         verify(myUserDetailsService, never()).ensureTeacher(any());
         verify(jwtTokenProvider, never()).generateToken(any(), any(), any());
         verify(activityLogger, never()).log(any(), any());
+        // The nonce is spent only once every check has passed, so a refusal leaves it spendable and
+        // the same launch can be retried unchanged.
+        verify(ltiService, never()).consumeNonce(any());
     }
 
     private User ordinaryUser() {
@@ -180,6 +185,7 @@ class LtiControllerLaunchTest {
         controller.launch(ID_TOKEN, STATE, session);
 
         verify(myUserDetailsService).ensureTeacher(user);
+        verify(ltiService).consumeNonce(any());
     }
 
     /**
