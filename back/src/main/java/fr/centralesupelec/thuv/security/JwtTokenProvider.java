@@ -50,6 +50,14 @@ public class JwtTokenProvider {
                 .sign(algorithmHS256);
     }
 
+    /**
+     * Reads back the origin claim written by {@link #generateToken}. Returns null when the claim is
+     * absent; callers must treat that as untrusted.
+     */
+    public String getOriginFromJWT(String token) {
+        return JWT.decode(token).getClaim("origin").asString();
+    }
+
     public String getUsernameFromJWT(String token) {
         DecodedJWT jwt = JWT.decode(token);
         return jwt.getSubject();

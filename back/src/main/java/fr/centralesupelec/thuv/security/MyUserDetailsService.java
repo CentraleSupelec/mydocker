@@ -5,6 +5,10 @@ import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.RoleRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
+import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
+import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.DisabledException;
@@ -12,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,6 +24,11 @@ import java.util.stream.Collectors;
 @Primary
 @Service
 public class MyUserDetailsService implements UserDetailsService {
+    private static final Logger logger = LoggerFactory.getLogger(MyUserDetailsService.class);
+    private static final String PRIVILEGED_ROLE = "ROLE_ADMIN";
+    private static final String PRIVILEGED_ORIGIN_MESSAGE =
+            "This login method cannot open a session for a privileged account";
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
@@ -73,7 +83,30 @@ public class MyUserDetailsService implements UserDetailsService {
         // CAS/LTI pass username == null (email is their identity). Use email as the username
         // for fallback LOOKUP and NEW-user creation only.
         String lookupUsername = username != null ? username : email;
-        User user = resolveExisting(lookupUsername, email).orElseGet(User::new);
+        return upsert(resolveExisting(lookupUsername, email), username, email, name, lastName);
+    }
+
+    /**
+     * Login path for a provider we do not operate. A platform that is compromised, hostile, or
+     * simply registered by mistake can claim any address it likes, so it must not be able to claim
+     * one that belongs to a privileged account.
+     *
+     * The refusal happens on the resolved account, before any write. {@link #fillUserInformation}
+     * updates name and lastname on the row it is given, so a check placed after the upsert would
+     * let a refused login still rewrite an administrator's profile. One resolution, one entity,
+     * no second lookup.
+     */
+    public User upsertUserFromUntrustedOrigin(
+            String username, String email, String name, String lastName, TokenOrigin origin
+    ) {
+        String lookupUsername = username != null ? username : email;
+        Optional<User> existing = resolveExisting(lookupUsername, email);
+        assertOriginMayBind(existing, origin);
+        return upsert(existing, username, email, name, lastName);
+    }
+
+    private User upsert(Optional<User> existing, String username, String email, String name, String lastName) {
+        User user = existing.orElseGet(User::new);
         // Never let a null-username provider overwrite an existing row's username (breaks JWT
         // subject continuity / can collide). Keep the row's username; seed email only when new.
         String usernameToSet = username != null
@@ -82,9 +115,25 @@ public class MyUserDetailsService implements UserDetailsService {
         return fillUserInformation(user, usernameToSet, email, name, lastName);
     }
 
+    private void assertOriginMayBind(Optional<User> existing, TokenOrigin origin) {
+        if (origin.grantsPrivilegedAuthority() || existing.isEmpty()) {
+            return;
+        }
+        if (isPrivileged(existing.get())) {
+            logger.warn("Refused {} login binding to privileged account id {}", origin, existing.get().getId());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PRIVILEGED_ORIGIN_MESSAGE);
+        }
+    }
+
+    private static boolean isPrivileged(User user) {
+        return user.getRoles().stream().anyMatch(role -> PRIVILEGED_ROLE.equals(role.getName()));
+    }
+
     public User findOrCreateMagicLinkUser(String email) {
         // Reuse an unambiguous existing account by email/username; create a guest only if none.
-        return resolveExisting(email, email)
+        Optional<User> existing = resolveExisting(email, email);
+        assertOriginMayBind(existing, TokenOrigin.MAGIC_LINK);
+        return existing
                 .orElseGet(() -> fillUserInformation(new User(), email, email, "Invité", "Invité"));
     }
 
