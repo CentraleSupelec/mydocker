@@ -18,7 +18,10 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -143,6 +148,24 @@ class LtiServiceLaunchValidationTest {
     }
 
     @Test
+    void aTokenWithNoIssuerAtAllIsRejected() {
+        Date now = new Date();
+        String token = JWT.create()
+                .withKeyId(KEY_ID)
+                .withAudience(CLIENT_ID)
+                .withIssuedAt(now)
+                .withExpiresAt(new Date(now.getTime() + 60_000))
+                .withClaim("nonce", issuedNonce())
+                .sign(Algorithm.RSA256(publicKey, privateKey));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.getValidatedJWT(token, STATE, session)
+        );
+        assertEquals("Issuer invalid", exception.getReason());
+    }
+
+    @Test
     void aNonceWeNeverIssuedIsRejected() {
         String token = launchToken(ISSUER, UUID.randomUUID().toString());
         ResponseStatusException exception = assertThrows(
@@ -166,6 +189,7 @@ class LtiServiceLaunchValidationTest {
     void twoConcurrentLaunchesOnOneNonceLeaveExactlyOneWinner() throws Exception {
         String token = launchToken(ISSUER, issuedNonce());
         AtomicInteger accepted = new AtomicInteger();
+        List<Exception> rejections = Collections.synchronizedList(new ArrayList<>());
         CountDownLatch start = new CountDownLatch(1);
         CountDownLatch done = new CountDownLatch(2);
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -176,17 +200,21 @@ class LtiServiceLaunchValidationTest {
                     start.await();
                     service.getValidatedJWT(token, STATE, session);
                     accepted.incrementAndGet();
-                } catch (Exception ignored) {
-                    // a rejected launch is the expected outcome for one of the two
+                } catch (Exception ex) {
+                    rejections.add(ex);
                 } finally {
                     done.countDown();
                 }
             });
         }
         start.countDown();
-        done.await(10, TimeUnit.SECONDS);
+        boolean finished = done.await(10, TimeUnit.SECONDS);
         executor.shutdownNow();
 
+        assertTrue(finished, "both launches should have completed");
         assertEquals(1, accepted.get());
+        assertEquals(1, rejections.size());
+        ResponseStatusException rejection = assertInstanceOf(ResponseStatusException.class, rejections.get(0));
+        assertEquals("Nonce invalid", rejection.getReason());
     }
 }

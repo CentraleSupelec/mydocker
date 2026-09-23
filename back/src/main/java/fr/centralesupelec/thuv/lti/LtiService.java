@@ -32,6 +32,7 @@ import jakarta.servlet.http.HttpSession;
 import java.net.URL;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
+import java.util.Objects;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -162,7 +163,9 @@ public class LtiService {
          */
         // Against the platform we registered, never against a header the caller controls: comparing
         // the token's issuer with the request's Origin compares two attacker-supplied values.
-        if (!jwt.getIssuer().equals(toolDeployment.getIss())) {
+        // Objects.equals, not jwt.getIssuer().equals: a token with no iss at all must be a
+        // controlled rejection, not a NullPointerException answered as a 500.
+        if (!Objects.equals(jwt.getIssuer(), toolDeployment.getIss())) {
             throw rejectLaunch("issuer", "Issuer invalid");
         }
 
