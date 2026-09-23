@@ -217,4 +217,38 @@ class LtiServiceLaunchValidationTest {
         ResponseStatusException rejection = assertInstanceOf(ResponseStatusException.class, rejections.get(0));
         assertEquals("Nonce invalid", rejection.getReason());
     }
+
+    @Test
+    void aTokenWithNoExpirationIsRejected() {
+        String token = JWT.create()
+                .withKeyId(KEY_ID)
+                .withIssuer(ISSUER)
+                .withAudience(CLIENT_ID)
+                .withIssuedAt(new Date())
+                .withClaim("nonce", issuedNonce())
+                .sign(Algorithm.RSA256(publicKey, privateKey));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.getValidatedJWT(token, STATE, session)
+        );
+        assertEquals("Expiration not present", exception.getReason());
+    }
+
+    @Test
+    void aTokenWithNoIssuedAtIsRejected() {
+        String token = JWT.create()
+                .withKeyId(KEY_ID)
+                .withIssuer(ISSUER)
+                .withAudience(CLIENT_ID)
+                .withExpiresAt(new Date(System.currentTimeMillis() + 60_000))
+                .withClaim("nonce", issuedNonce())
+                .sign(Algorithm.RSA256(publicKey, privateKey));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.getValidatedJWT(token, STATE, session)
+        );
+        assertEquals("Issued at not present", exception.getReason());
+    }
 }

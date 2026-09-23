@@ -213,8 +213,13 @@ public class LtiService {
         /**
          * 7. The current time MUST be before the time represented by the exp Claim;
          */
+        // A token with no exp at all passes the verifier, so the claim has to be required here
+        // rather than dereferenced.
+        if (null == jwt.getExpiresAt()) {
+            throw rejectLaunch("exp-missing", "Expiration not present");
+        }
         if (jwt.getExpiresAt().before(new Date())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expired");
+            throw rejectLaunch("expired", "Expired");
         }
 
         /**
@@ -223,10 +228,13 @@ public class LtiService {
          * The Tool MAY define its own acceptable time range;
          *
          */
+        if (null == jwt.getIssuedAt()) {
+            throw rejectLaunch("iat-missing", "Issued at not present");
+        }
         if (jwt.getIssuedAt().before(new Date(
                 (new Date()).getTime() - TimeUnit.HOURS.toMillis(NONCE_EXPIRATION_HOURS)
         ))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issued too early");
+            throw rejectLaunch("iat-too-early", "Issued too early");
         }
 
         /**

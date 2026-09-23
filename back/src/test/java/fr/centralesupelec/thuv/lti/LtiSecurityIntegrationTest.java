@@ -209,4 +209,5 @@ class LtiSecurityIntegrationTest {
         // No session was opened and nothing was recorded as a login.
         verify(activityLogger, never()).log(any(), any());
     }
+
 }
