@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -90,6 +91,28 @@ class LtiControllerLaunchTest {
         return JWT.decode(token);
     }
 
+    private DecodedJWT launchJwtWithMessageType(String messageType) {
+        var builder = JWT.create()
+                .withIssuer(ISSUER)
+                .withClaim("email", "someone@example.org")
+                .withClaim("given_name", "Some")
+                .withClaim("family_name", "One")
+                .withClaim(LtiConfig.Claims.TARGET_LINK_URI, "https://mydocker.example.org");
+        if (null != messageType) {
+            builder = builder.withClaim(LtiConfig.Claims.MESSAGE_TYPE, messageType);
+        }
+        return JWT.decode(builder.sign(Algorithm.HMAC256("test")));
+    }
+
+    private void assertNothingWasWritten() {
+        verify(myUserDetailsService, never()).upsertUserFromUntrustedOrigin(
+                any(), anyString(), any(), any(), any()
+        );
+        verify(myUserDetailsService, never()).ensureTeacher(any());
+        verify(jwtTokenProvider, never()).generateToken(any(), any(), any());
+        verify(activityLogger, never()).log(any(), any());
+    }
+
     private User ordinaryUser() {
         User user = new User();
         user.setId(7L);
@@ -153,5 +176,46 @@ class LtiControllerLaunchTest {
         controller.launch(ID_TOKEN, STATE, session);
 
         verify(myUserDetailsService, never()).ensureTeacher(any());
+    }
+
+    @Test
+    void anUnsupportedMessageTypeIsRejectedBeforeAnythingIsWritten() {
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any()))
+                .thenReturn(launchJwtWithMessageType("LtiSomethingElseRequest"));
+
+        assertThrows(
+                ResponseStatusException.class,
+                () -> controller.launch(ID_TOKEN, STATE, session)
+        );
+        assertNothingWasWritten();
+    }
+
+    @Test
+    void aMissingMessageTypeIsRejectedRatherThanThrowing() {
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any()))
+                .thenReturn(launchJwtWithMessageType(null));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.launch(ID_TOKEN, STATE, session)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertNothingWasWritten();
+    }
+
+    @Test
+    void aResourceLinkWithNoTargetIsRejectedBeforeAnythingIsWritten() {
+        String token = JWT.create()
+                .withIssuer(ISSUER)
+                .withClaim("email", "someone@example.org")
+                .withClaim(LtiConfig.Claims.MESSAGE_TYPE, LtiConfig.MessageTypes.RESOURCE_LINK)
+                .sign(Algorithm.HMAC256("test"));
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(JWT.decode(token));
+
+        assertThrows(
+                ResponseStatusException.class,
+                () -> controller.launch(ID_TOKEN, STATE, session)
+        );
+        assertNothingWasWritten();
     }
 }

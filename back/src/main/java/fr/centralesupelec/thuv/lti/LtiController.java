@@ -139,6 +139,21 @@ public class LtiController {
     ) {
         DecodedJWT jwt = this.ltiService.getValidatedJWT(idToken, state, session);
 
+        // Everything the launch needs is checked before anything is written. A malformed or
+        // unsupported launch used to fail after the profile had been updated, a teacher role
+        // possibly granted and a successful login recorded.
+        String messageType = jwt.getClaim(Claims.MESSAGE_TYPE).asString();
+        String targetUri = jwt.getClaim(Claims.TARGET_LINK_URI).asString();
+        if (null == messageType) {
+            throw rejectLaunch("message-type-missing", "Message type not present");
+        }
+        if (!MessageTypes.RESOURCE_LINK.equals(messageType) && !MessageTypes.DEEP_LINKING.equals(messageType)) {
+            throw rejectLaunch("message-type", String.format("Unsupported type : %s", messageType));
+        }
+        if (MessageTypes.RESOURCE_LINK.equals(messageType) && null == targetUri) {
+            throw rejectLaunch("target-link-uri-missing", "Target link URI not present");
+        }
+
         User user = myUserDetailsService.upsertUserFromUntrustedOrigin(
                 null,
                 jwt.getClaim("email").asString(),
@@ -165,22 +180,18 @@ public class LtiController {
 
         activityLogger.log(LogAction.USER_LOGIN_LTI, user);
 
-        String messageType = jwt.getClaim("https://purl.imsglobal.org/spec/lti/claim/message_type").asString();
-        switch (messageType) {
-            case "LtiResourceLinkRequest":
-                return redirectResourceLink(jwt, localToken);
-            case "LtiDeepLinkingRequest":
-                return redirectDeepLinking(jwt, localToken, session);
-            default:
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, String.format("Unsupported type : %s", messageType)
-                );
+        if (MessageTypes.DEEP_LINKING.equals(messageType)) {
+            return redirectDeepLinking(jwt, localToken, session);
         }
+        return redirectResourceLink(targetUri, localToken);
     }
 
-    private ResponseEntity<String> redirectResourceLink(DecodedJWT jwt, String localToken) {
-        String targetUri = jwt.getClaim("https://purl.imsglobal.org/spec/lti/claim/target_link_uri").asString();
+    private ResponseStatusException rejectLaunch(String check, String message) {
+        logger.warn("LTI launch rejected by check '{}'", check);
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+    }
 
+    private ResponseEntity<String> redirectResourceLink(String targetUri, String localToken) {
         String url = UriComponentsBuilder.fromHttpUrl(targetUri)
                 .queryParam("idtoken", localToken)
                 .build()

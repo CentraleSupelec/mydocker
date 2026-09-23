@@ -32,6 +32,12 @@ public class LtiConfig {
         public static final String DATA = "https://purl.imsglobal.org/spec/lti/claim/data";
         public static final String ERROR_MESSAGE = "https://purl.imsglobal.org/spec/lti/claim/errormsg";
         public static final String ROLES = "https://purl.imsglobal.org/spec/lti/claim/roles";
+        public static final String TARGET_LINK_URI = "https://purl.imsglobal.org/spec/lti/claim/target_link_uri";
+    }
+
+    public static final class MessageTypes {
+        public static final String RESOURCE_LINK = "LtiResourceLinkRequest";
+        public static final String DEEP_LINKING = "LtiDeepLinkingRequest";
     }
 
     public static final class Roles {
