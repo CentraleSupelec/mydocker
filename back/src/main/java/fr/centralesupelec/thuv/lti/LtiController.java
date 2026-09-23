@@ -29,6 +29,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.servlet.http.HttpSession;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -150,8 +152,23 @@ public class LtiController {
         if (!MessageTypes.RESOURCE_LINK.equals(messageType) && !MessageTypes.DEEP_LINKING.equals(messageType)) {
             throw rejectLaunch("message-type", String.format("Unsupported type : %s", messageType));
         }
-        if (MessageTypes.RESOURCE_LINK.equals(messageType) && null == targetUri) {
-            throw rejectLaunch("target-link-uri-missing", "Target link URI not present");
+        if (MessageTypes.RESOURCE_LINK.equals(messageType)) {
+            if (null == targetUri) {
+                throw rejectLaunch("target-link-uri-missing", "Target link URI not present");
+            }
+            // Parsed here, not at redirect time: by then the profile, a possible teacher grant and
+            // the login record are already written. UriComponentsBuilder accepts values that are
+            // not absolute http URLs, so the scheme is checked rather than the parse alone.
+            try {
+                URI parsed = new URI(targetUri);
+                if (!parsed.isAbsolute()
+                        || null == parsed.getHost()
+                        || !List.of("http", "https").contains(parsed.getScheme())) {
+                    throw rejectLaunch("target-link-uri-malformed", "Target link URI invalid");
+                }
+            } catch (URISyntaxException ex) {
+                throw rejectLaunch("target-link-uri-malformed", "Target link URI invalid");
+            }
         }
 
         User user = myUserDetailsService.upsertUserFromUntrustedOrigin(

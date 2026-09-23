@@ -218,4 +218,22 @@ class LtiControllerLaunchTest {
         );
         assertNothingWasWritten();
     }
+
+    @Test
+    void aMalformedTargetIsRejectedBeforeAnythingIsWritten() {
+        String token = JWT.create()
+                .withIssuer(ISSUER)
+                .withClaim("email", "someone@example.org")
+                .withClaim(LtiConfig.Claims.MESSAGE_TYPE, LtiConfig.MessageTypes.RESOURCE_LINK)
+                .withClaim(LtiConfig.Claims.TARGET_LINK_URI, "not-a-url")
+                .sign(Algorithm.HMAC256("test"));
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(JWT.decode(token));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.launch(ID_TOKEN, STATE, session)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertNothingWasWritten();
+    }
 }
