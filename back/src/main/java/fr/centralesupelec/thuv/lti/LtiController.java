@@ -231,9 +231,11 @@ public class LtiController {
             throw rejectLaunch("email-missing", "Email not present");
         }
 
-        // Last check, and the only one that changes anything: every refusal above leaves the nonce
-        // spendable, so a launch refused on state, message type, target or a missing email can be
-        // retried unchanged once the cause is fixed. A replay is still refused before any write.
+        // Spent here, after every validation check and before the account is touched, so a launch
+        // refused on state, message type, target or a missing email can be retried unchanged. The
+        // one refusal that still burns it is the privileged-account refusal inside the upsert,
+        // which resolves and refuses in a single step by design; that refusal is permanent for the
+        // account, so a retryable nonce would buy nothing. A replay is refused before any write.
         this.ltiService.consumeNonce(jwt);
 
         User user = myUserDetailsService.upsertUserFromUntrustedOrigin(
