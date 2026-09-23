@@ -24,6 +24,7 @@ import org.springframework.security.authentication.ott.GenerateOneTimeTokenReque
 import org.springframework.security.authentication.ott.OneTimeTokenService;
 import org.springframework.security.authentication.ott.OneTimeToken;
 import org.springframework.security.authentication.ott.OneTimeTokenAuthenticationToken;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -163,6 +164,11 @@ public class MagicLinkController {
             // exactly as DisabledException is, so that AuthenticationExceptionHandler owns the
             // status, the message and the logging. Without this the catch-all would answer
             // "Invalid or expired magic link" and send diagnosis to the token service.
+            throw ex;
+        } catch (ResponseStatusException ex) {
+            // A refused binding to a privileged account is an explicit answer, not a broken token.
+            // Swallowing it here would report "Invalid or expired magic link" and send the incident
+            // to Sentry as a token failure.
             throw ex;
         } catch (Exception ex) {
             Sentry.captureException(ex);

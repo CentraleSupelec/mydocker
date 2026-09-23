@@ -116,7 +116,9 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     private void assertOriginMayBind(Optional<User> existing, TokenOrigin origin) {
-        if (origin.grantsPrivilegedAuthority() || existing.isEmpty()) {
+        // No exemption by origin: a method named "from untrusted origin" that lets some origins
+        // through is a bypass waiting for its first caller. Providers we operate use upsertUser.
+        if (existing.isEmpty()) {
             return;
         }
         if (isPrivileged(existing.get())) {

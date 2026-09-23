@@ -116,13 +116,26 @@ class MyUserDetailsServicePrivilegedOriginTest {
     }
 
     @Test
-    void ourOwnProvidersMayStillBindToAnAdministratorAccount() {
+    void noOriginIsExemptOnTheUntrustedPath() {
+        // The refusal does not depend on which origin is passed: a method that lets some origins
+        // through is a bypass waiting for its first caller.
+        for (TokenOrigin origin : TokenOrigin.values()) {
+            assertThrows(
+                    ResponseStatusException.class,
+                    () -> service.upsertUserFromUntrustedOrigin(
+                            null, ADMIN_EMAIL, "Attacker", "Attacker", origin
+                    )
+            );
+        }
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void ourOwnProvidersStillBindThroughTheTrustedPath() {
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
-        User result = service.upsertUserFromUntrustedOrigin(
-                null, ADMIN_EMAIL, "Real", "Administrator", TokenOrigin.CAS
-        );
+        User result = service.upsertUser(null, ADMIN_EMAIL, "Real", "Administrator");
 
         assertEquals(admin.getId(), result.getId());
     }
