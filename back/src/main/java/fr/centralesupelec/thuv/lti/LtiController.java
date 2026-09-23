@@ -50,7 +50,6 @@ public class LtiController {
     private final String baseUrl;
     private final LtiJwtService ltiJwtService;
     private final ActivityLogger activityLogger;
-    private final LtiTrustPolicy ltiTrustPolicy;
 
 
     @GetMapping(REGISTER_PATH)
@@ -181,13 +180,11 @@ public class LtiController {
 
         List<String> lmsRoles = jwt.getClaim(Claims.ROLES).asList(String.class);
         if (null != lmsRoles && lmsRoles.contains(Roles.INSTRUCTOR)) {
-            // Registered is not trusted: a platform we do not operate does not get to say who
-            // teaches here.
-            if (this.ltiTrustPolicy.mayGrantTeacherRole(jwt.getIssuer())) {
-                myUserDetailsService.ensureTeacher(user);
-            } else {
-                logger.warn("Ignored Instructor claim from untrusted issuer '{}'", jwt.getIssuer());
-            }
+            // Any registered platform may assert Instructor, as it could before this hardening.
+            // Registration is administrator-only and the launch issuer is checked against the
+            // registered platform, so registration is the trust boundary. A second allow-list here
+            // would silently stop teacher promotion on every platform already registered.
+            myUserDetailsService.ensureTeacher(user);
         }
 
         String localToken = jwtTokenProvider

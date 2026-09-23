@@ -32,18 +32,18 @@ import static org.mockito.Mockito.when;
 
 /**
  * What the launch handler does with the outcome of the checks: a refused binding must stop the
- * request before a session token is minted or a role is granted, and an Instructor claim must only
- * count when it comes from a platform we trust.
+ * request before a session token is minted or a role is granted, and an Instructor claim from any
+ * registered platform must still grant the teacher role, whichever issuer it carries.
  */
 class LtiControllerLaunchTest {
     private static final String ISSUER = "https://moodle.example.org";
+    private static final String ANOTHER_ISSUER = "https://lms.example.net";
     private static final String STATE = "state-value";
     private static final String ID_TOKEN = "id-token";
 
     private LtiService ltiService;
     private MyUserDetailsService myUserDetailsService;
     private JwtTokenProvider jwtTokenProvider;
-    private LtiTrustPolicy ltiTrustPolicy;
     private ActivityLogger activityLogger;
     private LtiController controller;
     private HttpSession session;
@@ -53,7 +53,6 @@ class LtiControllerLaunchTest {
         ltiService = mock(LtiService.class);
         myUserDetailsService = mock(MyUserDetailsService.class);
         jwtTokenProvider = mock(JwtTokenProvider.class);
-        ltiTrustPolicy = mock(LtiTrustPolicy.class);
         activityLogger = mock(ActivityLogger.class);
         session = mock(HttpSession.class);
 
@@ -68,14 +67,17 @@ class LtiControllerLaunchTest {
                 "https://mydocker.example.org/api",
                 "https://mydocker.example.org",
                 mock(LtiJwtService.class),
-                activityLogger,
-                ltiTrustPolicy
+                activityLogger
         );
     }
 
     private DecodedJWT launchJwt(boolean instructor) {
+        return launchJwt(instructor, ISSUER);
+    }
+
+    private DecodedJWT launchJwt(boolean instructor, String issuer) {
         String token = JWT.create()
-                .withIssuer(ISSUER)
+                .withIssuer(issuer)
                 .withClaim("email", "someone@example.org")
                 .withClaim("given_name", "Some")
                 .withClaim("family_name", "One")
@@ -139,26 +141,31 @@ class LtiControllerLaunchTest {
     }
 
     @Test
-    void anInstructorClaimFromAnUntrustedIssuerGrantsNothing() {
-        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(launchJwt(true));
-        when(myUserDetailsService.upsertUserFromUntrustedOrigin(
-                any(), anyString(), any(), any(), eq(TokenOrigin.LTI)
-        )).thenReturn(ordinaryUser());
-        when(ltiTrustPolicy.mayGrantTeacherRole(ISSUER)).thenReturn(false);
-
-        controller.launch(ID_TOKEN, STATE, session);
-
-        verify(myUserDetailsService, never()).ensureTeacher(any());
-    }
-
-    @Test
-    void anInstructorClaimFromATrustedIssuerGrantsTheTeacherRole() {
+    void anInstructorClaimGrantsTheTeacherRole() {
         User user = ordinaryUser();
         when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(launchJwt(true));
         when(myUserDetailsService.upsertUserFromUntrustedOrigin(
                 any(), anyString(), any(), any(), eq(TokenOrigin.LTI)
         )).thenReturn(user);
-        when(ltiTrustPolicy.mayGrantTeacherRole(ISSUER)).thenReturn(true);
+
+        controller.launch(ID_TOKEN, STATE, session);
+
+        verify(myUserDetailsService).ensureTeacher(user);
+    }
+
+    /**
+     * The grant must not depend on which issuer the launch carries. An issuer allow-list here would
+     * pass every other test in this class while stopping teacher promotion on the platforms already
+     * registered in production, so assert issuer independence explicitly.
+     */
+    @Test
+    void anInstructorClaimFromAnyOtherIssuerAlsoGrantsTheTeacherRole() {
+        User user = ordinaryUser();
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any()))
+                .thenReturn(launchJwt(true, ANOTHER_ISSUER));
+        when(myUserDetailsService.upsertUserFromUntrustedOrigin(
+                any(), anyString(), any(), any(), eq(TokenOrigin.LTI)
+        )).thenReturn(user);
 
         controller.launch(ID_TOKEN, STATE, session);
 
@@ -166,12 +173,11 @@ class LtiControllerLaunchTest {
     }
 
     @Test
-    void aLearnerLaunchFromATrustedIssuerStillGrantsNoTeacherRole() {
+    void aLearnerLaunchStillGrantsNoTeacherRole() {
         when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(launchJwt(false));
         when(myUserDetailsService.upsertUserFromUntrustedOrigin(
                 any(), anyString(), any(), any(), eq(TokenOrigin.LTI)
         )).thenReturn(ordinaryUser());
-        when(ltiTrustPolicy.mayGrantTeacherRole(ISSUER)).thenReturn(true);
 
         controller.launch(ID_TOKEN, STATE, session);
 
