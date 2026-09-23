@@ -131,8 +131,8 @@ class LtiSecurityIntegrationTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void anAdministratorReachesTheHandler() throws Exception {
-        // Unique per run: registration persists a row, and a repeated issuer would be answered
-        // with a conflict by the handler rather than exercising the path under test.
+        // Unique per run so the case does not depend on the class being transactional for its own
+        // correctness; the rollback is what keeps the database clean.
         String issuer = "https://platform-" + UUID.randomUUID() + ".example.org";
         OpenIdConfigurationDto configuration = new OpenIdConfigurationDto();
         configuration.setIssuer(issuer);
