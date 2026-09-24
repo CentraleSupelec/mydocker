@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.35.2
 ### Fixed
 - A course whose `display_options` is empty in the database no longer makes the student course list fail. `GET /courses/joined` and `GET /courses-sessions/joined` answered 500 for every user enrolled in such a course, and the web interface showed that as having no courses at all
 - Courses whose `display_options` was NULL or empty in the database are given an empty JSON document, and the column now defaults to one. The mapper already survived those rows; this removes them, so the repair no longer depends on a manual query being run against every platform after a deployment
