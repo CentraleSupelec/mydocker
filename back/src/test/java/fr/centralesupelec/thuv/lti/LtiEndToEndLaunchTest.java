@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -69,11 +68,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         locations = "classpath:application-test.properties",
         properties = {
                 "lti.private-key-path=classpath:lti-test-private.pem",
-                "lti.public-key-path=classpath:lti-test-public.pem"
+                "lti.public-key-path=classpath:lti-test-public.pem",
+                "app.frontend.url=https://front.example.org"
         }
 )
 class LtiEndToEndLaunchTest {
     private static final String LAUNCH_EMAIL = "student@example.org";
+    private static final String REFUSED_URL = "https://front.example.org/lti/refused";
 
     @Autowired
     private MockMvc mockMvc;
@@ -328,10 +329,12 @@ class LtiEndToEndLaunchTest {
                         .session(session)
                         .param("id_token", launchToken(deployment, initiation.get("nonce"), adminEmail, true))
                         .param("state", initiation.get("state")))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isFound())
                 .andReturn();
 
-        assertNull(launch.getResponse().getHeader(HttpHeaders.LOCATION), "no session may be handed back");
+        // Sent to our own refusal page, never to the token's target, and with nothing appended.
+        assertEquals(REFUSED_URL, launch.getResponse().getHeader(HttpHeaders.LOCATION),
+                "no session may be handed back");
 
         User after = userRepository.findByEmail(adminEmail).get(0);
         assertEquals("Real", after.getName());

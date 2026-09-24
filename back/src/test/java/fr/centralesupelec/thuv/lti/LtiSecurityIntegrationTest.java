@@ -43,6 +43,7 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -61,7 +62,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         // key files happen to be first on the test classpath.
         properties = {
                 "lti.private-key-path=classpath:lti-test-private.pem",
-                "lti.public-key-path=classpath:lti-test-public.pem"
+                "lti.public-key-path=classpath:lti-test-public.pem",
+                "app.frontend.url=https://front.example.org"
         }
 )
 class LtiSecurityIntegrationTest {
@@ -245,7 +247,8 @@ class LtiSecurityIntegrationTest {
         mockMvc.perform(post(LtiConfig.LAUNCH_PATH)
                         .param("id_token", "platform-token")
                         .param("state", "state-value"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("https://front.example.org/lti/refused"));
 
         // No session was opened and nothing was recorded as a login.
         verify(activityLogger, never()).log(any(), any());

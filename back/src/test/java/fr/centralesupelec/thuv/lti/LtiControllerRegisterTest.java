@@ -60,7 +60,8 @@ class LtiControllerRegisterTest {
                 "https://mydocker.example.org/api",
                 "https://mydocker.example.org",
                 mock(LtiJwtService.class),
-                mock(ActivityLogger.class)
+                mock(ActivityLogger.class),
+                "https://mydocker.example.org/lti/refused"
         );
     }
 

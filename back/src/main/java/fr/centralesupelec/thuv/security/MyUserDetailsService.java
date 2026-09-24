@@ -1,12 +1,12 @@
 package fr.centralesupelec.thuv.security;
 
+import fr.centralesupelec.thuv.exception.PrivilegedAccountRefusedException;
 import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.model.Role;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.repository.RoleRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
-import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,7 +122,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
         if (isPrivileged(existing.get())) {
             logger.warn("Refused {} login binding to privileged account id {}", origin, existing.get().getId());
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PRIVILEGED_ORIGIN_MESSAGE);
+            throw new PrivilegedAccountRefusedException(PRIVILEGED_ORIGIN_MESSAGE);
         }
     }
 

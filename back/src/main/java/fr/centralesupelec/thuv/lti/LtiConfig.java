@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,6 +23,7 @@ public class LtiConfig {
     public static final String LAUNCH_PATH = "/lti/launch";
     public static final String DEEP_LINKING_FRONT_PATH = "/lti/deep-linking";
     public static final String DEEP_LINKING_BACK_PATH = "/lti/deep-linking";
+    public static final String REFUSED_FRONT_PATH = "/lti/refused";
     public static final String JWKS_PATH = "/.well-known/jwks.json";
 
     public static final class Claims {
@@ -66,6 +68,19 @@ public class LtiConfig {
         return url.getPort() == -1
                 ? String.format("%s://%s", url.getProtocol(), url.getHost())
                 : String.format("%s://%s:%s", url.getProtocol(), url.getHost(), url.getPort());
+    }
+
+    /**
+     * Where a launch refused for a privileged account sends the browser. Built from our own front
+     * URL and never from the launch token, whose target_link_uri the platform chooses, so the
+     * redirect cannot be steered.
+     */
+    @Bean
+    public String ltiRefusedUrl(@Value("${app.frontend.url}") String frontendUrl) {
+        return UriComponentsBuilder.fromHttpUrl(frontendUrl)
+                .path(REFUSED_FRONT_PATH)
+                .build()
+                .toUriString();
     }
 
     @Bean

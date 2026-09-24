@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
+import fr.centralesupelec.thuv.exception.PrivilegedAccountRefusedException;
 import fr.centralesupelec.thuv.lti.repository.ToolDeploymentRepository;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.security.JwtTokenProvider;
@@ -14,7 +15,9 @@ import fr.centralesupelec.thuv.security.dtos.TokenOrigin;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -40,6 +43,7 @@ class LtiControllerLaunchTest {
     private static final String ANOTHER_ISSUER = "https://lms.example.net";
     private static final String STATE = "state-value";
     private static final String ID_TOKEN = "id-token";
+    private static final String REFUSED_URL = "https://mydocker.example.org/lti/refused";
 
     private LtiService ltiService;
     private MyUserDetailsService myUserDetailsService;
@@ -67,7 +71,8 @@ class LtiControllerLaunchTest {
                 "https://mydocker.example.org/api",
                 "https://mydocker.example.org",
                 mock(LtiJwtService.class),
-                activityLogger
+                activityLogger,
+                REFUSED_URL
         );
     }
 
@@ -151,6 +156,27 @@ class LtiControllerLaunchTest {
                 () -> controller.launch(ID_TOKEN, STATE, session)
         );
 
+        verify(jwtTokenProvider, never()).generateToken(any(), any(), any());
+        verify(myUserDetailsService, never()).ensureTeacher(any());
+        verify(activityLogger, never()).log(any(), any());
+    }
+
+    /**
+     * The browser arrives by form post from the platform, so an error status would leave it on a
+     * blank page. The privileged refusal alone becomes a redirect, to exactly our own front page,
+     * with nothing appended and still nothing minted.
+     */
+    @Test
+    void aPrivilegedRefusalRedirectsToTheRefusalPageAndMintsNothing() {
+        when(ltiService.getValidatedJWT(eq(ID_TOKEN), eq(STATE), any())).thenReturn(launchJwt(true));
+        when(myUserDetailsService.upsertUserFromUntrustedOrigin(
+                any(), anyString(), any(), any(), eq(TokenOrigin.LTI)
+        )).thenThrow(new PrivilegedAccountRefusedException("refused"));
+
+        ResponseEntity<String> response = controller.launch(ID_TOKEN, STATE, session);
+
+        assertEquals(HttpStatus.FOUND, response.getStatusCode());
+        assertEquals(REFUSED_URL, response.getHeaders().getFirst(HttpHeaders.LOCATION));
         verify(jwtTokenProvider, never()).generateToken(any(), any(), any());
         verify(myUserDetailsService, never()).ensureTeacher(any());
         verify(activityLogger, never()).log(any(), any());

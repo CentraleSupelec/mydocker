@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.cache.Cache;
 import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
+import fr.centralesupelec.thuv.exception.PrivilegedAccountRefusedException;
 import fr.centralesupelec.thuv.lti.dtos.DeepLinkingPayloadDto;
 import fr.centralesupelec.thuv.lti.dtos.OpenIdConfigurationDto;
 import fr.centralesupelec.thuv.lti.model.ToolDeployment;
@@ -53,6 +54,7 @@ public class LtiController {
     private final String baseUrl;
     private final LtiJwtService ltiJwtService;
     private final ActivityLogger activityLogger;
+    private final String ltiRefusedUrl;
 
 
     @GetMapping(REGISTER_PATH)
@@ -238,13 +240,22 @@ public class LtiController {
         // account, so a retryable nonce would buy nothing. A replay is refused before any write.
         this.ltiService.consumeNonce(jwt);
 
-        User user = myUserDetailsService.upsertUserFromUntrustedOrigin(
-                null,
-                email,
-                jwt.getClaim("given_name").asString(),
-                jwt.getClaim("family_name").asString(),
-                TokenOrigin.LTI
-        );
+        User user;
+        try {
+            user = myUserDetailsService.upsertUserFromUntrustedOrigin(
+                    null,
+                    email,
+                    jwt.getClaim("given_name").asString(),
+                    jwt.getClaim("family_name").asString(),
+                    TokenOrigin.LTI
+            );
+        } catch (PrivilegedAccountRefusedException ex) {
+            // The launch is a form post from the platform straight to us, so an error status here
+            // reaches the browser as a bare error with nothing to read. Sending it to a fixed front
+            // page is what lets the administrator see why. No reason, email or token in the URL:
+            // the refusal is logged where it is decided, and nothing of the account leaves.
+            return redirectTo(ltiRefusedUrl);
+        }
 
         List<String> lmsRoles = jwt.getClaim(Claims.ROLES).asList(String.class);
         if (null != lmsRoles && lmsRoles.contains(Roles.INSTRUCTOR)) {
@@ -278,6 +289,10 @@ public class LtiController {
                 .queryParam("idtoken", localToken)
                 .build()
                 .toUriString();
+        return redirectTo(url);
+    }
+
+    private static ResponseEntity<String> redirectTo(String url) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.LOCATION, url);
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
