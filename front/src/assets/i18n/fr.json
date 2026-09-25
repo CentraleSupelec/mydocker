@@ -618,7 +618,12 @@
     "magic_link_deactivated": "L'accès par lien de connexion est désactivé pour ce cours",
     "magic_link_error": "Impossible de vérifier l'accès pour ce cours",
     "magic_link_email_error": "Une erreur s'est produite lors de l'envoi de l'email",
-    "default_oidc": "CONNEXION AVEC VOTRE ÉTABLISSEMENT"
+    "default_oidc": "CONNEXION AVEC VOTRE ÉTABLISSEMENT",
+    "lti_refused": {
+      "title": "Connexion LTI indisponible",
+      "body": "La connexion depuis votre plateforme de cours n'est pas disponible pour les comptes administrateur. Connectez-vous directement à {app}.",
+      "open": "Ouvrir {app}"
+    }
   },
   "date": {
     "on_at": "le {date} à {time}"

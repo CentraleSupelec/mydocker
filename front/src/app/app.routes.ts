@@ -146,6 +146,11 @@ export const routes: Routes = [
     ]
   },
   {
+    // Ahead of 'lti' and outside AdminLayoutComponent: a refused launch has no session.
+    path: 'lti/refused',
+    loadChildren: () => import('./modules/lti-refused/lti-refused.module').then(m => m.LtiRefusedModule)
+  },
+  {
     path: 'lti',
     component: AdminLayoutComponent,
     children: [

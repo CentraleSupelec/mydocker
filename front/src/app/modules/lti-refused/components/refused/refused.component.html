@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">{{ 'sign_in.lti_refused.title' | translate }}</h1>
+
+<p>
+  {{ 'sign_in.lti_refused.body' | translate: { app: appName } }}
+</p>
+
+<!-- New tab: inside the platform's iframe, storage is partitioned, so an administrator signed in
+     to the application still looks signed out there. -->
+<a mat-raised-button color="primary" href="/" target="_blank" rel="noopener">
+  {{ 'sign_in.lti_refused.open' | translate: { app: appName } }}
+</a>
