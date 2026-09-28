@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- Generate 16-character container passwords and replace stored passwords shorter than 12 characters when creating an environment. Recreate non-running services with short passwords while preserving their username; leave running services alone
+
 ## 2.20.1
 ### Fixed
 - The cleaning cron removed any swarm service whose task exited 0, including services this API never created. On a reboot it deleted caddy, postgres and the frontend 22 seconds after boot, leaving the platform down; the service object is gone in that case, so no restart policy or replica count recovers it. Completed tasks are now reaped only for services labelled `mydocker.oneshot`, which the three one-shot jobs set on the services they create: the image build, the data save and the student-volume init. Each already removed its own service on its happy path, so the reaper is the fallback for a job this process stopped following. Student labs are unaffected: they carry `deleteAfter`/`deletionTime` and belong to the other sweep

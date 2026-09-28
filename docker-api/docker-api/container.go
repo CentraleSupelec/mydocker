@@ -75,7 +75,11 @@ func getOrCreateContainer(
 				mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
 			}
 			name := createContainerName(request.UserID, request.CourseID)
+			// Kept for the recreate path below: when a service is replaced, its username is the
+			// only record of what the student has been connecting with.
+			var existingUserPassword *pb.ContainerResponse_UserPassword
 			if exist, id, imageId, userPassword, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
+				existingUserPassword = userPassword
 				log.Debugf("Service %s already exists", name)
 				response.ImageID = imageId
 				response.AuthenticationMethod = userPassword
@@ -113,13 +117,9 @@ func getOrCreateContainer(
 				}
 			}
 
-			userPassword := &pb.UserPasswordMethod{
-				Username: namesgenerator.GetRandomName(0),
-				Password: randPassword(10),
-			}
-			if request.Options != nil && request.Options.UserPassword != nil {
-				userPassword = request.Options.UserPassword
-			}
+			userPassword := resolveContainerPassword(
+				storedContainerPassword(request.Options.GetUserPassword(), existingUserPassword),
+			)
 
 			response.AuthenticationMethod = &pb.ContainerResponse_UserPassword{
 				UserPassword: userPassword,
@@ -228,7 +228,7 @@ func getOrCreateAdminContainer(in <-chan *pb.AdminContainerRequest, out chan<- *
 
 			response.UserPassword = &pb.UserPasswordMethod{
 				Username: request.GetUserName(),
-				Password: randPassword(10),
+				Password: randPassword(containerPasswordLength),
 			}
 			err = createAdmin(name, response, dockerClient)
 			if err != nil {
@@ -420,6 +420,18 @@ func exist(
 				Username: username,
 				Password: password,
 			}}
+
+		// A stopped service whose credential the image refuses is a dead end: it cannot start, and
+		// handing it back has the back end persist the same short password again. Running services
+		// are deliberately left alone, since they are proof that their credential works.
+		serviceIsRunning := service.ServiceStatus.RunningTasks == service.ServiceStatus.DesiredTasks
+		if !shouldBeReplaced && containerMustBeReplacedForPassword(authenticationMethod, serviceIsRunning) {
+			log.Warnf(
+				"service %s should be replaced: it is not running and its password is shorter than the %d characters the image requires",
+				service.Spec.Name, minimumContainerPasswordLength,
+			)
+			shouldBeReplaced = true
+		}
 		ports := make([]*pb.ResponsePort, len(mapPorts))
 		index := 0
 		for _, value := range mapPorts {
