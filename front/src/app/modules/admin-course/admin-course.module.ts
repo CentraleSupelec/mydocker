@@ -31,9 +31,7 @@ import { MatStepperModule } from "@angular/material/stepper";
 import { DockerImageChoiceDialogComponent } from './components/docker-image-choice-dialog/docker-image-choice-dialog.component';
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { MAT_DATE_LOCALE, MatOptionModule } from '@angular/material/core';
-import { MatDateFnsModule } from '@angular/material-date-fns-adapter';
-import { fr } from 'date-fns/locale';
+import { MatNativeDateModule, MatOptionModule } from "@angular/material/core";
 import { MatSelectModule } from "@angular/material/select";
 import { AdminDockerImageModule } from "../admin-docker-image/admin-docker-image.module";
 import { MatDividerModule } from "@angular/material/divider";
@@ -106,8 +104,7 @@ import { TranslateModule } from '@ngx-translate/core';
     MatPaginatorModule,
     ComputeTypeModule,
     MatDatepickerModule,
-    // Same date adapter and locale as AppModule: a date adapter provided here shadows the root one.
-    MatDateFnsModule,
+    MatNativeDateModule,
     TranslateModule
   ],
   providers: [
@@ -115,7 +112,6 @@ import { TranslateModule } from '@ngx-translate/core';
       provide: APP_CONFIG,
       useFactory: appConstantFactory
     },
-    { provide: MAT_DATE_LOCALE, useValue: fr },
     GenerateJoinLinkPipe,
     GenerateMagicLinkPipe
   ],
