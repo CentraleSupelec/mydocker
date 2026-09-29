@@ -6,7 +6,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## Unreleased
 ### Fixed
-- Generate 16-character container passwords and replace stored passwords shorter than 12 characters when creating an environment. Recreate non-running services with short passwords while preserving their username; leave running services alone
+- New container credentials get a 16-character password instead of 10, since recent filebrowser images refuse passwords under 12 characters. Stored credentials supplied by the back end are preserved whatever their length, since the course image may have persisted the old password
 
 ## 2.20.1
 ### Fixed

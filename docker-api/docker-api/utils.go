@@ -22,6 +22,12 @@ import (
 	"mvdan.cc/sh/syntax"
 )
 
+// containerPasswordLength applies to newly generated credentials only. Some images (recent
+// filebrowser) refuse passwords under 12 characters. A credential supplied by the back end is
+// used as is, whatever its length, because the course image may have persisted it (a PostgreSQL
+// data directory on the student volume, for example).
+const containerPasswordLength = 16
+
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
 func randPassword(n int) string {
