@@ -24,6 +24,8 @@ public class AdminCourseBaseDto {
     private CourseStatus status;
 
     @NotEmpty
+    @Pattern(regexp = "^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])(?:\\.(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]))*(?::[0-9]+)?/)?[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*)*(?::[\\w][\\w.-]{0,127})?(?:@[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[0-9a-fA-F]{32,})?$",
+            message = "Docker image reference is malformed: no spaces, lowercase path")
     private String dockerImage;
     private Long nanoCpusLimit;
     private Long memoryBytesLimit;

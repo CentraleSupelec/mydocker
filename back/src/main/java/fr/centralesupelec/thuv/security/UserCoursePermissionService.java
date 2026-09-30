@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.security;
 
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.CourseSession;
-import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.UserRepository;
@@ -31,19 +30,6 @@ public class UserCoursePermissionService {
 
     public boolean canAskContainer(CourseSession courseSession) {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CourseStatus status = courseSession.getCourse().getStatus();
-        if (status == null || status == CourseStatus.ARCHIVED) {
-            // a course without a status is treated as not startable
-            return false;
-        }
-        if (status != CourseStatus.READY) {
-            // DRAFT and TEST: staff only; getAuthorities() does not apply the role hierarchy
-            boolean staff = principal.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_ADMIN"));
-            if (!staff) {
-                return false;
-            }
-        }
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
