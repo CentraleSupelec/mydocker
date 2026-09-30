@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-### Fixed
-- An environment whose task is running but whose connection test has not passed yet now keeps its progress display. It used to switch to the "could not start" panel and stop checking, so the panel stayed until the page was reloaded even though the environment came up a moment later
-
 ## 2.30.4
 ### Fixed
 - The Docker image is built from package-lock.json. It was built with npm install, which ignores the lockfile and re-resolves every version range on build day, so two builds of the same release could ship different dependency trees. One such resolution produced an image whose Angular build failed while the container kept answering, and the site served 404 with every health check green

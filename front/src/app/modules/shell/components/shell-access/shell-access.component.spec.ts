@@ -42,11 +42,6 @@ function startingContainer(): IContainer {
   return { status: 'PENDING', state: 'STARTING', ports: [] } as unknown as IContainer;
 }
 
-/** The task runs, the back end's connection test has not passed yet. */
-function untestedContainer(): IContainer {
-  return { status: 'PENDING', state: 'RUNNING', ports: [] } as unknown as IContainer;
-}
-
 describe('ShellAccessComponent', () => {
   let component: ShellAccessComponent;
   let fixture: ComponentFixture<ShellAccessComponent>;
@@ -318,62 +313,6 @@ describe('ShellAccessComponent', () => {
 
       expect(component.state).toBe('pending');
       expect(snack).not.toHaveBeenCalled();
-
-      discardPeriodicTasks();
-    }));
-  });
-
-  describe('when the task runs before the connection test passes', () => {
-    function startCreation(): void {
-      component.session = startedSession();
-      component.intent = 'start';
-      component.ngOnChanges({ intent: new SimpleChange('none', 'start', false) });
-      httpMock.expectOne(initRequest).flush(null);
-    }
-
-    it('keeps polling until the status is OK', fakeAsync(() => {
-      startCreation();
-
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush(untestedContainer());
-      expect(component.state).toBe('pending');
-
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush(runningContainer());
-      expect(component.state).toBe('container_created');
-
-      tick(3000);
-      httpMock.expectNone(() => true);
-
-      discardPeriodicTasks();
-    }));
-
-    it('still stops on a failed connection test', fakeAsync(() => {
-      startCreation();
-
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush({ status: 'KO', state: 'RUNNING', ports: [] });
-      expect(component.state).toBe('container_created');
-
-      tick(3000);
-      httpMock.expectNone(() => true);
-
-      discardPeriodicTasks();
-    }));
-
-    it('does not show a discovered environment as created before its test passes', fakeAsync(() => {
-      component.session = startedSession();
-      component.active = true;
-      component.ngOnChanges({ active: new SimpleChange(false, true, false) });
-      httpMock.expectOne(CONTAINER_URL).flush(untestedContainer());
-
-      expect(component.state).not.toBe('container_created');
-
-      tick(3000);
-      httpMock.expectNone(initRequest);
-      httpMock.expectOne(CONTAINER_URL).flush(runningContainer());
-      expect(component.state).toBe('container_created');
-      expect(component.userStarted).toBeFalse();
 
       discardPeriodicTasks();
     }));
