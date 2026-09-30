@@ -78,7 +78,6 @@
           "step_name": "Informations techniques",
           "docker_image": {
             "label": "Image docker",
-            "format_error": "Référence d'image invalide : pas d'espace, chemin en minuscules, exemple registry.example.com:4567/groupe/image:tag",
             "import": "À partir d'une image docker existante",
             "choice": "Choix d'une image docker",
             "build": "Choix du build",
@@ -509,6 +508,7 @@
     "planified": "Planifiés",
     "planified_tooltip": "Retrouvez ici vos activités prévues dans moins d'une semaine",
     "no_data": "Aucun cours disponible",
+    "load_error": "Vos environnements n'ont pas pu être chargés. Veuillez réessayer plus tard.",
     "no_data_explanation": "L'historique des environnements auxquels vous avez accédé est actuellement vide.",
     "find": "Vous trouverez dans notre",
     "documentation": "documentation",

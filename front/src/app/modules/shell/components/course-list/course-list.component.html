@@ -6,6 +6,11 @@
     </button>
   </div>
 </mat-card>
+<mat-card *ngIf="loadFailed" class="alert-banner" style="margin-bottom: 40px;">
+  <div class="alert-content">
+    <span>{{ 'student.load_error' | translate }}</span>
+  </div>
+</mat-card>
 <div class="welcome-content" *ngIf="welcomeContent?.enabled" [innerHtml]="welcomeContent?.richText">
 </div>
 <h1 class="mat-display-2">{{ 'student.environments' | translate }}</h1>
@@ -88,7 +93,7 @@
   </div>
 </div>
 
-<div *ngIf="planified && planified.length === 0 && past && past.length === 0" class="session-container center-message">
+<div *ngIf="!loadFailed && planified && planified.length === 0 && past && past.length === 0" class="session-container center-message">
   <h3>{{ 'student.no_data' | translate }}</h3>
   <p *ngIf="showInformationMessage">
     {{ 'student.no_data_explanation' | translate }}

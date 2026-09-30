@@ -55,7 +55,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     this.courseTechnicalForm = formBuilder.group({
       ports: [[]],
 
-      dockerImage: ['', [Validators.required, this.dockerImageValidator]],
+      dockerImage: ['', Validators.required],
       nanoCpusLimit: null,
       memoryBytesLimit: null,
       computeTypeId: null,
@@ -193,23 +193,6 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
    * substituting a port nobody asked for.
    */
   private static readonly MAX_PORT = 65535;
-
-  private static readonly DOCKER_IMAGE_REFERENCE = new RegExp(
-    String.raw`^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])(?:\.(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]))*(?::[0-9]+)?/)?[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[0-9a-fA-F]{32,})?$`
-  );
-
-  // The value is stored as typed, so a stray space is an error, not something to trim.
-  dockerImageValidator: ValidatorFn = (
-    control: AbstractControl
-  ): ValidationErrors | null => {
-    const value = control.value;
-    if (!value || typeof value !== "string") {
-      return null;
-    }
-    return CourseTechnicalInformationFormComponent.DOCKER_IMAGE_REFERENCE.test(value)
-      ? null
-      : { dockerImageFormat: true };
-  };
 
   commandPortValidator: ValidatorFn = (
     control: AbstractControl

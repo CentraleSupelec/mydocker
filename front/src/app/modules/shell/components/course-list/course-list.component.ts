@@ -30,6 +30,7 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
   documentationUrl: string | undefined = undefined;
   showInformationMessage: boolean = false;
   errorMessage: string | null = null;
+  loadFailed = false;
   activeCourses: Record<string, boolean> = {};
   private destroy$ = new Subject<void>();
   welcomeContent: IContent | null = null;
@@ -60,11 +61,14 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.route.data
     .pipe(
       mergeMap((routeData) => {
+        // The resolvers emit null when their call failed; undefined just means no data.
+        this.loadFailed = routeData.courses === null || routeData.sessions === null;
         routeData.courses?.forEach((course: IBasicCourseWithSession) => {
           this.activeCourses[course.id.toString()] = false;
         });
 
-        this.planified = routeData.courses?.map(((course: IBasicCourseWithSession) => {
+        // A failed load leaves no courses; keep the lists empty so a course_id redirect still runs.
+        this.planified = (routeData.courses ?? []).map(((course: IBasicCourseWithSession) => {
             const startOfToday = new Date();
             startOfToday.setHours(0, 0, 0, 0);
 
@@ -79,7 +83,7 @@ export class CourseListComponent implements OnInit, OnDestroy, AfterViewInit {
             - b.sessions.sort((a: ISession, b: ISession) => a.startDateTime - b.startDateTime)[0].startDateTime
           )
         ;
-        const past = routeData.courses?.map(((course: IBasicCourseWithSession) => {
+        const past = (routeData.courses ?? []).map(((course: IBasicCourseWithSession) => {
             const startOfToday = new Date()
             startOfToday.setHours(0, 0, 0, 0);
             return {

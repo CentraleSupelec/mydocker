@@ -78,7 +78,6 @@
           "step_name": "Technical information",
           "docker_image": {
             "label": "Docker image",
-            "format_error": "Invalid image reference: no spaces, lowercase path, for example registry.example.com:4567/group/image:tag",
             "import": "From an existing Docker image",
             "choice": "Docker image choice",
             "build": "Build choice",
@@ -509,6 +508,7 @@
     "planified": "Planned",
     "planified_tooltip": "Find here your planned activities in less than a week",
     "no_data": "No courses available",
+    "load_error": "Your environments could not be loaded. Please try again later.",
     "no_data_explanation": "The history of environments you have accessed is currently empty.",
     "find": "You can find in our",
     "documentation": "documentation",
