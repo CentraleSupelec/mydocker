@@ -185,8 +185,8 @@ export class SessionsFormComponent implements OnInit, ControlValueAccessor, Vali
   }
 
   get askSessionChangeEmailLink() {
-    const askSessionChangeSubject = this.translate.instant('admin.courses.edit.general_info.sessions.ask_session_change_subject');
-    const askSessionChangeBody = this.translate.instant('admin.courses.edit.general_info.sessions.ask_session_change_body', { link: window.location.href });
+    const askSessionChangeSubject = this.translate.instant('admin.courses.edit.general_info.sessions.admin.courses.edit.general_info.sessions.ask_deployment_subject');
+    const askSessionChangeBody = this.translate.instant('admin.courses.edit.general_info.sessions.admin.courses.edit.general_info.sessions.ask_deployment_body', { link: window.location.href });
     return `mailto:${this.emailAddress}?subject=${encodeURIComponent(askSessionChangeSubject)}&body=${encodeURIComponent(askSessionChangeBody)}`;
   }
 }
