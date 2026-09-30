@@ -8,15 +8,17 @@
 >
 </app-courses-list>
 <ng-template #buttonCell let-element>
-  <a
-    mat-icon-button
-    [href]="element.link|generateJoinLink"
-    target="_blank"
-  >
-    <mat-icon
-      [matTooltip]="'admin.courses.actions.test' | translate"
-    >play_circle_filled</mat-icon>
-  </a>
+  <ng-container *ngxPermissionsOnly="['course.' + element.id + '.edit', 'course.' + element.id + '.creator', 'ROLE_ADMIN']">
+    <a
+      mat-icon-button
+      [href]="element.link|generateJoinLink"
+      target="_blank"
+    >
+      <mat-icon
+        [matTooltip]="'admin.courses.actions.test' | translate"
+      >play_circle_filled</mat-icon>
+    </a>
+  </ng-container>
 
   <button mat-icon-button (click)="copyLink($event, element.link)" [matTooltip]="'admin.courses.actions.copy_invitation_link' | translate">
     <mat-icon>content_copy</mat-icon>
