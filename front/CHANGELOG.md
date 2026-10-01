@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.30.5
+### Fixed
+- Dates typed in the course administration forms are read as day/month/year. The course administration module provided its own native date adapter, which shadowed the application's French one and read typed dates as month/day/year
+- The course form checks that the course image is a valid Docker image reference before saving, so a trailing space or an uppercase letter in the path is shown as an error instead of being saved
+- The "ask for a session change" link opens a mail whose subject and body are translated in the interface language, with the page link in the body. It pointed at the wrong translation keys
+- Every course in the teacher's course list shows the play button, including courses the teacher can only read. Editing stays limited to editors, creators and administrators
+- When the course list or the session list fails to load, the dashboard shows a banner asking the user to try again later. It used to show "No courses available", as if the user had no courses
+
 ## 2.30.4
 ### Fixed
 - The Docker image is built from package-lock.json. It was built with npm install, which ignores the lockfile and re-resolves every version range on build day, so two builds of the same release could ship different dependency trees. One such resolution produced an image whose Angular build failed while the container kept answering, and the site served 404 with every health check green
