@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- A page at `lti/refused` tells an administrator whose launch from the course platform was refused to sign in to the platform directly, in French and English. It opens outside the administration layout, since a refused launch has no session
+
 ## 2.30.5
 ### Fixed
 - Dates typed in the course administration forms are read as day/month/year. The course administration module provided its own native date adapter, which shadowed the application's French one and read typed dates as month/day/year
