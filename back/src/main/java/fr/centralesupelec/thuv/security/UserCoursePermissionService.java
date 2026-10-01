@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.security;
 
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.CourseSession;
-import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.UserRepository;
@@ -31,11 +30,6 @@ public class UserCoursePermissionService {
 
     public boolean canAskContainer(CourseSession courseSession) {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CourseStatus status = courseSession.getCourse().getStatus();
-        // an archived course, or one without a status, starts nobody; DRAFT, TEST and READY start as before
-        if (status == null || status == CourseStatus.ARCHIVED) {
-            return false;
-        }
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
