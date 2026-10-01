@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Registering an LTI platform requires an administrator
+- An LTI or magic link login can no longer open a session on an administrator account. The launch is refused before anything is written and sent to the front's `lti/refused` page. Administrator rights apply only to sessions opened through CAS or OIDC
+- An LTI integration is identified by its issuer and client id together, at registration and at launch. A database constraint now makes that pair unique: the deployment fails at startup if a platform already holds duplicate pairs, and the error lists the rows to resolve by hand
+### Fixed
+- An LTI launch is checked against the issuer of the registered platform, its nonce can be used only once, and its required claims and redirect destination are validated before anything is written
+- The full LTI launch token is no longer written to the debug log
+
 ## 2.35.3
 ### Fixed
 - A lab can no longer be started in an archived course. The start request is refused with 403 and no service is created. Draft, test and ready courses start as before, and an environment already running is not stopped when the course is archived
