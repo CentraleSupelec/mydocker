@@ -78,6 +78,7 @@
           "step_name": "Technical information",
           "docker_image": {
             "label": "Docker image",
+            "format_error": "Invalid image reference: no spaces, lowercase path, for example registry.example.com:4567/group/image:tag",
             "import": "From an existing Docker image",
             "choice": "Docker image choice",
             "build": "Build choice",

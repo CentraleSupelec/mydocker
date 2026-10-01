@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { FormControl } from '@angular/forms';
 import { CourseTechnicalInformationFormComponent } from './course-technical-information-form.component';
 import { AdminCourseModule } from "../../admin-course.module";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
@@ -139,6 +139,42 @@ describe('CourseTechnicalInformationFormComponent', () => {
       setCommandAndPorts("{{PORT[8080]}} {{PORT['9999']}}", [8080]);
       expect(component.courseTechnicalForm.hasError('malformedCommandPorts')).toBeTrue();
       expect(component.courseTechnicalForm.hasError('unknownCommandPorts')).toBeFalse();
+    });
+  });
+
+  describe('docker image reference validation', () => {
+    const hash = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const accepted = [
+      'nginx',
+      'nginx:1.27',
+      'gitlab-research.centralesupelec.fr:4567/my-docker-images/vnc-igv:latest',
+      'registry.local/a/b/c:1.0',
+      'localhost:5000/x',
+      `nginx@sha256:${hash}`,
+      `nginx:1.27@sha256:${hash}`,
+    ];
+    const refused = [
+      ' nginx',
+      'nginx ',
+      'my image:1',
+      'UPPER/Case',
+      'gitlab-research.centralesupelec.fr:4567/my-docker-images/vnc-igv ',
+    ];
+    const run = (value: string) =>
+      component.dockerImageValidator(new FormControl(value));
+
+    accepted.forEach((value) =>
+      it(`accepts "${value}"`, () => expect(run(value)).toBeNull())
+    );
+
+    refused.forEach((value) =>
+      it(`refuses "${value}"`, () =>
+        expect(run(value)).toEqual({ dockerImageFormat: true }))
+    );
+
+    it('leaves the empty value to the required validator', () => {
+      expect(run('')).toBeNull();
+      expect(component.courseTechnicalForm.get('dockerImage')?.hasError('required')).toBeTrue();
     });
   });
 });

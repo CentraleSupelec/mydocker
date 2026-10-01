@@ -78,6 +78,7 @@
           "step_name": "Informations techniques",
           "docker_image": {
             "label": "Image docker",
+            "format_error": "Référence d'image invalide : pas d'espace, chemin en minuscules, exemple registry.example.com:4567/groupe/image:tag",
             "import": "À partir d'une image docker existante",
             "choice": "Choix d'une image docker",
             "build": "Choix du build",

@@ -3,6 +3,9 @@
     <mat-form-field style="width: 50%">
       <mat-label>{{ 'admin.courses.edit.technical_info.docker_image.label' | translate }}</mat-label>
       <input matInput formControlName="dockerImage">
+      <mat-error *ngIf="courseTechnicalForm.get('dockerImage')?.hasError('dockerImageFormat')">
+        {{ 'admin.courses.edit.technical_info.docker_image.format_error' | translate }}
+      </mat-error>
     </mat-form-field>
     <button mat-raised-button color="primary" (click)="openDialog()" [disabled]="courseTechnicalForm.disabled">
       {{ 'admin.courses.edit.technical_info.docker_image.import' | translate }}
