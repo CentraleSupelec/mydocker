@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.35.3
+### Fixed
+- A lab can no longer be started in an archived course. The start request is refused with 403 and no service is created. Draft, test and ready courses start as before, and an environment already running is not stopped when the course is archived
+- A course image that is not a valid Docker image reference is refused when the course is saved. A trailing space or an uppercase letter in the path used to be stored as typed, and every lab start of that course then failed. The value is still stored exactly as typed, with no silent trim
+
 ## 2.35.2
 ### Fixed
 - A course whose `display_options` is empty in the database no longer makes the student course list fail. `GET /courses/joined` and `GET /courses-sessions/joined` answered 500 for every user enrolled in such a course, and the web interface showed that as having no courses at all
