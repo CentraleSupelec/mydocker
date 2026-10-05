@@ -27,9 +27,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @RestController
 @RequestMapping("/auth/cas")
@@ -65,6 +63,23 @@ public class CasController {
         }
         restTemplate = new RestTemplate();
         this.jwtTokenProvider = jwtTokenProvider;
+    }
+
+    /**
+     * Splits the CAS full name into {first name, last name}: the first word, then the other words
+     * joined by one space. Surrounding and repeated whitespace is ignored. A name that is absent
+     * comes back null, so the upsert fills it for a new account and keeps the stored one.
+     */
+    static String[] splitSimpleName(String simpleName) {
+        if (simpleName == null || simpleName.isBlank()) {
+            return new String[]{null, null};
+        }
+        String[] words = simpleName.trim().split("\\s+");
+        String name = words[0];
+        String lastName = words.length > 1
+                ? String.join(" ", Arrays.asList(words).subList(1, words.length))
+                : null;
+        return new String[]{name, lastName};
     }
 
     @GetMapping(value = "/{token}", produces = "application/json")
@@ -109,19 +124,17 @@ public class CasController {
             }
 
             String email = auth.getUser();
-            String name;
-            String lastName;
+            String simpleName;
             try {
-                String simpleName = auth.getAttributes().getSimpleName();
-                List<String> splitSimpleName = new ArrayList<>(Arrays.asList(simpleName.split(" ")));
-                name = splitSimpleName.remove(0);
-                lastName = String.join(" ", splitSimpleName);
+                simpleName = auth.getAttributes().getSimpleName();
             } catch (NullPointerException ex) {
                 Sentry.captureException(ex);
                 // No names: the upsert fills them for a new account and keeps the stored ones
-                name = null;
-                lastName = null;
+                simpleName = null;
             }
+            String[] names = splitSimpleName(simpleName);
+            String name = names[0];
+            String lastName = names[1];
 
             // FindorCreate user
 
