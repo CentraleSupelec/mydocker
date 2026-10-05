@@ -118,8 +118,9 @@ public class CasController {
                 lastName = String.join(" ", splitSimpleName);
             } catch (NullPointerException ex) {
                 Sentry.captureException(ex);
-                name = "DefaultName";
-                lastName = "DefaultName";
+                // No names: the upsert fills them for a new account and keeps the stored ones
+                name = null;
+                lastName = null;
             }
 
             // FindorCreate user
