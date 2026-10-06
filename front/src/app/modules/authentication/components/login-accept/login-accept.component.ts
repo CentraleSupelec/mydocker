@@ -1,13 +1,14 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Inject, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { VerificationService } from "../../services/verification.service";
 import { catchError, mergeMap } from "rxjs/operators";
 import { TokenService } from "../../services/token.service";
 import { LoginResponse, OidcSecurityService } from "angular-auth-oidc-client";
-import { SnackNotificationService } from "../../../utils/snack-notification/snack-notification.service";
 import { LocalStorageService } from "../../../utils/services/local-storage.service";
 import { MagicLinkService } from "../../services/magic-link.service";
-import { of } from "rxjs";
+import { EMPTY, Observable, of } from "rxjs";
+import { TranslateService } from "@ngx-translate/core";
+import { APP_CONFIG, IAppConfig } from "../../../../app-config";
 
 @Component({
   selector: "app-login-accept",
@@ -18,14 +19,15 @@ export class LoginAcceptComponent implements OnInit {
   private redirectTo: string | null = null;
 
   constructor(
+    @Inject(APP_CONFIG) private readonly config: IAppConfig,
     private readonly route: ActivatedRoute,
     private readonly verificationService: VerificationService,
     private readonly tokenService: TokenService,
     private readonly router: Router,
     private readonly oidcSecurityService: OidcSecurityService,
-    private readonly snackNotificationService: SnackNotificationService,
     private readonly localStorageService: LocalStorageService,
-    private readonly magicLinkService: MagicLinkService
+    private readonly magicLinkService: MagicLinkService,
+    private readonly translate: TranslateService
   ) {
   }
 
@@ -34,19 +36,21 @@ export class LoginAcceptComponent implements OnInit {
       mergeMap(paramMap => {
         this.redirectTo = paramMap.get("redirectTo");
         if (paramMap.has("ticket")) {
-          return this.verificationService.validateCasTicket(paramMap.get("ticket"), this.redirectTo);
+          return this.verificationService.validateCasTicket(paramMap.get("ticket"), this.redirectTo).pipe(
+            catchError(() => this.backToSignInWithError())
+          );
         } else if (paramMap.has("code")) {
           return this.oidcSecurityService
             .checkAuth()
             .pipe(mergeMap((loginResponse: LoginResponse) => {
               const {isAuthenticated, accessToken, errorMessage} = loginResponse;
               if (isAuthenticated) {
-                return this.verificationService.validateOidcToken(accessToken);
+                return this.verificationService.validateOidcToken(accessToken).pipe(
+                  catchError(() => this.backToSignInWithError())
+                );
               } else {
-                this.snackNotificationService.push('Impossible de vous authentifier', 'error');
-                const error = `Authentication error : ${errorMessage}`;
-                this.router.navigateByUrl('/login?preventAutoSignIn=true');
-                throw new Error(error);
+                console.error(`Authentication error : ${errorMessage}`);
+                return this.backToSignInWithError();
               }
             }));
         } else if (paramMap.has("token")) {
@@ -71,6 +75,26 @@ export class LoginAcceptComponent implements OnInit {
     ).subscribe(
       () => this.router.navigateByUrl(
         decodeURIComponent(this.redirectTo ?? this.localStorageService.sessionGetAndRemove("redirectTo") ?? "/" ))
+    );
+  }
+
+  /**
+   * Sends the user back to the sign-in page, without auto sign-in so it does not loop, with a message
+   * asking to contact the support address from the configuration. Completes without a token.
+   */
+  private backToSignInWithError(): Observable<never> {
+    const supportEmail = this.config.support_email;
+    const message$: Observable<string> = supportEmail
+      ? this.translate.get('sign_in.auth_error', { email: supportEmail })
+      : this.translate.get('sign_in.auth_error_no_address');
+    return message$.pipe(
+      mergeMap(message => {
+        this.router.navigate(['/login'], {
+          queryParams: { preventAutoSignIn: 'true' },
+          state: { error_message: message }
+        });
+        return EMPTY;
+      })
     );
   }
 }
