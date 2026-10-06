@@ -42,17 +42,23 @@ export class LoginAcceptComponent implements OnInit {
         } else if (paramMap.has("code")) {
           return this.oidcSecurityService
             .checkAuth()
-            .pipe(mergeMap((loginResponse: LoginResponse) => {
-              const {isAuthenticated, accessToken, errorMessage} = loginResponse;
-              if (isAuthenticated) {
-                return this.verificationService.validateOidcToken(accessToken).pipe(
-                  catchError(() => this.backToSignInWithError())
-                );
-              } else {
-                console.error(`Authentication error : ${errorMessage}`);
+            .pipe(
+              // A stale or replayed callback has no stored state, so the library errors out
+              catchError((error) => {
+                console.error(`Authentication error : ${error}`);
                 return this.backToSignInWithError();
-              }
-            }));
+              }),
+              mergeMap((loginResponse: LoginResponse) => {
+                const {isAuthenticated, accessToken, errorMessage} = loginResponse;
+                if (isAuthenticated) {
+                  return this.verificationService.validateOidcToken(accessToken).pipe(
+                    catchError(() => this.backToSignInWithError())
+                  );
+                } else {
+                  console.error(`Authentication error : ${errorMessage}`);
+                  return this.backToSignInWithError();
+                }
+              }));
         } else if (paramMap.has("token")) {
           const token = paramMap.get("token");
           return this.magicLinkService.login(token).pipe(

@@ -2,7 +2,7 @@ import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testi
 
 import { LoginAcceptComponent } from './login-accept.component';
 import { ActivatedRoute, convertToParamMap, Params, Router } from "@angular/router";
-import { of } from "rxjs";
+import { of, throwError } from "rxjs";
 import { RouterTestingModule } from "@angular/router/testing";
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
 import { APP_CONFIG } from "../../../../app-config";
@@ -113,6 +113,14 @@ describe('LoginAcceptComponent', () => {
   it('should send the user back to the login page with the support address when OIDC reports not authenticated', () => {
     queryParams = { code: "OIDC_CODE" };
     stubCheckAuth({ isAuthenticated: false, errorMessage: 'denied' });
+    createComponent();
+
+    expect(expectSignInErrorNavigation()).toContain('help@example.org');
+  });
+
+  it('should send the user back to the login page with the support address when the OIDC check errors out', () => {
+    queryParams = { code: "OIDC_CODE" };
+    spyOn(TestBed.inject(OidcSecurityService), 'checkAuth').and.returnValue(throwError(() => new Error('no state')));
     createComponent();
 
     expect(expectSignInErrorNavigation()).toContain('help@example.org');
