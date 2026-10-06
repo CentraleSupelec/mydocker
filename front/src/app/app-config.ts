@@ -43,6 +43,7 @@ export interface IAppConfig {
   oidc_client_id?: string;
   oidc_authority?: string;
   oidc_scope?: string;
+  support_email?: string;
   information?: Array<IInformation>;
   app_name?: string
   magic_link_expiration_in_minutes?: number,
