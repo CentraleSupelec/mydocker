@@ -51,4 +51,5 @@
     <include file="changelogs/47.multiple_compute_type_resources_x_regions.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/48.backfill_display_options.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/49.unique_tool_deployment_pair.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/50.add_login_announcement_content.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

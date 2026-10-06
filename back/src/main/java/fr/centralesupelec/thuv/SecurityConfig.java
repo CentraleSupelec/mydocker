@@ -3,11 +3,13 @@ package fr.centralesupelec.thuv;
 import static fr.centralesupelec.thuv.lti.LtiConfig.*;
 
 import fr.centralesupelec.thuv.security.JwtAuthenticationFilter;
+import fr.centralesupelec.thuv.web.student.ContentController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -154,6 +156,8 @@ public class SecurityConfig {
                         .requestMatchers(INIT_PATH).permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/courses/*/externalAccess").permitAll()
+                        // Exact path only: every other content slug stays behind authentication.
+                        .requestMatchers(HttpMethod.GET, ContentController.LOGIN_ANNOUNCEMENT_PATH).permitAll()
                         .anyRequest()
                         .authenticated()
                 )

@@ -27,8 +27,6 @@ public class MyUserDetailsService implements UserDetailsService {
     private static final String PRIVILEGED_ROLE = "ROLE_ADMIN";
     private static final String PRIVILEGED_ORIGIN_MESSAGE =
             "This login method cannot open a session for a privileged account";
-    private static final String FALLBACK_NAME = "John";
-    private static final String FALLBACK_LASTNAME = "Doe";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -113,39 +111,7 @@ public class MyUserDetailsService implements UserDetailsService {
         String usernameToSet = username != null
                 ? username
                 : (user.getUsername() != null ? user.getUsername() : email);
-        // Name claims are optional for OIDC, LTI and CAS. A new account still needs both names
-        // (@NotBlank), so fill only the missing one; an existing account keeps its stored names.
-        String nameToSet = isBlank(name) ? null : name;
-        String lastNameToSet = isBlank(lastName) ? null : lastName;
-        if (existing.isEmpty() && (nameToSet == null || lastNameToSet == null)) {
-            String[] derived = namesFromEmail(email);
-            nameToSet = nameToSet != null ? nameToSet : derived[0];
-            lastNameToSet = lastNameToSet != null ? lastNameToSet : derived[1];
-        }
-        return fillUserInformation(user, usernameToSet, email, nameToSet, lastNameToSet);
-    }
-
-    /**
-     * First and last name from an address of the exact form firstname.lastname@domain (one dot
-     * before the @), first letter upper case. Any other shape gives John / Doe.
-     */
-    private static String[] namesFromEmail(String email) {
-        int at = email == null ? -1 : email.indexOf('@');
-        if (at > 0) {
-            String[] parts = email.substring(0, at).split("\\.", -1);
-            if (parts.length == 2 && !parts[0].isBlank() && !parts[1].isBlank()) {
-                return new String[] {capitalize(parts[0]), capitalize(parts[1])};
-            }
-        }
-        return new String[] {FALLBACK_NAME, FALLBACK_LASTNAME};
-    }
-
-    private static String capitalize(String value) {
-        return value.substring(0, 1).toUpperCase(Locale.ROOT) + value.substring(1);
-    }
-
-    private static boolean isBlank(String value) {
-        return value == null || value.isBlank();
+        return fillUserInformation(user, usernameToSet, email, name, lastName);
     }
 
     private void assertOriginMayBind(Optional<User> existing, TokenOrigin origin) {
@@ -179,9 +145,8 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     public User fillUserInformation(User user, String username, String email, String name, String lastName) {
-        // A blank name never overwrites a stored one.
-        Optional.ofNullable(name).filter(value -> !value.isBlank()).ifPresent(user::setName);
-        Optional.ofNullable(lastName).filter(value -> !value.isBlank()).ifPresent(user::setLastname);
+        Optional.ofNullable(name).ifPresent(user::setName);
+        Optional.ofNullable(lastName).ifPresent(user::setLastname);
         Optional.ofNullable(username).ifPresent(user::setUsername);
         Optional.ofNullable(email).ifPresent(user::setEmail);
 
