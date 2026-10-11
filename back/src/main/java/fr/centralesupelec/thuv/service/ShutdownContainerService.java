@@ -3,25 +3,21 @@ package fr.centralesupelec.thuv.service;
 import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.model.LogModelName;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
-import fr.centralesupelec.thuv.model.Cluster;
-import fr.centralesupelec.thuv.model.Course;
-import fr.centralesupelec.thuv.repository.ClusterRepository;
-import fr.centralesupelec.thuv.repository.CourseRepository;
+import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;
 import fr.centralesupelec.thuv.storage.ShutdownStatusStorage;
 import fr.centralesupelec.gRPC.ShutdownContainerRequest;
+import fr.centralesupelec.gRPC.ShutdownContainerResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
+import io.sentry.Sentry;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,76 +25,85 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ShutdownContainerService {
     private static final Logger logger = LoggerFactory.getLogger(ShutdownContainerService.class);
 
-    private final Map<String, ManagedChannel> channels;
+    private final ManagedChannel channel;
     private final ShutdownStatusStorage shutdownStatusStorage;
-    private final Map<String, StreamObserver<ShutdownContainerRequest>> requestObservers = new HashMap<>();
-    private final Map<String, ShutdownContainerResponseStreamObserver> responseObservers = new HashMap<>();
+    private StreamObserver<ShutdownContainerRequest> shutdownContainerRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
     private final ActivityLogger activityLogger;
-    private Map<String, Boolean> shouldInitializeStubMap = new HashMap<>();
-    private final CourseRepository courseRepository;
-    private final ClusterRepository clusterRepository;
+    private boolean shouldInitializeStub = true;
 
     @Autowired
     public ShutdownContainerService(
-        Map<String, ManagedChannel> channels,
+            ManagedChannel channel,
             ShutdownStatusStorage shutdownStatusStorage,
-            ActivityLogger activityLogger,
-            CourseRepository courseRepository,
-            ClusterRepository clusterRepository
+            ActivityLogger activityLogger
     ) {
-        this.channels = channels;
+        this.channel = channel;
         this.shutdownStatusStorage = shutdownStatusStorage;
         this.activityLogger = activityLogger;
-        this.courseRepository = courseRepository;
-        this.clusterRepository = clusterRepository;
     }
 
     @PostConstruct
     public void init() {
-        List<Cluster> clusters = clusterRepository.findAll();
-
-        for (Cluster cluster : clusters) {
-            shouldInitializeStubMap.put(cluster.getName(), true);
-            createNewStubIfNeeded(cluster);
-        }
+        createNewStubIfNeeded();
     }
 
-    public void setShouldInitializeStub(String cluster, Boolean shouldInitializeStub) {
-        this.shouldInitializeStubMap.put(cluster, shouldInitializeStub);
+    public void createNewStub() {
+        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
+        
+        this.shutdownContainerRequestStreamObserver = asyncStub.shutdownContainer(new StreamObserver<>() {
+            public void onNext(ShutdownContainerResponse shutdownContainerResponse) {
+                logger.debug("Received response");
+                if (shutdownContainerResponse.getError().equals("")) {
+                    logger.debug("No error");
+                    Optional<ShutdownContainerDto> shutdownContainer = shutdownStatusStorage.getContainer(
+                            shutdownContainerResponse.getUserID(),
+                            shutdownContainerResponse.getCourseID()
+                    );
+                    shutdownContainer.ifPresent(container -> container.setIsShutdown(true));
+                } else {
+                    logger.debug(
+                            "Error while shutdowning for course {} and student {} : {}",
+                            shutdownContainerResponse.getCourseID(),
+                            shutdownContainerResponse.getUserID(),
+                            shutdownContainerResponse.getError()
+                    );
+                    Optional<ShutdownContainerDto> shutdownContainer = shutdownStatusStorage.getContainer(
+                            shutdownContainerResponse.getUserID(),
+                            shutdownContainerResponse.getCourseID()
+                    );
+                    shutdownContainer.ifPresent(container -> container.setError(shutdownContainerResponse.getError()));
+                }
+            }
+        
+            public void onError(Throwable throwable) {
+                logger.error("Stream error");
+                if (logger.isDebugEnabled()) {
+                    throwable.printStackTrace();
+                }
+            
+                Sentry.captureMessage("Error in shutdown stream");
+                shouldInitializeStub = true;
+            }
+        
+            public void onCompleted() {
+                logger.debug("Completed");
+            
+            }
+        });
     }
 
-    public void createNewStub(Cluster cluster) {
-
-        String clusterName = cluster.getName();
-
-        ShutdownContainerResponseStreamObserver responseObserver =
-            new ShutdownContainerResponseStreamObserver(shutdownStatusStorage, cluster);
-
-        responseObserver.setShutdownContainerService(this);
-
-        containerServiceGrpc.containerServiceStub asyncStub =
-            containerServiceGrpc.newStub(channels.get(clusterName));
-
-        StreamObserver<ShutdownContainerRequest> requestObserver =
-            asyncStub.shutdownContainer(responseObserver);
-
-        responseObservers.put(clusterName, responseObserver);
-        requestObservers.put(clusterName, requestObserver);
-    }
-
-    public void createNewStubIfNeeded(Cluster cluster) {
-        ManagedChannel channel = channels.get(cluster.getName());
-        logger.debug("shouldInitializeStub : " + shouldInitializeStubMap.get(cluster.getName()));
-        if (!shouldInitializeStubMap.get(cluster.getName())) {
+    public void createNewStubIfNeeded() {
+        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
+        if (!shouldInitializeStub) {
             return;
         }
         ConnectivityState state = channel.getState(true);
         logger.debug("Channel state : " + state);
 
         if (ConnectivityState.READY == state) {
-            createNewStub(cluster);
-            shouldInitializeStubMap.put(cluster.getName(), false);
+            createNewStub();
+            shouldInitializeStub = false;
             return;
         }
 
@@ -109,10 +114,10 @@ public class ShutdownContainerService {
             channel.notifyWhenStateChanged(ConnectivityState.CONNECTING, () -> {
                 ConnectivityState newState = channel.getState(false);
                 logger.debug("Channel state changed from CONNECTING to : " + newState);
-
+        
                 if (ConnectivityState.READY == newState) {
-                    createNewStub(cluster);
-                    shouldInitializeStubMap.put(cluster.getName(), false);
+                    createNewStub();
+                    shouldInitializeStub = false;
                 }
             });
         }
@@ -125,29 +130,13 @@ public class ShutdownContainerService {
                 .setCourseID(courseId)
                 .setUserID(userId)
                 .build();
-
         try {
             lock.lock();
-            Optional<Course> course = courseRepository.findById(Long.parseLong(courseId));
-            if (course.isPresent()) {
-                Cluster cluster = course.get().getComputeType().getCluster();
-                createNewStubIfNeeded(cluster);
-                StreamObserver<ShutdownContainerRequest> observer = requestObservers.get(cluster.getName());
-                if (observer != null) {
-                    try {
-                        observer.onNext(request);
-                    } catch (Exception e) {
-                        logger.error("Error configuring container status.\n Please restart the go API then this service.");
-                        observer.onError(e);
-                        throw e;
-                    }
-                } else {
-                    logger.error("No observer found for cluster: " + cluster.getName());
-                }
-            }
+            createNewStubIfNeeded();
+            shutdownContainerRequestStreamObserver.onNext(request);
         } catch (RuntimeException e) {
             // Cancel RPC
-            logger.error(String.format("Error shutting down container %s-%s", userId, courseId));
+            shutdownContainerRequestStreamObserver.onError(e);
             throw e;
         } finally {
             lock.unlock();

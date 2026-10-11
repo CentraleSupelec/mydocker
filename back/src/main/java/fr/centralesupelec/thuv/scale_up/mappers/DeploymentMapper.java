@@ -1,11 +1,6 @@
 package fr.centralesupelec.thuv.scale_up.mappers;
 
 import fr.centralesupelec.thuv.mappers.SessionWithCourseMapper;
-import fr.centralesupelec.thuv.model.Cluster;
-import fr.centralesupelec.thuv.model.ComputeType;
-import fr.centralesupelec.thuv.permissions.exceptions.ClusterNotFoundException;
-import fr.centralesupelec.thuv.repository.ClusterRepository;
-import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
 import fr.centralesupelec.thuv.repository.CourseSessionRepository;
 import fr.centralesupelec.thuv.scale_up.dtos.*;
 import fr.centralesupelec.thuv.scale_up.model.CleanDeployment;
@@ -13,9 +8,7 @@ import fr.centralesupelec.thuv.scale_up.model.Deployment;
 import fr.centralesupelec.thuv.scale_up.model.LaunchDeployment;
 import fr.centralesupelec.thuv.scale_up.repository.OVHRegionWorkerRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -30,8 +23,6 @@ public class DeploymentMapper {
     private final CourseSessionRepository courseSessionRepository;
     private final OVHRegionWorkerRepository ovhRegionWorkerRepository;
     private final SessionWithCourseMapper sessionWithCourseMapper;
-    private final ClusterRepository clusterRepository;
-    private final ComputeTypeRepository computeTypeRepository;
 
     public DeploymentDto convertToDto(Deployment deployment) {
         DeploymentDto deploymentDto;
@@ -53,11 +44,6 @@ public class DeploymentMapper {
                 .setStartDateTime(
                         deployment.getStartDateTime().atZone(zoneId).toInstant().toEpochMilli()
                 );
-
-        if (deployment.getCluster() instanceof Cluster) {
-                deploymentDto.setCluster(deployment.getCluster().getId());
-        }
-
         if (deployment instanceof LaunchDeployment) {
             deploymentDto
                     .setWorkers(
@@ -90,31 +76,14 @@ public class DeploymentMapper {
         return deploymentDto;
     }
 
-    public void applyChange(Deployment deployment, UpdateDeploymentDto deploymentDto) throws ClusterNotFoundException {
-        Cluster cluster = clusterRepository.getReferenceById(deploymentDto.getCluster());
-        deploymentDto.getWorkers().forEach(
-                worker -> {
-                        ComputeType computeType = computeTypeRepository.getReferenceById(worker.getComputeTypeId());
-                        if (!computeType.getCluster().equals(cluster)) {
-                                throw new ResponseStatusException(
-                                        HttpStatus.BAD_REQUEST,
-                                        String.format(
-                                                "Compute type %d is linked to a different cluster than that of the deployment",
-                                                worker.getComputeTypeId()
-                                        )
-                                );
-                        }
-                }
-        );
+    public void applyChange(Deployment deployment, UpdateDeploymentDto deploymentDto) {
         deployment
                 .setDescription(
                         deploymentDto.getDescription()
                 )
                 .setStartDateTime(
                         Instant.ofEpochMilli(deploymentDto.getStartDateTime()).atZone(zoneId).toLocalDateTime()
-                )
-                .setCluster(cluster)
-                ;
+                );
         if (deployment instanceof LaunchDeployment) {
             LaunchDeployment launchDeployment = (LaunchDeployment) deployment;
             launchDeployment.getWorkersToLaunch().clear();

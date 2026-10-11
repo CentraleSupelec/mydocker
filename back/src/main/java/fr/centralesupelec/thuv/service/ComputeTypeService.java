@@ -3,7 +3,6 @@ package fr.centralesupelec.thuv.service;
 import fr.centralesupelec.thuv.autoscaling.service.InitAutoscalingService;
 import fr.centralesupelec.thuv.dtos.ComputeTypeUpdateDto;
 import fr.centralesupelec.thuv.mappers.ComputeTypeMapper;
-import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +27,10 @@ public class ComputeTypeService {
     public ComputeType updateComputeType(ComputeTypeUpdateDto dto, ComputeType computeType) {
         computeTypeMapper.updateComputeType(dto, computeType);
         this.computeTypeRepository.saveAndFlush(computeType);
-        this.validateEmptyTechnicalName(computeType.getCluster());
-        if (deploymentEnabled && computeType.getCluster().getDeploymentEnabled()) {
+        this.validateEmptyTechnicalName();
+        if (deploymentEnabled) {
             try {
-                initAutoscalingService.sendInitRequest(computeType.getCluster());
+                initAutoscalingService.sendInitRequest();
                 logger.info("Successfully updated autoscaling config");
             } catch (Exception e) {
                 logger.error(String.format("Could not update autoscaling config : %s", e.getMessage()), e);
@@ -40,8 +39,8 @@ public class ComputeTypeService {
         return computeType;
     }
 
-    public void validateEmptyTechnicalName(Cluster cluster) {
-        if (1 != computeTypeRepository.countByTechnicalNameAndCluster("", cluster)) {
+    public void validateEmptyTechnicalName() {
+        if (1 != computeTypeRepository.countByTechnicalName("")) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "There must be exactly one ComputeType with empty technical name"
@@ -51,6 +50,6 @@ public class ComputeTypeService {
 
     public void deleteComputeType(ComputeType computeType) {
         this.computeTypeRepository.delete(computeType);
-        this.validateEmptyTechnicalName(computeType.getCluster());
+        this.validateEmptyTechnicalName();
     }
 }

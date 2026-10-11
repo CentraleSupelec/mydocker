@@ -6,11 +6,9 @@ import fr.centralesupelec.gRPC.ScalingRegion;
 import fr.centralesupelec.thuv.dtos.ComputeTypeDto;
 import fr.centralesupelec.thuv.dtos.ComputeTypeUpdateDto;
 import fr.centralesupelec.thuv.dtos.ResourceRegionsDto;
-import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.ResourceRegion;
 import fr.centralesupelec.thuv.model.StorageBackend;
-import fr.centralesupelec.thuv.repository.ClusterRepository;
 import fr.centralesupelec.thuv.scale_up.model.OVHRegion;
 import fr.centralesupelec.thuv.scale_up.model.OVHResource;
 import fr.centralesupelec.thuv.scale_up.repository.OVHRegionRepository;
@@ -33,7 +31,6 @@ public class ComputeTypeMapper {
     private final OVHRegionRepository ovhRegionRepository;
     private final OVHResourceRepository ovhResourceRepository;
     private final ResourceRegionRepository resourceRegionRepository;
-    private final ClusterRepository clusterRepository;
 
     public void updateComputeType(ComputeTypeUpdateDto dto, ComputeType computeType) {
         if (
@@ -78,18 +75,6 @@ public class ComputeTypeMapper {
                 }
             }
         }
-
-        if (dto.getCluster() != null) {
-            Optional<Cluster> cluster = clusterRepository.findById(dto.getCluster());
-            if (!cluster.isPresent()) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        String.format("Cluster %s not found", dto.getCluster())
-                );
-            }
-            computeType.setCluster(cluster.get());
-        }
-
         if (dto.getMaxNodesCount() != null && dto.getMinIdleNodesCount() != null) {
             if (dto.getMaxNodesCount() < dto.getMinIdleNodesCount()) {
                 throw new ResponseStatusException(

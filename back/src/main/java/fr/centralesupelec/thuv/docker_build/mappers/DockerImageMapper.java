@@ -72,7 +72,7 @@ public class DockerImageMapper {
     }
 
     public DockerImageBuildDto convertBuildToDto(DockerImageBuild dockerImageBuild) {
-        DockerImageBuildDto dto = new DockerImageBuildDto()
+        return new DockerImageBuildDto()
                 .setId(
                         dockerImageBuild.getId()
                 )
@@ -91,11 +91,5 @@ public class DockerImageMapper {
                 .setLogs(
                         dockerImageBuild.getLogs()
                 );
-
-        if (dockerImageBuild.getCluster() != null) {
-            dto.setCluster(dockerImageBuild.getCluster().getId());
-        }
-
-        return dto;
     }
 }
