@@ -83,7 +83,8 @@
             "choice": "Docker image choice",
             "build": "Build choice",
             "confirm": "Confirm",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "placeholder": "Type to search an image"
           },
           "ports": {
             "label" : "Ports",
