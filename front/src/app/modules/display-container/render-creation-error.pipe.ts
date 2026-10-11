@@ -31,7 +31,7 @@ export class RenderCreationErrorPipe implements PipeTransform {
         }).replace(/:/, "h")}` : this.translate.instant('container.recently');
         const dateString = date ? `${this.translate.instant('container.on')} ${date?.toLocaleDateString()}` : '';
         const dateParts = [timeString];
-        if (date && (date?.getDate() !== now?.getDate() || date?.getMonth() !== now.getMonth())) {
+        if (date && (date?.getDay() !== now?.getDay() || date?.getMonth() !== now.getMonth())) {
           dateParts.unshift(dateString);
         }
         const formattedDate = dateParts.join(' ');

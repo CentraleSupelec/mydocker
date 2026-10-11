@@ -18,14 +18,6 @@
           <mat-option value="{{ v[0] }}" *ngFor="let v of storageBackends">{{ v[1] }}</mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field style="width: 300px;">
-        <mat-label>{{ 'admin.resources_management.compute_types.edit.cluster' | translate }}</mat-label>
-        <mat-select formControlName="cluster">
-          <mat-option *ngFor="let c of clusters" [value]="c.id">
-            {{ c.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
       <mat-accordion
         *ngIf="config.deployment_enabled"
         class="field-spacer"

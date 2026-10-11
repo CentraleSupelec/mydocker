@@ -25,13 +25,6 @@
     </mat-cell>
   </ng-container>
 
-  <ng-container matColumnDef="cluster">
-    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.deployment_status.cluster' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let element">
-      {{ element.cluster === null ? '-' : (clusterNames.get(element.cluster) ?? element.cluster) }}
-    </mat-cell>
-  </ng-container>
-
   <ng-container matColumnDef="action">
     <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
       <button mat-raised-button color="primary" (click)="launchDeployment()">
@@ -60,3 +53,4 @@
 <mat-paginator [length]="deploymentsSize"
                [pageSizeOptions]="[5, 10, 25, 100]">
 </mat-paginator>
+

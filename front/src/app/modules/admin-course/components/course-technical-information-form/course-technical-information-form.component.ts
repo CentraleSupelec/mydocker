@@ -17,11 +17,10 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { DockerImageApiService } from "../../../admin-docker-image/services/docker-image-api.service";
 import { MatDialog } from "@angular/material/dialog";
-import { DockerImageChoiceDialogComponent, DockerImageChoiceDialogReturnData } from "../docker-image-choice-dialog/docker-image-choice-dialog.component";
+import { DockerImageChoiceDialogComponent } from "../docker-image-choice-dialog/docker-image-choice-dialog.component";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
 import { IPort } from 'src/app/modules/ports-form/interfaces/port';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-course-technical-information-form',
@@ -44,9 +43,8 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   readonly courseTechnicalForm: FormGroup;
   private readonly destroy$ = new Subject<void>();
   @Input() computeTypes: Array<IComputeType> = [];
-  @Input() clusters?: Array<ICluster>;
   @Input() defaultComputeTypeId: number = 0;
-  selectedImageClusterId: number | null = null;
+
 
   constructor(
     formBuilder: FormBuilder,
@@ -89,15 +87,6 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
           this.propagateChange(v);
         }
       )
-      this.courseTechnicalForm.get("dockerImage")?.valueChanges
-        .pipe(
-          takeUntil(this.destroy$),
-        )
-        .subscribe(
-          _v => {
-            this.selectedImageClusterId = null;
-          }
-        )
   }
 
   registerOnChange(fn: any): void {
@@ -161,21 +150,14 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   }
 
   openDialog() {
-    this.dialog.open(DockerImageChoiceDialogComponent, {data: {clusters: this.clusters}}).afterClosed()
+    this.dialog.open(DockerImageChoiceDialogComponent).afterClosed()
     .subscribe(
-      (data: DockerImageChoiceDialogReturnData) => {
+      (data: any) => {
         if (data) {
-          this.selectedImageClusterId = data.dockerImageBuild.cluster;
           this.courseTechnicalForm.get('ports')?.setValue(data.dockerImage.ports);
           this.courseTechnicalForm.get('ports')?.updateValueAndValidity();
-          this.courseTechnicalForm.get('dockerImage')?.setValue(data.dockerImageBuild.imageName, { emitEvent: false });
-          this.courseTechnicalForm.get('dockerImage')?.updateValueAndValidity({emitEvent: false});
-          const computeTypeId = this.courseTechnicalForm.get('computeTypeId')?.value;
-          const selectedComputeType = this.computeTypes.find(computeType => computeType.id == computeTypeId);
-
-          if (this.selectedImageClusterId != null && selectedComputeType?.cluster?.id != this.selectedImageClusterId) {
-            this.courseTechnicalForm.get('computeTypeId')?.setValue(null);
-          }
+          this.courseTechnicalForm.get('dockerImage')?.setValue(data.dockerImageBuild.imageName);
+          this.courseTechnicalForm.get('dockerImage')?.updateValueAndValidity();
         }
       }
     )

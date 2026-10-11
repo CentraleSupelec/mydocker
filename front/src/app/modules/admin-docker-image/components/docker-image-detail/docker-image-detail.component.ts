@@ -12,8 +12,6 @@ import { MatDialog } from "@angular/material/dialog";
 import { DockerImageBuildDetailDialogComponent } from "../docker-image-build-detail-dialog/docker-image-build-detail-dialog.component";
 import { DockerImagePermissionDialogComponent } from "../../../permissions/components/docker-image-permission-dialog/docker-image-permission-dialog.component";
 import { OpenLogDialogService } from "../../../log-dialog/open-log-dialog.service";
-import { ClusterChoiceDialogReturnData, DockerImageClusterChoiceDialogComponent } from '../docker-image-cluster-choice-dialog/docker-image-cluster-choice-dialog.component';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-docker-image-detail',
@@ -21,8 +19,8 @@ import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
   styleUrls: ['./docker-image-detail.component.css'],
   animations: [
     trigger('detailExpand', [
-      state('collapsed', style({ minHeight: '0', height: '0', overflow: 'hidden' })),
-      state('expanded', style({ height: '*', paddingTop: '15px' })),
+      state('collapsed', style({minHeight: '0', height: '0', overflow: 'hidden'})),
+      state('expanded', style({height: '*', paddingTop: '15px'})),
       transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
     ]),
   ],
@@ -30,7 +28,6 @@ import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 export class DockerImageDetailComponent implements OnInit {
   dockerImage: IDockerImage | null = null;
   dockerBuilds: IDockerImageBuild[] = [];
-  clusters: ICluster[] = [];
   displayedColumns = ['status', 'buildId', 'updatedOn', 'action'];
   expandedElement: IDockerImageBuild | null = null;
   polling = false;
@@ -47,7 +44,6 @@ export class DockerImageDetailComponent implements OnInit {
     private readonly dockerImageApiService: DockerImageApiService,
     private readonly matDialog: MatDialog,
     private readonly openLogsDialogService: OpenLogDialogService,
-    private readonly dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -70,22 +66,14 @@ export class DockerImageDetailComponent implements OnInit {
     this.activatedRoute.data
       .subscribe(data => {
         this.dockerImage = data.docker_image
-        this.clusters = data.clusters
         this.startPolling()
-      });
+    });
   }
 
   createNewBuild() {
-    this.dialog.open(DockerImageClusterChoiceDialogComponent, { data: { clusters: this.clusters } }).afterClosed()
+    this.dockerImageApiService.buildDockerImage(<number>this.dockerImage?.id)
       .subscribe(
-        (data: ClusterChoiceDialogReturnData) => {
-          if (data) {
-            this.dockerImageApiService.buildDockerImage(<number>this.dockerImage?.id, { clusterId: data.cluster.id })
-              .subscribe(
-                () => this.startPolling()
-              )
-          }
-        }
+        () => this.startPolling()
       )
   }
 
@@ -111,30 +99,30 @@ export class DockerImageDetailComponent implements OnInit {
           mergeMap(() => this.dockerImageApiService.getTestDockerImageBuild(element.id)),
           takeUntil(this.stopContainerPolling$),
         ).subscribe(
-          container => {
-            if (container) {
-              if (container.status === 'OK') {
-                this.testContainer = container;
-                this.containerState = 'ready';
-                this.stopContainerPolling$.next();
-              } else if (container.status === 'KO') {
-                this.containerState = 'creation_error';
-                this.stopContainerPolling$.next();
-              }
+        container => {
+          if(container) {
+            if (container.status === 'OK') {
+              this.testContainer = container;
+              this.containerState = 'ready';
+              this.stopContainerPolling$.next();
+            } else if (container.status === 'KO') {
+              this.containerState = 'creation_error';
+              this.stopContainerPolling$.next();
             }
-          },
-          error => {
-            this.containerState = 'creation_error';
-            this.stopContainerPolling$.next();
           }
-        )
+        },
+        error => {
+          this.containerState = 'creation_error';
+          this.stopContainerPolling$.next();
+        }
+      )
     } else {
       this.containerState = null;
     }
   }
 
   openDetailDialog(element: IDockerImageBuild) {
-    this.matDialog.open(DockerImageBuildDetailDialogComponent, { data: element });
+    this.matDialog.open(DockerImageBuildDetailDialogComponent, { data: element});
   }
 
   openShareDialog() {

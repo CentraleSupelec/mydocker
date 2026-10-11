@@ -5,8 +5,6 @@ import { DockerImageEditComponent } from "./components/docker-image-edit/docker-
 import { DockerImageResolver } from "./resolvers/docker-image.resolver";
 import { DockerImageCreateComponent } from "./components/docker-image-create/docker-image-create.component";
 import { DockerImageDetailComponent } from "./components/docker-image-detail/docker-image-detail.component";
-import { ClustersResolver } from '../cluster/resolvers/clusters.resolver';
-import { ClustersBasicInformationResolver } from '../cluster/resolvers/clusters-basic-information.resolver';
 
 const routes: Routes = [
   {
@@ -31,7 +29,6 @@ const routes: Routes = [
         component: DockerImageDetailComponent,
         resolve: {
           docker_image: DockerImageResolver,
-          clusters: ClustersBasicInformationResolver
         },
       },
       {

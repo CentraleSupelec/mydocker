@@ -7,5 +7,4 @@ export interface IDockerImageBuild {
   logs: string;
   updatedOn: number;
   imageName: string;
-  cluster: number;
 }

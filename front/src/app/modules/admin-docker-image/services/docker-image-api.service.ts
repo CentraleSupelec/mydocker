@@ -2,13 +2,12 @@ import { Inject, Injectable } from '@angular/core';
 import { APP_CONFIG, IAppConfig } from "../../../app-config";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { ICreationDockerImage, IDockerImage, IDockerImageBuildRequest, IUpdateDockerImage } from "../interfaces/docker-image";
+import { ICreationDockerImage, IDockerImage, IUpdateDockerImage } from "../interfaces/docker-image";
 import { IDockerImageBuild } from "../interfaces/docker-image-build";
 import { IPort } from "../../ports-form/interfaces/port";
 import { IContainer, IServiceLogs } from "../../shell/interfaces/container";
 import { IPageResponse } from "../../utils/page";
 import { IShutdownStatus } from "../interfaces/shutdown-status";
-import { ICluster } from '../../cluster/interfaces/cluster';
 
 @Injectable({
   providedIn: 'root'
@@ -64,8 +63,8 @@ export class DockerImageApiService {
     return this.httClient.get<IDockerImageBuild[]>(`${this.config.back_url}images/${id}/build`)
   }
 
-  buildDockerImage(id: number, data: IDockerImageBuildRequest): Observable<void> {
-    return this.httClient.post<void>(`${this.config.back_url}images/${id}/build`, data);
+  buildDockerImage(id: number): Observable<void> {
+    return this.httClient.post<void>(`${this.config.back_url}images/${id}/build`, {});
   }
 
   initTestDockerImageBuild(id: number): Observable<void> {

@@ -17,7 +17,6 @@ import { IOvhResource } from "../../../sessions-resources/interfaces/ovh-resourc
 import { tap } from "rxjs/operators";
 import { IDeployment } from "../../interfaces/deployment";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-deployment-form',
@@ -40,12 +39,10 @@ export class DeploymentFormComponent implements OnInit, OnDestroy, ControlValueA
   @Input() resources: IOvhResource[] = [];
   @Input() regions: string[] = [];
   @Input() computeTypes: IComputeType[] = [];
-  @Input() clusters: ICluster[] = [];
 
   readonly deploymentForm: FormGroup;
   sessions: ISession[] = [];
   selectedSessions: ISession[] = [];
-  filteredComputeTypes: IComputeType[] = [];
 
   private readonly destroy$ = new Subject<void>();
 
@@ -57,26 +54,16 @@ export class DeploymentFormComponent implements OnInit, OnDestroy, ControlValueA
       type: ['', Validators.required],
       description: '',
       sessions: [[]],
-      cluster: [null, Validators.required],
       startDateTime: [null, Validators.required],
       workers: [[], Validators.required],
     });
   }
 
   ngOnInit(): void {
-    this.deploymentForm.get('cluster')?.valueChanges.subscribe(
-      (cluster: number) => {
-        if (cluster !== null) {
-          this.filteredComputeTypes = this.computeTypes
-            .filter(computeType => computeType.cluster?.id == cluster);
-        }
-      }
-    )
     this.deploymentForm.get('type')?.valueChanges
       .pipe(
         tap(() => {
           this.deploymentForm.get('sessions')?.setValue([]);
-          this.deploymentForm.get('cluster')?.setValue(null);
           this.deploymentForm.get('startDateTime')?.setValue(null);
           this.deploymentForm.get('workers')?.setValue([]);
         }),
@@ -153,8 +140,7 @@ export class DeploymentFormComponent implements OnInit, OnDestroy, ControlValueA
       sessions: obj?.sessions || [],
       startDateTime: obj?.startDateTime || null,
       workers: obj?.workers || [],
-      description: obj?.description || '',
-      cluster: obj?.cluster || null,
+      description: obj?.description || ''
     })
   }
 
