@@ -7,7 +7,6 @@
       <input type="text"
              aria-label="Image docker"
              matInput
-             [placeholder]="'admin.courses.edit.technical_info.docker_image.placeholder' | translate"
              [formControl]="control"
              [matAutocomplete]="auto"
       >
@@ -17,7 +16,7 @@
         (optionSelected)="dockerImageSelected($event.option.value)"
       >
         <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-          {{ optionLabel(option) }}
+          {{ option.name }}
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
