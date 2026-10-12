@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +27,9 @@ public class DockerImageMapper {
     }
 
     public DockerImageDto convertToDto(DockerImage dockerImage) {
+        Optional<DockerImageBuild> lastBuild = dockerImage.getBuilds()
+                .stream()
+                .min(new DockerImageBuildComparator());
         return new DockerImageDto()
                 .setId(
                         dockerImage.getId()
@@ -52,11 +56,13 @@ public class DockerImageMapper {
                         dockerImage.getContextFolderName()
                 )
                 .setLastStatus(
-                        dockerImage.getBuilds()
-                                .stream()
-                                .sorted(new DockerImageBuildComparator())
+                        lastBuild
                                 .map(DockerImageBuild::getStatus)
-                                .findFirst()
+                                .orElse(null)
+                )
+                .setLastBuildOn(
+                        lastBuild
+                                .map(build -> build.getUpdatedOn().atZone(zoneId).toInstant().toEpochMilli())
                                 .orElse(null)
                 )
                 .setCreatedOn(
