@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- An environment whose task is running but whose connection test has not passed yet now keeps its progress display. It used to switch to the "could not start" panel and stop checking, so the panel stayed until the page was reloaded even though the environment came up a moment later
+
 ## 2.30.6
 ### Added
 - A page at `lti/refused` tells an administrator whose launch from the course platform was refused to sign in to the platform directly, in French and English. It opens outside the administration layout, since a refused launch has no session
