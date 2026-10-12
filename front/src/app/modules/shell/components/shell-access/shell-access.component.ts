@@ -56,6 +56,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   container: IContainer | null = null;
   /** True only after the student asked for this environment in this page session. */
   userStarted = false;
+  /** True when the last start request failed or went unanswered, which is what offers a retry. */
+  startFailed = false;
   state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' | 'unavailable' = 'ask';
   step: number = 0;
   stepMessage: string = '';

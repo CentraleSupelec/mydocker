@@ -46,7 +46,8 @@ export interface IAppConfig {
   information?: Array<IInformation>;
   app_name?: string
   magic_link_expiration_in_minutes?: number,
-  polling_interval_in_milliseconds?: number
+  polling_interval_in_milliseconds?: number,
+  start_response_timeout_in_seconds?: number
 }
 
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');

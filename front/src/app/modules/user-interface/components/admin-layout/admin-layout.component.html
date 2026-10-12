@@ -135,18 +135,7 @@
         </div>
         <span>{{ 'admin.resources_management.content_management.nav_label' | translate }}</span>
       </a>
-      <a
-        mat-list-item
-        routerLink="/admin/clusters"
-        routerLinkActive="active-link"
-        *ngxPermissionsOnly="'ROLE_ADMIN'"
-      >
-        <div fxLayout="row">
-          <mat-icon>language</mat-icon>
-        </div>
-        <span>{{ 'admin.resources_management.clusters.nav_label' | translate }}</span>
-      </a>
-      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" class="menu-title">{{ 'admin.users_management.title' | translate }}</h2>
+      <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" class="menu-title">Gestion des utilisateur</h2>
       <a
         mat-list-item
         routerLink="/admin/users"

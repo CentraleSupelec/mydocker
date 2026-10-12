@@ -13,7 +13,7 @@ export class TerraformStateApiServiceService {
     private readonly httClient: HttpClient,
   ) {}
 
-  getTerraformState(): Observable<Record<string, ITerraformInstance[]>> {
-    return this.httClient.get<Record<string, ITerraformInstance[]>>(`${this.config.back_url}admin/scale/terraform-state`);
+  getTerraformState(): Observable<ITerraformInstance[]> {
+    return this.httClient.get<ITerraformInstance[]>(`${this.config.back_url}admin/scale/terraform-state`);
   }
 }
