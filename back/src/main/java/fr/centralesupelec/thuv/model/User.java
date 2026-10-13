@@ -99,8 +99,9 @@ public class User {
     }
 
     public void addUserCourse(UserCourse userCourse) {
-        this.userCourses.add(userCourse);
+        // Set the user before adding: UserCourse hashes on its user, so it must not change once in the set
         userCourse.setUser(this);
+        this.userCourses.add(userCourse);
     }
 
     public void removeUserCourse(UserCourse userCourse) {

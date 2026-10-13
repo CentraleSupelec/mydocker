@@ -49,6 +49,18 @@ class UserRemoveCourseTest {
     }
 
     @Test
+    void removesAMembershipAddedInTheSameSession() {
+        Course course = course(4L);
+        User user = new User();
+        user.setId(1L);
+
+        user.addCourse(course);
+        user.removeCourse(course);
+
+        assertThat(user.getUserCourses()).isEmpty();
+    }
+
+    @Test
     void ignoresACourseTheUserDidNotJoin() {
         User user = userLoadedWith(course(4L));
 
