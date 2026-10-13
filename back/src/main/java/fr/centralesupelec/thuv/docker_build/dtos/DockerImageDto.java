@@ -19,5 +19,4 @@ public class DockerImageDto {
     private Boolean visible;
     private String creator;
     private Long createdOn;
-    private Long lastBuildOn;
 }
