@@ -50,6 +50,13 @@ export class RenderCreationErrorPipe implements PipeTransform {
           course: courseTitle,
           date: formattedDate
         })
+      case "container.start-failed":
+        // The goapp sends the technical reason of the failed start under `detail`.
+        const startDetail = container.errorParams?.["detail"];
+        if (startDetail) {
+          return this.translate.instant('container.problem_encountered', { error: startDetail });
+        }
+        return this.translate.instant('container.unknown_error');
       default:
         if (container.creationError?.startsWith("No such image:")) {
           return this.translate.instant('container.image_not_found_error');
