@@ -21,7 +21,7 @@ import { DockerImageChoiceDialogComponent, DockerImageChoiceDialogReturnData } f
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
 import { IPort } from 'src/app/modules/ports-form/interfaces/port';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
+import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-course-technical-information-form',
@@ -44,7 +44,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   readonly courseTechnicalForm: FormGroup;
   private readonly destroy$ = new Subject<void>();
   @Input() computeTypes: Array<IComputeType> = [];
-  @Input() clusters?: Array<ICluster>;
+  @Input() clusters?: Array<IClusterBasicInformaion>;
   @Input() defaultComputeTypeId: number = 0;
   selectedImageClusterId: number | null = null;
 
@@ -165,17 +165,18 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
     .subscribe(
       (data: DockerImageChoiceDialogReturnData) => {
         if (data) {
+          // Silent, or the dockerImage subscription would clear the cluster set just below.
+          this.courseTechnicalForm.get('dockerImage')?.setValue(data.dockerImageBuild.imageName, { emitEvent: false });
           this.selectedImageClusterId = data.dockerImageBuild.cluster;
           this.courseTechnicalForm.get('ports')?.setValue(data.dockerImage.ports);
-          this.courseTechnicalForm.get('ports')?.updateValueAndValidity();
-          this.courseTechnicalForm.get('dockerImage')?.setValue(data.dockerImageBuild.imageName, { emitEvent: false });
-          this.courseTechnicalForm.get('dockerImage')?.updateValueAndValidity({emitEvent: false});
           const computeTypeId = this.courseTechnicalForm.get('computeTypeId')?.value;
           const selectedComputeType = this.computeTypes.find(computeType => computeType.id == computeTypeId);
 
           if (this.selectedImageClusterId != null && selectedComputeType?.cluster?.id != this.selectedImageClusterId) {
             this.courseTechnicalForm.get('computeTypeId')?.setValue(null);
           }
+          // The parent hears this form only through the group's valueChanges: publish the final value.
+          this.courseTechnicalForm.updateValueAndValidity();
         }
       }
     )
