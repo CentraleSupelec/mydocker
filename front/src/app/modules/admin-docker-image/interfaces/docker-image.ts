@@ -12,6 +12,7 @@ export interface IDockerImage {
   creator: string;
   visible: boolean;
   createdOn: number;
+  lastBuildOn: number | null;
 }
 
 export interface IUpdateDockerImage {

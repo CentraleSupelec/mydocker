@@ -83,7 +83,8 @@
             "choice": "Docker image choice",
             "build": "Build choice",
             "confirm": "Confirm",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "placeholder": "Type to search an image"
           },
           "ports": {
             "label" : "Ports",
@@ -618,6 +619,8 @@
     "magic_link_deactivated": "Login via magic link is disabled for this course",
     "magic_link_error": "Unable to verify access for this course",
     "magic_link_email_error": "An error occurred while sending the email",
+    "auth_error": "Sign-in failed. Please contact IT support at {email}.",
+    "auth_error_no_address": "Sign-in failed. Please contact IT support.",
     "default_oidc": "SIGN IN WITH YOUR INSTITUTION",
     "lti_refused": {
       "title": "LTI login unavailable",

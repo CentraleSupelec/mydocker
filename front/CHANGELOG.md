@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.30.7
+### Added
+- New optional configuration key `support_email`. When a CAS or OIDC sign-in fails, the user is sent back to the sign-in page, without automatic sign-in, with a message asking to contact that address, or IT support in general when the key is not set
+### Changed
+- The course image picker lists the 50 images most recently built, newest first, each with the date of its latest build. Needs back 2.35.5
+### Fixed
+- A failed OIDC sign-in, such as a stale or replayed callback, now shows the sign-in error message instead of failing silently on `/loginAccept`
+- An environment whose task is running but whose connection test has not passed yet now keeps its progress display. It used to switch to the "could not start" panel and stop checking, so the panel stayed until the page was reloaded even though the environment came up a moment later
+
 ## 2.30.6
 ### Added
 - A page at `lti/refused` tells an administrator whose launch from the course platform was refused to sign in to the platform directly, in French and English. It opens outside the administration layout, since a refused launch has no session
