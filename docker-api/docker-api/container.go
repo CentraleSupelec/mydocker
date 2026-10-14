@@ -40,6 +40,14 @@ const (
 	MOUNT_TARGET                                              = "/student_volume"
 )
 
+// A start failure that is not a VisibleError is reported with this generic error
+// key, and the original technical message under CONTAINER_START_ERROR_DETAIL_KEY
+// in the error params.
+const (
+	CONTAINER_START_ERROR            = "container.start-failed"
+	CONTAINER_START_ERROR_DETAIL_KEY = "detail"
+)
+
 type VisibleError struct {
 	msg    string
 	params map[string]string
