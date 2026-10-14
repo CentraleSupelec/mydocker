@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.35.5
+### Changed
+- The image list can be sorted by the date of each image's latest build, whatever its status; images never built come last. Each image carries that date as `lastBuildOn`
+### Fixed
+- An image shared with a teacher through a permission is listed for that teacher, and an image shared with several people is listed once
+- An OIDC, LTI or CAS login that sends no first or last name no longer fails. A new account takes the missing name from an address of the form `firstname.lastname@domain`, otherwise `John` / `Doe`; an existing account keeps its stored names, and a blank name never overwrites a stored one
+- A CAS full name is split on any run of whitespace, with surrounding spaces ignored, so a badly spaced name no longer gives an empty or shifted first or last name, and an empty one no longer gives an error 500
+- `TestSocketTest` no longer depends on outside websites: its cases are served by local HTTPS servers
+
 ## 2.35.4
 ### Changed
 - Registering an LTI platform requires an administrator
