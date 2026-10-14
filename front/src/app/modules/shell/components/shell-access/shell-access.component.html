@@ -102,20 +102,6 @@
     </button>
   </div>
 
-  <div fxLayout="column" fxLayoutAlign="center center" fxFill *ngSwitchCase="'start_failed'">
-    <p class="start-error">
-      {{ 'container.impossible_to_start' | translate }} <span [innerHTML]="null | renderCreationError:startError"></span>
-    </p>
-    <button
-      mat-raised-button
-      color="primary"
-      style="margin-top: 15px"
-      (click)="retryAfterFailure()"
-    >
-      {{ 'container.retry' | translate }}
-    </button>
-  </div>
-
   <div fxLayout="column" fxLayoutAlign="center center" fxFill *ngSwitchCase="'ask'">
     <div *ngIf="canAskContainer(); then thenBlock else elseBlock"></div>
     <ng-template #thenBlock>
