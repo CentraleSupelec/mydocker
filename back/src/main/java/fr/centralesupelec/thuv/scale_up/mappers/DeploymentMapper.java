@@ -11,6 +11,7 @@ import fr.centralesupelec.thuv.scale_up.dtos.*;
 import fr.centralesupelec.thuv.scale_up.model.CleanDeployment;
 import fr.centralesupelec.thuv.scale_up.model.Deployment;
 import fr.centralesupelec.thuv.scale_up.model.LaunchDeployment;
+import fr.centralesupelec.thuv.scale_up.model.OVHRegionWorker;
 import fr.centralesupelec.thuv.scale_up.repository.OVHRegionWorkerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -116,13 +117,21 @@ public class DeploymentMapper {
                 )
         );
         if (deployment instanceof CleanDeployment) {
-            deploymentDto.getWorkers().forEach(
-                    worker -> rejectOtherCluster(
-                            ovhRegionWorkerRepository.getReferenceById(worker.getId()).getComputeType(),
-                            deploymentDto.getCluster(),
-                            String.format("Worker %d runs on a different cluster than that of the deployment", worker.getId())
-                    )
-            );
+            deploymentDto.getWorkers().forEach(worker -> {
+                OVHRegionWorker stored = ovhRegionWorkerRepository.getReferenceById(worker.getId());
+                String message = String.format(
+                        "Worker %d runs on a different cluster than that of the deployment", worker.getId()
+                );
+                if (stored.getComputeType() != null) {
+                    rejectOtherCluster(stored.getComputeType(), deploymentDto.getCluster(), message);
+                    return;
+                }
+                // No compute type: the worker runs on the cluster of the deployment that launched it.
+                Cluster launchedOn = stored.getLaunchDeployment() == null ? null : stored.getLaunchDeployment().getCluster();
+                if (launchedOn != null && !launchedOn.getId().equals(deploymentDto.getCluster())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+                }
+            });
         }
         deployment
                 .setDescription(

@@ -127,6 +127,34 @@ class DeploymentMapperClusterTest {
                 .hasMessageContaining("Worker 200");
     }
 
+    @Test
+    void cleanRejectsAnOwnerlessWorkerLaunchedOnAnotherCluster() {
+        LaunchDeployment launchedOnB = new LaunchDeployment();
+        launchedOnB.setCluster(clusterB);
+        when(ovhRegionWorkerRepository.getReferenceById(300L))
+                .thenReturn(new OVHRegionWorker().setLaunchDeployment(launchedOnB));
+
+        assertThatThrownBy(() -> mapper.applyChange(
+                new CleanDeployment(),
+                dto(new CleanUpdateDeploymentDto(), List.of(10L), List.of(new OVHRegionWorkerDto().setId(300L)))
+        ))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Worker 300");
+    }
+
+    @Test
+    void cleanAcceptsAnOwnerlessWorkerLaunchedOnTheSameCluster() throws Exception {
+        LaunchDeployment launchedOnA = new LaunchDeployment();
+        launchedOnA.setCluster(clusterA);
+        when(ovhRegionWorkerRepository.getReferenceById(301L))
+                .thenReturn(new OVHRegionWorker().setId(301L).setLaunchDeployment(launchedOnA));
+        CleanDeployment deployment = new CleanDeployment();
+
+        mapper.applyChange(deployment, dto(new CleanUpdateDeploymentDto(), List.of(10L), List.of(new OVHRegionWorkerDto().setId(301L))));
+
+        assertThat(deployment.getWorkersToClean().size()).isEqualTo(1);
+    }
+
     private static UpdateDeploymentDto dto(UpdateDeploymentDto dto, List<Long> sessions, List<OVHRegionWorkerDto> workers) {
         dto.setCluster(1L);
         dto.setStartDateTime(0L);
