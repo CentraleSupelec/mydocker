@@ -20,6 +20,15 @@ import (
 // fakeDaemon answers the Docker API calls getOrCreateContainer makes: one ready
 // worker node, no existing service, and serviceCreate for the service creation.
 func fakeDaemon(t *testing.T, nodes http.HandlerFunc, serviceCreate http.HandlerFunc) *client.Client {
+	noServices := func(w http.ResponseWriter, r *http.Request) {
+		writeJson(w, http.StatusOK, []swarm.Service{})
+	}
+	return fakeDaemonWithServices(t, nodes, noServices, serviceCreate)
+}
+
+// fakeDaemonWithServices is fakeDaemon with services answering the existence
+// check for the service.
+func fakeDaemonWithServices(t *testing.T, nodes http.HandlerFunc, services http.HandlerFunc, serviceCreate http.HandlerFunc) *client.Client {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.HasSuffix(r.URL.Path, "/nodes"):
@@ -27,7 +36,7 @@ func fakeDaemon(t *testing.T, nodes http.HandlerFunc, serviceCreate http.Handler
 		case strings.HasSuffix(r.URL.Path, "/services/create"):
 			serviceCreate(w, r)
 		case strings.HasSuffix(r.URL.Path, "/services"):
-			writeJson(w, http.StatusOK, []swarm.Service{})
+			services(w, r)
 		default:
 			writeJson(w, http.StatusNotFound, types.ErrorResponse{Message: "unexpected " + r.URL.Path})
 		}
@@ -127,6 +136,19 @@ func TestGetOrCreateContainerNodeListFailure(t *testing.T) {
 	response := startContainer(t, cli, availablePorts(t), containerRequest("alpine:3.22.2"))
 
 	assertStartError(t, response, "this node is not a swarm manager")
+}
+
+func TestGetOrCreateContainerServiceLookupFailure(t *testing.T) {
+	created := false
+	cli := fakeDaemonWithServices(t, readyWorkerNodes, failWith(http.StatusInternalServerError, "service list unavailable"), func(w http.ResponseWriter, r *http.Request) {
+		created = true
+		writeJson(w, http.StatusCreated, types.ServiceCreateResponse{ID: "service-id"})
+	})
+
+	response := startContainer(t, cli, availablePorts(t), containerRequest("alpine:3.22.2"))
+
+	assertStartError(t, response, "service list unavailable")
+	assert.False(t, created, "no service should be created after a failed lookup")
 }
 
 func TestGetOrCreateContainerNoPortAvailable(t *testing.T) {

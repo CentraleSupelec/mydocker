@@ -102,17 +102,19 @@ func getOrCreateContainer(
 			mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
 		}
 		name := createContainerName(request.UserID, request.CourseID)
-		if exist, id, imageId, userPassword, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
+		// exist reports a failed lookup as not existing, so the error is checked first.
+		found, id, imageId, existingAuthentication, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient)
+		if err != nil {
+			setStartError(response, err)
+			out <- response
+			continue
+		}
+		if found {
 			log.Debugf("Service %s already exists", name)
 			response.ImageID = imageId
-			response.AuthenticationMethod = userPassword
+			response.AuthenticationMethod = existingAuthentication
 			response.Ports = existingPorts
 			response.DeletionTime = deletionTime
-			if err != nil {
-				setStartError(response, err)
-				out <- response
-				continue
-			}
 
 			if shouldBeReplaced || (request.Options != nil && request.Options.ForceRecreate) {
 				err = deleteService(id, dockerClient)
