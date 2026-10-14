@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class DeploymentStatusDto {
     private Long id;
+    private Long cluster;
     private String logs;
     private String buildErrors;
     private String status;

@@ -6,9 +6,11 @@ import fr.centralesupelec.gRPC.ScalingRegion;
 import fr.centralesupelec.thuv.dtos.ComputeTypeDto;
 import fr.centralesupelec.thuv.dtos.ComputeTypeUpdateDto;
 import fr.centralesupelec.thuv.dtos.ResourceRegionsDto;
+import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.ResourceRegion;
 import fr.centralesupelec.thuv.model.StorageBackend;
+import fr.centralesupelec.thuv.repository.ClusterRepository;
 import fr.centralesupelec.thuv.scale_up.model.OVHRegion;
 import fr.centralesupelec.thuv.scale_up.model.OVHResource;
 import fr.centralesupelec.thuv.scale_up.repository.OVHRegionRepository;
@@ -31,6 +33,8 @@ public class ComputeTypeMapper {
     private final OVHRegionRepository ovhRegionRepository;
     private final OVHResourceRepository ovhResourceRepository;
     private final ResourceRegionRepository resourceRegionRepository;
+    private final ClusterRepository clusterRepository;
+    private final ClusterMapper clusterMapper;
 
     public void updateComputeType(ComputeTypeUpdateDto dto, ComputeType computeType) {
         if (
@@ -75,6 +79,18 @@ public class ComputeTypeMapper {
                 }
             }
         }
+
+        if (dto.getCluster() != null) {
+            Optional<Cluster> cluster = clusterRepository.findById(dto.getCluster());
+            if (!cluster.isPresent()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        String.format("Cluster %s not found", dto.getCluster())
+                );
+            }
+            computeType.setCluster(cluster.get());
+        }
+
         if (dto.getMaxNodesCount() != null && dto.getMinIdleNodesCount() != null) {
             if (dto.getMaxNodesCount() < dto.getMinIdleNodesCount()) {
                 throw new ResponseStatusException(
@@ -127,19 +143,22 @@ public class ComputeTypeMapper {
             .collect(Collectors.toSet());
 
         ComputeTypeDto computeTypeDto = new ComputeTypeDto()
-                .setId(computeType.getId())
-                .setDisplayName(computeType.getDisplayName())
-                .setTechnicalName(computeType.getTechnicalName())
-                .setGpu(computeType.isGpu())
-                .setMinIdleNodesCount(computeType.getMinIdleNodesCount())
-                .setMaxNodesCount(computeType.getMaxNodesCount())
-                .setManualNodesCount(computeType.getManualNodesCount())
-                .setStorageBackend(computeType.getStorageBackend().toString())
-                .setAutoscalingResourcesRegions(autoscalingResourcesRegions)
-            ;
+            .setId(computeType.getId())
+            .setDisplayName(computeType.getDisplayName())
+            .setTechnicalName(computeType.getTechnicalName())
+            .setGpu(computeType.isGpu())
+            .setMinIdleNodesCount(computeType.getMinIdleNodesCount())
+            .setMaxNodesCount(computeType.getMaxNodesCount())
+            .setManualNodesCount(computeType.getManualNodesCount())
+            .setStorageBackend(computeType.getStorageBackend().toString())
+            .setAutoscalingResourcesRegions(autoscalingResourcesRegions)
+        ;
 
+        if (computeType.getCluster() instanceof Cluster) {
+            computeTypeDto.setCluster(clusterMapper.convertToClusterDto(computeType.getCluster()));
+        }
 
-            return computeTypeDto;
+        return computeTypeDto;
     }
 
     public OwnerAutoscalingConfig convertComputeTypeToOwner(ComputeType computeType) {

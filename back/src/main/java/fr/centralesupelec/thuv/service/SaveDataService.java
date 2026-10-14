@@ -3,7 +3,11 @@ package fr.centralesupelec.thuv.service;
 import fr.centralesupelec.gRPC.SaveDataRequest;
 import fr.centralesupelec.gRPC.SaveDataResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
+import fr.centralesupelec.thuv.model.Cluster;
+import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.UserCourse;
+import fr.centralesupelec.thuv.repository.ClusterRepository;
+import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
@@ -16,6 +20,9 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,25 +30,39 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SaveDataService {
     private static final Logger logger = LoggerFactory.getLogger(SaveDataService.class);
 
-    private final ManagedChannel channel;
+    private final Map<String, ManagedChannel> channels;
     private final UserCourseRepository userCourseRepository;
     private StreamObserver<SaveDataRequest> saveDataRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
-    private boolean shouldInitializeStub = true;
+    private Map<String, Boolean> shouldInitializeStubMap = new HashMap<>();
+    private final CourseRepository courseRepository;
+    private final ClusterRepository clusterRepository;
 
     @Autowired
-    public SaveDataService(ManagedChannel channel, UserCourseRepository userCourseRepository) {
-        this.channel = channel;
+    public SaveDataService(
+        Map<String, ManagedChannel> channels, 
+        UserCourseRepository userCourseRepository,
+        CourseRepository courseRepository,
+        ClusterRepository clusterRepository
+    ) {
+        this.channels = channels;
         this.userCourseRepository = userCourseRepository;
+        this.courseRepository = courseRepository;
+        this.clusterRepository = clusterRepository;
     }
 
     @PostConstruct
     public void init() {
-        createNewStubIfNeeded();
+        List<Cluster> clusters = clusterRepository.findAll();
+
+        for (Cluster cluster : clusters) {
+            shouldInitializeStubMap.put(cluster.getName(), true);
+            createNewStubIfNeeded(cluster);
+        }
     }
 
-    public void createNewStub() {
-        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
+    public void createNewStub(Cluster cluster) {
+        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
         
         this.saveDataRequestStreamObserver = asyncStub.saveData(new StreamObserver<>() {
             public void onNext(SaveDataResponse saveDataResponse) {
@@ -68,7 +89,7 @@ public class SaveDataService {
         
             public void onError(Throwable throwable) {
                 logger.error("Stream error");
-                shouldInitializeStub = true;
+                shouldInitializeStubMap.put(cluster.getName(), true);
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
@@ -82,17 +103,18 @@ public class SaveDataService {
         });
     }
 
-    public void createNewStubIfNeeded() {
-        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
-        if (!shouldInitializeStub) {
+    public void createNewStubIfNeeded(Cluster cluster) {
+        ManagedChannel channel = channels.get(cluster.getName());
+        logger.debug("shouldInitializeStub : " + shouldInitializeStubMap.get(cluster.getName()));
+        if (!shouldInitializeStubMap.get(cluster.getName())) {
             return;
         }
         ConnectivityState state = channel.getState(true);
         logger.debug("Channel state : " + state);
 
         if (ConnectivityState.READY == state) {
-            createNewStub();
-            shouldInitializeStub = false;
+            createNewStub(cluster);
+            shouldInitializeStubMap.put(cluster.getName(), false);
             return;
         }
 
@@ -105,8 +127,8 @@ public class SaveDataService {
                 logger.debug("Channel state changed from CONNECTING to : " + newState);
         
                 if (ConnectivityState.READY == newState) {
-                    createNewStub();
-                    shouldInitializeStub = false;
+                    createNewStub(cluster);
+                    shouldInitializeStubMap.put(cluster.getName(), false);
                 }
             });
         }
@@ -115,8 +137,11 @@ public class SaveDataService {
     public void sendSaveData(SaveDataRequest request) {
         try {
             lock.lock();
-            createNewStubIfNeeded();
-            saveDataRequestStreamObserver.onNext(request);
+            Optional<Course> course = courseRepository.findById(Long.parseLong(request.getCourseID()));
+            if (course.isPresent()) {
+                createNewStubIfNeeded(course.get().getComputeType().getCluster());
+                saveDataRequestStreamObserver.onNext(request);
+            }
         } catch (RuntimeException e) {
             // Cancel RPC
             saveDataRequestStreamObserver.onError(e);

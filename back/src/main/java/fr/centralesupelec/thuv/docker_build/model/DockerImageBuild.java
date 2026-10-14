@@ -4,6 +4,7 @@ import static java.lang.Integer.MAX_VALUE;
 
 import lombok.Data;
 import org.hibernate.annotations.UpdateTimestamp;
+import fr.centralesupelec.thuv.model.Cluster;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -34,4 +35,8 @@ public class DockerImageBuild {
     @JoinColumn(name = "docker_image_id")
     @NotNull
     private DockerImage dockerImage;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "cluster_id", nullable = true)
+    private Cluster cluster;
 }

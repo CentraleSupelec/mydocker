@@ -15,6 +15,7 @@ public class DeploymentStatusMapper {
     public DeploymentStatusDto convertToDto(DeploymentStatus deploymentStatus) {
         return new DeploymentStatusDto()
                 .setId(deploymentStatus.getId())
+                .setCluster(deploymentStatus.getCluster() == null ? null : deploymentStatus.getCluster().getId())
                 .setLogs(deploymentStatus.getLogs())
                 .setStatus(deploymentStatus.getStatus().name())
                 .setBuildErrors(deploymentStatus.getBuildErrors())
