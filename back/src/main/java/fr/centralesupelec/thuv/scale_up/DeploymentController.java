@@ -1,10 +1,11 @@
 package fr.centralesupelec.thuv.scale_up;
 
-import fr.centralesupelec.thuv.dtos.SessionWithCourseDto;
 import fr.centralesupelec.thuv.mappers.SessionWithCourseMapper;
+import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.CourseSession;
 import fr.centralesupelec.thuv.repository.CourseSessionRepository;
 import fr.centralesupelec.thuv.scale_up.dtos.DeploymentDto;
+import fr.centralesupelec.thuv.scale_up.dtos.DeploymentSessionDto;
 import fr.centralesupelec.thuv.scale_up.dtos.LaunchUpdateDeploymentDto;
 import fr.centralesupelec.thuv.scale_up.dtos.OVHRegionWorkerWithSessionDto;
 import fr.centralesupelec.thuv.scale_up.dtos.UpdateDeploymentDto;
@@ -88,7 +89,7 @@ public class DeploymentController {
     }
 
     @GetMapping(value = "sessions/launch")
-    public List<SessionWithCourseDto> getSessionToLaunch(
+    public List<DeploymentSessionDto> getSessionToLaunch(
             @RequestParam(value = "startTime", required = false) Long startTime
     ) {
         LocalDateTime startLocalDateTime = LocalDateTime.now();
@@ -99,16 +100,27 @@ public class DeploymentController {
                 startLocalDateTime
         )
                 .stream()
-                .map(sessionWithCourseMapper::convertToDto)
+                .map(this::toDeploymentSession)
                 .collect(Collectors.toList());
     }
 
     @GetMapping(value = "sessions/clean")
-    public List<SessionWithCourseDto> getSessionToClean() {
+    public List<DeploymentSessionDto> getSessionToClean() {
         return courseSessionRepository.findByCleanDeploymentIsNullAndLaunchDeploymentIsNotNullOrderByStartDateTime()
                 .stream()
-                .map(sessionWithCourseMapper::convertToDto)
+                .map(this::toDeploymentSession)
                 .collect(Collectors.toList());
+    }
+
+    DeploymentSessionDto toDeploymentSession(CourseSession courseSession) {
+        ComputeType computeType = courseSession.getCourse().getComputeType();
+        return new DeploymentSessionDto()
+                .setSession(sessionWithCourseMapper.convertToDto(courseSession))
+                .setCluster(
+                        computeType == null || computeType.getCluster() == null
+                                ? null
+                                : computeType.getCluster().getId()
+                );
     }
 
     @GetMapping(value = "worker/{sessionId}")
