@@ -1,4 +1,19 @@
 databaseChangeLog:
+# Defaults for a configuration that does not map the seed parameters (one that replaces the
+# packaged application.properties). Values passed in through spring.liquibase.parameters are set
+# first and win. Without these, the SQL below keeps a literal ${...} and fails to parse.
+- property:
+    name: defaultClusterGoAddress
+    value: ""
+- property:
+    name: defaultClusterGoPort
+    value: "50000"
+- property:
+    name: defaultClusterTerraformStateUrl
+    value: ""
+- property:
+    name: defaultClusterDeploymentEnabled
+    value: "false"
 - changeSet:
     id: 1792000000000-2
     author: snesiubedreag
@@ -22,9 +37,14 @@ databaseChangeLog:
     preConditions:
     - onFail: HALT
     - onFailMessage: >
-        Default cluster seed halted: this platform has courses but no cluster, and go.app.address is not set, so the Go API to route to is unknown. Set
-        go.app.address (and go.app.port if not 50000) in the back end properties to the
-        address the Go API had before the upgrade, then restart; nothing has been recorded.
+        Default cluster seed halted: this platform has courses but no cluster, and no Go API
+        address reached the migration, so the Go API to route to is unknown. The back end
+        properties need go.app.address (and go.app.port if not 50000) set to the address the
+        Go API had before the upgrade, and the four spring.liquibase.parameters.defaultCluster*
+        lines that pass them to the migration: a properties file rendered from an older
+        template lacks those lines, and setting go.app.address alone does not reach it.
+        Render the properties from the current template, then restart; nothing has been
+        recorded.
     - sqlCheck:
         expectedResult: "0"
         sql: |
@@ -34,16 +54,10 @@ databaseChangeLog:
               AND '${defaultClusterGoAddress}' = ''
             THEN 1 ELSE 0 END
     changes:
-    - sql:
-        sql: |
-          INSERT INTO clusters (name, go_address, go_port, terraform_state_url, deployment_enabled)
-          SELECT 'default',
-                 '${defaultClusterGoAddress}',
-                 ${defaultClusterGoPort},
-                 NULLIF('${defaultClusterTerraformStateUrl}', ''),
-                 ${defaultClusterDeploymentEnabled} AND '${defaultClusterTerraformStateUrl}' <> ''
-          WHERE NOT EXISTS (SELECT 1 FROM clusters)
-            AND EXISTS (SELECT 1 FROM courses)
+    - sqlFile:
+        path: 51.seed_default_cluster.sql
+        relativeToChangelogFile: true
+        splitStatements: false
     - sql:
         sql: |
           UPDATE compute_types SET cluster_id = (SELECT id FROM clusters)
