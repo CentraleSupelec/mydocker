@@ -8,4 +8,8 @@ import java.util.List;
 
 public interface ClusterRepository extends JpaRepository<Cluster, Long> {
     List<ClusterBasicView> findAllByOrderById();
+
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, Long id);
 }
