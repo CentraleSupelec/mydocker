@@ -99,4 +99,35 @@ describe("RenderCreationErrorPipe", () => {
     actual.innerHTML = transform(null, "Http failure response: 500 Internal Server Error") || '';
     expect(actual.innerText).toEqual("le cours a rencontré un problème : \"Http failure response: 500 Internal Server Error\"");
   });
+
+  it("renders the detail of a failed start rather than its error key", () => {
+    const actual = document.createElement("span");
+    actual.innerHTML = pipe.transform({
+      ...defaultContainer,
+      creationError: "container.start-failed",
+      errorParams: { detail: "invalid memory value 1048576: Must be at least 4MiB" },
+    }) || '';
+    expect(actual.innerText).toContain("invalid memory value 1048576: Must be at least 4MiB");
+    expect(actual.innerText).not.toContain("container.start-failed");
+  });
+
+  it("renders an unknown error for a failed start without detail", () => {
+    const actual = document.createElement("span");
+    actual.innerHTML = pipe.transform({
+      ...defaultContainer,
+      creationError: "container.start-failed",
+      errorParams: {},
+    }) || '';
+    expect(actual.innerText).toEqual("une erreur inconnue s'est produite");
+  });
+
+  it("still renders an unknown error key as is", () => {
+    const actual = document.createElement("span");
+    actual.innerHTML = pipe.transform({
+      ...defaultContainer,
+      creationError: "boom",
+      errorParams: {},
+    }) || '';
+    expect(actual.innerText).toEqual("le cours a rencontré un problème : \"boom\"");
+  });
 });
