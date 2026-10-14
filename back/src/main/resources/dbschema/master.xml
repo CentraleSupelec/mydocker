@@ -53,4 +53,5 @@
     <include file="changelogs/48.backfill_display_options.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/49.unique_tool_deployment_pair.yml" relativeToChangelogFile="true"/>
     <include file="changelogs/50.unique_cluster_name.yml" relativeToChangelogFile="true"/>
+    <include file="changelogs/51.seed_default_cluster.yml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

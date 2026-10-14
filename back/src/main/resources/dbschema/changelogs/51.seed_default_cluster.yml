@@ -1,0 +1,65 @@
+databaseChangeLog:
+- changeSet:
+    id: 1792000000000-2
+    author: snesiubedreag
+    comment: >-
+      Give a platform upgrading from one Go API its cluster, and assign existing rows.
+
+      Routing now reads the cluster of a course's compute type, and deployments are scheduled
+      per cluster, so compute types, deployments, image builds and deployment statuses created
+      before clusters existed would be unusable. On a platform with courses and no cluster, this
+      inserts a cluster named "default" from the properties the single Go API used:
+      go.app.address, go.app.port and scale-up.terraformStateUrl. Deployment is enabled on it
+      only when deployment_enabled was true and a state URL is known, so autoscaling is never
+      switched on by the upgrade alone.
+
+      Then every row still without a cluster is assigned, but only while exactly one cluster
+      exists: with several, which one a row belongs to is an administrator's decision.
+
+      Courses, not compute types, mark an existing platform: changeset 19 seeds compute types on
+      every install. A fresh install, or a platform whose clusters were already created, inserts
+      nothing; on a fresh install the administrator creates the cluster and assigns compute types.
+    preConditions:
+    - onFail: HALT
+    - onFailMessage: >
+        Default cluster seed halted: this platform has courses but no cluster, and go.app.address is not set, so the Go API to route to is unknown. Set
+        go.app.address (and go.app.port if not 50000) in the back end properties to the
+        address the Go API had before the upgrade, then restart; nothing has been recorded.
+    - sqlCheck:
+        expectedResult: "0"
+        sql: |
+          SELECT CASE
+            WHEN NOT EXISTS (SELECT 1 FROM clusters)
+              AND EXISTS (SELECT 1 FROM courses)
+              AND '${defaultClusterGoAddress}' = ''
+            THEN 1 ELSE 0 END
+    changes:
+    - sql:
+        sql: |
+          INSERT INTO clusters (name, go_address, go_port, terraform_state_url, deployment_enabled)
+          SELECT 'default',
+                 '${defaultClusterGoAddress}',
+                 ${defaultClusterGoPort},
+                 NULLIF('${defaultClusterTerraformStateUrl}', ''),
+                 ${defaultClusterDeploymentEnabled} AND '${defaultClusterTerraformStateUrl}' <> ''
+          WHERE NOT EXISTS (SELECT 1 FROM clusters)
+            AND EXISTS (SELECT 1 FROM courses)
+    - sql:
+        sql: |
+          UPDATE compute_types SET cluster_id = (SELECT id FROM clusters)
+          WHERE cluster_id IS NULL AND (SELECT count(*) FROM clusters) = 1
+    - sql:
+        sql: |
+          UPDATE deployment SET cluster_id = (SELECT id FROM clusters)
+          WHERE cluster_id IS NULL AND (SELECT count(*) FROM clusters) = 1
+    - sql:
+        sql: |
+          UPDATE docker_image_build SET cluster_id = (SELECT id FROM clusters)
+          WHERE cluster_id IS NULL AND (SELECT count(*) FROM clusters) = 1
+    - sql:
+        sql: |
+          UPDATE deployment_status SET cluster_id = (SELECT id FROM clusters)
+          WHERE cluster_id IS NULL AND (SELECT count(*) FROM clusters) = 1
+    rollback:
+    - sql:
+        sql: SELECT 1
