@@ -18,15 +18,18 @@ import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -35,12 +38,14 @@ public class RequestAdminContainerService {
 
     private final Map<String, ManagedChannel> channels;
     private final ContainerStorage containerStorage;
-    private final Map<String, StreamObserver<AdminContainerRequest>> requestObservers = new HashMap<>();
+    // Written from gRPC callback threads as well as request threads: concurrent maps, and stream
+    // creation always under the lock, so a request never sees a half-replaced stream.
+    private final Map<String, StreamObserver<AdminContainerRequest>> requestObservers = new ConcurrentHashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper;
     private final CourseRepository courseRepository;
     private final ClusterRepository clusterRepository;
-    private Map<String, Boolean> shouldInitializeStubMap = new HashMap<>();
+    private final Map<String, Boolean> shouldInitializeStubMap = new ConcurrentHashMap<>();
 
     @Autowired
     public RequestAdminContainerService(
@@ -63,12 +68,18 @@ public class RequestAdminContainerService {
 
         for (Cluster cluster : clusters) {
             shouldInitializeStubMap.put(cluster.getName(), true);
-            createNewStubIfNeeded(cluster);
+            lock.lock();
+            try {
+                createNewStubIfNeeded(cluster);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
     public void createNewStub(Cluster cluster) {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
+        AtomicReference<StreamObserver<AdminContainerRequest>> self = new AtomicReference<>();
         StreamObserver<AdminContainerRequest> requestObserver = asyncStub.getAdminContainer(new StreamObserver<>() {
             public void onNext(AdminContainerResponse adminContainerResponse) {
                 ContainerDto containerDto = mapContainerResponseToContainer(adminContainerResponse);
@@ -81,7 +92,14 @@ public class RequestAdminContainerService {
         
             public void onError(Throwable throwable) {
                 logger.error("Error requesting a container.\n Please restart the go API then this service.");
-                shouldInitializeStubMap.put(cluster.getName(), true);
+                lock.lock();
+                try {
+                    // Drop the dead stream so requests answer "not ready" until it is recreated.
+                    requestObservers.remove(cluster.getName(), self.get());
+                    shouldInitializeStubMap.put(cluster.getName(), true);
+                } finally {
+                    lock.unlock();
+                }
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
@@ -91,6 +109,7 @@ public class RequestAdminContainerService {
             public void onCompleted() {
             }
         });
+        self.set(requestObserver);
         requestObservers.put(cluster.getName(), requestObserver);
     }
 
@@ -118,8 +137,15 @@ public class RequestAdminContainerService {
                 logger.debug("Channel state changed from CONNECTING to : " + newState);
         
                 if (ConnectivityState.READY == newState) {
-                    createNewStub(cluster);
-                    shouldInitializeStubMap.put(cluster.getName(), false);
+                    lock.lock();
+                    try {
+                        if (shouldInitializeStubMap.get(cluster.getName())) {
+                            createNewStub(cluster);
+                            shouldInitializeStubMap.put(cluster.getName(), false);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
                 }
             });
         }
@@ -145,7 +171,11 @@ public class RequestAdminContainerService {
                         throw e;
                     }
                 } else {
-                    logger.error("No admin container stream for cluster: " + cluster.getName());
+                    // Not sent: say so, never acknowledge a request that did not reach the Go API.
+                    throw new ResponseStatusException(
+                            HttpStatus.SERVICE_UNAVAILABLE,
+                            "The admin container stream to cluster " + cluster.getName() + " is not ready yet, retry in a moment"
+                    );
                 }
             }
         } finally {

@@ -16,14 +16,17 @@ import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -32,9 +35,11 @@ public class SaveDataService {
 
     private final Map<String, ManagedChannel> channels;
     private final UserCourseRepository userCourseRepository;
-    private final Map<String, StreamObserver<SaveDataRequest>> requestObservers = new HashMap<>();
+    // Written from gRPC callback threads as well as request threads: concurrent maps, and stream
+    // creation always under the lock, so a send never sees a half-replaced stream.
+    private final Map<String, StreamObserver<SaveDataRequest>> requestObservers = new ConcurrentHashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
-    private Map<String, Boolean> shouldInitializeStubMap = new HashMap<>();
+    private final Map<String, Boolean> shouldInitializeStubMap = new ConcurrentHashMap<>();
     private final CourseRepository courseRepository;
     private final ClusterRepository clusterRepository;
 
@@ -57,13 +62,19 @@ public class SaveDataService {
 
         for (Cluster cluster : clusters) {
             shouldInitializeStubMap.put(cluster.getName(), true);
-            createNewStubIfNeeded(cluster);
+            lock.lock();
+            try {
+                createNewStubIfNeeded(cluster);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
     public void createNewStub(Cluster cluster) {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
         
+        AtomicReference<StreamObserver<SaveDataRequest>> self = new AtomicReference<>();
         StreamObserver<SaveDataRequest> requestObserver = asyncStub.saveData(new StreamObserver<>() {
             public void onNext(SaveDataResponse saveDataResponse) {
                 logger.debug("Received response");
@@ -89,7 +100,14 @@ public class SaveDataService {
         
             public void onError(Throwable throwable) {
                 logger.error("Stream error");
-                shouldInitializeStubMap.put(cluster.getName(), true);
+                lock.lock();
+                try {
+                    // Drop the dead stream so sends answer "not ready" until it is recreated.
+                    requestObservers.remove(cluster.getName(), self.get());
+                    shouldInitializeStubMap.put(cluster.getName(), true);
+                } finally {
+                    lock.unlock();
+                }
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
@@ -101,6 +119,7 @@ public class SaveDataService {
 
             }
         });
+        self.set(requestObserver);
         requestObservers.put(cluster.getName(), requestObserver);
     }
 
@@ -128,8 +147,15 @@ public class SaveDataService {
                 logger.debug("Channel state changed from CONNECTING to : " + newState);
         
                 if (ConnectivityState.READY == newState) {
-                    createNewStub(cluster);
-                    shouldInitializeStubMap.put(cluster.getName(), false);
+                    lock.lock();
+                    try {
+                        if (shouldInitializeStubMap.get(cluster.getName())) {
+                            createNewStub(cluster);
+                            shouldInitializeStubMap.put(cluster.getName(), false);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
                 }
             });
         }
@@ -155,7 +181,11 @@ public class SaveDataService {
                         throw e;
                     }
                 } else {
-                    logger.error("No save stream for cluster: " + cluster.getName());
+                    // Not sent: say so, never acknowledge a save that did not reach the Go API.
+                    throw new ResponseStatusException(
+                            HttpStatus.SERVICE_UNAVAILABLE,
+                            "The save stream to cluster " + cluster.getName() + " is not ready yet, retry in a moment"
+                    );
                 }
             }
         } finally {

@@ -13,16 +13,24 @@ import fr.centralesupelec.thuv.storage.ContainerStorage;
 import io.grpc.ClientCall;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
+import io.grpc.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,6 +94,57 @@ class PerClusterStreamRoutingTest {
 
         verify(callA).sendMessage(forA);
         verify(callB, never()).sendMessage(forA);
+    }
+
+    // A still connecting: its save is refused with 503, never dropped; B is unaffected; once A is
+    // ready the next save goes out on A.
+    @Test
+    void aSaveForAClusterNotReadyIsRefusedUntilItConnects() {
+        when(channelA.getState(true)).thenReturn(ConnectivityState.CONNECTING);
+        ArgumentCaptor<Runnable> whenReady = ArgumentCaptor.forClass(Runnable.class);
+        SaveDataService service = saveDataService();
+        service.init();
+        verify(channelA).notifyWhenStateChanged(any(), whenReady.capture());
+
+        SaveDataRequest forA = SaveDataRequest.newBuilder().setCourseID("10").build();
+        assertThatThrownBy(() -> service.sendSaveData(forA))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(e -> assertThat(((ResponseStatusException) e).getStatusCode())
+                        .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        SaveDataRequest forB = SaveDataRequest.newBuilder().setCourseID("20").build();
+        service.sendSaveData(forB);
+        verify(callB).sendMessage(forB);
+
+        when(channelA.getState(false)).thenReturn(ConnectivityState.READY);
+        whenReady.getValue().run();
+        service.sendSaveData(forA);
+        verify(callA).sendMessage(forA);
+    }
+
+    // A's stream fails: the next save to A opens a new stream on A; B keeps its own.
+    @Test
+    void aStreamErrorOnOneClusterReconnectsOnlyThatCluster() {
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<ClientCall.Listener<Object>> listenerA = ArgumentCaptor.forClass(ClientCall.Listener.class);
+        SaveDataService service = saveDataService();
+        service.init();
+        verify(callA).start(listenerA.capture(), any());
+
+        listenerA.getValue().onClose(Status.UNAVAILABLE, new Metadata());
+        service.sendSaveData(SaveDataRequest.newBuilder().setCourseID("10").build());
+        service.sendSaveData(SaveDataRequest.newBuilder().setCourseID("20").build());
+
+        verify(channelA, times(2)).newCall(any(), any());
+        verify(channelB, times(1)).newCall(any(), any());
+    }
+
+    private SaveDataService saveDataService() {
+        return new SaveDataService(
+                Map.of("a", channelA, "b", channelB),
+                mock(UserCourseRepository.class),
+                courseRepository,
+                clusterRepository
+        );
     }
 
     private static void connect(ManagedChannel channel, ClientCall<Object, Object> call) {
