@@ -11,5 +11,4 @@ public class DockerImageBuildDto {
     private String logs;
     private Long updatedOn;
     private String imageName;
-    private Long cluster;
 }

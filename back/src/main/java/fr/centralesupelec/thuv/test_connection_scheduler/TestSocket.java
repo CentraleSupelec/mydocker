@@ -60,6 +60,8 @@ public class TestSocket {
             HttpClient.Builder clientBuilder = HttpClient.newBuilder();
             if (this.disableSslValidation) {
                 clientBuilder.sslContext(this.getUnsecuredSSLContext());
+            } else {
+                clientBuilder.sslContext(this.getVerifiedSSLContext());
             }
             HttpResponse<String> response = clientBuilder
                     .build()
@@ -77,6 +79,15 @@ public class TestSocket {
             logger.error(String.format("Unable to connect to %s : Interruption / Timeout", hostname));
             logger.debug(e.getMessage());
             return false;
+        }
+    }
+
+    // Same context HttpClient picks when none is set; tests override it to trust a local CA.
+    protected SSLContext getVerifiedSSLContext() {
+        try {
+            return SSLContext.getDefault();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 

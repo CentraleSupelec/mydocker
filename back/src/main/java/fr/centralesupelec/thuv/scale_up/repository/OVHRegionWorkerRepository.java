@@ -1,6 +1,5 @@
 package fr.centralesupelec.thuv.scale_up.repository;
 
-import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.CourseSession;
 import fr.centralesupelec.thuv.scale_up.model.OVHRegionWorker;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,18 +28,14 @@ public interface OVHRegionWorkerRepository extends JpaRepository<OVHRegionWorker
         SELECT DISTINCT w FROM OVHRegionWorker w
         JOIN FETCH w.launchDeployment ld
         LEFT JOIN FETCH w.cleanDeployment cd
-        LEFT JOIN FETCH w.computeType ct
         LEFT JOIN FETCH ld.sessionsToLaunch s
         LEFT JOIN FETCH ld.workersToLaunch
         LEFT JOIN FETCH s.course c
-        WHERE ct.cluster = :cluster
-                AND ld.startDateTime <= :launchDeploymentStartDateTime 
+        WHERE ld.startDateTime <= :launchDeploymentStartDateTime 
                 AND (w.cleanDeployment IS NULL OR cd.startDateTime >= :cleanDeploymentStartDateTime)
     """)
-    @SuppressWarnings("checkstyle:LineLength")
-    List<OVHRegionWorker> findOVHRegionWorkerByClusterAndLaunchDeploymentStartDateTimeBeforeAndCleanDeploymentStartDateTimeAfterOrCleanDeploymentIsNull(
+    List<OVHRegionWorker> findOVHRegionWorkerByLaunchDeploymentStartDateTimeBeforeAndCleanDeploymentStartDateTimeAfterOrCleanDeploymentIsNull(
         @Param("launchDeploymentStartDateTime") LocalDateTime launchDeploymentStartDateTime,
-        @Param("cleanDeploymentStartDateTime") LocalDateTime cleanDeploymentStartDateTime,
-        @Param("cluster") Cluster cluster
+        @Param("cleanDeploymentStartDateTime") LocalDateTime cleanDeploymentStartDateTime
     );
 }

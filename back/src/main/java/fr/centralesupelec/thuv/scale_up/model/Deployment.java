@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.scale_up.model;
 
 import static java.lang.Integer.MAX_VALUE;
 
-import fr.centralesupelec.thuv.model.Cluster;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -11,7 +10,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-
 
 @Entity
 @Table(name = "deployment")
@@ -41,10 +39,6 @@ public class Deployment {
     @Enumerated(EnumType.STRING)
     @NotNull
     private Deployment.Status status = Status.CREATED;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "cluster_id", nullable = true)
-    private Cluster cluster;
 
     @Override
     public boolean equals(Object o) {
