@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { APP_CONFIG, DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS, IAppConfig } from '../../../../app-config';
-import { interval, of, Subject, Subscription } from "rxjs";
+import { EMPTY, interval, of, Subject, Subscription } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
 import { catchError, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 import {
@@ -87,6 +87,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   /** One per start request: armed with it, disarmed by the first record of the environment. */
   private startTimeoutId?: number;
   private startRequest?: Subscription;
+  /** The one recovery request outstanding, kept apart from the polling ticks so that none cancels it. */
+  private recoveryRequest?: Subscription;
   /** What the last start asked for, so that a retry asks for the same. */
   private lastStart = { forceRecreate: false, updateLastStartDate: true };
   private userPermissions?: NgxPermissionsObject;
@@ -223,13 +225,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       takeUntil(this.stopInitPolling$),
       switchMap(() => {
         if (this.recovering) {
-          return this.containerApiService.initGetContainer(this.session?.id, false).pipe(
-            map(() => ({ container: null, recovered: true } as  IPolling)),
-            catchError(err => {
-              console.error(this.translate.instant('container.initializing_error'), err);
-              return of({ container: null, recovered: false, error: err, startFailed: true } as  IPolling);
-            })
-          );
+          // The recovery request answers on its own subscription; a tick only sends it if none is out.
+          this.sendRecoveryRequest();
+          return EMPTY;
         } else {
           return this.containerApiService.getContainer(this.sessionCourseOrCourse?.id).pipe(
             map(container => ({ container, recovered: false } as  IPolling)),
@@ -241,46 +239,67 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
         }
       })
     )
-    .subscribe(
-      (pollingResult: IPolling) => {
-        let container = pollingResult.container
-        if (pollingResult.error) {
-          if (pollingResult.startFailed) {
-            this.failStart(pollingResult.error);
-          } else {
-            this.handlePollingFailure(pollingResult.error);
-          }
-          return;
-        }
+    .subscribe((pollingResult: IPolling) => this.handlePollingResult(pollingResult))
+  }
 
-        if (pollingResult.recovered && this.recovering) {
-          this.recovering = false;
-          return;
-        }
-
-        this.failedAttempts = 0;
-        this.recoveryPosted = false;
-
-        if (container) {
-          // Any record, even a failed one, answers the start: from here the existing states say how it went.
-          this.clearStartTimeout();
-          this.container = container;
-          const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
-          this.step =  index * 100 / ContainerSwarmStateOrder.length;
-          this.stepMessage = `${this.translate.instant(`container.steps.${(container.state ?? ContainerSwarmState.UNKNOWN).toLowerCase()}`)} (${this.translate.instant('container.step')} ${index + 1}/${ContainerSwarmStateOrder.length})`;
-          if (this.isReady(container)) {
-            this.state = 'container_created';
-            this.stopInitPolling$.next();
-            this.setWarningTimeout();
-          } else if ([ContainerSwarmState.FAILED, ContainerSwarmState.REJECTED, ContainerSwarmState.SHUTDOWN].includes(container.state as ContainerSwarmState) || container.status === ContainerStatus.KO) {
-            this.state = 'container_created';
-            this.stopInitPolling$.next();
-          } else {
-            this.state = 'pending';
-          }
-        }
-      }
+  /**
+   * Start requests may take minutes, so the recovery request is never re-sent while it is out: it
+   * stays outstanding until it answers or its bound, armed as it is sent, expires.
+   */
+  private sendRecoveryRequest(): void {
+    if (this.recoveryRequest && !this.recoveryRequest.closed) {
+      return;
+    }
+    this.armStartTimeout();
+    this.recoveryRequest = this.containerApiService.initGetContainer(this.session?.id, false).pipe(
+      takeUntil(this.stopInitPolling$),
+      takeUntil(this.destroy$),
+      map(() => ({ container: null, recovered: true } as  IPolling)),
+      catchError(err => {
+        console.error(this.translate.instant('container.initializing_error'), err);
+        return of({ container: null, recovered: false, error: err, startFailed: true } as  IPolling);
+      })
     )
+    .subscribe((pollingResult: IPolling) => this.handlePollingResult(pollingResult));
+  }
+
+  private handlePollingResult(pollingResult: IPolling): void {
+    let container = pollingResult.container
+    if (pollingResult.error) {
+      if (pollingResult.startFailed) {
+        this.failStart(pollingResult.error);
+      } else {
+        this.handlePollingFailure(pollingResult.error);
+      }
+      return;
+    }
+
+    if (pollingResult.recovered && this.recovering) {
+      this.recovering = false;
+      return;
+    }
+
+    this.failedAttempts = 0;
+    this.recoveryPosted = false;
+
+    if (container) {
+      // Any record, even a failed one, answers the start: from here the existing states say how it went.
+      this.clearStartTimeout();
+      this.container = container;
+      const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
+      this.step =  index * 100 / ContainerSwarmStateOrder.length;
+      this.stepMessage = `${this.translate.instant(`container.steps.${(container.state ?? ContainerSwarmState.UNKNOWN).toLowerCase()}`)} (${this.translate.instant('container.step')} ${index + 1}/${ContainerSwarmStateOrder.length})`;
+      if (this.isReady(container)) {
+        this.state = 'container_created';
+        this.stopInitPolling$.next();
+        this.setWarningTimeout();
+      } else if ([ContainerSwarmState.FAILED, ContainerSwarmState.REJECTED, ContainerSwarmState.SHUTDOWN].includes(container.state as ContainerSwarmState) || container.status === ContainerStatus.KO) {
+        this.state = 'container_created';
+        this.stopInitPolling$.next();
+      } else {
+        this.state = 'pending';
+      }
+    }
   }
 
   /**
@@ -292,12 +311,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     this.failedAttempts++;
 
     if ('retry' === nextRetryDecision(error, this.failedAttempts)) {
+      // A recovery is a start request like any other: its bound is armed when it is sent.
       this.recovering = this.recoveryAllowed && !this.recoveryPosted;
-      if (this.recovering) {
-        // A recovery is a start request like any other: it gets its own bound, armed once, so that
-        // re-sending it while it hangs does not push the bound back.
-        this.armStartTimeout();
-      }
       this.recoveryPosted = this.recoveryPosted || this.recovering;
       return;
     }
