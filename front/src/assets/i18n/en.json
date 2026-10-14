@@ -485,6 +485,7 @@
         },
         "edit": {
           "title": "Cluster edition",
+          "restart_note": "Changes to a cluster take effect after the back end restarts.",
           "breadcrumb": "Edition of a cluster",
           "name": "Name",
           "go_adress": "Go address",

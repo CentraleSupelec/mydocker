@@ -485,6 +485,7 @@
         },
         "edit": {
           "title": "Édition du cluster",
+          "restart_note": "Les modifications d'un cluster s'appliquent au prochain redémarrage du back end.",
           "breadcrumb": "Édition d'un cluster",
           "name": "Nom",
           "go_adress": "Adresse du Go",
