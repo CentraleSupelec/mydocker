@@ -9,7 +9,7 @@ import {
   Validator,
   Validators
 } from "@angular/forms";
-import { ISession } from "../../../shell/interfaces/session";
+import { IDeploymentSession } from "../../interfaces/deployment-session";
 import { Subject } from "rxjs";
 import { mergeMap, takeUntil } from "rxjs/operators";
 import { DeploymentApiService } from "../../services/deployment-api.service";
@@ -43,8 +43,8 @@ export class DeploymentFormComponent implements OnInit, OnDestroy, ControlValueA
   @Input() clusters: ICluster[] = [];
 
   readonly deploymentForm: FormGroup;
-  sessions: ISession[] = [];
-  selectedSessions: ISession[] = [];
+  sessions: IDeploymentSession[] = [];
+  selectedSessions: IDeploymentSession[] = [];
   filteredComputeTypes: IComputeType[] = [];
 
   private readonly destroy$ = new Subject<void>();
@@ -69,6 +69,17 @@ export class DeploymentFormComponent implements OnInit, OnDestroy, ControlValueA
         if (cluster !== null) {
           this.filteredComputeTypes = this.computeTypes
             .filter(computeType => computeType.cluster?.id == cluster);
+          // The back rejects a session of another cluster: drop those already selected.
+          // Only sessions known to be elsewhere go: on edit the list may not have loaded yet.
+          const sessionsControl = this.deploymentForm.get('sessions');
+          const selected: number[] = sessionsControl?.value ?? [];
+          const kept = selected.filter(id => {
+            const session = this.sessions.find(s => s.id == id);
+            return !session || this.onCluster(session, cluster);
+          });
+          if (kept.length !== selected.length) {
+            sessionsControl?.setValue(kept);
+          }
         }
       }
     )
@@ -114,6 +125,18 @@ export class DeploymentFormComponent implements OnInit, OnDestroy, ControlValueA
 
   ngOnDestroy(): void {
     this.destroy$.next();
+  }
+
+  // Sessions of the chosen cluster, plus those whose course has no cluster yet; all before a cluster is chosen.
+  get sessionsForCluster(): IDeploymentSession[] {
+    const cluster = this.deploymentForm.get('cluster')?.value;
+    return cluster == null
+      ? this.sessions
+      : this.sessions.filter(session => this.onCluster(session, cluster));
+  }
+
+  private onCluster(session: IDeploymentSession, cluster: number): boolean {
+    return session.cluster == null || session.cluster == cluster;
   }
 
   private computeStartDateTime() {

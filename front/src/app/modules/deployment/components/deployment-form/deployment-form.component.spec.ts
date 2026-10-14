@@ -7,6 +7,7 @@ import { APP_CONFIG } from "../../../../app-config";
 import { MatNativeDateModule } from "@angular/material/core";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
+import { IDeploymentSession } from "../../interfaces/deployment-session";
 
 describe('DeploymentFormComponent', () => {
   let component: DeploymentFormComponent;
@@ -40,5 +41,37 @@ describe('DeploymentFormComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('sessions and cluster', () => {
+    const session = (id: number, cluster: number | null) => ({ id, cluster } as IDeploymentSession);
+
+    beforeEach(() => {
+      component.sessions = [session(1, 1), session(2, 2), session(3, null)];
+      component.deploymentForm.get('sessions')?.setValue([1, 2, 3]);
+    });
+
+    it('lists every session before a cluster is chosen', () => {
+      expect(component.sessionsForCluster.map(s => s.id)).toEqual([1, 2, 3]);
+    });
+
+    it('lists only the chosen cluster and unassigned courses', () => {
+      component.deploymentForm.get('cluster')?.setValue(1);
+
+      expect(component.sessionsForCluster.map(s => s.id)).toEqual([1, 3]);
+    });
+
+    it('drops selected sessions of another cluster', () => {
+      component.deploymentForm.get('cluster')?.setValue(1);
+
+      expect(component.deploymentForm.get('sessions')?.value).toEqual([1, 3]);
+    });
+
+    it('keeps selected sessions not loaded yet, as on edit', () => {
+      component.sessions = [];
+      component.deploymentForm.get('cluster')?.setValue(1);
+
+      expect(component.deploymentForm.get('sessions')?.value).toEqual([1, 2, 3]);
+    });
   });
 });

@@ -21,7 +21,7 @@
     <mat-form-field fxFill *ngIf="sessions.length > 0 else noSessions">
       <mat-label>{{ 'admin.resources_management.deployment.edit.linked_sessions.label' | translate}}</mat-label>
       <mat-select formControlName="sessions" multiple>
-        <mat-option *ngFor="let session of sessions" [value]="session.id">
+        <mat-option *ngFor="let session of sessionsForCluster" [value]="session.id">
           {{ session.course.title }},
           {{ session.startDateTime | translatedDate:'dd/MM/yy':'HH:mm' }}
         </mat-option>
