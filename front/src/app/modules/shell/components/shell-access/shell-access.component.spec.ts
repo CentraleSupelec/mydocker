@@ -3,7 +3,7 @@ import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed, tick
 import { ShellAccessComponent } from './shell-access.component';
 import { APP_CONFIG } from "../../../../app-config";
 import { ShellModule } from "../../shell.module";
-import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
+import { HttpClientTestingModule, HttpTestingController, TestRequest } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NgxPermissionsModule } from "ngx-permissions";
 import { TranslateService } from '@ngx-translate/core';
@@ -358,6 +358,19 @@ describe('ShellAccessComponent', () => {
       return fixture.nativeElement.querySelector('mat-spinner');
     }
 
+    /** A record ends the first bound, then a read fails: the next tick sends the one recovery request. */
+    function sendRecovery(): TestRequest {
+      component.session = startedSession();
+      component.initGetContainer();
+      httpMock.expectOne(initRequest).flush(null);
+      tick(3000);
+      httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
+      tick(3000);
+      httpMock.expectOne(CONTAINER_URL).flush('', { status: 500, statusText: 'Internal Server Error' });
+      tick(3000);
+      return httpMock.expectOne(initRequest);
+    }
+
     it('ends the loader and shows the startup error with the reason the back end gave', fakeAsync(() => {
       const instant = spyOn(TestBed.inject(TranslateService), 'instant').and.callThrough();
       component.session = startedSession();
@@ -403,27 +416,74 @@ describe('ShellAccessComponent', () => {
       httpMock.verify();
     }));
 
-    it('bounds a recovery request on its own once a record has ended the first bound', fakeAsync(() => {
-      component.session = startedSession();
-      component.initGetContainer();
-      httpMock.expectOne(initRequest).flush(null);
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush('', { status: 500, statusText: 'Internal Server Error' });
+    it('keeps a slow recovery request outstanding and uses its answer', fakeAsync(() => {
+      const recovery = sendRecovery();
 
-      // Nothing ever answers the recovery request, re-sent as it hangs.
-      for (let elapsed = 0; elapsed < START_RESPONSE_TIMEOUT_IN_SECONDS; elapsed += 3) {
-        tick(3000);
-        httpMock.match(initRequest);
-      }
+      // Several ticks pass while the request is out: none cancels it nor sends another.
+      tick(10000);
+      expect(recovery.cancelled).toBeFalse();
+      httpMock.expectNone(() => true);
 
-      expect(component.startFailed).toBeTrue();
-      expect(startErrorText()).toContain('container.unknown_error');
+      recovery.flush(null);
+      expect(component.recovering).toBeFalse();
+      expect(component.startFailed).toBeFalse();
+
+      // Polling resumes on the answer.
+      tick(3000);
+      httpMock.expectOne(CONTAINER_URL).flush(runningContainer());
+      expect(component.state).toBe('container_created');
 
       discardPeriodicTasks();
       flush();
-      httpMock.match(() => true);
+      httpMock.verify();
+    }));
+
+    it('ends the start with the reason a slow recovery request failed with', fakeAsync(() => {
+      const instant = spyOn(TestBed.inject(TranslateService), 'instant').and.callThrough();
+      const recovery = sendRecovery();
+
+      tick(10000);
+      expect(recovery.cancelled).toBeFalse();
+      httpMock.expectNone(() => true);
+      recovery.flush(
+        { message: 'volume precreation failed' },
+        { status: 500, statusText: 'Internal Server Error' }
+      );
+
+      expect(component.startFailed).toBeTrue();
+      expect(component.startError).toBe('volume precreation failed');
+      expect(startErrorText()).toContain('container.problem_encountered');
+      expect(startErrorText()).not.toContain('container.unknown_error');
+      expect(instant).toHaveBeenCalledWith('container.problem_encountered', { error: 'volume precreation failed' });
+
+      // The bound went with the answer: nothing replaces the reason later.
+      tick(1000 * START_RESPONSE_TIMEOUT_IN_SECONDS);
+      expect(component.startError).toBe('volume precreation failed');
+      httpMock.expectNone(() => true);
+
+      discardPeriodicTasks();
+      flush();
+      httpMock.verify();
+    }));
+
+    it('bounds a recovery request nothing answers from the moment it is sent', fakeAsync(() => {
+      const recovery = sendRecovery();
+
+      tick(1000 * START_RESPONSE_TIMEOUT_IN_SECONDS - 1);
+      expect(component.startFailed).toBeFalse();
+      expect(recovery.cancelled).toBeFalse();
+      httpMock.expectNone(() => true);
+
+      tick(1);
+      expect(component.startFailed).toBeTrue();
+      expect(recovery.cancelled).toBeTrue();
+      expect(startErrorText()).toContain('container.unknown_error');
+
+      tick(3000);
+      httpMock.expectNone(() => true);
+
+      discardPeriodicTasks();
+      flush();
       httpMock.verify();
     }));
 
