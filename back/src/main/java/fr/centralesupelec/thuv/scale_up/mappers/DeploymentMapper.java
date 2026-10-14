@@ -106,6 +106,22 @@ public class DeploymentMapper {
                         }
                 }
         );
+        deploymentDto.getSessions().forEach(
+                sessionId -> rejectOtherCluster(
+                        courseSessionRepository.getReferenceById(sessionId).getCourse().getComputeType(),
+                        deploymentDto.getCluster(),
+                        String.format("Session %d belongs to a course on a different cluster than that of the deployment", sessionId)
+                )
+        );
+        if (deployment instanceof CleanDeployment) {
+            deploymentDto.getWorkers().forEach(
+                    worker -> rejectOtherCluster(
+                            ovhRegionWorkerRepository.getReferenceById(worker.getId()).getComputeType(),
+                            deploymentDto.getCluster(),
+                            String.format("Worker %d runs on a different cluster than that of the deployment", worker.getId())
+                    )
+            );
+        }
         deployment
                 .setDescription(
                         deploymentDto.getDescription()
@@ -152,6 +168,17 @@ public class DeploymentMapper {
                             .map(courseSession -> courseSession.setCleanDeployment(cleanDeployment))
                             .collect(Collectors.toSet())
             );
+        }
+    }
+
+    // Compared by id: entities are Lombok @Data, so equals on a lazy proxy compares fields.
+    // A compute type without a cluster is not rejected here; assigning those is the upgrade data migration.
+    private static void rejectOtherCluster(ComputeType computeType, Long clusterId, String message) {
+        if (computeType == null || computeType.getCluster() == null) {
+            return;
+        }
+        if (!computeType.getCluster().getId().equals(clusterId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
         }
     }
 }
