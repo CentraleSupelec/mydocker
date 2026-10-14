@@ -33,15 +33,18 @@ const ContainerSwarmStateOrder = [
   ContainerSwarmState.RUNNING,
 ];
 
+interface IStartError {
+  status?: number;
+  message?: string;
+  error?: unknown;
+}
+
 interface IPolling {
   container: IContainer | null;
   recovered: boolean;
-  error?: { status?: number };
-}
-
-interface IStartError {
-  message?: string;
-  error?: unknown;
+  error?: IStartError;
+  /** The failure is that of a recovery, which is a start request of its own. */
+  startFailed?: boolean;
 }
 
 @Component({
@@ -224,7 +227,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
             map(() => ({ container: null, recovered: true } as  IPolling)),
             catchError(err => {
               console.error(this.translate.instant('container.initializing_error'), err);
-              return of({ container: null, recovered: false, error: err } as  IPolling);
+              return of({ container: null, recovered: false, error: err, startFailed: true } as  IPolling);
             })
           );
         } else {
@@ -242,7 +245,11 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       (pollingResult: IPolling) => {
         let container = pollingResult.container
         if (pollingResult.error) {
-          this.handlePollingFailure(pollingResult.error);
+          if (pollingResult.startFailed) {
+            this.failStart(pollingResult.error);
+          } else {
+            this.handlePollingFailure(pollingResult.error);
+          }
           return;
         }
 
@@ -281,16 +288,26 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
    * with no end. One creation request may recover a lost environment; the rest is reading, and after
    * a bounded number of failures the panel says so and waits for the student.
    */
-  private handlePollingFailure(error: { status?: number }): void {
+  private handlePollingFailure(error: IStartError): void {
     this.failedAttempts++;
 
     if ('retry' === nextRetryDecision(error, this.failedAttempts)) {
       this.recovering = this.recoveryAllowed && !this.recoveryPosted;
+      if (this.recovering) {
+        // A recovery is a start request like any other: it gets its own bound, armed once, so that
+        // re-sending it while it hangs does not push the bound back.
+        this.armStartTimeout();
+      }
       this.recoveryPosted = this.recoveryPosted || this.recovering;
       return;
     }
 
     this.recovering = false;
+    if (this.recoveryAllowed && undefined !== this.startTimeoutId) {
+      // No record has answered the start yet: it ends as an unanswered start, retried as a start.
+      this.failStart(error);
+      return;
+    }
     this.stopInitPolling$.next();
     // The panel already waits for the student; a later timeout would only replace one failure with another.
     this.clearStartTimeout();
