@@ -35,7 +35,7 @@ public class RequestAdminContainerService {
 
     private final Map<String, ManagedChannel> channels;
     private final ContainerStorage containerStorage;
-    private StreamObserver<AdminContainerRequest> adminContainerRequestStreamObserver;
+    private final Map<String, StreamObserver<AdminContainerRequest>> requestObservers = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final GrpcResponsePortToContainerPortDtoMapper grpcResponsePortToContainerPortDtoMapper;
     private final CourseRepository courseRepository;
@@ -69,7 +69,7 @@ public class RequestAdminContainerService {
 
     public void createNewStub(Cluster cluster) {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
-        this.adminContainerRequestStreamObserver = asyncStub.getAdminContainer(new StreamObserver<>() {
+        StreamObserver<AdminContainerRequest> requestObserver = asyncStub.getAdminContainer(new StreamObserver<>() {
             public void onNext(AdminContainerResponse adminContainerResponse) {
                 ContainerDto containerDto = mapContainerResponseToContainer(adminContainerResponse);
                 containerDto.setStatus(ContainerStatusDto.OK);
@@ -91,6 +91,7 @@ public class RequestAdminContainerService {
             public void onCompleted() {
             }
         });
+        requestObservers.put(cluster.getName(), requestObserver);
     }
 
     public void createNewStubIfNeeded(Cluster cluster) {
@@ -129,13 +130,24 @@ public class RequestAdminContainerService {
             lock.lock();
             Optional<Course> course = courseRepository.findById(Long.parseLong(request.getCourseID()));
             if (course.isPresent()) {
-                createNewStubIfNeeded(course.get().getComputeType().getCluster());
-                adminContainerRequestStreamObserver.onNext(request);
+                Cluster cluster = course.get().getComputeType().getCluster();
+                createNewStubIfNeeded(cluster);
+
+                // The stream of the course's own cluster, never the last one initialized.
+                StreamObserver<AdminContainerRequest> observer = requestObservers.get(cluster.getName());
+
+                if (observer != null) {
+                    try {
+                        observer.onNext(request);
+                    } catch (RuntimeException e) {
+                        // Cancel RPC
+                        observer.onError(e);
+                        throw e;
+                    }
+                } else {
+                    logger.error("No admin container stream for cluster: " + cluster.getName());
+                }
             }
-        } catch (RuntimeException e) {
-            // Cancel RPC
-            adminContainerRequestStreamObserver.onError(e);
-            throw e;
         } finally {
             lock.unlock();
         }

@@ -32,7 +32,7 @@ public class SaveDataService {
 
     private final Map<String, ManagedChannel> channels;
     private final UserCourseRepository userCourseRepository;
-    private StreamObserver<SaveDataRequest> saveDataRequestStreamObserver;
+    private final Map<String, StreamObserver<SaveDataRequest>> requestObservers = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private Map<String, Boolean> shouldInitializeStubMap = new HashMap<>();
     private final CourseRepository courseRepository;
@@ -64,7 +64,7 @@ public class SaveDataService {
     public void createNewStub(Cluster cluster) {
         containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
         
-        this.saveDataRequestStreamObserver = asyncStub.saveData(new StreamObserver<>() {
+        StreamObserver<SaveDataRequest> requestObserver = asyncStub.saveData(new StreamObserver<>() {
             public void onNext(SaveDataResponse saveDataResponse) {
                 logger.debug("Received response");
                 Optional<UserCourse> optionalUserCourse = userCourseRepository.findByUserIdAndCourseId(
@@ -101,6 +101,7 @@ public class SaveDataService {
 
             }
         });
+        requestObservers.put(cluster.getName(), requestObserver);
     }
 
     public void createNewStubIfNeeded(Cluster cluster) {
@@ -139,13 +140,24 @@ public class SaveDataService {
             lock.lock();
             Optional<Course> course = courseRepository.findById(Long.parseLong(request.getCourseID()));
             if (course.isPresent()) {
-                createNewStubIfNeeded(course.get().getComputeType().getCluster());
-                saveDataRequestStreamObserver.onNext(request);
+                Cluster cluster = course.get().getComputeType().getCluster();
+                createNewStubIfNeeded(cluster);
+
+                // The stream of the course's own cluster, never the last one initialized.
+                StreamObserver<SaveDataRequest> observer = requestObservers.get(cluster.getName());
+
+                if (observer != null) {
+                    try {
+                        observer.onNext(request);
+                    } catch (RuntimeException e) {
+                        // Cancel RPC
+                        observer.onError(e);
+                        throw e;
+                    }
+                } else {
+                    logger.error("No save stream for cluster: " + cluster.getName());
+                }
             }
-        } catch (RuntimeException e) {
-            // Cancel RPC
-            saveDataRequestStreamObserver.onError(e);
-            throw e;
         } finally {
             lock.unlock();
         }
