@@ -91,4 +91,12 @@ describe("RenderCreationErrorPipe", () => {
       }
     });
   }));
+
+  it("renders the technical detail of a start that left no container", () => {
+    // Called loosely so that this spec still compiles, and fails alone, against a pipe without the detail.
+    const transform = pipe.transform.bind(pipe) as (container: IContainer | null, detail?: string) => string;
+    const actual = document.createElement("span");
+    actual.innerHTML = transform(null, "Http failure response: 500 Internal Server Error") || '';
+    expect(actual.innerText).toEqual("le cours a rencontré un problème : \"Http failure response: 500 Internal Server Error\"");
+  });
 });

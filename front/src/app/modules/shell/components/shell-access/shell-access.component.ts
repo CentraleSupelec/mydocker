@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { APP_CONFIG, IAppConfig } from '../../../../app-config';
-import { interval, of, Subject } from "rxjs";
+import { APP_CONFIG, DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS, IAppConfig } from '../../../../app-config';
+import { interval, of, Subject, Subscription } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
 import { catchError, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 import {
@@ -39,6 +39,11 @@ interface IPolling {
   error?: { status?: number };
 }
 
+interface IStartError {
+  message?: string;
+  error?: unknown;
+}
+
 @Component({
   selector: 'app-shell-access',
   templateUrl: './shell-access.component.html',
@@ -58,7 +63,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   userStarted = false;
   /** True when the last start request failed or went unanswered, which is what offers a retry. */
   startFailed = false;
-  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' | 'unavailable' = 'ask';
+  /** The technical reason of the last failed start, when the back end gave one. */
+  startError: string | null = null;
+  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' | 'unavailable' | 'start_failed' = 'ask';
   step: number = 0;
   stepMessage: string = '';
   recovering = false;
@@ -74,6 +81,11 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
   private askTimeoutId?: number;
   private warningTimeoutId?: number;
+  /** One per start request: armed with it, disarmed by the first record of the environment. */
+  private startTimeoutId?: number;
+  private startRequest?: Subscription;
+  /** What the last start asked for, so that a retry asks for the same. */
+  private lastStart = { forceRecreate: false, updateLastStartDate: true };
   private userPermissions?: NgxPermissionsObject;
 
   constructor(
@@ -133,6 +145,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe(
       () => {
         this.stopInitPolling$.next();
+        this.clearStartTimeout();
         this.container = null;
       }
     );
@@ -182,10 +195,22 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     // recreate dialog, or a start carried in the address. The read-only discovery path never gets
     // here, which is what keeps a dashboard load from connecting.
     this.userStarted = true;
-    this.containerApiService.initGetContainer(this.session?.id, forceRecreate, updateLastStartDate)
-      .subscribe(
-        () => this.startInitPolling()
-      );
+    this.startFailed = false;
+    this.startError = null;
+    this.lastStart = { forceRecreate, updateLastStartDate };
+    // The request itself may take minutes, the volume precreation included, so the loader shows
+    // from the moment it is sent, and the bound covers it too.
+    this.state = 'loading_init';
+    this.armStartTimeout();
+    this.startRequest?.unsubscribe();
+    this.startRequest = this.containerApiService.initGetContainer(this.session?.id, forceRecreate, updateLastStartDate)
+      .subscribe({
+        next: () => this.startInitPolling(),
+        error: (err: IStartError) => {
+          console.error(this.translate.instant('container.initializing_error'), err);
+          this.failStart(err);
+        }
+      });
   }
 
   private startInitPolling(allowRecovery: boolean = true) {
@@ -230,6 +255,8 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
         this.recoveryPosted = false;
 
         if (container) {
+          // Any record, even a failed one, answers the start: from here the existing states say how it went.
+          this.clearStartTimeout();
           this.container = container;
           const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
           this.step =  index * 100 / ContainerSwarmStateOrder.length;
@@ -265,14 +292,61 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
     this.recovering = false;
     this.stopInitPolling$.next();
+    // The panel already waits for the student; a later timeout would only replace one failure with another.
+    this.clearStartTimeout();
     this.state = 'unavailable';
     this.snackNotificationService.push(this.translate.instant('container.status_unavailable'), 'error');
   }
 
+  /**
+   * Ends a start that failed or that nothing answered within the configured bound: the loader stops
+   * and the generic startup error shows, with the technical reason when there is one.
+   */
+  private failStart(error?: IStartError): void {
+    this.clearStartTimeout();
+    this.startRequest?.unsubscribe();
+    this.stopInitPolling$.next();
+    this.recovering = false;
+    this.startFailed = true;
+    this.startError = this.describeStartError(error);
+    this.state = 'start_failed';
+  }
+
+  private describeStartError(error?: IStartError): string | null {
+    const body = error?.error as { message?: unknown } | string | null | undefined;
+    if (typeof body === 'string' && body) {
+      return body;
+    }
+    if (body && typeof body === 'object' && typeof body.message === 'string' && body.message) {
+      return body.message;
+    }
+    return error?.message || null;
+  }
+
+  private armStartTimeout(): void {
+    this.clearStartTimeout();
+    const seconds = this.config.start_response_timeout_in_seconds ?? DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS;
+    this.startTimeoutId = window.setTimeout(() => this.failStart(), 1000 * seconds);
+  }
+
+  private clearStartTimeout(): void {
+    window.clearTimeout(this.startTimeoutId);
+    this.startTimeoutId = undefined;
+  }
+
   retryAfterFailure(): void {
+    if (this.startFailed) {
+      // Nothing came of the last start request, so the retry is a new one, asking for the same.
+      this.initGetContainer(this.lastStart.forceRecreate, this.lastStart.updateLastStartDate);
+      return;
+    }
     this.failedAttempts = 0;
     this.recoveryPosted = false;
     this.recovering = false;
+    if (this.recoveryAllowed) {
+      // A panel that asked for the environment waits for it within the same bound again.
+      this.armStartTimeout();
+    }
     // Retrying keeps the panel in the mode it was in: a watcher stays a watcher.
     this.startInitPolling(this.recoveryAllowed);
   }
@@ -340,6 +414,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnDestroy(): void {
     this.destroy$.next();
+    this.clearStartTimeout();
     if (this.askTimeoutId) {
       window.clearTimeout(this.askTimeoutId);
       window.clearTimeout(this.warningTimeoutId);
