@@ -64,6 +64,8 @@ public class ContainerTestConnectionTaskScheduler {
                         )
                 ).collect(Collectors.toSet());
 
+        toTest.forEach(c -> containerScheduledDtos.remove(ContainerUtilsService.generateKey(c.getUserId(), c.getCourseId())));
+
         toTest
                 .forEach(
                         c -> {

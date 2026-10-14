@@ -12,7 +12,10 @@ import fr.centralesupelec.thuv.docker_build.model.DockerImageBuild;
 import fr.centralesupelec.thuv.docker_build.repository.DockerImageBuildRepository;
 import fr.centralesupelec.thuv.docker_build.repository.DockerImageRepository;
 import fr.centralesupelec.thuv.docker_build.service.DockerImageListService;
+import fr.centralesupelec.thuv.dtos.DockerImageBuildRequestDto;
+import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.User;
+import fr.centralesupelec.thuv.repository.ClusterRepository;
 import fr.centralesupelec.thuv.repository.UserRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +53,8 @@ public class DockerImageController {
     private final DockerImageBuildService dockerImageBuildService;
     private final ReentrantLock lock = new ReentrantLock();
     private final DockerImageListService dockerImageListService;
+    private final ClusterRepository clusterRepository;
+
     @Value("${context_save_path}")
     private String contextSavePath;
 
@@ -112,7 +117,8 @@ public class DockerImageController {
     @PreAuthorize("@dockerImagePermissionService.canEdit(#dockerImage)")
     @RequestMapping(value = "/{id}/build", method = RequestMethod.POST)
     public ResponseEntity<?> buildDockerImage(
-            @PathVariable("id") DockerImage dockerImage
+            @PathVariable("id") DockerImage dockerImage,
+            @RequestBody @Valid DockerImageBuildRequestDto dto
     ) {
         Optional<DockerImageBuild> dockerImageBuildOptional = dockerImage.getBuilds()
                 .stream()
@@ -124,13 +130,24 @@ public class DockerImageController {
                     .body("An image is already being build");
         }
 
+        Optional<Cluster> clusterOptional = clusterRepository.findById(dto.getClusterId());
+
+        if (clusterOptional.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.FORBIDDEN)
+                        .body("Cluster doesn't exist");
+        }
+
+        Cluster cluster = clusterOptional.get();
+
         DockerImageBuild dockerImageBuild = new DockerImageBuild()
                 .setDockerImage(dockerImage)
-                .setStatus(BuildStatus.BUILDING);
+                .setStatus(BuildStatus.BUILDING)
+                .setCluster(cluster);
         dockerImageBuildRepository.saveAndFlush(dockerImageBuild);
         try {
             lock.lock();
-            dockerImageBuildService.requestDockerImageBuild(dockerImage, dockerImageBuild);
+            dockerImageBuildService.requestDockerImageBuild(dockerImage, dockerImageBuild, cluster);
         } catch (IOException e) {
             logger.error("Error while sending context to docker.");
             dockerImageBuild

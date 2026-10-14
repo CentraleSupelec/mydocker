@@ -1,0 +1,159 @@
+databaseChangeLog:
+- changeSet:
+    id: 1767641230515-1
+    author: mohamedalibarka (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: clustersPK
+            name: id
+            type: BIGINT
+        - column:
+            name: go_address
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: go_port
+            type: INTEGER
+        - column:
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: terraform_state_url
+            type: VARCHAR(255)
+        tableName: clusters
+- changeSet:
+    id: 1767641230515-2
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: cluster_id
+            type: BIGINT
+        tableName: compute_types
+- changeSet:
+    id: 1767641230515-3
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: cluster_id
+            type: BIGINT
+        tableName: deployment
+- changeSet:
+    id: 1767641230515-4
+    author: mohamedalibarka (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: cluster_id
+        baseTableName: compute_types
+        constraintName: FKbisw9ocitjat9y7ptnep9ea21
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: clusters
+        validate: true
+- changeSet:
+    id: 1767641230515-5
+    author: mohamedalibarka (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: cluster_id
+        baseTableName: deployment
+        constraintName: FKr3j6x2bww67ulmgdm5j3ugg2n
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: clusters
+        validate: true
+- changeSet:
+    id: 1767641230515-6
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            defaultValueBoolean: false
+            name: deployment_enabled
+            type: BOOLEAN
+        tableName: clusters
+- changeSet:
+    id: 1767641230515-7
+    author: mohamedalibarka (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: technical_name, cluster_id
+        constraintName: UKa60xmto4vg6g7fv68tv23t71i
+        tableName: compute_types
+- changeSet:
+    id: 1767641230515-8
+    author: mohamedalibarka (generated)
+    changes:
+    - dropUniqueConstraint:
+        constraintName: uc_compute_typestechnical_name_col
+        tableName: compute_types
+- changeSet:
+    id: 1767641230515-9
+    author: mohamedalibarka (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: display_name, cluster_id
+        constraintName: UKkfqwqd891p3x4e1i5oqevqqa4
+        tableName: compute_types
+- changeSet:
+    id: 1767641230515-10
+    author: mohamedalibarka (generated)
+    changes:
+    - dropUniqueConstraint:
+        constraintName: uc_compute_typesdisplay_name_col
+        tableName: compute_types
+
+- changeSet:
+    id: 1767641230515-11
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: cluster_id
+            type: BIGINT
+        tableName: docker_image_build
+- changeSet:
+    id: 1767641230515-12
+    author: mohamedalibarka (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: cluster_id
+        baseTableName: docker_image_build
+        constraintName: FKh7pee6enodh1ywqe1ngaou52g
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: clusters
+        validate: true
+- changeSet:
+    id: 1767641230515-13
+    author: mohamedalibarka (generated)
+    changes:
+    - addColumn:
+        tableName: deployment_status
+        columns:
+        - column:
+            name: cluster_id
+            type: BIGINT
+    - addForeignKeyConstraint:
+        baseTableName: deployment_status
+        baseColumnNames: cluster_id
+        constraintName: FK_deployment_status_cluster
+        referencedTableName: clusters
+        referencedColumnNames: id

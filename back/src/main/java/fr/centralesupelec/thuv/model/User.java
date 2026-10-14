@@ -94,14 +94,15 @@ public class User {
                 .stream()
                 .filter(userCourse -> userCourse.getCourse().getId().equals(course.getId()))
                 .findAny();
-        // removeUserCourse removes from the set before clearing the user: UserCourse hashes on its user
-        userCourseOptional.ifPresent(this::removeUserCourse);
+        if (userCourseOptional.isPresent()) {
+            userCourseOptional.get().setUser(null);
+            this.removeUserCourse(userCourseOptional.get());
+        }
     }
 
     public void addUserCourse(UserCourse userCourse) {
-        // Set the user before adding: UserCourse hashes on its user, so it must not change once in the set
-        userCourse.setUser(this);
         this.userCourses.add(userCourse);
+        userCourse.setUser(this);
     }
 
     public void removeUserCourse(UserCourse userCourse) {
