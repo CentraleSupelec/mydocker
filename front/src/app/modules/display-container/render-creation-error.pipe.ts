@@ -14,8 +14,15 @@ export class RenderCreationErrorPipe implements PipeTransform {
   ) {
   }
 
-  transform(container: IContainer | null) {
+  /**
+   * `detail` is the technical reason known when there is no container to read it from, such as the
+   * answer to a start request that failed.
+   */
+  transform(container: IContainer | null, detail?: string | null) {
     if (!container) {
+      if (detail) {
+        return this.translate.instant('container.problem_encountered', { error: detail });
+      }
       return this.translate.instant('container.unknown_error');
     }
     switch (container.creationError) {

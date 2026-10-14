@@ -50,6 +50,12 @@ export interface IAppConfig {
   start_response_timeout_in_seconds?: number
 }
 
+/**
+ * How long a start request may go without any record of the environment before the panel gives up:
+ * the 6 minute volume precreation cap in goapp plus 60 s. A bound, not a measured start duration.
+ */
+export const DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS = 420;
+
 export const APP_CONFIG = new InjectionToken<IAppConfig>('config');
 
 export function appConstantFactory(): IAppConfig {
@@ -73,6 +79,8 @@ export function appConstantFactory(): IAppConfig {
     information: appConstants.information,
     app_name: appConstants.app_name,
     magic_link_expiration_in_minutes: appConstants.magic_link_expiration_in_minutes,
-    polling_interval_in_milliseconds: appConstants.polling_interval_in_milliseconds
+    polling_interval_in_milliseconds: appConstants.polling_interval_in_milliseconds,
+    start_response_timeout_in_seconds: appConstants.start_response_timeout_in_seconds
+      ?? DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS
   };
 }
