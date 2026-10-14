@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
-import java.util.Map;
 import javax.net.ssl.SSLException;
 
 @Configuration
@@ -38,12 +37,12 @@ public class GrpcClient {
 
     @Bean
     @Lazy
-    public Map<String, ManagedChannel> channels() throws SSLException {
+    public ClusterChannels channels() throws SSLException {
         // Without this the limit is gRPC's own 4 MiB default, which nobody here chose and which
         // fails a whole call rather than degrading. Environment logs are the response that can
         // approach it, and they are also capped per task on the Go side.
         List<Cluster> clusters = clusterRepository.findAll();
-        Map<String, ManagedChannel> channels = new ClusterChannels();
+        ClusterChannels channels = new ClusterChannels();
 
         for (Cluster cluster : clusters) {
             ManagedChannelBuilder<?> builder = Grpc.newChannelBuilderForAddress(
@@ -97,7 +96,7 @@ public class GrpcClient {
                             }
                         });
             }
-            channels.put(cluster.getName(), builder.build());
+            channels.register(cluster, builder.build());
         }
 
 
