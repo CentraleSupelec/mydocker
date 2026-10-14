@@ -8,6 +8,8 @@ import { MatNativeDateModule } from "@angular/material/core";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 import { IDeploymentSession } from "../../interfaces/deployment-session";
+import { DeploymentApiService } from "../../services/deployment-api.service";
+import { Subject } from "rxjs";
 
 describe('DeploymentFormComponent', () => {
   let component: DeploymentFormComponent;
@@ -65,6 +67,22 @@ describe('DeploymentFormComponent', () => {
       component.deploymentForm.get('cluster')?.setValue(1);
 
       expect(component.deploymentForm.get('sessions')?.value).toEqual([1, 3]);
+    });
+
+    it('drops a hidden incompatible session once the list arrives after the cluster', () => {
+      const api = TestBed.inject(DeploymentApiService);
+      const list = new Subject<IDeploymentSession[]>();
+      spyOn(api, 'getSessionToLaunch').and.returnValue(list);
+      component.deploymentForm.get('type')?.setValue('launch');
+      component.sessions = [];
+      component.deploymentForm.get('sessions')?.setValue([1, 2, 3]);
+      component.deploymentForm.get('cluster')?.setValue(1);
+      expect(component.deploymentForm.get('sessions')?.value).toEqual([1, 2, 3]);
+
+      list.next([session(1, 1), session(2, 2), session(3, null)]);
+
+      expect(component.deploymentForm.get('sessions')?.value).toEqual([1, 3]);
+      expect(component.selectedSessions.map(s => s.id)).toEqual([1, 3]);
     });
 
     it('keeps selected sessions not loaded yet, as on edit', () => {
