@@ -10,7 +10,7 @@ import { CoursePermissionService } from "../../services/course-permission.servic
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 import { TranslateService } from '@ngx-translate/core';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
+import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-course-edit',
@@ -22,7 +22,7 @@ export class CourseEditComponent implements OnInit {
   computeTypes?: Array<IComputeType>;
   readonly courseForm: FormControl;
   sessionsById: ISessionsById = {};
-  clusters: ICluster[] = [];
+  clusters: IClusterBasicInformaion[] = [];
 
   constructor(
     private readonly route: ActivatedRoute,

@@ -9,7 +9,7 @@ import { DockerImageApiService } from "../../../admin-docker-image/services/dock
 import { IDockerImageBuild } from "../../../admin-docker-image/interfaces/docker-image-build";
 import { mergeMap } from "rxjs/operators";
 import { ActivatedRoute } from '@angular/router';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
+import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
 
 export interface DockerImageChoiceDialogReturnData {
   dockerImage: IDockerImage;
@@ -17,7 +17,7 @@ export interface DockerImageChoiceDialogReturnData {
 }
 
 export interface DockerImageChoiceDialogInputData {
-  clusters: ICluster[];
+  clusters: IClusterBasicInformaion[];
 }
 
 @Component({
