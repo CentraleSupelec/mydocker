@@ -94,16 +94,18 @@ public class DeploymentMapper {
         Cluster cluster = clusterRepository.getReferenceById(deploymentDto.getCluster());
         deploymentDto.getWorkers().forEach(
                 worker -> {
-                        ComputeType computeType = computeTypeRepository.getReferenceById(worker.getComputeTypeId());
-                        if (!computeType.getCluster().equals(cluster)) {
-                                throw new ResponseStatusException(
-                                        HttpStatus.BAD_REQUEST,
-                                        String.format(
-                                                "Compute type %d is linked to a different cluster than that of the deployment",
-                                                worker.getComputeTypeId()
-                                        )
-                                );
+                        // A worker with no compute type belongs to the deployment's cluster.
+                        if (worker.getComputeTypeId() == null) {
+                                return;
                         }
+                        rejectOtherCluster(
+                                computeTypeRepository.getReferenceById(worker.getComputeTypeId()),
+                                deploymentDto.getCluster(),
+                                String.format(
+                                        "Compute type %d is linked to a different cluster than that of the deployment",
+                                        worker.getComputeTypeId()
+                                )
+                        );
                 }
         );
         deploymentDto.getSessions().forEach(

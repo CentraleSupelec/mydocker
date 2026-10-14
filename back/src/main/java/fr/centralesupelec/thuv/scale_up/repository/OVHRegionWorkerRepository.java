@@ -33,7 +33,7 @@ public interface OVHRegionWorkerRepository extends JpaRepository<OVHRegionWorker
         LEFT JOIN FETCH ld.sessionsToLaunch s
         LEFT JOIN FETCH ld.workersToLaunch
         LEFT JOIN FETCH s.course c
-        WHERE ct.cluster = :cluster
+        WHERE (ct.cluster = :cluster OR (w.computeType IS NULL AND ld.cluster = :cluster))
                 AND ld.startDateTime <= :launchDeploymentStartDateTime 
                 AND (w.cleanDeployment IS NULL OR cd.startDateTime >= :cleanDeploymentStartDateTime)
     """)

@@ -34,9 +34,10 @@ class DeploymentMapperClusterTest {
     private final OVHRegionWorkerRepository ovhRegionWorkerRepository = mock(OVHRegionWorkerRepository.class);
     private final ClusterRepository clusterRepository = mock(ClusterRepository.class);
     private final ComputeTypeRepository computeTypeRepository = mock(ComputeTypeRepository.class);
+    private final OVHRegionWorkerMapper ovhRegionWorkerMapper = mock(OVHRegionWorkerMapper.class);
     private final DeploymentMapper mapper = new DeploymentMapper(
             ZoneId.of("UTC"),
-            mock(OVHRegionWorkerMapper.class),
+            ovhRegionWorkerMapper,
             mock(OVHRegionWorkerWithSessionMapper.class),
             courseSessionRepository,
             ovhRegionWorkerRepository,
@@ -88,6 +89,30 @@ class DeploymentMapperClusterTest {
         ))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("Session 20");
+    }
+
+    @Test
+    void launchAcceptsAWorkerWithoutComputeType() throws Exception {
+        OVHRegionWorkerDto ownerless = new OVHRegionWorkerDto().setRegion("GRA").setCount(1L);
+        when(ovhRegionWorkerMapper.convertToModel(ownerless)).thenReturn(new OVHRegionWorker().setId(1L));
+        LaunchDeployment deployment = new LaunchDeployment();
+
+        mapper.applyChange(deployment, dto(new LaunchUpdateDeploymentDto(), List.of(10L), List.of(ownerless)));
+
+        assertThat(deployment.getWorkersToLaunch().size()).isEqualTo(1);
+    }
+
+    @Test
+    void launchRejectsAComputeTypeOfAnotherCluster() {
+        when(computeTypeRepository.getReferenceById(6L)).thenReturn(new ComputeType().setCluster(clusterB));
+        OVHRegionWorkerDto worker = new OVHRegionWorkerDto().setComputeTypeId(6L);
+
+        assertThatThrownBy(() -> mapper.applyChange(
+                new LaunchDeployment(),
+                dto(new LaunchUpdateDeploymentDto(), List.of(10L), List.of(worker))
+        ))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Compute type 6");
     }
 
     // The request names a compute type of the deployment cluster; the stored worker runs elsewhere.
