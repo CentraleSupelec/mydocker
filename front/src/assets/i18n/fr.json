@@ -83,7 +83,8 @@
             "choice": "Choix d'une image docker",
             "build": "Choix du build",
             "confirm": "Confirmer",
-            "cancel": "Annuler"
+            "cancel": "Annuler",
+            "placeholder": "Tapez pour rechercher une image"
           },
           "ports": {
             "label" : "Ports",
@@ -618,6 +619,8 @@
     "magic_link_deactivated": "L'accès par lien de connexion est désactivé pour ce cours",
     "magic_link_error": "Impossible de vérifier l'accès pour ce cours",
     "magic_link_email_error": "Une erreur s'est produite lors de l'envoi de l'email",
+    "auth_error": "La connexion a échoué. Merci de contacter le support informatique à l'adresse {email}.",
+    "auth_error_no_address": "La connexion a échoué. Merci de contacter le support informatique.",
     "default_oidc": "CONNEXION AVEC VOTRE ÉTABLISSEMENT",
     "lti_refused": {
       "title": "Connexion LTI indisponible",
