@@ -70,6 +70,7 @@ describe('CourseTechnicalInformationFormComponent', () => {
 
       expect(published.dockerImage).toBe('new:image');
       expect(published.computeTypeId).toBe(7);
+      expect(component.selectedImageClusterId).toBeNull();
     });
 
     it('clears a compute type from another cluster', () => {

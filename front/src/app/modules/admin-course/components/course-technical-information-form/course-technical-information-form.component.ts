@@ -167,7 +167,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
         if (data) {
           // Silent, or the dockerImage subscription would clear the cluster set just below.
           this.courseTechnicalForm.get('dockerImage')?.setValue(data.dockerImageBuild.imageName, { emitEvent: false });
-          this.selectedImageClusterId = data.dockerImageBuild.cluster;
+          this.selectedImageClusterId = data.dockerImageBuild.cluster ?? null;
           this.courseTechnicalForm.get('ports')?.setValue(data.dockerImage.ports);
           const computeTypeId = this.courseTechnicalForm.get('computeTypeId')?.value;
           const selectedComputeType = this.computeTypes.find(computeType => computeType.id == computeTypeId);
