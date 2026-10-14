@@ -36,7 +36,9 @@ import { LogDialogModule } from "../log-dialog/log-dialog.module";
 import { MatSortModule } from "@angular/material/sort";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatCardModule } from "@angular/material/card";
-
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSelectModule } from '@angular/material/select';
+import { DockerImageClusterChoiceDialogComponent } from './components/docker-image-cluster-choice-dialog/docker-image-cluster-choice-dialog.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
@@ -47,7 +49,8 @@ import { TranslateModule } from '@ngx-translate/core';
         DockerImageFormComponent,
         DockerImageCreateComponent,
         DockerImageDetailComponent,
-        DockerImageBuildDetailDialogComponent
+        DockerImageBuildDetailDialogComponent,
+        DockerImageClusterChoiceDialogComponent
     ],
     imports: [
         CommonModule,
@@ -79,6 +82,9 @@ import { TranslateModule } from '@ngx-translate/core';
         MatPaginatorModule,
         MatCardModule,
         FormsModule,
+        TranslateModule,
+        MatSelectModule,
+        MatAutocompleteModule,
         TranslateModule
     ],
     providers: [

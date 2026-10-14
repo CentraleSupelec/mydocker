@@ -1,5 +1,6 @@
 import { IRegionWorker, IRegionWorkerWithSession } from "./region-worker";
 import { ISession } from "../../shell/interfaces/session";
+import { ICluster } from "../../cluster/interfaces/cluster";
 
 export interface IUpdateDeployment {
   workers: IRegionWorker[];
@@ -16,6 +17,7 @@ export interface IDeployment {
   sessions: ISession[];
   type: 'launch' | 'clean';
   description: string;
+  cluster: number
 }
 
 export interface IDeploymentSummary {

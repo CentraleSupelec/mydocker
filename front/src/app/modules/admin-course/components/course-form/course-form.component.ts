@@ -17,6 +17,7 @@ import {
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
+import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 
 @Component({
@@ -41,6 +42,7 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
   readonly courseStatus = Object.entries(CourseStatus);
   defaultComputeTypeId?: number;
   @Input() computeTypes?: Array<IComputeType>;
+  @Input() clusters?: Array<ICluster>;
   @Input() sessionsById?: ISessionsById;
   @Input() courseUuid?: string;
 

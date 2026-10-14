@@ -6,6 +6,7 @@ import { DeploymentApiService } from "../../services/deployment-api.service";
 import { ObservableSnackNotificationService } from "../../../utils/snack-notification/observable-snack-notification.service";
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { TranslateService } from '@ngx-translate/core';
+import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-deployment-create',
@@ -15,6 +16,7 @@ import { TranslateService } from '@ngx-translate/core';
 export class DeploymentCreateComponent implements OnInit {
   regions: string[] = [];
   ovhResources: IOvhResource[] = [];
+  clusters: ICluster[] = [];
   readonly deployFormControl: FormControl;
   computeTypes: IComputeType[] = [];
 
@@ -34,6 +36,7 @@ export class DeploymentCreateComponent implements OnInit {
         this.regions = data.regions;
         this.ovhResources = data.resources;
         this.computeTypes = data.computeTypes;
+        this.clusters = data.clusters;
       }
     )
   }
