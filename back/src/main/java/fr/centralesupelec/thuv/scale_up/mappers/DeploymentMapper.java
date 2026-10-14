@@ -92,7 +92,6 @@ public class DeploymentMapper {
     }
 
     public void applyChange(Deployment deployment, UpdateDeploymentDto deploymentDto) throws ClusterNotFoundException {
-        Cluster cluster = clusterRepository.getReferenceById(deploymentDto.getCluster());
         deploymentDto.getWorkers().forEach(
                 worker -> {
                         // A worker with no compute type belongs to the deployment's cluster.
@@ -133,6 +132,7 @@ public class DeploymentMapper {
                 }
             });
         }
+        Cluster cluster = clusterRepository.getReferenceById(deploymentDto.getCluster());
         deployment
                 .setDescription(
                         deploymentDto.getDescription()

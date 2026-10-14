@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * gRPC channels by cluster name, built once at startup from the clusters table.
  *
- * Cluster changes take effect at the next back end restart. A cluster created since startup has
+ * <p>Cluster changes take effect at the next back end restart. A cluster created since startup has
  * no channel; one whose name, address or port was edited, or that was deleted, has its channel
  * marked stale. Looking either up fails with that explanation instead of reaching the old
  * endpoint. A name keeps belonging to its startup cluster until the restart, so it cannot be
