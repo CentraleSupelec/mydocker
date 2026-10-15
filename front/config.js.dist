@@ -34,5 +34,6 @@ window['MY_DOCKER_APP_CONSTANTS'] = {
   ],
   "app_name": "MyDocker",
   "magic_link_expiration_in_minutes": 15,
-  "polling_interval_in_milliseconds": 60000
+  "polling_interval_in_milliseconds": 60000,
+  "start_response_timeout_in_seconds": 420
 };

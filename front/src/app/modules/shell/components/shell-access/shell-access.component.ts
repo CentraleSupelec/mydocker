@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { APP_CONFIG, IAppConfig } from '../../../../app-config';
-import { interval, of, Subject } from "rxjs";
+import { APP_CONFIG, DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS, IAppConfig } from '../../../../app-config';
+import { EMPTY, interval, of, Subject, Subscription } from "rxjs";
 import { ContainerApiService } from "../../services/container-api.service";
 import { catchError, map, mergeMap, switchMap, takeUntil } from "rxjs/operators";
 import {
@@ -33,10 +33,18 @@ const ContainerSwarmStateOrder = [
   ContainerSwarmState.RUNNING,
 ];
 
+interface IStartError {
+  status?: number;
+  message?: string;
+  error?: unknown;
+}
+
 interface IPolling {
   container: IContainer | null;
   recovered: boolean;
-  error?: { status?: number };
+  error?: IStartError;
+  /** The failure is that of a recovery, which is a start request of its own. */
+  startFailed?: boolean;
 }
 
 @Component({
@@ -56,7 +64,11 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
   container: IContainer | null = null;
   /** True only after the student asked for this environment in this page session. */
   userStarted = false;
-  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' | 'unavailable' = 'ask';
+  /** True when the last start request failed or went unanswered, which is what offers a retry. */
+  startFailed = false;
+  /** The technical reason of the last failed start, when the back end gave one. */
+  startError: string | null = null;
+  state: 'ask' | 'loading_init' | 'loading_shutdown' | 'container_created' | 'pending' | 'unavailable' | 'start_failed' = 'ask';
   step: number = 0;
   stepMessage: string = '';
   recovering = false;
@@ -72,6 +84,13 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
   private askTimeoutId?: number;
   private warningTimeoutId?: number;
+  /** One per start request: armed with it, disarmed by the first record of the environment. */
+  private startTimeoutId?: number;
+  private startRequest?: Subscription;
+  /** The one recovery request outstanding, kept apart from the polling ticks so that none cancels it. */
+  private recoveryRequest?: Subscription;
+  /** What the last start asked for, so that a retry asks for the same. */
+  private lastStart = { forceRecreate: false, updateLastStartDate: true };
   private userPermissions?: NgxPermissionsObject;
 
   constructor(
@@ -131,6 +150,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe(
       () => {
         this.stopInitPolling$.next();
+        this.clearStartTimeout();
         this.container = null;
       }
     );
@@ -184,10 +204,22 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
     // recreate dialog, or a start carried in the address. The read-only discovery path never gets
     // here, which is what keeps a dashboard load from connecting.
     this.userStarted = true;
-    this.containerApiService.initGetContainer(this.session?.id, forceRecreate, updateLastStartDate)
-      .subscribe(
-        () => this.startInitPolling()
-      );
+    this.startFailed = false;
+    this.startError = null;
+    this.lastStart = { forceRecreate, updateLastStartDate };
+    // The request itself may take minutes, the volume precreation included, so the loader shows
+    // from the moment it is sent, and the bound covers it too.
+    this.state = 'loading_init';
+    this.armStartTimeout();
+    this.startRequest?.unsubscribe();
+    this.startRequest = this.containerApiService.initGetContainer(this.session?.id, forceRecreate, updateLastStartDate)
+      .subscribe({
+        next: () => this.startInitPolling(),
+        error: (err: IStartError) => {
+          console.error(this.translate.instant('container.initializing_error'), err);
+          this.failStart(err);
+        }
+      });
   }
 
   private startInitPolling(allowRecovery: boolean = true) {
@@ -197,13 +229,9 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
       takeUntil(this.stopInitPolling$),
       switchMap(() => {
         if (this.recovering) {
-          return this.containerApiService.initGetContainer(this.session?.id, false).pipe(
-            map(() => ({ container: null, recovered: true } as  IPolling)),
-            catchError(err => {
-              console.error(this.translate.instant('container.initializing_error'), err);
-              return of({ container: null, recovered: false, error: err } as  IPolling);
-            })
-          );
+          // The recovery request answers on its own subscription; a tick only sends it if none is out.
+          this.sendRecoveryRequest();
+          return EMPTY;
         } else {
           return this.containerApiService.getContainer(this.sessionCourseOrCourse?.id).pipe(
             map(container => ({ container, recovered: false } as  IPolling)),
@@ -215,40 +243,67 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
         }
       })
     )
-    .subscribe(
-      (pollingResult: IPolling) => {
-        let container = pollingResult.container
-        if (pollingResult.error) {
-          this.handlePollingFailure(pollingResult.error);
-          return;
-        }
+    .subscribe((pollingResult: IPolling) => this.handlePollingResult(pollingResult))
+  }
 
-        if (pollingResult.recovered && this.recovering) {
-          this.recovering = false;
-          return;
-        }
-
-        this.failedAttempts = 0;
-        this.recoveryPosted = false;
-
-        if (container) {
-          this.container = container;
-          const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
-          this.step =  index * 100 / ContainerSwarmStateOrder.length;
-          this.stepMessage = `${this.translate.instant(`container.steps.${(container.state ?? ContainerSwarmState.UNKNOWN).toLowerCase()}`)} (${this.translate.instant('container.step')} ${index + 1}/${ContainerSwarmStateOrder.length})`;
-          if (this.isReady(container)) {
-            this.state = 'container_created';
-            this.stopInitPolling$.next();
-            this.setWarningTimeout();
-          } else if ([ContainerSwarmState.FAILED, ContainerSwarmState.REJECTED, ContainerSwarmState.SHUTDOWN].includes(container.state as ContainerSwarmState) || container.status === ContainerStatus.KO) {
-            this.state = 'container_created';
-            this.stopInitPolling$.next();
-          } else {
-            this.state = 'pending';
-          }
-        }
-      }
+  /**
+   * Start requests may take minutes, so the recovery request is never re-sent while it is out: it
+   * stays outstanding until it answers or its bound, armed as it is sent, expires.
+   */
+  private sendRecoveryRequest(): void {
+    if (this.recoveryRequest && !this.recoveryRequest.closed) {
+      return;
+    }
+    this.armStartTimeout();
+    this.recoveryRequest = this.containerApiService.initGetContainer(this.session?.id, false).pipe(
+      takeUntil(this.stopInitPolling$),
+      takeUntil(this.destroy$),
+      map(() => ({ container: null, recovered: true } as  IPolling)),
+      catchError(err => {
+        console.error(this.translate.instant('container.initializing_error'), err);
+        return of({ container: null, recovered: false, error: err, startFailed: true } as  IPolling);
+      })
     )
+    .subscribe((pollingResult: IPolling) => this.handlePollingResult(pollingResult));
+  }
+
+  private handlePollingResult(pollingResult: IPolling): void {
+    let container = pollingResult.container
+    if (pollingResult.error) {
+      if (pollingResult.startFailed) {
+        this.failStart(pollingResult.error);
+      } else {
+        this.handlePollingFailure(pollingResult.error);
+      }
+      return;
+    }
+
+    if (pollingResult.recovered && this.recovering) {
+      this.recovering = false;
+      return;
+    }
+
+    this.failedAttempts = 0;
+    this.recoveryPosted = false;
+
+    if (container) {
+      // Any record, even a failed one, answers the start: from here the existing states say how it went.
+      this.clearStartTimeout();
+      this.container = container;
+      const index = ContainerSwarmStateOrder.indexOf(ContainerSwarmState[container.state as keyof typeof ContainerSwarmState]);
+      this.step =  index * 100 / ContainerSwarmStateOrder.length;
+      this.stepMessage = `${this.translate.instant(`container.steps.${(container.state ?? ContainerSwarmState.UNKNOWN).toLowerCase()}`)} (${this.translate.instant('container.step')} ${index + 1}/${ContainerSwarmStateOrder.length})`;
+      if (this.isReady(container)) {
+        this.state = 'container_created';
+        this.stopInitPolling$.next();
+        this.setWarningTimeout();
+      } else if ([ContainerSwarmState.FAILED, ContainerSwarmState.REJECTED, ContainerSwarmState.SHUTDOWN].includes(container.state as ContainerSwarmState) || container.status === ContainerStatus.KO) {
+        this.state = 'container_created';
+        this.stopInitPolling$.next();
+      } else {
+        this.state = 'pending';
+      }
+    }
   }
 
   /**
@@ -256,25 +311,78 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
    * with no end. One creation request may recover a lost environment; the rest is reading, and after
    * a bounded number of failures the panel says so and waits for the student.
    */
-  private handlePollingFailure(error: { status?: number }): void {
+  private handlePollingFailure(error: IStartError): void {
     this.failedAttempts++;
 
     if ('retry' === nextRetryDecision(error, this.failedAttempts)) {
+      // A recovery is a start request like any other: its bound is armed when it is sent.
       this.recovering = this.recoveryAllowed && !this.recoveryPosted;
       this.recoveryPosted = this.recoveryPosted || this.recovering;
       return;
     }
 
     this.recovering = false;
+    if (this.recoveryAllowed && undefined !== this.startTimeoutId) {
+      // No record has answered the start yet: it ends as an unanswered start, retried as a start.
+      this.failStart(error);
+      return;
+    }
     this.stopInitPolling$.next();
+    // The panel already waits for the student; a later timeout would only replace one failure with another.
+    this.clearStartTimeout();
     this.state = 'unavailable';
     this.snackNotificationService.push(this.translate.instant('container.status_unavailable'), 'error');
   }
 
+  /**
+   * Ends a start that failed or that nothing answered within the configured bound: the loader stops
+   * and the generic startup error shows, with the technical reason when there is one.
+   */
+  private failStart(error?: IStartError): void {
+    this.clearStartTimeout();
+    this.startRequest?.unsubscribe();
+    this.stopInitPolling$.next();
+    this.recovering = false;
+    this.startFailed = true;
+    this.startError = this.describeStartError(error);
+    this.state = 'start_failed';
+  }
+
+  private describeStartError(error?: IStartError): string | null {
+    const body = error?.error as { message?: unknown } | string | null | undefined;
+    if (typeof body === 'string' && body) {
+      return body;
+    }
+    if (body && typeof body === 'object' && typeof body.message === 'string' && body.message) {
+      return body.message;
+    }
+    return error?.message || null;
+  }
+
+  private armStartTimeout(): void {
+    this.clearStartTimeout();
+    const seconds = this.config.start_response_timeout_in_seconds ?? DEFAULT_START_RESPONSE_TIMEOUT_IN_SECONDS;
+    this.startTimeoutId = window.setTimeout(() => this.failStart(), 1000 * seconds);
+  }
+
+  private clearStartTimeout(): void {
+    window.clearTimeout(this.startTimeoutId);
+    this.startTimeoutId = undefined;
+  }
+
   retryAfterFailure(): void {
+    if (this.startFailed) {
+      // Nothing came of the last start request, so the retry is a new one, asking for the same.
+      this.initGetContainer(this.lastStart.forceRecreate, this.lastStart.updateLastStartDate);
+      return;
+    }
     this.failedAttempts = 0;
     this.recoveryPosted = false;
     this.recovering = false;
+    if (this.recoveryAllowed) {
+      // A panel that asked for the environment waits for it within the same bound again.
+      this.armStartTimeout();
+    }
     // Retrying keeps the panel in the mode it was in: a watcher stays a watcher.
     this.startInitPolling(this.recoveryAllowed);
   }
@@ -342,6 +450,7 @@ export class ShellAccessComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnDestroy(): void {
     this.destroy$.next();
+    this.clearStartTimeout();
     if (this.askTimeoutId) {
       window.clearTimeout(this.askTimeoutId);
       window.clearTimeout(this.warningTimeoutId);
