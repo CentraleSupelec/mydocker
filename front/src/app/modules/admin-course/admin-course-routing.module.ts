@@ -5,8 +5,6 @@ import { AdminCourseResolver } from "./resolvers/admin-course.resolver";
 import { CourseNewComponent } from "./components/course-new/course-new.component";
 import { CoursesAdminComponent } from './components/courses-admin/courses-admin.component';
 import { ComputeTypesResolver } from '../compute-type/resolvers/compute-types.resolver';
-// Basic information only: these pages are open to teachers, the full cluster list is admin-only.
-import { ClustersBasicInformationResolver } from '../cluster/resolvers/clusters-basic-information.resolver';
 
 const routes: Routes = [
   {
@@ -18,7 +16,6 @@ const routes: Routes = [
     component: CourseNewComponent,
     resolve: {
       computeTypes: ComputeTypesResolver,
-      clusters: ClustersBasicInformationResolver
     },
     data: {
       breadcrumb: 'admin.courses.create_breadcrumb',
@@ -30,7 +27,6 @@ const routes: Routes = [
     resolve: {
       course: AdminCourseResolver,
       computeTypes: ComputeTypesResolver,
-      clusters: ClustersBasicInformationResolver
     },
     data: {
       breadcrumb: 'admin.courses.edit.breadcrumb',

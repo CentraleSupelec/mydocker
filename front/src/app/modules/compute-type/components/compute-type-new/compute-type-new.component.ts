@@ -7,7 +7,6 @@ import { ComputeTypesApiService } from '../../services/compute-types-api.service
 import { ActivatedRoute } from '@angular/router';
 import { IOvhResource } from '../../../sessions-resources/interfaces/ovh-resource';
 import { TranslateService } from '@ngx-translate/core';
-import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-compute-type-new',
@@ -17,7 +16,6 @@ import { ICluster } from 'src/app/modules/cluster/interfaces/cluster';
 export class ComputeTypeNewComponent implements OnInit {
   regions: string[] = [];
   ovhResources: IOvhResource[] = [];
-  clusters: ICluster[] = [];
   computeTypeForm: FormControl;
 
   constructor(
@@ -36,7 +34,6 @@ export class ComputeTypeNewComponent implements OnInit {
       data => {
         this.regions = data.regions;
         this.ovhResources = data.resources;
-        this.clusters = data.clusters;
       }
     )
   }

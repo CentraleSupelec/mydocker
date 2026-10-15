@@ -8,16 +8,10 @@ import { FormBuilder, FormControl } from "@angular/forms";
 import { DockerImageApiService } from "../../../admin-docker-image/services/docker-image-api.service";
 import { IDockerImageBuild } from "../../../admin-docker-image/interfaces/docker-image-build";
 import { mergeMap } from "rxjs/operators";
-import { ActivatedRoute } from '@angular/router';
-import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
 
 export interface DockerImageChoiceDialogReturnData {
   dockerImage: IDockerImage;
   dockerImageBuild: IDockerImageBuild;
-}
-
-export interface DockerImageChoiceDialogInputData {
-  clusters: IClusterBasicInformaion[];
 }
 
 @Component({
@@ -38,9 +32,7 @@ export class DockerImageChoiceDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<DockerImageChoiceDialogComponent>,
     private readonly dockerImageApiService: DockerImageApiService,
-    private readonly activatedRoute: ActivatedRoute,
     formBuilder: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: DockerImageChoiceDialogInputData
   ) {
     this.control = formBuilder.control('');
     this.filteredOptions = this.control.valueChanges
@@ -54,10 +46,6 @@ export class DockerImageChoiceDialogComponent {
           }
         })
       );
-  }
-
-  getClusterName(id: number) {
-    return this.data.clusters?.find(cluster => cluster.id == id)?.name;
   }
 
   private _filter(value: string): Observable<IDockerImage[]> {

@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { APP_CONFIG, IAppConfig } from "../../../app-config";
 import { IDeployment, IUpdateDeployment } from "../interfaces/deployment";
 import { Observable } from "rxjs";
-import { IDeploymentSession } from "../interfaces/deployment-session";
+import { ISession } from "../../shell/interfaces/session";
 import { IRegionWorkerWithSession } from "../interfaces/region-worker";
 
 @Injectable({
@@ -46,14 +46,14 @@ export class DeploymentApiService {
     )
   }
 
-  getSessionToLaunch(): Observable<IDeploymentSession[]> {
-    return this.httClient.get<IDeploymentSession[]>(
+  getSessionToLaunch(): Observable<ISession[]> {
+    return this.httClient.get<ISession[]>(
       `${this.config.back_url}admin/deployment/sessions/launch`
     )
   }
 
-  getSessionToClean(): Observable<IDeploymentSession[]> {
-    return this.httClient.get<IDeploymentSession[]>(
+  getSessionToClean(): Observable<ISession[]> {
+    return this.httClient.get<ISession[]>(
       `${this.config.back_url}admin/deployment/sessions/clean`
     )
   }

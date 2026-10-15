@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ReactiveFormsModule } from "@angular/forms";
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
-import { ActivatedRoute } from "@angular/router";
+import { MatDialogModule, MatDialogRef } from "@angular/material/dialog";
 import { MatAutocompleteModule, MatAutocompleteTrigger } from "@angular/material/autocomplete";
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
@@ -59,8 +58,6 @@ describe('DockerImageChoiceDialogComponent', () => {
       providers: [
         { provide: DockerImageApiService, useValue: dockerImageApiService },
         { provide: MatDialogRef, useValue: jasmine.createSpyObj('MatDialogRef', ['close']) },
-        { provide: MAT_DIALOG_DATA, useValue: { clusters: [] } },
-        { provide: ActivatedRoute, useValue: {} },
       ],
       // app-docker-image-build-status only appears in the build selector, out of scope here
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ]

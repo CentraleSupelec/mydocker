@@ -8,7 +8,6 @@ import { DeploymentsResolver } from "./resolvers/deployments.resolver";
 import { DeploymentViewComponent } from "./components/deployment-view/deployment-view.component";
 import { DeploymentResolver } from "./resolvers/deployment.resolver";
 import { ComputeTypesResolver } from '../compute-type/resolvers/compute-types.resolver';
-import { ClustersResolver } from '../cluster/resolvers/clusters.resolver';
 
 const routes: Routes = [
   {
@@ -27,7 +26,6 @@ const routes: Routes = [
       resources: OvhResourceResolver,
       regions: RegionsResolver,
       computeTypes: ComputeTypesResolver,
-      clusters: ClustersResolver,
     },
     data: {
       breadcrumb: 'admin.resources_management.deployment.create_breadcrumb',
@@ -40,7 +38,6 @@ const routes: Routes = [
       deployment: DeploymentResolver,
       resources: OvhResourceResolver,
       computeTypes: ComputeTypesResolver,
-      clusters: ClustersResolver,
     },
     data: {
       breadcrumb: 'admin.resources_management.deployment.view_breadcrumb',

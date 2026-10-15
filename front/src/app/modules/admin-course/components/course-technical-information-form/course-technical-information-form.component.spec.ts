@@ -6,9 +6,6 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 import { APP_CONFIG, IAppConfig } from '../../../../app-config';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { of } from 'rxjs';
-import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 
 describe('CourseTechnicalInformationFormComponent', () => {
   let component: CourseTechnicalInformationFormComponent;
@@ -35,50 +32,6 @@ describe('CourseTechnicalInformationFormComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  describe('image picked in the dialog', () => {
-    const pick = (cluster: number | undefined) => {
-      const dialog = TestBed.inject(MatDialog);
-      spyOn(dialog, 'open').and.returnValue({
-        afterClosed: () => of({
-          dockerImage: { ports: [] },
-          dockerImageBuild: { imageName: 'new:image', cluster },
-        }),
-      } as unknown as MatDialogRef<unknown>);
-      component.openDialog();
-    };
-
-    let published: any;
-
-    beforeEach(() => {
-      component.computeTypes = [{ id: 7, cluster: { id: 1 } } as IComputeType];
-      component.courseTechnicalForm.patchValue({ dockerImage: 'old:image', computeTypeId: 7 });
-      component.registerOnChange((v: any) => published = v);
-    });
-
-    it('publishes the new image when the compute type stays', () => {
-      pick(1);
-
-      expect(published.dockerImage).toBe('new:image');
-      expect(published.computeTypeId).toBe(7);
-      expect(component.selectedImageClusterId).toBe(1);
-    });
-
-    it('publishes the new image for a build without a cluster', () => {
-      pick(undefined);
-
-      expect(published.dockerImage).toBe('new:image');
-      expect(published.computeTypeId).toBe(7);
-      expect(component.selectedImageClusterId).toBeNull();
-    });
-
-    it('clears a compute type from another cluster', () => {
-      pick(2);
-
-      expect(published.dockerImage).toBe('new:image');
-      expect(published.computeTypeId).toBeNull();
-    });
   });
 
   // Conformance cases for the command port placeholder grammar. The back-end validator and

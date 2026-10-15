@@ -27,7 +27,3 @@ export interface IUpdateDockerImage {
 export interface ICreationDockerImage extends IUpdateDockerImage {
   name: string;
 }
-
-export interface IDockerImageBuildRequest {
-  clusterId: number
-}
