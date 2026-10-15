@@ -6,6 +6,7 @@ import fr.centralesupelec.thuv.mappers.ComputeTypeMapper;
 import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
+import fr.centralesupelec.thuv.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ComputeTypeService {
     private static final Logger logger = LoggerFactory.getLogger(ComputeTypeService.class);
     private final ComputeTypeRepository computeTypeRepository;
+    private final CourseRepository courseRepository;
     private final ComputeTypeMapper computeTypeMapper;
     private final InitAutoscalingService initAutoscalingService;
 
@@ -50,6 +52,13 @@ public class ComputeTypeService {
     }
 
     public void deleteComputeType(ComputeType computeType) {
+        long courses = courseRepository.countByComputeType(computeType);
+        if (courses > 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    String.format("Compute type is used by %d course(s); move them to another compute type first", courses)
+            );
+        }
         this.computeTypeRepository.delete(computeType);
         this.validateEmptyTechnicalName(computeType.getCluster());
     }

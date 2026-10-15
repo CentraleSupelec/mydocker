@@ -1,5 +1,6 @@
 package fr.centralesupelec.thuv.repository;
 
+import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
@@ -25,6 +26,7 @@ public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecif
     List<Course> findByUserCoursesUserAndStatusInOrderById(User user, List<CourseStatus> status);
     Set<Course> findByCreator(User admin);
     Course getCourseByLink(String courseLink);
+    long countByComputeType(ComputeType computeType);
 
     @Query("""
         SELECT c FROM Course c
