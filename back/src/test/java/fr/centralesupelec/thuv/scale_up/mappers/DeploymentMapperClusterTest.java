@@ -143,6 +143,17 @@ class DeploymentMapperClusterTest {
     }
 
     @Test
+    void cleanRejectsAWorkerWithoutId() {
+        assertThatThrownBy(() -> mapper.applyChange(
+                new CleanDeployment(),
+                dto(new CleanUpdateDeploymentDto(), List.of(10L), List.of(new OVHRegionWorkerDto()))
+        ))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(e -> assertThat(((ResponseStatusException) e).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
+                .hasMessageContaining("Worker id is required");
+    }
+
+    @Test
     void cleanAcceptsAnOwnerlessWorkerLaunchedOnTheSameCluster() throws Exception {
         LaunchDeployment launchedOnA = new LaunchDeployment();
         launchedOnA.setCluster(clusterA);

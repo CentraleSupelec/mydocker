@@ -117,6 +117,9 @@ public class DeploymentMapper {
         );
         if (deployment instanceof CleanDeployment) {
             deploymentDto.getWorkers().forEach(worker -> {
+                if (worker.getId() == null) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Worker id is required");
+                }
                 OVHRegionWorker stored = ovhRegionWorkerRepository.getReferenceById(worker.getId());
                 String message = String.format(
                         "Worker %d runs on a different cluster than that of the deployment", worker.getId()
