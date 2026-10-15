@@ -6,6 +6,7 @@ import fr.centralesupelec.thuv.autoscaling.service.InitAutoscalingService;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.mappers.GrpcResponsePortToContainerPortDtoMapper;
+import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
@@ -16,13 +17,11 @@ import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
 @RequiredArgsConstructor
 public class ContainerResponseStreamObserver implements StreamObserver<ContainerResponse> {
     private static final Logger logger = LoggerFactory.getLogger(ContainerResponseStreamObserver.class);
@@ -33,6 +32,7 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
     private final ContainerStatusConfigureService containerStatusConfigureService;
     private final ContainerStorage containerStorage;
     private RequestContainerService requestContainerService;
+    private final Cluster cluster;
     private final InitAutoscalingService initAutoscalingService;
 
     @Override
@@ -73,9 +73,9 @@ public class ContainerResponseStreamObserver implements StreamObserver<Container
             throwable.printStackTrace();
         }
         Sentry.captureMessage("Unable to obtain the container");
-        requestContainerService.setShouldInitializeStub(true);
+        requestContainerService.setShouldInitializeStub(cluster.getName(), true);
         // We need to resend a request to initialize autoscaling
-        initAutoscalingService.setIsAutoscalingInitialized(false);
+        initAutoscalingService.setIsAutoscalingInitialized(cluster.getName(), false);
     }
 
     @Override

@@ -9,7 +9,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "compute_types")
+@Table(
+    name = "compute_types",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"technical_name", "cluster_id"}),
+        @UniqueConstraint(columnNames = {"displayName", "cluster_id"})
+    }
+)
 @Data
 public class ComputeType {
     @Id
@@ -17,10 +23,8 @@ public class ComputeType {
     private Long id;
 
     @NotNull
-    @Column(unique = true)
     private String displayName;
     @NotNull
-    @Column(unique = true)
     private String technicalName;
     private boolean gpu = false;
 
@@ -49,4 +53,8 @@ public class ComputeType {
         return (!this.getAutoscalingResourcesRegions().isEmpty())
                 && this.getMaxNodesCount() > 0;
     }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "cluster_id", nullable = true)
+    private Cluster cluster;
 }

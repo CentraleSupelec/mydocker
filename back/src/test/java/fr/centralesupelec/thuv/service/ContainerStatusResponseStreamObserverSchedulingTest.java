@@ -6,6 +6,7 @@ import fr.centralesupelec.thuv.activity_logging.model.LogModelName;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
+import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.test_connection_scheduler.ContainerTestConnectionTaskScheduler;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,14 +43,17 @@ class ContainerStatusResponseStreamObserverSchedulingTest {
 
     private ContainerStorage containerStorage;
     private ContainerStatusResponseStreamObserver observer;
+    private Cluster cluster;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         containerStorage = new ContainerStorage(activityLogger);
+        cluster = new Cluster();
         observer = new ContainerStatusResponseStreamObserver(
                 containerStorage,
-                containerTestConnectionTaskScheduler
+                containerTestConnectionTaskScheduler,
+                cluster
         );
     }
 

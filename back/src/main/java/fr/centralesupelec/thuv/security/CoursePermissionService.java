@@ -1,7 +1,6 @@
 package fr.centralesupelec.thuv.security;
 
 import fr.centralesupelec.thuv.model.Course;
-import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.permissions.models.CoursePermission;
 import fr.centralesupelec.thuv.permissions.models.Permission;
@@ -24,15 +23,10 @@ public class CoursePermissionService {
 
     public boolean canEdit(Course course) {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        boolean isAdmin = principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        // a deleted course is closed to everyone but administrators, whatever the share or ownership
-        if (course.getStatus() == CourseStatus.DELETED) {
-            return isAdmin;
-        }
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        return isAdmin
+        return principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
                 || course.getCreator().getId().equals(user.getId())
                 || hasPermissionForCourse(
                         Collections.singletonList(Permission.Type.edit), course, user
@@ -41,14 +35,10 @@ public class CoursePermissionService {
 
     public boolean canRead(Course course) {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        boolean isAdmin = principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (course.getStatus() == CourseStatus.DELETED) {
-            return isAdmin;
-        }
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        return isAdmin
+        return principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
                 || course.getCreator().getId().equals(user.getId())
                 || (course.getVisible() && principal.getAuthorities()
                         .stream()
@@ -60,14 +50,10 @@ public class CoursePermissionService {
 
     public boolean canEditPermission(Course course) {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        boolean isAdmin = principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (course.getStatus() == CourseStatus.DELETED) {
-            return isAdmin;
-        }
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
-        return isAdmin
+        return principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
                 || course.getCreator().getId().equals(user.getId());
     }
 

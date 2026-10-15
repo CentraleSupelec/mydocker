@@ -1,5 +1,6 @@
 package fr.centralesupelec.thuv.mail;
 
+import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.scale_up.model.DeploymentStatus;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +29,17 @@ public class EmailService {
     @Value("${app.magic_link.expiration_in_minutes}")
     private long magicLinkExpirationInMinutes;
 
-    public void sendDeploymentErrorMail(DeploymentStatus deploymentStatus) {
+    public void sendDeploymentErrorMail(DeploymentStatus deploymentStatus, Cluster cluster) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(mailParameterConfiguration.getFrom());
             message.setTo(mailParameterConfiguration.getTo());
             message.setSubject(
-                    "[Deployment error] Created at: " + deploymentStatus.getCreatedOn().format(dateTimeFormatter)
+                    String.format(
+                        "[Deployment error][Cluster %s] Created at: %s",
+                        cluster.getName(),
+                        deploymentStatus.getCreatedOn().format(dateTimeFormatter)
+                    )
             );
             message.setText(
                     "Error message:\n"
