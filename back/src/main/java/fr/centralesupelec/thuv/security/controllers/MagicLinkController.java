@@ -5,6 +5,7 @@ import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.exception.UserUpsertException;
 import fr.centralesupelec.thuv.mail.EmailService;
 import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.model.User;
 import fr.centralesupelec.thuv.model.UserCourse;
 import fr.centralesupelec.thuv.repository.CourseRepository;
@@ -80,7 +81,7 @@ public class MagicLinkController {
         Optional<Course> course = courseRepository.findByUuid(UUID.fromString(courseUuid));
 
         if (course.isPresent()) {
-            if (!course.get().isExternalAccess() || course.get().getExternalAccessExpirationDate().isBefore(LocalDateTime.now())) {
+            if (isExternalAccessClosed(course.get())) {
                 logger.error("External access for course (uuid=%s) denied.", courseUuid);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(String.format("External access for course (uuid=%s) denied", courseUuid));
             }
@@ -125,7 +126,7 @@ public class MagicLinkController {
             Optional<Course> course = courseRepository.findByUuid(UUID.fromString(courseUuid));
             
             if (course.isPresent()) {
-                if (!course.get().isExternalAccess() || course.get().getExternalAccessExpirationDate().isBefore(LocalDateTime.now())) {
+                if (isExternalAccessClosed(course.get())) {
                     logger.error(String.format("External access for course (uuid=%s) denied", courseUuid));
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                         String.format("External access for course (uuid=%s) denied", courseUuid)
@@ -175,5 +176,12 @@ public class MagicLinkController {
             logger.error("Invalid magic token", ex);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired magic link");
         }
+    }
+
+    // a deleted course is closed to external access whatever its external access settings say
+    private boolean isExternalAccessClosed(Course course) {
+        return course.getStatus() == CourseStatus.DELETED
+                || !course.isExternalAccess()
+                || course.getExternalAccessExpirationDate().isBefore(LocalDateTime.now());
     }
 }
