@@ -66,9 +66,12 @@ public class ComputeTypeMapper {
                                 String.format("OVH Region %s not found", region)
                         );
                     }
-                    Optional<ResourceRegion> resourceRegionOptional = resourceRegionRepository.findByComputeTypeAndResourceAndRegion(
-                        computeType, ovhResource.get(), ovhRegion.get()
-                    );
+                    // A compute type being created is not saved yet: querying with it fails, and it has no rows to find.
+                    Optional<ResourceRegion> resourceRegionOptional = computeType.getId() == null
+                        ? Optional.empty()
+                        : resourceRegionRepository.findByComputeTypeAndResourceAndRegion(
+                            computeType, ovhResource.get(), ovhRegion.get()
+                        );
                     ResourceRegion resourceRegion;
                     if (!resourceRegionOptional.isPresent()) {
                         resourceRegion = new ResourceRegion().setComputeType(computeType).setResource(ovhResource.get()).setRegion(ovhRegion.get());
