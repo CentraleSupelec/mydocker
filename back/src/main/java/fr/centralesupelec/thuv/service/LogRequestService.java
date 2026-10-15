@@ -6,12 +6,9 @@ import fr.centralesupelec.gRPC.containerServiceGrpc;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import io.grpc.ManagedChannel;
-import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -37,14 +34,7 @@ public class LogRequestService {
                                 .build()
                 );
             } catch (StatusRuntimeException e) {
-                if (e.getStatus().getCode() == Status.Code.UNAVAILABLE) {
-                    throw new ResponseStatusException(
-                            HttpStatus.SERVICE_UNAVAILABLE,
-                            "Cluster unreachable, try again later",
-                            e
-                    );
-                }
-                throw e;
+                throw ClusterCallErrors.toHttp(e);
             }
         }
         return null;

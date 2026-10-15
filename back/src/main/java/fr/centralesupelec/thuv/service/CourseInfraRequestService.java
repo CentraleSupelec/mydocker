@@ -9,9 +9,7 @@ import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -42,11 +40,7 @@ public class CourseInfraRequestService {
                         "Could not check if a dedicated node exists for course '{}' / '{}' ({})",
                         courseId, e.getStatus().getCode().value(), e.getStatus().getDescription()
                 );
-                throw new ResponseStatusException(
-                        HttpStatus.SERVICE_UNAVAILABLE,
-                        "Cluster unreachable, try again later",
-                        e
-                );
+                throw ClusterCallErrors.toHttp(e);
             }
         }
         return nodeWithCourseIdLabelExists;
