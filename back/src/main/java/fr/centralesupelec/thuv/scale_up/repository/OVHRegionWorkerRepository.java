@@ -1,6 +1,7 @@
 package fr.centralesupelec.thuv.scale_up.repository;
 
 import fr.centralesupelec.thuv.model.Cluster;
+import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.CourseSession;
 import fr.centralesupelec.thuv.scale_up.model.OVHRegionWorker;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OVHRegionWorkerRepository extends JpaRepository<OVHRegionWorker, Long> {
+    long countByComputeType(ComputeType computeType);
     List<OVHRegionWorker> findOVHRegionWorkerByLaunchDeploymentSessionsToLaunchAndCleanDeploymentIsNull(
             CourseSession launchDeploymentSession
     );
