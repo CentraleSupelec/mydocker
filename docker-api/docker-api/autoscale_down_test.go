@@ -571,6 +571,141 @@ func (suite *AutoscaleDownTestSuite) TestTerraformNodeAbsentFromSwarmRemovedAfte
 	assert.Equal(suite.T(), []string{"orphan-node"}, nodesToDelete)
 }
 
+// fakeSwarmClient serves a node list the test can change between runs.
+type fakeSwarmClient struct {
+	scaleDownDockerClient
+	nodes   []swarm.Node
+	removed []string
+}
+
+func (f *fakeSwarmClient) NodeList(context.Context, tasksTypes.NodeListOptions) ([]swarm.Node, error) {
+	return f.nodes, nil
+}
+
+func (f *fakeSwarmClient) TaskList(context.Context, tasksTypes.TaskListOptions) ([]swarm.Task, error) {
+	return nil, nil
+}
+
+func (f *fakeSwarmClient) NodeRemove(_ context.Context, nodeID string, _ tasksTypes.NodeRemoveOptions) error {
+	f.removed = append(f.removed, nodeID)
+	return nil
+}
+
+type fakeDeployUtils struct {
+	DeployUtilsInterface
+	launched int
+}
+
+func (f *fakeDeployUtils) launchTerraform(*TerraformConfig, deployCallback, bool) error {
+	f.launched++
+	return nil
+}
+
+func readySwarmNode(name, owner string) swarm.Node {
+	return swarm.Node{
+		ID:          name,
+		Description: swarm.NodeDescription{Hostname: name},
+		Spec:        swarm.NodeSpec{Annotations: swarm.Annotations{Labels: map[string]string{"owner": owner}}},
+		Status:      swarm.NodeStatus{State: swarm.NodeStateReady},
+	}
+}
+
+func newAbsentTestService(client scaleDownDockerClient, minIdle int64, deployUtils DeployUtilsInterface) scaleDownService {
+	logger := log.New()
+	logger.SetLevel(log.DebugLevel)
+	return newScaleDownService(
+		client,
+		log.NewEntry(logger),
+		&sync.Mutex{},
+		&ScaleUpConfig{
+			Lock: sync.Mutex{},
+			ScaleUpOwners: map[string]scaleUpOwner{
+				"my-owner": {MinIdleNodesCount: minIdle, MaxNodesCount: 3},
+			},
+		},
+		deployUtils,
+		nil,
+	)
+}
+
+func (suite *AutoscaleDownTestSuite) TestAbsentNodeRemovedEvenWhenMinIdleWouldKeepIt() {
+	c.ScaleDownAbsentGracePeriod = "15m"
+	svc := newAbsentTestService(&fakeSwarmClient{}, 1, nil)
+	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+	svc.now = func() time.Time { return now }
+	tfConfig := &TerraformConfig{
+		NamedWorkers: map[string]TerraformNamedWorker{"orphan-node": {Name: "orphan-node", Owner: "my-owner"}},
+	}
+
+	_, err := svc.findNodesToDelete(tfConfig)
+	assert.NoError(suite.T(), err)
+	now = now.Add(16 * time.Minute)
+	nodesToDelete, err := svc.findNodesToDelete(tfConfig)
+
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), []string{"orphan-node"}, nodesToDelete)
+}
+
+func (suite *AutoscaleDownTestSuite) TestAbsentNodeTimerResetsWhenNodeJoinsSwarm() {
+	c.ScaleDownAbsentGracePeriod = "15m"
+	client := &fakeSwarmClient{}
+	svc := newAbsentTestService(client, 1, nil)
+	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+	svc.now = func() time.Time { return now }
+	tfConfig := &TerraformConfig{
+		NamedWorkers: map[string]TerraformNamedWorker{"slow-node": {Name: "slow-node", Owner: "my-owner"}},
+	}
+
+	_, _ = svc.findNodesToDelete(tfConfig) // absent: timer starts
+	now = now.Add(10 * time.Minute)
+	client.nodes = []swarm.Node{readySwarmNode("slow-node", "my-owner")}
+	_, _ = svc.findNodesToDelete(tfConfig) // joined: timer cleared
+	assert.NotContains(suite.T(), svc.absentSince, "slow-node")
+
+	now = now.Add(time.Minute)
+	client.nodes = nil
+	_, _ = svc.findNodesToDelete(tfConfig) // absent again: timer restarts
+	now = now.Add(10 * time.Minute)
+	nodesToDelete, err := svc.findNodesToDelete(tfConfig)
+
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(nodesToDelete), "10 minutes since the restart is under the grace period")
+}
+
+func (suite *AutoscaleDownTestSuite) TestDeleteNodesSkipsSwarmRemovalOfAbsentNode() {
+	client := &fakeSwarmClient{nodes: []swarm.Node{readySwarmNode("real-node", "my-owner")}}
+	deployUtils := &fakeDeployUtils{}
+	svc := newAbsentTestService(client, 0, deployUtils)
+	svc.swarmNodes = map[string]*NodeSummary{"real-node": {ID: "real-node", Owner: "my-owner"}}
+	tfConfig := &TerraformConfig{
+		NamedWorkers: map[string]TerraformNamedWorker{
+			"orphan-node": {Name: "orphan-node", Owner: "my-owner"},
+			"real-node":   {Name: "real-node", Owner: "my-owner"},
+		},
+	}
+
+	err := svc.deleteNodes(tfConfig, []string{"orphan-node", "real-node"})
+
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, deployUtils.launched)
+	assert.Equal(suite.T(), []string{"real-node"}, client.removed)
+}
+
+func (suite *AutoscaleDownTestSuite) TestScaleDownAbsentGracePeriodParsing() {
+	defer func() { c.ScaleDownAbsentGracePeriod = "" }()
+	for value, expected := range map[string]time.Duration{
+		"":     15 * time.Minute,
+		"30m":  30 * time.Minute,
+		"90s":  90 * time.Second,
+		"junk": 15 * time.Minute,
+		"0s":   15 * time.Minute,
+		"-5m":  15 * time.Minute,
+	} {
+		c.ScaleDownAbsentGracePeriod = value
+		assert.Equal(suite.T(), expected, scaleDownAbsentGracePeriod(), "value %q", value)
+	}
+}
+
 func TestAutoscaleDownTestSuite(t *testing.T) {
 	suite.Run(t, new(AutoscaleDownTestSuite))
 }
