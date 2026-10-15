@@ -8,16 +8,14 @@ import fr.centralesupelec.thuv.activity_logging.model.LogAction;
 import fr.centralesupelec.thuv.activity_logging.model.LogModelName;
 import fr.centralesupelec.thuv.activity_logging.services.ActivityLogger;
 import fr.centralesupelec.thuv.model.CourseSession;
-import io.grpc.ManagedChannel;
+import io.grpc.Channel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
 public class DelayDeletionService {
-    private final Map<String, ManagedChannel> channels;
+    private final Channel channel;
     private final ContainerUtilsService containerUtilsService;
     private final ActivityLogger activityLogger;
 
@@ -28,7 +26,7 @@ public class DelayDeletionService {
                 courseSession.getCourse().getId().toString()
         );
         containerServiceGrpc.containerServiceBlockingStub blockingStub = containerServiceGrpc
-                .newBlockingStub(this.channels.get(courseSession.getCourse().getComputeType().getCluster().getName()));
+                .newBlockingStub(this.channel);
 
         Metadata.Builder metadataBuilder = Metadata.newBuilder();
         Long deletionTime = containerUtilsService.computeDeletionTime(

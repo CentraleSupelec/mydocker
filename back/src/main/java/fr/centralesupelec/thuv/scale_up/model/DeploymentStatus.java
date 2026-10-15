@@ -2,7 +2,6 @@ package fr.centralesupelec.thuv.scale_up.model;
 
 import static java.lang.Integer.MAX_VALUE;
 
-import fr.centralesupelec.thuv.model.Cluster;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -37,10 +36,6 @@ public class DeploymentStatus {
     @Column(length = MAX_VALUE)
     @NotNull
     private String workers;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "cluster_id")
-    private Cluster cluster;
 
     @NotNull
     @Enumerated(EnumType.STRING)

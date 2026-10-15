@@ -21,5 +21,4 @@ public class ComputeTypeUpdateDto {
     private Long manualNodesCount;
     @NotEmpty
     private String storageBackend;
-    private Long cluster;
 }

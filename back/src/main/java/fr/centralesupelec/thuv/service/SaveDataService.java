@@ -3,11 +3,7 @@ package fr.centralesupelec.thuv.service;
 import fr.centralesupelec.gRPC.SaveDataRequest;
 import fr.centralesupelec.gRPC.SaveDataResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
-import fr.centralesupelec.thuv.model.Cluster;
-import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.UserCourse;
-import fr.centralesupelec.thuv.repository.ClusterRepository;
-import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.repository.UserCourseRepository;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
@@ -16,66 +12,38 @@ import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
 
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class SaveDataService {
     private static final Logger logger = LoggerFactory.getLogger(SaveDataService.class);
 
-    private final Map<String, ManagedChannel> channels;
+    private final ManagedChannel channel;
     private final UserCourseRepository userCourseRepository;
-    // Written from gRPC callback threads as well as request threads: concurrent maps, and stream
-    // creation always under the lock, so a send never sees a half-replaced stream.
-    private final Map<String, StreamObserver<SaveDataRequest>> requestObservers = new ConcurrentHashMap<>();
+    private StreamObserver<SaveDataRequest> saveDataRequestStreamObserver;
     private final ReentrantLock lock = new ReentrantLock();
-    private final Map<String, Boolean> shouldInitializeStubMap = new ConcurrentHashMap<>();
-    private final CourseRepository courseRepository;
-    private final ClusterRepository clusterRepository;
+    private boolean shouldInitializeStub = true;
 
     @Autowired
-    public SaveDataService(
-        Map<String, ManagedChannel> channels, 
-        UserCourseRepository userCourseRepository,
-        CourseRepository courseRepository,
-        ClusterRepository clusterRepository
-    ) {
-        this.channels = channels;
+    public SaveDataService(ManagedChannel channel, UserCourseRepository userCourseRepository) {
+        this.channel = channel;
         this.userCourseRepository = userCourseRepository;
-        this.courseRepository = courseRepository;
-        this.clusterRepository = clusterRepository;
     }
 
     @PostConstruct
     public void init() {
-        List<Cluster> clusters = clusterRepository.findAll();
-
-        for (Cluster cluster : clusters) {
-            shouldInitializeStubMap.put(cluster.getName(), true);
-            lock.lock();
-            try {
-                createNewStubIfNeeded(cluster);
-            } finally {
-                lock.unlock();
-            }
-        }
+        createNewStubIfNeeded();
     }
 
-    public void createNewStub(Cluster cluster) {
-        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channels.get(cluster.getName()));
+    public void createNewStub() {
+        containerServiceGrpc.containerServiceStub asyncStub = containerServiceGrpc.newStub(channel);
         
-        AtomicReference<StreamObserver<SaveDataRequest>> self = new AtomicReference<>();
-        StreamObserver<SaveDataRequest> requestObserver = asyncStub.saveData(new StreamObserver<>() {
+        this.saveDataRequestStreamObserver = asyncStub.saveData(new StreamObserver<>() {
             public void onNext(SaveDataResponse saveDataResponse) {
                 logger.debug("Received response");
                 Optional<UserCourse> optionalUserCourse = userCourseRepository.findByUserIdAndCourseId(
@@ -100,14 +68,7 @@ public class SaveDataService {
         
             public void onError(Throwable throwable) {
                 logger.error("Stream error");
-                lock.lock();
-                try {
-                    // Drop the dead stream so sends answer "not ready" until it is recreated.
-                    requestObservers.remove(cluster.getName(), self.get());
-                    shouldInitializeStubMap.put(cluster.getName(), true);
-                } finally {
-                    lock.unlock();
-                }
+                shouldInitializeStub = true;
                 if (logger.isDebugEnabled()) {
                     throwable.printStackTrace();
                 }
@@ -119,22 +80,19 @@ public class SaveDataService {
 
             }
         });
-        self.set(requestObserver);
-        requestObservers.put(cluster.getName(), requestObserver);
     }
 
-    public void createNewStubIfNeeded(Cluster cluster) {
-        ManagedChannel channel = channels.get(cluster.getName());
-        logger.debug("shouldInitializeStub : " + shouldInitializeStubMap.get(cluster.getName()));
-        if (!shouldInitializeStubMap.get(cluster.getName())) {
+    public void createNewStubIfNeeded() {
+        logger.debug("shouldInitializeStub : " + shouldInitializeStub);
+        if (!shouldInitializeStub) {
             return;
         }
         ConnectivityState state = channel.getState(true);
         logger.debug("Channel state : " + state);
 
         if (ConnectivityState.READY == state) {
-            createNewStub(cluster);
-            shouldInitializeStubMap.put(cluster.getName(), false);
+            createNewStub();
+            shouldInitializeStub = false;
             return;
         }
 
@@ -147,15 +105,8 @@ public class SaveDataService {
                 logger.debug("Channel state changed from CONNECTING to : " + newState);
         
                 if (ConnectivityState.READY == newState) {
-                    lock.lock();
-                    try {
-                        if (shouldInitializeStubMap.get(cluster.getName())) {
-                            createNewStub(cluster);
-                            shouldInitializeStubMap.put(cluster.getName(), false);
-                        }
-                    } finally {
-                        lock.unlock();
-                    }
+                    createNewStub();
+                    shouldInitializeStub = false;
                 }
             });
         }
@@ -164,30 +115,12 @@ public class SaveDataService {
     public void sendSaveData(SaveDataRequest request) {
         try {
             lock.lock();
-            Optional<Course> course = courseRepository.findById(Long.parseLong(request.getCourseID()));
-            if (course.isPresent()) {
-                Cluster cluster = course.get().getComputeType().getCluster();
-                createNewStubIfNeeded(cluster);
-
-                // The stream of the course's own cluster, never the last one initialized.
-                StreamObserver<SaveDataRequest> observer = requestObservers.get(cluster.getName());
-
-                if (observer != null) {
-                    try {
-                        observer.onNext(request);
-                    } catch (RuntimeException e) {
-                        // Cancel RPC
-                        observer.onError(e);
-                        throw e;
-                    }
-                } else {
-                    // Not sent: say so, never acknowledge a save that did not reach the Go API.
-                    throw new ResponseStatusException(
-                            HttpStatus.SERVICE_UNAVAILABLE,
-                            "The save stream to cluster " + cluster.getName() + " is not ready yet, retry in a moment"
-                    );
-                }
-            }
+            createNewStubIfNeeded();
+            saveDataRequestStreamObserver.onNext(request);
+        } catch (RuntimeException e) {
+            // Cancel RPC
+            saveDataRequestStreamObserver.onError(e);
+            throw e;
         } finally {
             lock.unlock();
         }

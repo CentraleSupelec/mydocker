@@ -5,7 +5,6 @@ import fr.centralesupelec.gRPC.ContainerStatusResponse;
 import fr.centralesupelec.thuv.dtos.ContainerDto;
 import fr.centralesupelec.thuv.dtos.ContainerStatusDto;
 import fr.centralesupelec.thuv.dtos.ContainerSwarmStateDto;
-import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.test_connection_scheduler.ContainerTestConnectionTaskScheduler;
 import fr.centralesupelec.thuv.test_connection_scheduler.dtos.ContainerScheduledDto;
@@ -14,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
+@Service
 public class ContainerStatusResponseStreamObserver implements StreamObserver<ContainerStatusResponse> {
     public static final String NO_SUITABLE_NODE = "no suitable node";
     private final Logger logger = LoggerFactory.getLogger(ContainerStatusResponseStreamObserver.class);
@@ -23,7 +24,6 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
     // Not final to avoid circular dependency
     private ContainerStatusConfigureService containerStatusConfigureService;
     private final ContainerTestConnectionTaskScheduler containerTestConnectionTaskScheduler;
-    private final Cluster cluster;
 
     public void onNext(ContainerStatusResponse containerStatusResponse) {
         ContainerDto containerDto = containerStorage.getContainer(
@@ -106,7 +106,7 @@ public class ContainerStatusResponseStreamObserver implements StreamObserver<Con
         if (logger.isDebugEnabled()) {
             throwable.printStackTrace();
         }
-        containerStatusConfigureService.setShouldInitializeStub(cluster.getName(), true);
+        containerStatusConfigureService.setShouldInitializeStub(true);
     }
 
     public void onCompleted() {

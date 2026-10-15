@@ -19,5 +19,4 @@ public abstract class DeploymentSummaryDto {
     private Long updatedOn;
     private Long startDateTime;
     private String description;
-    private Long cluster;
 }

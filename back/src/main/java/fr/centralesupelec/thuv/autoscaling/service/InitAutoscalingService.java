@@ -4,49 +4,33 @@ import fr.centralesupelec.gRPC.InitAutoscalingRequest;
 import fr.centralesupelec.gRPC.InitAutoscalingResponse;
 import fr.centralesupelec.gRPC.containerServiceGrpc;
 import fr.centralesupelec.thuv.mappers.ComputeTypeMapper;
-import fr.centralesupelec.thuv.model.Cluster;
 import fr.centralesupelec.thuv.model.ComputeType;
-import fr.centralesupelec.thuv.repository.ClusterRepository;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
 import io.grpc.ManagedChannel;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class InitAutoscalingService {
     private static final Logger logger = LoggerFactory.getLogger(InitAutoscalingService.class);
-    private final Map<String, ManagedChannel> channels;
+    private final ManagedChannel channel;
     private final ComputeTypeRepository computeTypeRepository;
     private final ComputeTypeMapper computeTypeMapper;
-    private Map<String, Boolean> isAutoscalingInitializedMap = new HashMap<>();
+    private boolean isAutoscalingInitialized = false;
 
-    private final ClusterRepository clusterRepository;
-
-    @PostConstruct
-    public void init() {
-        List<Cluster> clusters = clusterRepository.findAll();
-
-        for (Cluster cluster : clusters) {
-            isAutoscalingInitializedMap.put(cluster.getName(), false);
-        }
+    public void setIsAutoscalingInitialized(Boolean isAutoscalingInitialized) {
+        this.isAutoscalingInitialized = isAutoscalingInitialized;
     }
 
-    public void setIsAutoscalingInitialized(String cluster, Boolean isAutoscalingInitialized) {
-        isAutoscalingInitializedMap.put(cluster, isAutoscalingInitialized);
-    }
-
-    public void sendInitRequest(Cluster cluster) throws Exception {
-        containerServiceGrpc.containerServiceBlockingStub asyncStub = containerServiceGrpc.newBlockingStub(channels.get(cluster.getName()));
-        List<ComputeType> computeTypes = computeTypeRepository.findByCluster(cluster);
+    public void sendInitRequest() throws Exception {
+        containerServiceGrpc.containerServiceBlockingStub asyncStub = containerServiceGrpc.newBlockingStub(channel);
+        List<ComputeType> computeTypes = computeTypeRepository.findAll();
         InitAutoscalingRequest request = InitAutoscalingRequest
                 .newBuilder()
                 .putAllOwners(
@@ -68,17 +52,17 @@ public class InitAutoscalingService {
         }
     }
 
-    public void initAutoscalingByCluster(Cluster cluster) {
-        if (!isAutoscalingInitializedMap.get(cluster.getName()) && cluster.getDeploymentEnabled()) {
+    public void initAutoscaling() {
+        if (!isAutoscalingInitialized) {
             try {
-                sendInitRequest(cluster);
-                isAutoscalingInitializedMap.put(cluster.getName(), true);
-                logger.info(String.format("Successfully initialized autoscaling config for cluster %s", cluster.getName()));
+                sendInitRequest();
+                isAutoscalingInitialized = true;
+                logger.info("Successfully initialized autoscaling config");
             } catch (Exception e) {
-                logger.error(String.format("Could not initialize autoscaling config for cluster %s : %s", e.getMessage()), cluster.getName(), e);
+                logger.error(String.format("Could not initialize autoscaling config : %s", e.getMessage()), e);
             }
         } else {
-            logger.debug(String.format("Autoscaling already initialized for cluster %s, skipping", cluster.getName()));
+            logger.debug("Autoscaling already initialized, skipping");
         }
     }
 }
