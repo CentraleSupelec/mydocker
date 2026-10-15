@@ -40,14 +40,6 @@ const (
 	MOUNT_TARGET                                              = "/student_volume"
 )
 
-// A start failure that is not a VisibleError is reported with this generic error
-// key, and the original technical message under CONTAINER_START_ERROR_DETAIL_KEY
-// in the error params.
-const (
-	CONTAINER_START_ERROR            = "container.start-failed"
-	CONTAINER_START_ERROR_DETAIL_KEY = "detail"
-)
-
 type VisibleError struct {
 	msg    string
 	params map[string]string
@@ -60,21 +52,6 @@ func (e *VisibleError) Params() map[string]string {
 	return e.params
 }
 
-// setStartError records a failed start on the response so the back can complete
-// the request instead of waiting for an answer that never comes.
-func setStartError(response *pb.ContainerResponse, err error) {
-	var visibleError *VisibleError
-	if errors.As(err, &visibleError) {
-		log.Warnf("%s , %v", err.Error(), visibleError.Params())
-		response.Error = err.Error()
-		response.ErrorParams = visibleError.Params()
-		return
-	}
-	log.Error(err)
-	response.Error = CONTAINER_START_ERROR
-	response.ErrorParams = map[string]string{CONTAINER_START_ERROR_DETAIL_KEY: err.Error()}
-}
-
 func getOrCreateContainer(
 	in <-chan *pb.ContainerRequest,
 	out chan<- *pb.ContainerResponse,
@@ -85,108 +62,109 @@ func getOrCreateContainer(
 	workerIndex int,
 ) {
 	for request := range in {
-		response := &pb.ContainerResponse{
-			UserID:   request.UserID,
-			CourseID: request.CourseID,
-			Options:  request.Options,
-		}
 		ip, err := getIPAdress(dockerClient, c.Monolithic)
-		if err != nil {
-			setStartError(response, err)
-			out <- response
-			continue
-		}
-		response.IpAddress = ip
-		mapPort := map[uint32]*pb.ResponsePort{}
-		for _, port := range request.Ports {
-			mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
-		}
-		name := createContainerName(request.UserID, request.CourseID)
-		// exist reports a failed lookup as not existing, so the error is checked first.
-		found, id, imageId, existingAuthentication, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient)
-		if err != nil {
-			setStartError(response, err)
-			out <- response
-			continue
-		}
-		if found {
-			log.Debugf("Service %s already exists", name)
-			response.ImageID = imageId
-			response.AuthenticationMethod = existingAuthentication
-			response.Ports = existingPorts
-			response.DeletionTime = deletionTime
-
-			if shouldBeReplaced || (request.Options != nil && request.Options.ForceRecreate) {
-				err = deleteService(id, dockerClient)
+		if err == nil {
+			response := &pb.ContainerResponse{
+				UserID:    request.UserID,
+				CourseID:  request.CourseID,
+				Options:   request.Options,
+				IpAddress: ip,
+			}
+			mapPort := map[uint32]*pb.ResponsePort{}
+			for _, port := range request.Ports {
+				mapPort[port.PortToMap] = convertRequestPortToResponsePort(port)
+			}
+			name := createContainerName(request.UserID, request.CourseID)
+			if exist, id, imageId, userPassword, existingPorts, deletionTime, shouldBeReplaced, err := exist(name, mapPort, dockerClient); exist {
+				log.Debugf("Service %s already exists", name)
+				response.ImageID = imageId
+				response.AuthenticationMethod = userPassword
+				response.Ports = existingPorts
+				response.DeletionTime = deletionTime
 				if err != nil {
-					setStartError(response, err)
+					log.Error(err)
+					continue
+				}
+
+				if shouldBeReplaced || (request.Options != nil && request.Options.ForceRecreate) {
+					err = deleteService(id, dockerClient)
+					if err != nil {
+						log.Error(err)
+						continue
+					}
+				} else {
 					out <- response
 					continue
 				}
-			} else {
-				out <- response
+			}
+			response.ImageID = request.ImageID
+			portsArray, err := ports.Get(int64(len(request.Ports)))
+			log.Debugf("Got available ports %v", portsArray)
+			if err != nil {
+				log.Error(err)
 				continue
 			}
-		}
-		response.ImageID = request.ImageID
-		portsArray, err := ports.Get(int64(len(request.Ports)))
-		log.Debugf("Got available ports %v", portsArray)
-		if err != nil {
-			setStartError(response, err)
-			out <- response
-			continue
-		}
-		response.Ports = make([]*pb.ResponsePort, len(request.Ports))
-		for index, value := range request.Ports {
-			response.Ports[index] = convertRequestPortToResponsePort(value)
-			response.Ports[index].MapTo = portsArray[index].(uint32)
-			if value.ConnexionType == "HTTP" {
-				response.Ports[index].Hostname = fmt.Sprintf("%s.%s", strings.ReplaceAll(namesgenerator.GetRandomName(0), "_", "-"), c.ReverseProxyUrl)
+			response.Ports = make([]*pb.ResponsePort, len(request.Ports))
+			for index, value := range request.Ports {
+				response.Ports[index] = convertRequestPortToResponsePort(value)
+				response.Ports[index].MapTo = portsArray[index].(uint32)
+				if value.ConnexionType == "HTTP" {
+					response.Ports[index].Hostname = fmt.Sprintf("%s.%s", strings.ReplaceAll(namesgenerator.GetRandomName(0), "_", "-"), c.ReverseProxyUrl)
+				}
 			}
-		}
 
-		userPassword := &pb.UserPasswordMethod{
-			Username: namesgenerator.GetRandomName(0),
-			Password: randPassword(containerPasswordLength),
-		}
-		if request.Options != nil && request.Options.UserPassword != nil {
-			userPassword = request.Options.UserPassword
-		}
-
-		response.AuthenticationMethod = &pb.ContainerResponse_UserPassword{
-			UserPassword: userPassword,
-		}
-
-		// Pre-create volume if needed
-		if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume && request.Options.StorageBackend.String() == string(RBD) {
-			createRbdImageIn <- CreateRbdImageWorkerRequest{
-				imageName:   name,
-				size:        request.Options.WorkdirSize,
-				workerIndex: workerIndex,
+			userPassword := &pb.UserPasswordMethod{
+				Username: namesgenerator.GetRandomName(0),
+				Password: randPassword(containerPasswordLength),
 			}
-			var createImageError error
-			select {
-			case r := <-createRbdImageOut:
-				if r.imageName == name {
-					createImageError = r.err
+			if request.Options != nil && request.Options.UserPassword != nil {
+				userPassword = request.Options.UserPassword
+			}
+
+			response.AuthenticationMethod = &pb.ContainerResponse_UserPassword{
+				UserPassword: userPassword,
+			}
+
+			// Pre-create volume if needed
+			if request.Options != nil && request.Options.SaveStudentWork && c.PrecreateVolume && request.Options.StorageBackend.String() == string(RBD) {
+				createRbdImageIn <- CreateRbdImageWorkerRequest{
+					imageName:   name,
+					size:        request.Options.WorkdirSize,
+					workerIndex: workerIndex,
+				}
+				var createImageError error
+				select {
+				case r := <-createRbdImageOut:
+					if r.imageName == name {
+						createImageError = r.err
+						break
+					}
+				case <-time.After(6 * time.Minute):
+					createImageError = fmt.Errorf("create rdb image timeout after 6 minutes")
 					break
 				}
-			case <-time.After(6 * time.Minute):
-				createImageError = fmt.Errorf("create rdb image timeout after 6 minutes")
-				break
+				if createImageError != nil {
+					log.Errorf("Failed to pre-create volume %s with error %s", name, createImageError)
+					continue
+				}
 			}
-			if createImageError != nil {
-				setStartError(response, fmt.Errorf("Failed to pre-create volume %s with error %s", name, createImageError))
-				out <- response
-				continue
-			}
-		}
 
-		err = create(name, response, dockerClient, request)
-		if err != nil {
-			setStartError(response, err)
+			err = create(name, response, dockerClient, request)
+			if err != nil {
+				var visibleError *VisibleError
+				if errors.As(err, &visibleError) {
+					log.Warnf("%s , %v", err.Error(), err.(*VisibleError).Params())
+					response.Error = err.Error()
+					response.ErrorParams = err.(*VisibleError).Params()
+				} else {
+					log.Error(err)
+					continue
+				}
+			}
+			out <- response
+		} else {
+			log.Error(err)
 		}
-		out <- response
 	}
 }
 

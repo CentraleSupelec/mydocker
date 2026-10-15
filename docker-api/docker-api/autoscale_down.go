@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -39,6 +40,8 @@ func newScaleDownService(dockerClient scaleDownDockerClient, logger *log.Entry, 
 		deployUtils:      deployUtils,
 		autoscalingUtils: autoscalingUtils,
 		swarmNodes:       map[string]*NodeSummary{},
+		absentSince:      map[string]time.Time{},
+		now:              time.Now,
 	}
 }
 
@@ -58,7 +61,12 @@ type scaleDownService struct {
 	scaleUpConfig    *ScaleUpConfig
 	deployUtils      DeployUtilsInterface
 	autoscalingUtils AutoscalingUtilsInterface
+	// absentSince keeps, across runs, when a Terraform node was first seen missing from Swarm.
+	absentSince map[string]time.Time
+	now         func() time.Time
 }
+
+var errNodeNotInSwarm = errors.New("node is not registered in Swarm")
 
 func (s *scaleDownService) run() {
 	s.autoscalingLock.Lock()
@@ -111,6 +119,10 @@ func (s *scaleDownService) deleteNodes(terraformConfig *TerraformConfig, nodesTo
 		return err
 	}
 	for _, node := range nodesToDelete {
+		if s.swarmNodes[strings.ToLower(node)] == nil {
+			// Never joined Swarm: nothing to remove there.
+			continue
+		}
 		err := s.dockerClient.NodeRemove(ctx, strings.ToLower(node), types.NodeRemoveOptions{})
 		if err != nil {
 			return err
@@ -150,6 +162,25 @@ func (s *scaleDownService) classifyEmptyNodesInTerraform(terraformConfig *Terraf
 
 	for nodeName, workerConfig := range terraformConfig.NamedWorkers {
 		hasTasksRunning, err := s.hasTasksRunning(nodeName)
+		if errors.Is(err, errNodeNotInSwarm) {
+			// A node in Terraform that never joined Swarm is billed forever unless destroyed.
+			// Count it as empty once it stays absent longer than the grace period.
+			lowerCasedNodeName := strings.ToLower(nodeName)
+			firstSeen, known := s.absentSince[lowerCasedNodeName]
+			if !known {
+				s.absentSince[lowerCasedNodeName] = s.now()
+				s.logger.Warnf("Node %s is in Terraform but not in Swarm, waiting %s before removal", nodeName, scaleDownAbsentGracePeriod())
+				continue
+			}
+			if s.now().Sub(firstSeen) < scaleDownAbsentGracePeriod() {
+				s.logger.Warnf("Node %s is still absent from Swarm since %s", nodeName, firstSeen.Format(time.RFC3339))
+				continue
+			}
+			s.logger.Warnf("Node %s absent from Swarm since %s, scheduling it as empty", nodeName, firstSeen.Format(time.RFC3339))
+			hasTasksRunning, err = false, nil
+		} else if err == nil {
+			delete(s.absentSince, strings.ToLower(nodeName))
+		}
 		if err != nil {
 			s.logger.Errorf("Unable to retrieve tasks for node %s : %v", nodeName, err)
 			continue
@@ -217,7 +248,12 @@ func (s *scaleDownService) findNodesToDelete(terraformConfig *TerraformConfig) (
 			}
 			if lastNode != "" {
 				nodesToDelete = append(nodesToDelete, lastNode)
-				s.logger.Infof("Scheduling %s (%s) for removal", lastNode, s.swarmNodes[strings.ToLower(lastNode)].ID)
+				swarmID := "not in Swarm"
+				if node := s.swarmNodes[strings.ToLower(lastNode)]; node != nil {
+					swarmID = node.ID
+				}
+				delete(s.absentSince, strings.ToLower(lastNode))
+				s.logger.Infof("Scheduling %s (%s) for removal", lastNode, swarmID)
 			}
 		}
 		// TODO Remove node not empty if count of existing nodes > c.MaxNodes
@@ -237,7 +273,7 @@ func (s *scaleDownService) hasTasksRunning(nodeName string) (bool, error) {
 	}
 	node := s.swarmNodes[lowerCasedNodeName]
 	if node == nil {
-		return true, fmt.Errorf("node %s is not registered in Swarm", lowerCasedNodeName)
+		return true, fmt.Errorf("node %s: %w", lowerCasedNodeName, errNodeNotInSwarm)
 	}
 	tasks, err := s.dockerClient.TaskList(ctx, types.TaskListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{
@@ -311,4 +347,19 @@ func (s *scaleDownService) countEmptyManualNodes(owner string, terraformNodes []
 		idleManualNodesCount = idleManualNodesCount + 1
 	}
 	return idleManualNodesCount, nil
+}
+
+const defaultScaleDownAbsentGracePeriod = 15 * time.Minute
+
+// scaleDownAbsentGracePeriod is how long a Terraform node may stay absent from Swarm
+// before scale-down destroys it. It covers a slow `docker swarm join`.
+func scaleDownAbsentGracePeriod() time.Duration {
+	if c.ScaleDownAbsentGracePeriod == "" {
+		return defaultScaleDownAbsentGracePeriod
+	}
+	d, err := time.ParseDuration(c.ScaleDownAbsentGracePeriod)
+	if err != nil || d <= 0 {
+		return defaultScaleDownAbsentGracePeriod
+	}
+	return d
 }

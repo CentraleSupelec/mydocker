@@ -3,6 +3,7 @@ package main
 import (
 	"sync"
 	"testing"
+	"time"
 
 	tasksTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
@@ -524,6 +525,50 @@ func (suite *AutoscaleDownTestSuite) TestOneManualOneScaledZeroIdle() {
 
 	assert.Equal(suite.T(), 1, len(nodesToDelete))
 	assert.Equal(suite.T(), "autoscaled-NODE-1", nodesToDelete[0])
+}
+
+func (suite *AutoscaleDownTestSuite) TestTerraformNodeAbsentFromSwarmRemovedAfterGracePeriod() {
+	/*
+		1 noeud dans terraform, absent de Swarm, 0 idle demandé => conservé pendant le délai de grâce, supprimé ensuite
+	*/
+	c.ScaleDownAbsentGracePeriod = "15m"
+	stubClient := new(autoscaleDownTestingClient)
+	suite.mocks = append(suite.mocks, stubClient.On("NodeList", mock.Anything, mock.Anything).Return([]swarm.Node{}, nil))
+
+	logger := log.New()
+	logger.SetLevel(log.DebugLevel)
+	scaleDownService := newScaleDownService(
+		stubClient,
+		log.NewEntry(logger),
+		&sync.Mutex{},
+		&ScaleUpConfig{
+			Lock: sync.Mutex{},
+			ScaleUpOwners: map[string]scaleUpOwner{
+				"my-owner": {MinIdleNodesCount: 0, MaxNodesCount: 3},
+			},
+		},
+		nil,
+		nil,
+	)
+	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+	scaleDownService.now = func() time.Time { return now }
+	tfConfig := &TerraformConfig{
+		NamedWorkers: map[string]TerraformNamedWorker{"orphan-node": {Name: "orphan-node", Owner: "my-owner"}},
+	}
+
+	nodesToDelete, err := scaleDownService.findNodesToDelete(tfConfig)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(nodesToDelete))
+
+	now = now.Add(14 * time.Minute)
+	nodesToDelete, err = scaleDownService.findNodesToDelete(tfConfig)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(nodesToDelete))
+
+	now = now.Add(2 * time.Minute)
+	nodesToDelete, err = scaleDownService.findNodesToDelete(tfConfig)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), []string{"orphan-node"}, nodesToDelete)
 }
 
 func TestAutoscaleDownTestSuite(t *testing.T) {

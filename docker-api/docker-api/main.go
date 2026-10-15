@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"io"
 	"math/rand"
 	"net"
 	_ "net/http/pprof"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -22,6 +25,7 @@ import (
 
 	"github.com/docker/docker/client"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"fmt"
 	"strings"
@@ -68,6 +72,8 @@ type config struct {
 	EmailTo                 []string
 	LogsTimeout             string
 	ScaleDownRemoveNonEmpty bool
+	// ScaleDownAbsentGracePeriod: Go duration, default 15m.
+	ScaleDownAbsentGracePeriod string
 	DeployEnvSecrets        []string
 	PrecreateVolume         bool
 	StopScaleUpFilePath     string
@@ -84,6 +90,18 @@ type config struct {
 	LogsTailLines           int
 	LogsMaxTasks            int
 	Monolithic              bool
+	GRPCServerCertPath      string
+	GRPCServerKeyPath       string
+	GRPCClientCAPath        string
+	RcloneS3Type            string
+	RcloneS3Provider        string
+	RcloneS3AccessKeyID     string
+	RcloneS3SecretAccessKey string
+	RcloneS3Region          string
+	RcloneS3Endpoint        string
+	TerraformAwsS3Endpoint  string
+	TerraformRegion         string
+	HostsFilePath           string
 	VolumeMounts            []volumeMount
 }
 
@@ -444,6 +462,9 @@ func main() {
 	viper.SetDefault("CaddyTlsInternal", false)
 	viper.SetDefault("CaddyTlsCertificatePath", "/etc/ssl/caddy_reverse_proxy/cert.pem")
 	viper.SetDefault("CaddyTlsKeyPath", "/etc/ssl/caddy_reverse_proxy/key.pem")
+	viper.SetDefault("GRPCServerCertPath", "/etc/ssl/server/server.crt")
+	viper.SetDefault("GRPCServerKeyPath", "/etc/ssl/server/server.key")
+	viper.SetDefault("GRPCClientCAPath", "/etc/ssl/server/ca.crt")
 	viper.SetDefault("CaddyStreamCloseDelay", "4h")
 	viper.SetDefault("ContainerStatusInterval", "1s")
 	viper.SetDefault("PortWorkerInterval", "5s")
@@ -487,14 +508,37 @@ func main() {
 	addCleaningCron(cronS, cli)
 	cronS.StartAsync()
 
-	// Create gRPC server
+	serverCert, err := tls.LoadX509KeyPair(c.GRPCServerCertPath, c.GRPCServerKeyPath)
+	if err != nil {
+		log.Fatalf("failed to load server key pair: %v", err)
+	}
+
+	caCert, err := os.ReadFile(c.GRPCClientCAPath)
+	if err != nil {
+		log.Fatalf("failed to read CA certificate: %v", err)
+	}
+	caPool := x509.NewCertPool()
+	if !caPool.AppendCertsFromPEM(caCert) {
+		log.Fatalf("failed to append CA certificate")
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientCAs:    caPool,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		NextProtos:   []string{"h2"},
+	}
+
+	creds := credentials.NewTLS(tlsConfig)
+	log.Printf(creds.Info().ProtocolVersion)
 	binding := ":" + strconv.Itoa(c.Port)
 	lis, err := net.Listen("tcp", binding)
 	if err != nil {
 		log.Panicf("failed to listen: %v", err)
 	}
-	log.Debugf("Listening on %s", binding)
+	log.Printf("Listening on %s with TLS", binding)
 	s := grpc.NewServer(
+		grpc.Creds(creds),
 		grpc.MaxRecvMsgSize(c.MaxRecvMsgSize),
 	)
 	pb.RegisterContainerServiceServer(s, &server{dockerClient: cli, ports: ports, cronScheduler: cronS})
