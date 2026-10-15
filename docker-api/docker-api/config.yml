@@ -53,15 +53,3 @@ Monolithic: true
 VolumeMounts: []
   # - Source: shared
   #   Target: /shared
-GRPCServerCertPath: "/app/server.crt"
-GRPCServerKeyPath: "/app/server.key"
-GRPCClientCAPath: "/app/ca.crt"
-RcloneS3Type: s3
-RcloneS3Provider: AWS
-RcloneS3AccessKeyID: ""
-RcloneS3SecretAccessKey: ""
-RcloneS3Region: us-east-1
-RcloneS3Endpoint:
-TerraformAwsS3Endpoint: "https://s3.gra.perf.cloud.ovh.net"
-TerraformRegion: "gra"
-HostsFilePath:
