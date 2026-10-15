@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,8 +57,8 @@ class DeploymentMapperClusterTest {
         when(courseSessionRepository.getReferenceById(20L)).thenReturn(session(20L, clusterB));
         when(courseSessionRepository.getReferenceById(30L)).thenReturn(session(30L, null));
         when(computeTypeRepository.getReferenceById(5L)).thenReturn(new ComputeType().setCluster(clusterA));
-        when(ovhRegionWorkerRepository.getReferenceById(200L))
-                .thenReturn(new OVHRegionWorker().setComputeType(new ComputeType().setCluster(clusterB)));
+        when(ovhRegionWorkerRepository.findById(200L))
+                .thenReturn(Optional.of(new OVHRegionWorker().setComputeType(new ComputeType().setCluster(clusterB))));
     }
 
     @Test
@@ -131,8 +132,8 @@ class DeploymentMapperClusterTest {
     void cleanRejectsAnOwnerlessWorkerLaunchedOnAnotherCluster() {
         LaunchDeployment launchedOnB = new LaunchDeployment();
         launchedOnB.setCluster(clusterB);
-        when(ovhRegionWorkerRepository.getReferenceById(300L))
-                .thenReturn(new OVHRegionWorker().setLaunchDeployment(launchedOnB));
+        when(ovhRegionWorkerRepository.findById(300L))
+                .thenReturn(Optional.of(new OVHRegionWorker().setLaunchDeployment(launchedOnB)));
 
         assertThatThrownBy(() -> mapper.applyChange(
                 new CleanDeployment(),
@@ -154,11 +155,25 @@ class DeploymentMapperClusterTest {
     }
 
     @Test
+    void cleanRejectsAWorkerThatDoesNotExist() {
+        when(ovhRegionWorkerRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> mapper.applyChange(
+                new CleanDeployment(),
+                dto(new CleanUpdateDeploymentDto(), List.of(10L), List.of(new OVHRegionWorkerDto().setId(404L)))
+        ))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(e -> assertThat(((ResponseStatusException) e).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST))
+                .hasMessageContaining("Worker 404 not found");
+    }
+
+    @Test
     void cleanAcceptsAnOwnerlessWorkerLaunchedOnTheSameCluster() throws Exception {
         LaunchDeployment launchedOnA = new LaunchDeployment();
         launchedOnA.setCluster(clusterA);
-        when(ovhRegionWorkerRepository.getReferenceById(301L))
-                .thenReturn(new OVHRegionWorker().setId(301L).setLaunchDeployment(launchedOnA));
+        OVHRegionWorker stored = new OVHRegionWorker().setId(301L).setLaunchDeployment(launchedOnA);
+        when(ovhRegionWorkerRepository.findById(301L)).thenReturn(Optional.of(stored));
+        when(ovhRegionWorkerRepository.getReferenceById(301L)).thenReturn(stored);
         CleanDeployment deployment = new CleanDeployment();
 
         mapper.applyChange(deployment, dto(new CleanUpdateDeploymentDto(), List.of(10L), List.of(new OVHRegionWorkerDto().setId(301L))));

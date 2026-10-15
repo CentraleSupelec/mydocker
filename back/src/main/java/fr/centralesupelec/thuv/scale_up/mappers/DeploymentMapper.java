@@ -120,7 +120,11 @@ public class DeploymentMapper {
                 if (worker.getId() == null) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Worker id is required");
                 }
-                OVHRegionWorker stored = ovhRegionWorkerRepository.getReferenceById(worker.getId());
+                OVHRegionWorker stored = ovhRegionWorkerRepository.findById(worker.getId()).orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST, String.format("Worker %d not found", worker.getId())
+                        )
+                );
                 String message = String.format(
                         "Worker %d runs on a different cluster than that of the deployment", worker.getId()
                 );
