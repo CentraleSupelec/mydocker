@@ -138,15 +138,6 @@ func (d *DeployUtils) launchTerraform(terraformConfig *TerraformConfig, callback
 		"TF_VARIABLES=" + string(jsonConfig),
 		"ENV=" + c.Environment,
 		"STATE_NAME=" + terraformConfig.StateName,
-		"RCLONE_S3_TYPE=" + c.RcloneS3Type,
-		"RCLONE_S3_PROVIDER=" + c.RcloneS3Provider,
-		"RCLONE_S3_ACCESS_KEY_ID=" + c.RcloneS3AccessKeyID,
-		"RCLONE_S3_SECRET_ACCESS_KEY=" + c.RcloneS3SecretAccessKey,
-		"RCLONE_S3_REGION=" + c.RcloneS3Region,
-		"RCLONE_S3_ENDPOINT=" + c.RcloneS3Endpoint,
-		"AWS_S3_ENDPOINT=" + c.TerraformAwsS3Endpoint,
-		"AWS_REGION=" + c.TerraformRegion,
-		"HOSTS_FILE_PATH=" + c.HostsFilePath,
 	}
 	for _, value := range c.DeployEnvSecrets {
 		envVars = append(envVars, value)

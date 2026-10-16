@@ -41,7 +41,6 @@ func newScaleDownService(dockerClient scaleDownDockerClient, logger *log.Entry, 
 		autoscalingUtils: autoscalingUtils,
 		swarmNodes:       map[string]*NodeSummary{},
 		absentSince:      map[string]time.Time{},
-		expiredAbsent:    map[string]bool{},
 		now:              time.Now,
 	}
 }
@@ -64,9 +63,7 @@ type scaleDownService struct {
 	autoscalingUtils AutoscalingUtilsInterface
 	// absentSince keeps, across runs, when a Terraform node was first seen missing from Swarm.
 	absentSince map[string]time.Time
-	// expiredAbsent holds, for the current run, the nodes absent from Swarm past the grace period.
-	expiredAbsent map[string]bool
-	now           func() time.Time
+	now         func() time.Time
 }
 
 var errNodeNotInSwarm = errors.New("node is not registered in Swarm")
@@ -163,7 +160,6 @@ func (s *scaleDownService) classifyEmptyNodesInTerraform(terraformConfig *Terraf
 	notEmptyNodesInTerraformByOwner := make(map[string][]string)
 	allNodesInTerraformByOwner := make(map[string][]string)
 
-	s.expiredAbsent = make(map[string]bool)
 	for nodeName, workerConfig := range terraformConfig.NamedWorkers {
 		hasTasksRunning, err := s.hasTasksRunning(nodeName)
 		if errors.Is(err, errNodeNotInSwarm) {
@@ -181,7 +177,6 @@ func (s *scaleDownService) classifyEmptyNodesInTerraform(terraformConfig *Terraf
 				continue
 			}
 			s.logger.Warnf("Node %s absent from Swarm since %s, scheduling it as empty", nodeName, firstSeen.Format(time.RFC3339))
-			s.expiredAbsent[lowerCasedNodeName] = true
 			hasTasksRunning, err = false, nil
 		} else if err == nil {
 			delete(s.absentSince, strings.ToLower(nodeName))
@@ -213,17 +208,7 @@ func (s *scaleDownService) findNodesToDelete(terraformConfig *TerraformConfig) (
 
 	s.scaleUpConfig.Lock.Lock()
 	for owner, _ := range allNodesInTerraformByOwner {
-		// An orphan is no idle capacity: it is destroyed whatever MinIdleNodesCount says.
-		var emptyNodesInTerraform []string
-		for _, node := range emptyNodesInTerraformByOwner[owner] {
-			if s.expiredAbsent[strings.ToLower(node)] {
-				nodesToDelete = append(nodesToDelete, node)
-				delete(s.absentSince, strings.ToLower(node))
-				s.logger.Infof("Scheduling %s (not in Swarm) for removal", node)
-				continue
-			}
-			emptyNodesInTerraform = append(emptyNodesInTerraform, node)
-		}
+		emptyNodesInTerraform := emptyNodesInTerraformByOwner[owner]
 		notEmptyNodesInTerraform := notEmptyNodesInTerraformByOwner[owner]
 		idleManualNodesCount, err := s.countEmptyManualNodes(owner, allNodesInTerraformByOwner[owner])
 		if err != nil {
