@@ -133,14 +133,7 @@
         },
         "success": "The course has been successfully updated",
         "error": "An error occurred while updating the course",
-        "save" : "Save changes",
-        "delete": {
-          "button": "Delete",
-          "confirm_title": "Delete this course?",
-          "confirm_text": "The course will no longer be visible to its students or to other teachers. An administrator can restore it.",
-          "success": "The course has been deleted",
-          "error": "An error occurred while deleting the course"
-        }
+        "save" : "Save changes"
       },
       "columns": {
         "name": "Course name",
@@ -328,6 +321,7 @@
             "label": "Deployment date",
             "selected_sessions": "Selected sessions"
           },
+          "cluster": "Cluster",
           "resource_allocation": {
             "label": "Resource allocation",
             "resource_to_clean": "Resource to clean",
@@ -354,6 +348,7 @@
         "instances": "instances"
       },
       "deployment_status": {
+        "cluster": "Cluster",
         "nav_label": "Deployment status",
         "title": "List of deployments",
         "breadcrumb": "Deployment status",
@@ -413,6 +408,7 @@
           "technical_identifier": "Technical identifier",
           "gpu": "Usable for GPU tasks",
           "storage_backend": "Storage backend",
+          "cluster": "Cluster",
           "success":"The compute type has been successfully updated",
           "error": "An error occurred while updating the compute type",
           "save":"Save changes",
@@ -459,6 +455,45 @@
           "slug": "Slug",
           "success": "The content has been successfully updated",
           "error": "An error occurred while updating the content",
+          "save":"Save changes"
+        }
+      },
+      "clusters": {
+        "nav_label": "Clusters",
+        "title": "Clusters administration",
+        "breadcrumb": "Clusters",
+        "create": "Create",
+        "create_new": "Create a new cluster",
+        "create_submit": "Create the cluster",
+        "create_breadcrumb": "Creation of a cluster",
+        "create_success":"The cluster has been created",
+        "create_error":"An error occurred while creating the cluster",
+        "yes": "Yes",
+        "no": "No",
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete",
+          "delete_confirmation": "Are you sure you want to delete the cluster \"{name}\" ?",
+          "delete_success": "The cluster \"{name}\" has been deleted successfully",
+          "delete_error": "Impossible to delete the cluster \"{name}\""
+        },
+        "columns": {
+          "name": "Name",
+          "go_adress": "Go address",
+          "go_port": "Go port",
+          "deployment_enabled": "Deployment enabled ?"
+        },
+        "edit": {
+          "title": "Cluster edition",
+          "restart_note": "Changes to a cluster take effect after the back end restarts.",
+          "breadcrumb": "Edition of a cluster",
+          "name": "Name",
+          "go_adress": "Go address",
+          "go_port": "Go port",
+          "deployment_enabled": "Deployment enabled",
+          "terraform_url": "Terraform state URL",
+          "success": "The cluster has been successfully updated",
+          "error": "An error occurred while updating the cluster",
           "save":"Save changes"
         }
       }
@@ -573,7 +608,6 @@
     "reinitialze_countdown_failure": "Unable to delay the environment shutdown",
     "step": "step",
     "join_error": "The requested environment is not available.",
-    "join_course_deleted": "This course is no longer available.",
     "status_unavailable": "The state of this environment cannot be read at the moment",
     "retry": "Try again",
     "fetch_error": "Error fetching container:",

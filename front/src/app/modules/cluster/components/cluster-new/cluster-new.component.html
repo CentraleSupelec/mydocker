@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">{{ 'admin.resources_management.clusters.create_new' | translate }}</h1>
+
+<app-cluster-form
+  [formControl]="clusterForm"
+></app-cluster-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="clusterForm.invalid" (click)="submit()" color="primary">
+    {{ 'admin.resources_management.clusters.create_submit' | translate }}
+  </button>
+</div>

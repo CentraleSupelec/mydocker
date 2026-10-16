@@ -43,10 +43,6 @@ export class AdminCoursesApiService {
     return this.httClient.put<IAdminCourse>(`${this.config.back_url}admin/courses/${id}`, course);
   }
 
-  markCourseDeleted(id: number): Observable<IAdminCourse> {
-    return this.httClient.put<IAdminCourse>(`${this.config.back_url}admin/courses/${id}/mark-deleted`, null);
-  }
-
   createCourse(course: IAdminUpdateCourse): Observable<IAdminCourse> {
     return this.httClient.post<IAdminCourse>(`${this.config.back_url}admin/courses`, course);
   }

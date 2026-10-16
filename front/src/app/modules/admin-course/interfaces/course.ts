@@ -6,8 +6,7 @@ export enum CourseStatus {
   DRAFT = 'DRAFT',
   TEST = 'TEST',
   READY = 'READY',
-  ARCHIVED = 'ARCHIVED',
-  DELETED = 'DELETED'
+  ARCHIVED = 'ARCHIVED'
 }
 
 export interface IAdminUpdateCourse extends IAdminCourseBase {

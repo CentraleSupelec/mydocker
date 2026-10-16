@@ -23,11 +23,6 @@
         <app-course-icon-status [status]="v[1]"></app-course-icon-status>{{ v[1] }}
       </mat-option>
     </mat-select>
-    <!-- DELETED has no option, so the trigger stays empty: show it read-only here -->
-    <mat-hint *ngIf="formGroup.get('status')?.value === 'DELETED'" class="deleted-status" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-      <app-course-icon-status [status]="deletedStatus"></app-course-icon-status>
-      <span>DELETED</span>
-    </mat-hint>
   </mat-form-field>
   <p>
     <mat-checkbox formControlName="automaticShutdown">{{ 'admin.courses.edit.general_info.automatic_shutdown.label' | translate }}</mat-checkbox>

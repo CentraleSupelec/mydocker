@@ -1,11 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from "@angular/platform-browser";
-import { MatSelect } from "@angular/material/select";
 
 import { CoursesListComponent } from './courses-list.component';
 import { AdminCourseModule } from "../../admin-course.module";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { NgxPermissionsModule, NgxPermissionsService } from "ngx-permissions";
+import { NgxPermissionsModule } from "ngx-permissions";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
@@ -42,38 +40,13 @@ describe('CoursesListComponent', () => {
     .compileComponents();
   });
 
-  async function render(permissions: string[]) {
-    TestBed.inject(NgxPermissionsService).loadPermissions(permissions);
+  beforeEach(() => {
     fixture = TestBed.createComponent(CoursesListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-  }
+  });
 
-  function statusFilterValues(): string[] {
-    const select = fixture.debugElement
-      .queryAll(By.directive(MatSelect))
-      .map(de => de.injector.get(MatSelect))
-      .find(s => s.ngControl?.name === 'status');
-    expect(select).toBeTruthy();
-    select!.open();
-    fixture.detectChanges();
-    return select!.options.map(o => o.value);
-  }
-
-  it('should create', async () => {
-    await render([]);
+  it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('does not offer DELETED in a teacher\'s status filter', async () => {
-    await render(['ROLE_TEACHER']);
-    expect(statusFilterValues()).toEqual(['DRAFT', 'TEST', 'READY', 'ARCHIVED']);
-  });
-
-  it('offers DELETED in an admin\'s status filter', async () => {
-    await render(['ROLE_ADMIN', 'ROLE_TEACHER']);
-    expect(statusFilterValues()).toEqual(['DRAFT', 'TEST', 'READY', 'ARCHIVED', 'DELETED']);
   });
 });

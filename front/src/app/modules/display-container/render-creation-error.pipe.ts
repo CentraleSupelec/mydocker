@@ -14,15 +14,8 @@ export class RenderCreationErrorPipe implements PipeTransform {
   ) {
   }
 
-  /**
-   * `detail` is the technical reason known when there is no container to read it from, such as the
-   * answer to a start request that failed.
-   */
-  transform(container: IContainer | null, detail?: string | null) {
+  transform(container: IContainer | null) {
     if (!container) {
-      if (detail) {
-        return this.translate.instant('container.problem_encountered', { error: detail });
-      }
       return this.translate.instant('container.unknown_error');
     }
     switch (container.creationError) {
@@ -38,7 +31,7 @@ export class RenderCreationErrorPipe implements PipeTransform {
         }).replace(/:/, "h")}` : this.translate.instant('container.recently');
         const dateString = date ? `${this.translate.instant('container.on')} ${date?.toLocaleDateString()}` : '';
         const dateParts = [timeString];
-        if (date && (date?.getDay() !== now?.getDay() || date?.getMonth() !== now.getMonth())) {
+        if (date && (date?.getDate() !== now?.getDate() || date?.getMonth() !== now.getMonth())) {
           dateParts.unshift(dateString);
         }
         const formattedDate = dateParts.join(' ');
@@ -50,13 +43,6 @@ export class RenderCreationErrorPipe implements PipeTransform {
           course: courseTitle,
           date: formattedDate
         })
-      case "container.start-failed":
-        // The goapp sends the technical reason of the failed start under `detail`.
-        const startDetail = container.errorParams?.["detail"];
-        if (startDetail) {
-          return this.translate.instant('container.problem_encountered', { error: startDetail });
-        }
-        return this.translate.instant('container.unknown_error');
       default:
         if (container.creationError?.startsWith("No such image:")) {
           return this.translate.instant('container.image_not_found_error');

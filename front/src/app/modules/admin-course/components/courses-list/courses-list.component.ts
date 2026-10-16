@@ -8,7 +8,6 @@ import { merge, Subject } from "rxjs";
 import { debounceTime, mergeMap, tap } from "rxjs/operators";
 import { MatSort } from "@angular/material/sort";
 import { MatPaginator } from "@angular/material/paginator";
-import { NgxPermissionsService } from "ngx-permissions";
 
 @Component({
   selector: 'app-courses-list',
@@ -27,8 +26,7 @@ export class CoursesListComponent implements OnInit, OnDestroy {
   courses: IAdminCourse[] = [];
   courseSize: number | undefined;
   formGroup!: FormGroup;
-  // DELETED is added for administrators only, see ngOnInit
-  availableStatus = Object.entries(CourseStatus).filter(([, status]) => status !== CourseStatus.DELETED)
+  readonly availableStatus = Object.entries(CourseStatus)
 
   @ViewChild(MatPaginator, {static: true}) paginator!: MatPaginator;
   @ViewChild(MatSort, {static: true}) sort!: MatSort;
@@ -44,7 +42,6 @@ export class CoursesListComponent implements OnInit, OnDestroy {
     private readonly adminCourseApiService: AdminCoursesApiService,
     private readonly fb: FormBuilder,
     @Inject(APP_CONFIG) readonly config: IAppConfig,
-    private readonly permissionsService: NgxPermissionsService,
   ) {}
 
   ngOnInit(): void {
@@ -54,12 +51,6 @@ export class CoursesListComponent implements OnInit, OnDestroy {
       query: [''],
       status: [['DRAFT','TEST','READY']],
       dateLimit: [threeMonthsAgo.valueOf()]
-    });
-
-    this.permissionsService.hasPermission('ROLE_ADMIN').then(isAdmin => {
-      if (isAdmin) {
-        this.availableStatus = Object.entries(CourseStatus);
-      }
     });
 
     if (this.paginator && this.sort) {

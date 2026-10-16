@@ -8,6 +8,7 @@ import { IAdminCourse } from "../../interfaces/course";
 import { Location } from '@angular/common';
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { TranslateService } from '@ngx-translate/core';
+import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
 
 @Component({
   selector: 'app-course-new',
@@ -17,6 +18,7 @@ import { TranslateService } from '@ngx-translate/core';
 export class CourseNewComponent implements OnInit {
   readonly courseForm: FormControl;
   computeTypes?: IComputeType[];
+  clusters: IClusterBasicInformaion[] = [];
   constructor(
     formBuilder: FormBuilder,
     private readonly adminCoursesApi: AdminCoursesApiService,
@@ -34,6 +36,7 @@ export class CourseNewComponent implements OnInit {
     this.route.data.subscribe(
       d => {
         this.computeTypes = d.computeTypes;
+        this.clusters = d.clusters;
       }
     )
 

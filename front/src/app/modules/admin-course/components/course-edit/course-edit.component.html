@@ -1,24 +1,12 @@
 <div fxLayout="row" fxLayoutAlign="space-between start">
   <h1 class="mat-display-1">{{ 'admin.courses.edit.title' | translate }}: {{ course?.title }}</h1>
-  <div fxLayout="row" fxLayoutAlign="end center">
-    <button
-      mat-icon-button
-      (click)="openShareDialog()"
-      *ngxPermissionsOnly="['ROLE_ADMIN', 'course.' + course?.id + '.creator']"
-    >
-      <mat-icon>share</mat-icon>
-    </button>
-    <ng-container *ngIf="course?.status !== deletedStatus">
-      <button
-        mat-button
-        color="warn"
-        (click)="delete()"
-        *ngxPermissionsOnly="['ROLE_ADMIN', 'course.' + course?.id + '.edit', 'course.' + course?.id + '.creator']"
-      >
-        {{ 'admin.courses.edit.delete.button' | translate }}
-      </button>
-    </ng-container>
-  </div>
+  <button
+    mat-icon-button
+    (click)="openShareDialog()"
+    *ngxPermissionsOnly="['ROLE_ADMIN', 'course.' + course?.id + '.creator']"
+  >
+    <mat-icon>share</mat-icon>
+  </button>
 </div>
 
 <app-course-form
@@ -27,6 +15,7 @@
   [formControl]="courseForm"
   [sessionsById]="sessionsById"
   [courseUuid]="course?.uuid"
+  [clusters]="clusters"
 ></app-course-form>
 
 <div fxLayout="row" fxLayoutAlign="flex-end">

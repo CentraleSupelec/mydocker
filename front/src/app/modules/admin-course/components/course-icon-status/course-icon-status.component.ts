@@ -13,7 +13,6 @@ export class CourseIconStatusComponent {
   @Input() draftToolTip: string = 'Brouillon';
   @Input() readyToolTip: string = 'Prêt';
   @Input() archivedToolTip: string = 'Archivé';
-  @Input() deletedToolTip: string = 'Supprimé';
 
   constructor() { }
 }

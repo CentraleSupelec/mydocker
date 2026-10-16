@@ -21,7 +21,7 @@
     <mat-form-field fxFill *ngIf="sessions.length > 0 else noSessions">
       <mat-label>{{ 'admin.resources_management.deployment.edit.linked_sessions.label' | translate}}</mat-label>
       <mat-select formControlName="sessions" multiple>
-        <mat-option *ngFor="let session of sessions" [value]="session.id">
+        <mat-option *ngFor="let session of sessionsForCluster" [value]="session.id">
           {{ session.course.title }},
           {{ session.startDateTime | translatedDate:'dd/MM/yy':'HH:mm' }}
         </mat-option>
@@ -55,6 +55,21 @@
       <button mat-button matStepperNext>{{ 'admin.resources_management.deployment.edit.next' | translate}}</button>
     </div>
   </mat-step>
+
+  <mat-step [stepControl]="$any(deploymentForm.get('cluster'))">
+    <ng-template matStepLabel>{{ 'admin.resources_management.deployment.edit.cluster' | translate}}</ng-template>
+    <mat-form-field fxFill>
+      <mat-label>{{ 'admin.resources_management.deployment.edit.cluster' | translate}}</mat-label>
+      <mat-select formControlName="cluster">
+        <mat-option *ngFor="let cluster of clusters" [value]="cluster.id">{{ cluster.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <div fxLayout="row" fxLayoutAlign="start center">
+      <button mat-button matStepperPrevious>{{ 'admin.resources_management.deployment.edit.back' | translate}}</button>
+      <button mat-button matStepperNext>{{ 'admin.resources_management.deployment.edit.next' | translate}}</button>
+    </div>
+  </mat-step>
+
   <mat-step [stepControl]="$any(deploymentForm.get('workers'))">
     <ng-template matStepLabel>{{ 'admin.resources_management.deployment.edit.resource_allocation.label' | translate}}</ng-template>
     <app-launch-workers-form
@@ -62,7 +77,7 @@
       [resources]="resources"
       [regions]="regions"
       [selectedSessions]="deploymentForm.get('sessions')?.value"
-      [computeTypes]="computeTypes"
+      [computeTypes]="filteredComputeTypes"
       formControlName="workers"
     ></app-launch-workers-form>
     <app-clean-workers-form
@@ -70,7 +85,7 @@
       [resources]="resources"
       [startDate]="deploymentForm.get('startDateTime')?.value"
       [selectedSessions]="deploymentForm.get('sessions')?.value"
-      [computeTypes]="computeTypes"
+      [computeTypes]="filteredComputeTypes"
       formControlName="workers"
     ></app-clean-workers-form>
   </mat-step>

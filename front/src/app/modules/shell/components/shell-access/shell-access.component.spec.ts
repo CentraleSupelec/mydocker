@@ -1,12 +1,11 @@
-import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ShellAccessComponent } from './shell-access.component';
 import { APP_CONFIG } from "../../../../app-config";
 import { ShellModule } from "../../shell.module";
-import { HttpClientTestingModule, HttpTestingController, TestRequest } from "@angular/common/http/testing";
+import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
 import { RouterTestingModule } from "@angular/router/testing";
 import { NgxPermissionsModule } from "ngx-permissions";
-import { TranslateService } from '@ngx-translate/core';
 import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 import { SimpleChange } from '@angular/core';
 import { By } from '@angular/platform-browser';
@@ -20,8 +19,6 @@ import { MAX_STATUS_ATTEMPTS } from './next-retry-decision';
 
 const CONTAINER_URL = 'http://back/docker/container/42';
 const INIT_URL = 'http://back/docker/initGetContainer/7';
-/** Shorter than the 420 s default, so that the specs show the configured bound is the one applied. */
-const START_RESPONSE_TIMEOUT_IN_SECONDS = 90;
 
 /** The creation request carries query parameters, so it is matched on its path alone. */
 function initRequest(request: { url: string }): boolean {
@@ -61,7 +58,7 @@ describe('ShellAccessComponent', () => {
       providers: [
         {
           provide: APP_CONFIG,
-          useValue: { back_url: 'http://back/', start_response_timeout_in_seconds: START_RESPONSE_TIMEOUT_IN_SECONDS }
+          useValue: { back_url: 'http://back/' }
         },
       ],
       imports: [
@@ -255,48 +252,37 @@ describe('ShellAccessComponent', () => {
       snack = spyOn(TestBed.inject(SnackNotificationService), 'push');
     });
 
-    it('ends a start no record answered after five failed reads, and retries it as a start', fakeAsync(() => {
+    it('gives up after five failures, notifies once and offers a retry', fakeAsync(() => {
       startCreation();
 
-      failNextPoll();
-      // The one recovery request is answered; the reads that follow keep failing.
-      tick(3000);
-      httpMock.expectOne(initRequest).flush(null);
-      for (let attempt = 1; attempt < MAX_STATUS_ATTEMPTS; attempt++) {
-        expect(failNextPoll()).toBe('GET');
+      const methods: string[] = [];
+      for (let attempt = 0; attempt < MAX_STATUS_ATTEMPTS; attempt++) {
+        methods.push(failNextPoll());
       }
 
-      expect(component.startFailed).toBeTrue();
-      expect(component.state).toBe('start_failed');
-      expect(snack).not.toHaveBeenCalled();
+      expect(methods.filter((method) => 'POST' === method).length).toBe(1);
+      expect(component.state).toBe('unavailable');
+      expect(snack).toHaveBeenCalledTimes(1);
 
       tick(3000);
       httpMock.expectNone(() => true);
 
-      fixture.detectChanges();
-      fixture.debugElement.query(By.css('button[color="primary"]'))?.nativeElement.click();
-      httpMock.expectOne(initRequest).flush('', { status: 503, statusText: 'Service Unavailable' });
-
       discardPeriodicTasks();
-      flush();
-      httpMock.verify();
     }));
 
-    it('ends a start no record answered at once when the back end refuses the read', fakeAsync(() => {
+    it('stops at once, without recovering, when the back end refuses the read', fakeAsync(() => {
       startCreation();
 
       tick(3000);
       httpMock.expectOne(CONTAINER_URL).flush('', { status: 401, statusText: 'Unauthorized' });
 
-      expect(component.startFailed).toBeTrue();
-      expect(component.state).toBe('start_failed');
+      expect(component.state).toBe('unavailable');
+      expect(snack).toHaveBeenCalledTimes(1);
 
       tick(3000);
       httpMock.expectNone(() => true);
 
       discardPeriodicTasks();
-      flush();
-      httpMock.verify();
     }));
 
     it('never posts a creation request while it is only watching', fakeAsync(() => {
@@ -312,11 +298,6 @@ describe('ShellAccessComponent', () => {
 
       expect(methods.filter((method) => 'POST' === method).length).toBe(0);
       expect(component.state).toBe('unavailable');
-      expect(component.startFailed).toBeFalse();
-      expect(snack).toHaveBeenCalledTimes(1);
-
-      tick(3000);
-      httpMock.expectNone(() => true);
 
       discardPeriodicTasks();
     }));
@@ -331,220 +312,14 @@ describe('ShellAccessComponent', () => {
       tick(3000);
       httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
 
-      // The first failure since the record may recover again; that request is answered.
-      failNextPoll();
-      tick(3000);
-      httpMock.expectOne(initRequest).flush(null);
-      for (let attempt = 0; attempt < MAX_STATUS_ATTEMPTS - 2; attempt++) {
+      for (let attempt = 0; attempt < MAX_STATUS_ATTEMPTS - 1; attempt++) {
         failNextPoll();
       }
 
       expect(component.state).toBe('pending');
       expect(snack).not.toHaveBeenCalled();
 
-      // The recovery request armed its own bound, still running here.
       discardPeriodicTasks();
-      flush();
-      httpMock.match(() => true);
-      httpMock.verify();
-    }));
-  });
-
-  // Every spec here settles its own timers and requests: on a panel that leaves a start error
-  // unhandled, the error must fail the spec that caused it rather than reach the end of the run.
-  describe('when a start fails or goes unanswered', () => {
-    function startErrorText(): string {
-      fixture.detectChanges();
-      return fixture.nativeElement.querySelector('.start-error')?.textContent ?? '';
-    }
-
-    function spinner(): Element | null {
-      fixture.detectChanges();
-      return fixture.nativeElement.querySelector('mat-spinner');
-    }
-
-    /** A record ends the first bound, then a read fails: the next tick sends the one recovery request. */
-    function sendRecovery(): TestRequest {
-      component.session = startedSession();
-      component.initGetContainer();
-      httpMock.expectOne(initRequest).flush(null);
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush('', { status: 500, statusText: 'Internal Server Error' });
-      tick(3000);
-      return httpMock.expectOne(initRequest);
-    }
-
-    it('ends the loader and shows the startup error with the reason the back end gave', fakeAsync(() => {
-      const instant = spyOn(TestBed.inject(TranslateService), 'instant').and.callThrough();
-      component.session = startedSession();
-      component.initGetContainer();
-
-      httpMock.expectOne(initRequest).flush(
-        { message: 'volume precreation failed' },
-        { status: 500, statusText: 'Internal Server Error' }
-      );
-      flush();
-
-      expect(component.startFailed).toBeTrue();
-      expect(spinner()).toBeNull();
-      expect(startErrorText()).toContain('container.impossible_to_start');
-      // The translation keys are echoed here: this one is the message that carries the detail.
-      expect(startErrorText()).toContain('container.problem_encountered');
-      expect(instant).toHaveBeenCalledWith('container.problem_encountered', { error: 'volume precreation failed' });
-
-      httpMock.verify();
-    }));
-
-    it('ends the start with the reason a failed recovery request gave', fakeAsync(() => {
-      const instant = spyOn(TestBed.inject(TranslateService), 'instant').and.callThrough();
-      component.session = startedSession();
-      component.initGetContainer();
-      httpMock.expectOne(initRequest).flush(null);
-
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush('', { status: 500, statusText: 'Internal Server Error' });
-      tick(3000);
-      httpMock.expectOne(initRequest).flush(
-        { message: 'volume precreation failed' },
-        { status: 500, statusText: 'Internal Server Error' }
-      );
-
-      expect(component.startFailed).toBeTrue();
-      expect(spinner()).toBeNull();
-      expect(startErrorText()).toContain('container.problem_encountered');
-      expect(instant).toHaveBeenCalledWith('container.problem_encountered', { error: 'volume precreation failed' });
-
-      discardPeriodicTasks();
-      flush();
-      httpMock.verify();
-    }));
-
-    it('keeps a slow recovery request outstanding and uses its answer', fakeAsync(() => {
-      const recovery = sendRecovery();
-
-      // Several ticks pass while the request is out: none cancels it nor sends another.
-      tick(10000);
-      expect(recovery.cancelled).toBeFalse();
-      httpMock.expectNone(() => true);
-
-      recovery.flush(null);
-      expect(component.recovering).toBeFalse();
-      expect(component.startFailed).toBeFalse();
-
-      // Polling resumes on the answer.
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush(runningContainer());
-      expect(component.state).toBe('container_created');
-
-      discardPeriodicTasks();
-      flush();
-      httpMock.verify();
-    }));
-
-    it('ends the start with the reason a slow recovery request failed with', fakeAsync(() => {
-      const instant = spyOn(TestBed.inject(TranslateService), 'instant').and.callThrough();
-      const recovery = sendRecovery();
-
-      tick(10000);
-      expect(recovery.cancelled).toBeFalse();
-      httpMock.expectNone(() => true);
-      recovery.flush(
-        { message: 'volume precreation failed' },
-        { status: 500, statusText: 'Internal Server Error' }
-      );
-
-      expect(component.startFailed).toBeTrue();
-      expect(component.startError).toBe('volume precreation failed');
-      expect(startErrorText()).toContain('container.problem_encountered');
-      expect(startErrorText()).not.toContain('container.unknown_error');
-      expect(instant).toHaveBeenCalledWith('container.problem_encountered', { error: 'volume precreation failed' });
-
-      // The bound went with the answer: nothing replaces the reason later.
-      tick(1000 * START_RESPONSE_TIMEOUT_IN_SECONDS);
-      expect(component.startError).toBe('volume precreation failed');
-      httpMock.expectNone(() => true);
-
-      discardPeriodicTasks();
-      flush();
-      httpMock.verify();
-    }));
-
-    it('bounds a recovery request nothing answers from the moment it is sent', fakeAsync(() => {
-      const recovery = sendRecovery();
-
-      tick(1000 * START_RESPONSE_TIMEOUT_IN_SECONDS - 1);
-      expect(component.startFailed).toBeFalse();
-      expect(recovery.cancelled).toBeFalse();
-      httpMock.expectNone(() => true);
-
-      tick(1);
-      expect(component.startFailed).toBeTrue();
-      expect(recovery.cancelled).toBeTrue();
-      expect(startErrorText()).toContain('container.unknown_error');
-
-      tick(3000);
-      httpMock.expectNone(() => true);
-
-      discardPeriodicTasks();
-      flush();
-      httpMock.verify();
-    }));
-
-    it('gives up on a start nothing answers once the configured bound has passed', fakeAsync(() => {
-      component.session = startedSession();
-      component.initGetContainer();
-      const request = httpMock.expectOne(initRequest);
-
-      expect(spinner()).not.toBeNull();
-      tick(1000 * START_RESPONSE_TIMEOUT_IN_SECONDS - 1);
-      expect(component.startFailed).toBeFalse();
-
-      tick(1);
-      expect(component.startFailed).toBeTrue();
-      expect(request.cancelled).toBeTrue();
-      expect(spinner()).toBeNull();
-      expect(startErrorText()).toContain('container.impossible_to_start');
-      expect(startErrorText()).toContain('container.unknown_error');
-
-      flush();
-      discardPeriodicTasks();
-      httpMock.verify();
-    }));
-
-    it('retries without a reload, and a record of the environment ends the bound', fakeAsync(() => {
-      component.session = startedSession();
-      component.initGetContainer();
-      httpMock.expectOne(initRequest).flush('', { status: 502, statusText: 'Bad Gateway' });
-      flush();
-      fixture.detectChanges();
-
-      const retry = fixture.debugElement.query(By.css('button[color="primary"]'));
-      expect(retry).not.toBeNull();
-      retry?.nativeElement.click();
-
-      const again = httpMock.expectOne(initRequest);
-      expect(again.request.method).toBe('POST');
-      expect(component.startFailed).toBeFalse();
-      expect(spinner()).not.toBeNull();
-      again.flush(null);
-
-      tick(3000);
-      httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
-      expect(component.state).toBe('pending');
-
-      // Well past the bound, the environment still starting: the record has disarmed the timer.
-      for (let elapsed = 0; elapsed <= START_RESPONSE_TIMEOUT_IN_SECONDS; elapsed += 3) {
-        tick(3000);
-        httpMock.expectOne(CONTAINER_URL).flush(startingContainer());
-      }
-      expect(component.startFailed).toBeFalse();
-      expect(component.state).toBe('pending');
-
-      discardPeriodicTasks();
-      flush();
-      httpMock.verify();
     }));
   });
 

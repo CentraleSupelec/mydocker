@@ -110,6 +110,16 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'clusters',
+        loadChildren: () => import('./modules/cluster/cluster.module').then(m => m.ClusterModule),
+        data: {
+          breadcrumb: 'admin.resources_management.clusters.breadcrumb',
+          permissions: {
+            only: ['ROLE_ADMIN'],
+          }
+        }
+      },
+      {
         path: 'compute-types',
         loadChildren: () => import('./modules/compute-type/compute-type.module').then(m => m.ComputeTypeModule),
         data: {

@@ -39,9 +39,7 @@ export class CourseGeneralInformationFormComponent implements OnInit, OnDestroy,
   @Input() courseUuid?: string;
   readonly formGroup: FormGroup;
   private destroy$ = new Subject<void>();
-  // DELETED is only set through the Delete button, never picked here
-  readonly courseStatus = Object.entries(CourseStatus).filter(([, status]) => status !== CourseStatus.DELETED);
-  readonly deletedStatus = CourseStatus.DELETED;
+  readonly courseStatus = Object.entries(CourseStatus);
 
   constructor(
     formBuilder: FormBuilder,
