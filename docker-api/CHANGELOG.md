@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.20.3
+### Added
+- TLS authentication and an Rclone configuration to download the inventory in the deployment image
+### Fixed
+- A Terraform node that never joined the Swarm is destroyed after a 15-minute grace period, even when the minimum idle count would keep it. It used to stay up and billed indefinitely
+
 ## 2.20.2
 ### Fixed
 - New container credentials get a 16-character password instead of 10, since recent filebrowser images refuse passwords under 12 characters. Stored credentials supplied by the back end are preserved whatever their length, since the course image may have persisted the old password
