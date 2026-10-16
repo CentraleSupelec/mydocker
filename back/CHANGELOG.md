@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.35.6
+### Added
+- One back can drive several Go API clusters. A compute type belongs to a cluster, and a course launches, builds and saves on the cluster of its compute type. Needs Go API 2.20.3 and front 2.30.8
+- On upgrade, a cluster named `default` is seeded from the former single Go API address
+- Deployment session lists give the cluster of each session's course
+### Changed
+- Cluster names are unique. A cluster created, edited or deleted is used after a back restart, and a request to a cluster without a channel says so
+### Fixed
+- A launch or a log request answers 503 instead of 500 when the course's cluster cannot be reached or times out; other cluster errors still answer 500
+- A save or admin container request that cannot be sent answers 503
+- Creating a compute type with regions no longer fails with an error 500
+- Deleting a compute type still used by a course or by a deployment worker answers 409 instead of 500
+- A clean worker with no id, or with an id that does not exist, is refused with 400 and nothing is saved
+- Deployment sessions and workers from another cluster are refused, and workers without a compute type follow their deployment's cluster
+
 ## 2.35.5
 ### Changed
 - The image list can be sorted by the date of each image's latest build, whatever its status; images never built come last. Each image carries that date as `lastBuildOn`
