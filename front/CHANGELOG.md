@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.30.9
+### Added
+- A Delete button on the course edit page, after a confirmation, marks the course deleted. Administrators can filter the course list on deleted courses, and opening the link of a deleted course says it is no longer available. Needs back 2.35.7
+- Optional `start_response_timeout_in_seconds` in `config.js`: how long the start screen waits for the answer to a start request, 420 seconds by default
+### Fixed
+- A failed or unanswered environment start no longer loads forever: the start screen shows the startup error with its technical detail and offers to retry. Needs Go API 2.20.4
+- Recovery starts are bounded, with one request outstanding at a time
+
 ## 2.30.8
 ### Added
 - Clusters: administrators manage the Go API clusters, and compute types, courses and deployments are tied to one. The cluster form says that changes apply after a back restart. Needs back 2.35.6
