@@ -133,7 +133,14 @@
         },
         "save" : "Sauvegarder les changements",
         "success": "Le cours a bien été mis à jour",
-        "error": "Erreur lors de la sauvegarde du cours"
+        "error": "Erreur lors de la sauvegarde du cours",
+        "delete": {
+          "button": "Supprimer",
+          "confirm_title": "Supprimer ce cours ?",
+          "confirm_text": "Le cours ne sera plus visible par ses élèves ni par les autres enseignants. Un administrateur peut le restaurer.",
+          "success": "Le cours a été supprimé",
+          "error": "Une erreur est survenue lors de la suppression du cours"
+        }
       },
       "columns": {
         "name": "Nom du cours",
@@ -608,6 +615,7 @@
     "reinitialze_countdown_failure": "Impossible de retarder l'extinction de l'environnement",
     "step": "étape",
     "join_error": "L'environnement demandé n'est pas disponible.",
+    "join_course_deleted": "Ce cours n'est plus disponible.",
     "status_unavailable": "L'état de cet environnement est illisible pour le moment",
     "retry": "Réessayer",
     "fetch_error": "Erreur lors de la récupération du conteneur :",

@@ -43,6 +43,8 @@ import { TranslateModule } from '@ngx-translate/core';
   ],
   exports: [
     DisplayContainerComponent,
+    // The start panel shows the same startup error when a start leaves no container to display.
+    RenderCreationErrorPipe,
   ]
 })
 export class DisplayContainerModule { }

@@ -32,12 +32,11 @@ export class CourseJoinComponent implements OnInit {
         link => this.courseApiService.getCourseInformationByLink(link).pipe(
           catchError(err => {
             if (err.status === 404) {
-              this.router.navigate(['/'], {
-                queryParams: {
-                  error_message: this.translate.instant('container.join_error')
-                },
-                replaceUrl: true
-              });
+              this.redirectWithError('container.join_error');
+              return of(null);
+            }
+            if (err.status === 410) {
+              this.redirectWithError('container.join_course_deleted');
               return of(null);
             }
             throw err;
@@ -48,7 +47,15 @@ export class CourseJoinComponent implements OnInit {
           if (!course) {
             return of(null);
           }
-          return this.courseApiService.joinCourse(course.id)
+          return this.courseApiService.joinCourse(course.id).pipe(
+            catchError(err => {
+              if (err.status === 410) {
+                this.redirectWithError('container.join_course_deleted');
+                return of(null);
+              }
+              throw err;
+            })
+          )
         }
       )
     ).subscribe(
@@ -58,5 +65,14 @@ export class CourseJoinComponent implements OnInit {
         }
       },
     );
+  }
+
+  private redirectWithError(messageKey: string) {
+    this.router.navigate(['/'], {
+      queryParams: {
+        error_message: this.translate.instant(messageKey)
+      },
+      replaceUrl: true
+    });
   }
 }

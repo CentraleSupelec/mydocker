@@ -22,5 +22,11 @@
     [matTooltip]="archivedToolTip"
   >
     archive
-</mat-icon>
+  </mat-icon>
+  <mat-icon
+    *ngSwitchCase="'DELETED'"
+    [matTooltip]="deletedToolTip"
+  >
+    delete
+  </mat-icon>
 </span>

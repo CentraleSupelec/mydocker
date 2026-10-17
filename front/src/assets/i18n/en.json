@@ -133,7 +133,14 @@
         },
         "success": "The course has been successfully updated",
         "error": "An error occurred while updating the course",
-        "save" : "Save changes"
+        "save" : "Save changes",
+        "delete": {
+          "button": "Delete",
+          "confirm_title": "Delete this course?",
+          "confirm_text": "The course will no longer be visible to its students or to other teachers. An administrator can restore it.",
+          "success": "The course has been deleted",
+          "error": "An error occurred while deleting the course"
+        }
       },
       "columns": {
         "name": "Course name",
@@ -608,6 +615,7 @@
     "reinitialze_countdown_failure": "Unable to delay the environment shutdown",
     "step": "step",
     "join_error": "The requested environment is not available.",
+    "join_course_deleted": "This course is no longer available.",
     "status_unavailable": "The state of this environment cannot be read at the moment",
     "retry": "Try again",
     "fetch_error": "Error fetching container:",
