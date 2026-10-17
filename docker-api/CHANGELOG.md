@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.20.4
+### Fixed
+- A container that fails to start, including a failed service lookup before its creation, is reported with the generic error key `container.start-failed` and the technical reason, instead of leaving the start pending
+
 ## 2.20.3
 ### Added
 - TLS authentication and an Rclone configuration to download the inventory in the deployment image
