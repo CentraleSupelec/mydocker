@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.35.7
+### Added
+- A course can be deleted by anyone who can edit it, through `PUT .../{courseId}/mark-deleted`. Only its status changes, to `DELETED`: sessions, enrolments, permissions and running environments are kept. Needs front 2.30.9
+- A deleted course is closed to everyone but administrators: nobody can start it, its link answers 410, external access is refused, and deleted courses are listed for administrators only. A course cannot be created or edited into `DELETED` directly
+### Fixed
+- Removing a user from a course now deletes the membership row; before, the row stayed and the user kept the course
+### Rollback
+- Before rolling back to an earlier version, run `UPDATE courses SET status='ARCHIVED' WHERE status='DELETED'`: an earlier back cannot load a course whose status is `DELETED`
+
 ## 2.35.6
 ### Added
 - One back can drive several Go API clusters. A compute type belongs to a cluster, and a course launches, builds and saves on the cluster of its compute type. Needs Go API 2.20.3 and front 2.30.8
