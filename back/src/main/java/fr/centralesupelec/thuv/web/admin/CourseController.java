@@ -22,10 +22,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -142,6 +144,10 @@ public class CourseController {
     public AdminCourseDto createCourse(
             @RequestBody @Valid AdminUpdateCourseDto dto,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal) {
+        // a new course is never deleted; DELETED is reached only through mark-deleted
+        if (dto.getStatus() == CourseStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A course is deleted only through mark-deleted");
+        }
         User user = userRepository.getReferenceById(
                 principal.getUserId());
 
@@ -166,6 +172,15 @@ public class CourseController {
             @PathVariable("courseId") Course course,
             @RequestBody @Valid AdminUpdateCourseDto dto) {
         courseUpdateService.updateCourse(dto, course);
+        return ResponseEntity.ok().body(
+                adminCourseMapper.convertToDto(course));
+    }
+
+    @PreAuthorize("@coursePermissionService.canEdit(#course)")
+    @RequestMapping(value = "/{courseId}/mark-deleted", method = RequestMethod.PUT)
+    public ResponseEntity<AdminCourseDto> markDeleted(
+            @PathVariable("courseId") Course course) {
+        courseUpdateService.markDeleted(course);
         return ResponseEntity.ok().body(
                 adminCourseMapper.convertToDto(course));
     }

@@ -32,8 +32,8 @@ public class UserCoursePermissionService {
     public boolean canAskContainer(CourseSession courseSession) {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CourseStatus status = courseSession.getCourse().getStatus();
-        // an archived course, or one without a status, starts nobody; DRAFT, TEST and READY start as before
-        if (status == null || status == CourseStatus.ARCHIVED) {
+        // an archived or deleted course, or one without a status, starts nobody; DRAFT, TEST and READY start as before
+        if (status == null || status == CourseStatus.ARCHIVED || status == CourseStatus.DELETED) {
             return false;
         }
         User user = userRepository.getReferenceById(

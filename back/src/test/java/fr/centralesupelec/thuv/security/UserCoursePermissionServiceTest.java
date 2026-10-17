@@ -85,6 +85,13 @@ class UserCoursePermissionServiceTest {
     }
 
     @Test
+    void deletedRefusedForEveryone() {
+        assertEquals(false, can(CourseStatus.DELETED, USER, true));
+        assertEquals(false, can(CourseStatus.DELETED, TEACHER, true));
+        assertEquals(false, can(CourseStatus.DELETED, ADMIN, true));
+    }
+
+    @Test
     void draftTestAndReadyAllowedForAnyoneWhoJoined() {
         for (CourseStatus status : List.of(CourseStatus.DRAFT, CourseStatus.TEST, CourseStatus.READY)) {
             assertEquals(true, can(status, USER, true));

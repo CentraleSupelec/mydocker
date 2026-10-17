@@ -5,6 +5,7 @@ import fr.centralesupelec.thuv.dtos.SessionUpdateDto;
 import fr.centralesupelec.thuv.mappers.SessionMapper;
 import fr.centralesupelec.thuv.mappers.UpdateCourseMapper;
 import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.model.CourseStatus;
 import fr.centralesupelec.thuv.repository.CourseRepository;
 import fr.centralesupelec.thuv.security.MyUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,23 @@ public class CourseUpdateService {
     private final SessionMapper sessionMapper;
     private final UpdateCourseMapper updateCourseMapper;
     public void updateCourse(AdminUpdateCourseDto courseDto, Course course) {
+        // a course becomes DELETED only through markDeleted; an already deleted course may keep the status
+        if (courseDto.getStatus() == CourseStatus.DELETED && course.getStatus() != CourseStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A course is deleted only through mark-deleted");
+        }
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             validate(courseDto, course);
         }
         updateCourseMapper.updateChanges(course, courseDto);
+        courseRepository.saveAndFlush(course);
+    }
+
+    /**
+     * Only the status changes: sessions, enrolments, permissions and running containers stay as they are.
+     */
+    public void markDeleted(Course course) {
+        course.setStatus(CourseStatus.DELETED);
         courseRepository.saveAndFlush(course);
     }
 

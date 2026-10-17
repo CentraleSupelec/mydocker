@@ -108,6 +108,9 @@ public class CourseController {
         if (course == null) {
             return ResponseEntity.notFound().build();
         }
+        if (course.getStatus() == CourseStatus.DELETED) {
+            return ResponseEntity.status(HttpStatus.GONE).build();
+        }
         return ResponseEntity.ok(
                 userCourseMapper.convertToDto(course)
         );
@@ -119,6 +122,7 @@ public class CourseController {
             @PathVariable("courseId") Course course,
             @AuthenticationPrincipal(errorOnInvalidType = true) final MyUserDetails principal
     ) {
+        checkNotDeleted(course);
         User user = userRepository.getReferenceById(
                 principal.getUserId()
         );
@@ -155,6 +159,7 @@ public class CourseController {
     public Boolean isGpu(
         @PathVariable("courseId") Course course
     ) {
+        checkNotDeleted(course);
         return course.getComputeType().isGpu();
     }
 
@@ -165,7 +170,14 @@ public class CourseController {
         Course course = courseRepository.findByUuid(courseUuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 
-        return course.isExternalAccess()
+        return course.getStatus() != CourseStatus.DELETED
+                && course.isExternalAccess()
                 && course.getExternalAccessExpirationDate().isAfter(LocalDateTime.now());
+    }
+
+    private void checkNotDeleted(Course course) {
+        if (course.getStatus() == CourseStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Course no longer available");
+        }
     }
 }
