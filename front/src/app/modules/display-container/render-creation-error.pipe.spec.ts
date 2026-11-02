@@ -19,6 +19,12 @@ describe("RenderCreationErrorPipe", () => {
       providers: [RenderCreationErrorPipe],
     });
     pipe = TestBed.inject(RenderCreationErrorPipe);
+    jasmine.clock().install();
+    jasmine.clock().mockDate(now);
+  });
+
+  afterEach(() => {
+    jasmine.clock().uninstall();
   });
   const defaultContainer: IContainer = {
     username: "USERNAME",
@@ -28,7 +34,9 @@ describe("RenderCreationErrorPipe", () => {
     status: "KO",
     errorParams: {},
   };
-  const now = new Date();
+  // Midday, and the same instant the pipe reads: with the real clock, a start 20 minutes earlier
+  // falls on the previous day between 00:00 and 00:20 and the pipe prefixes the date.
+  const now = new Date(2026, 5, 15, 12, 0, 0);
   const cloneDate = (prevDate: Date) => new Date(prevDate);
 
   const testCases = [
