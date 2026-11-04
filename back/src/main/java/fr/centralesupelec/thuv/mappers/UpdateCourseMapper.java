@@ -9,6 +9,7 @@ import fr.centralesupelec.thuv.model.SlurmCluster;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
 import fr.centralesupelec.thuv.repository.SlurmClusterRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -134,6 +135,7 @@ public class UpdateCourseMapper {
                 )
                 .setUseStudentVolume(dto.getUseStudentVolume())
                 .setUid(dto.getUid())
+                .setRunUid(StringUtils.isEmpty(dto.getRunUid()) ? null : dto.getRunUid())
                 .setStudentVolumePath(dto.getStudentVolumePath())
         ;
 

@@ -175,6 +175,7 @@ message ContainerRequestOptions {
     repeated Path paths = 15;
     string uid = 16;
     SlurmApiContainerParams slurmApiContainerParams = 17;
+    string runUid = 18;
 }
 
 message ContainerRequest {

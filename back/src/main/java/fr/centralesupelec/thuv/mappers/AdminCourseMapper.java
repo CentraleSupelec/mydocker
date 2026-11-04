@@ -71,6 +71,7 @@ public class AdminCourseMapper {
                 .setUseStudentVolume(course.getUseStudentVolume())
                 .setStudentVolumePath(course.getStudentVolumePath())
                 .setUid(course.getUid())
+                .setRunUid(course.getRunUid())
                 .setVisible(course.getVisible())
                 .setNumberOfUsers(course.getNumberOfUsers())
                 ;

@@ -84,7 +84,7 @@ public class ContainerRequestCreatorService {
 
         if (null != course.getUid()) {
                 builder.setUid(course.getUid());
-        }        
+        }
 
         if (course.getComputeType().isGpu()) {
             String gpuResource = "gpu";
@@ -143,6 +143,11 @@ public class ContainerRequestCreatorService {
             builder
                     .setUseStudentVolume(true)
                     .setStudentVolumePath(course.getStudentVolumePath());
+            // The run uid belongs to the student volume settings: the form only shows it
+            // there, so a value left behind once the volume is turned off is not sent.
+            if (StringUtils.isNotEmpty(course.getRunUid())) {
+                builder.setRunUid(course.getRunUid());
+            }
         }
 
         userCourseRepository.findByUserIdAndCourseId(

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - New table `slurm_clusters` and nullable column `courses.slurm_cluster_id` (changeset 52)
 - Cluster secrets are encrypted at rest (AES-256-GCM) with the key in `SLURM_SECRET_ENCRYPTION_KEY`, 32 random bytes in base64. Without the key the back starts, logs a warning and refuses to store a secret; `SLURM_SECRET_ENCRYPTION_REQUIRED=true` makes a missing key stop the start instead. Secrets are ASCII, at most 512 characters, and never returned by the API
 - When the gateway cannot be reached, or the secret cannot be decrypted, the course starts without Slurm and the back logs an error
+- A course can force the user its student container runs as, through `runUid` (`uid` or `uid:gid`, positive integers), stored in the new nullable column `courses.run_uid` (changeset 53) and sent to the Go API as `runUid` when the course uses the student volume. Empty, the default for every course, keeps the image's own user. Zero, `uid:0` and leading zeros are refused. Needs Go API with `runUid` (field 18) deployed first; an older Go API ignores the field
 
 ## 2.35.7
 ### Added

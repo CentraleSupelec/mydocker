@@ -67,6 +67,10 @@ public class AdminCourseBaseDto {
 
     private Long externalAccessExpirationDate;
     private String uid;
+    // User the student container runs as: "uid" or "uid:gid", positive integers, or empty
+    // to keep the image's own user. Zero (root) and leading zeros are refused.
+    @Pattern(regexp = "^([1-9][0-9]*(:[1-9][0-9]*)?)?$", message = "Run uid should be uid or uid:gid, positive integers")
+    private String runUid;
     private Long numberOfUsers;
     private int numberOfConnectedUsers;
     private int numberOfRecentUsers;
