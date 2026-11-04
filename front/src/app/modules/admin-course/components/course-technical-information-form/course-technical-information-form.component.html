@@ -124,6 +124,12 @@
       <mat-label>{{ 'admin.courses.edit.technical_info.use_student_volume.uid' | translate }}</mat-label>
       <input matInput formControlName="uid" [matTooltip]="'admin.courses.edit.technical_info.use_student_volume.uid_tooltip' | translate">
     </mat-form-field>
+    <mat-form-field>
+      <mat-label>{{ 'admin.courses.edit.technical_info.use_student_volume.run_uid' | translate }}</mat-label>
+      <input matInput formControlName="runUid" placeholder="1000:100">
+      <mat-hint>{{ 'admin.courses.edit.technical_info.use_student_volume.run_uid_hint' | translate }}</mat-hint>
+      <mat-error>{{ 'admin.courses.edit.technical_info.use_student_volume.run_uid_error' | translate }}</mat-error>
+    </mat-form-field>
   </div>
   <br>
   <mat-expansion-panel>

@@ -117,7 +117,10 @@
             "tooltip": "Provides the student with a shared storage space across different courses",
             "path": "Student volume path",
             "uid": "Docker image's user UID",
-            "uid_tooltip": "Used to change the ownership of shared folders."
+            "uid_tooltip": "Used to change the ownership of shared folders.",
+            "run_uid": "Run the container as (uid or uid:gid)",
+            "run_uid_hint": "Leave empty for root images and to keep the image's user. Set 1000:100 to share the volume with courses that run as user 1000. The volume files are given to this user at every start; going back is a manual operation. Untested when the volume path differs from the image's home folder.",
+            "run_uid_error": "Expected uid or uid:gid, positive integers, for example 1000:100"
           },
           "display_options": {
             "label": "Display options",

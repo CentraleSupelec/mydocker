@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - Slurm clusters: administrators manage Slurm gateways (display name, technical name, endpoint, secret) in a new admin page, and bind one to a course on a CPU compute type from the course form. The secret is write-only: required on creation, left blank on edit to keep it. Teachers do not see the cluster selector, and a duplicated course starts without a cluster. Needs the back with Slurm support
+- A "Run the container as" field (`uid` or `uid:gid`) under the student volume settings of the course technical form, empty by default, with a warning that the volume files are given to that user at every start. Needs back with `runUid`
 
 ## 2.30.9
 ### Added

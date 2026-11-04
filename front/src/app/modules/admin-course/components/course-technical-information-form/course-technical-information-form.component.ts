@@ -85,6 +85,8 @@ export class CourseTechnicalInformationFormComponent
       useStudentVolume: false,
       studentVolumePath: null,
       uid: null,
+      // Same rule as the back: "uid" or "uid:gid", positive integers, or empty.
+      runUid: [null, Validators.pattern(/^([1-9][0-9]*(:[1-9][0-9]*)?)?$/)],
 
       displayOptions: formBuilder.control({}),
     }, {
@@ -175,6 +177,9 @@ export class CourseTechnicalInformationFormComponent
         ?.setValidators([Validators.required]);
     } else {
       this.courseTechnicalForm.get('studentVolumePath')?.clearValidators();
+      // The run uid is a student volume setting: a hidden value must neither be
+      // saved nor keep the form invalid with no visible error.
+      this.courseTechnicalForm.get('runUid')?.setValue(null);
     }
     this.courseTechnicalForm.get('studentVolumePath')?.updateValueAndValidity();
     this.courseTechnicalForm.get('uid')?.updateValueAndValidity();

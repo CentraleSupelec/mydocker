@@ -36,6 +36,7 @@ export interface IAdminCourseBase {
   useStudentVolume: boolean;
   studentVolumePath: string | null;
   uid: string | null;
+  runUid: string | null;
 
   visible: boolean;
 

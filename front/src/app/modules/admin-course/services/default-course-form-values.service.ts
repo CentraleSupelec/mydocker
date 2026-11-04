@@ -30,7 +30,8 @@ export class DefaultCourseFormValuesService {
       displayOptions: obj?.displayOptions ?? {},
       useStudentVolume: obj?.useStudentVolume ?? false,
       studentVolumePath: obj?.studentVolumePath ?? null,
-      uid: obj?.uid ?? null
+      uid: obj?.uid ?? null,
+      runUid: obj?.runUid ?? null
     };
   }
 }

@@ -83,6 +83,33 @@ describe('CourseTechnicalInformationFormComponent', () => {
     });
   });
 
+  describe('run uid', () => {
+    const runUid = () => component.courseTechnicalForm.get('runUid')!;
+
+    it('accepts empty, uid and uid:gid', () => {
+      for (const value of [null, '', '1000', '1000:100']) {
+        runUid().setValue(value);
+        expect(runUid().valid).withContext(String(value)).toBeTrue();
+      }
+    });
+
+    it('rejects zero, leading zeros and malformed values', () => {
+      for (const value of ['0', '0:0', '1000:0', '01000', '1000:', '1000:100:', 'abc']) {
+        runUid().setValue(value);
+        expect(runUid().valid).withContext(value).toBeFalse();
+      }
+    });
+
+    it('is cleared when the student volume is turned off', () => {
+      component.courseTechnicalForm.patchValue({ useStudentVolume: true, runUid: 'abc' });
+
+      component.changeUseStudentVolume(false);
+
+      expect(runUid().value).toBeNull();
+      expect(runUid().valid).toBeTrue();
+    });
+  });
+
   // Conformance cases for the command port placeholder grammar. The back-end validator and
   // the Go substitution implement the same table; a change here belongs in all three at once.
   describe('command port validation', () => {
