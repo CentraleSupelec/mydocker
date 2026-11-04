@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/docker/docker/api/types"
@@ -504,6 +505,75 @@ func (suite *ContainerTestSuite) TestBuildSmartChmodCommandsWithFolderPatternRec
 		suite.Require().NoError(err)
 		suite.Equal(expected, info.Mode().Perm(), "path: %s", path)
 	}
+}
+
+func (suite *ContainerTestSuite) TestRunUser() {
+	for _, valid := range []string{"", "1000", "1000:100", "57439:57439"} {
+		runUid, err := runUser(&pb.ContainerRequestOptions{RunUid: valid})
+		suite.NoError(err, valid)
+		suite.Equal(valid, runUid)
+	}
+	for _, invalid := range []string{"0", "0:0", "1000:0", "01000", "1000:", "1000:100:", "abc", "1000; reboot"} {
+		_, err := runUser(&pb.ContainerRequestOptions{RunUid: invalid})
+		suite.Error(err, invalid)
+	}
+
+	runUid, err := runUser(nil)
+	suite.NoError(err)
+	suite.Equal("", runUid)
+}
+
+func (suite *ContainerTestSuite) TestStudentContainerSpecUser() {
+	response := &pb.ContainerResponse{
+		ImageID:              "image",
+		AuthenticationMethod: &pb.ContainerResponse_UserPassword{UserPassword: &pb.UserPasswordMethod{}},
+	}
+
+	suite.Equal("", buildStudentContainerSpec(response, nil, nil, "", nil).User)
+	suite.Equal("1000:100", buildStudentContainerSpec(response, nil, nil, "1000:100", nil).User)
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitCommandEmptyWithoutRowsOrRunUid() {
+	suite.Equal("", buildVolumeInitCommand(nil, "57439", ""))
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidWithoutRows() {
+	cmd := buildVolumeInitCommand(nil, "", "1000:100")
+
+	suite.Equal(
+		`find /student_volume -maxdepth 1 \( ! -user 1000 -o ! -group 100 \) -exec chown -h 1000:100 {} + && `+
+			`(timeout 120 find /student_volume \( ! -user 1000 -o ! -group 100 \) -exec chown -h 1000:100 {} \; || true)`,
+		cmd,
+	)
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidWithoutGid() {
+	cmd := buildVolumeInitCommand(nil, "", "1000")
+
+	suite.Contains(cmd, "! -user 1000 -o ! -group 1000")
+	suite.Contains(cmd, "chown -h 1000:1000 ")
+	suite.NotContains(cmd, "1000: ")
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitCommandRowsWithoutRunUid() {
+	paths := []*pb.Path{{Value: "*/.cache", Recursive: true, Permissions: 777, ChangeOwner: true}}
+
+	cmd := buildVolumeInitCommand(paths, "57439", "")
+
+	suite.Contains(cmd, `-exec chown -R 57439: {} \;`)
+	suite.NotContains(cmd, "chown -h")
+	suite.NotContains(cmd, "timeout")
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidSkipsChangeOwnerChown() {
+	paths := []*pb.Path{{Value: "*/.cache", Recursive: true, Permissions: 777, ChangeOwner: true}}
+
+	cmd := buildVolumeInitCommand(paths, "57439", "1000:100")
+
+	suite.Contains(cmd, "chown -h 1000:100")
+	suite.Contains(cmd, "chmod 777")
+	suite.NotContains(cmd, "57439")
+	suite.Less(strings.Index(cmd, "timeout 120"), strings.Index(cmd, "chmod"), "ownership walk runs before the chmod rows")
 }
 
 func TestContainerSuite(t *testing.T) {

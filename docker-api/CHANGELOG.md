@@ -7,6 +7,7 @@ this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2
 ## Unreleased
 ### Added
 - `ContainerRequestOptions.slurmApiContainerParams` (field 17): when the back sends both a Slurm key and endpoint, the student container gets them as `SLURM_API_KEY` and `SLURM_API_ENDPOINT`. Without them the container environment is unchanged
+- `ContainerRequestOptions.runUid` (field 18, `uid` or `uid:gid`): when set, the student container runs as that user, and the volume-init job gives the student volume to it at every start, the root and its direct entries always, and the rest of the tree through a stat-only walk capped at 120 s that chowns mismatched entries one by one, so a walk cut by the cap keeps what it fixed. `change_owner` paths keep their chmod but skip their chown for such a course. Volume-init now also runs for a course with no paths when `runUid` is set. Empty keeps today's behaviour. A value other than positive integers fails the start
 ### Fixed
 - The debug log of a service creation masks `MYDOCKER_PASSWORD` and `SLURM_API_KEY`; the container password used to be logged in clear
 

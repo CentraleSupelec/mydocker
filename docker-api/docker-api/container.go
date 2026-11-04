@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -484,6 +485,11 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 	var mounts []mount.Mount
 	var args []string
 
+	runUid, err := runUser(request.GetOptions())
+	if err != nil {
+		return err
+	}
+
 	if request.Options != nil && request.Options.Command != "" {
 		command := request.Options.Command
 		command = strings.Replace(command, "{{USERNAME}}", response.GetUserPassword().Username, -1)
@@ -531,38 +537,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 
 		if request.Options.UseStudentVolume {
 			if res, err := canCreateStudentVolume(dockerClient, request); res {
-				if 0 != len(request.Options.GetPaths()) {
-					paths := request.Options.GetPaths()
-					targetUID := request.Options.GetUid()
-
-					cmdParts := []string{}
-					chmodCmdParts := []string{}
-
-					for _, p := range paths {
-						recursiveFlag := ""
-
-						if p.GetRecursive() {
-							recursiveFlag = "-R"
-						}
-
-						chmodCmdParts = buildChmodCommandsToApplyExecuteOnlyToFolders(MOUNT_TARGET, p.GetValue(), p.GetPermissions(), p.Recursive)
-
-						cmdParts = append(cmdParts, chmodCmdParts...)
-
-						if p.ChangeOwner && "" != targetUID {
-							cmdParts = append(cmdParts,
-								fmt.Sprintf(
-									"find %s -type d -wholename \"%s\" -exec chown %s %s: {} \\;",
-									MOUNT_TARGET,
-									p.GetValue(),
-									recursiveFlag,
-									targetUID,
-								),
-							)
-						}
-					}
-
-					fullCmd := strings.Join(cmdParts, " && ")
+				if fullCmd := buildVolumeInitCommand(request.Options.GetPaths(), request.Options.GetUid(), runUid); "" != fullCmd {
 					log.Debugln("Full Command :", fullCmd)
 
 					serviceSpec := swarm.ServiceSpec{
@@ -741,16 +716,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 			RestartPolicy: &swarm.RestartPolicy{
 				Condition: ON_FAILURE,
 			},
-			ContainerSpec: &swarm.ContainerSpec{
-				Image: response.ImageID,
-				Healthcheck: &container.HealthConfig{
-					Test: []string{"NONE"},
-				},
-				Args:          args,
-				CapabilityAdd: []string{"SYS_PTRACE"},
-				Mounts:        mounts,
-				Env:           envVars,
-			},
+			ContainerSpec: buildStudentContainerSpec(response, args, mounts, runUid, envVars),
 			Resources: &swarm.ResourceRequirements{
 				Limits:       limit,
 				Reservations: &swarm.Resources{GenericResources: resources},
@@ -773,7 +739,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 	logSpec.TaskTemplate = logTask
 	s, _ := json.Marshal(logSpec)
 	log.Debugf("Payload : '%s'", s)
-	_, err := dockerClient.ServiceCreate(context.TODO(), spec, buildServiceCreateOptions(response.GetImageID()))
+	_, err = dockerClient.ServiceCreate(context.TODO(), spec, buildServiceCreateOptions(response.GetImageID()))
 	if err != nil {
 		return err
 	}
@@ -812,6 +778,94 @@ func redactEnv(env []string) []string {
 		redacted[i] = e
 	}
 	return redacted
+}
+
+// buildStudentContainerSpec returns the student container. An empty runUid
+// leaves User unset, so the image's own user applies.
+func buildStudentContainerSpec(response *pb.ContainerResponse, args []string, mounts []mount.Mount, runUid string, env []string) *swarm.ContainerSpec {
+	return &swarm.ContainerSpec{
+		Image: response.ImageID,
+		Healthcheck: &container.HealthConfig{
+			Test: []string{"NONE"},
+		},
+		Args:          args,
+		User:          runUid,
+		CapabilityAdd: []string{"SYS_PTRACE"},
+		Mounts:        mounts,
+		Env:           env,
+	}
+}
+
+// Same rule as the back's validation. Checked again here because the value is
+// spliced into the volume-init shell command.
+var runUidPattern = regexp.MustCompile(`^[1-9][0-9]*(:[1-9][0-9]*)?$`)
+
+// runUser returns the course's forced run uid ("uid" or "uid:gid"), or "" to
+// keep the image's own user.
+func runUser(options *pb.ContainerRequestOptions) (string, error) {
+	runUid := options.GetRunUid()
+	if "" != runUid && !runUidPattern.MatchString(runUid) {
+		return "", fmt.Errorf("invalid run uid %q", runUid)
+	}
+	return runUid, nil
+}
+
+// buildVolumeInitCommand returns the shell command the volume-init service runs
+// on the student volume, or "" when there is nothing to do.
+//
+// With a run uid, every start gives the volume back to that uid: the root and
+// its direct entries unconditionally, then a stat-only walk of the whole tree
+// that chowns only the mismatched entries. The walk is capped at 120 s and its
+// failure ignored, so the largest volumes get partial coverage instead of a
+// failed start. change_owner
+// rows then keep their chmod but skip their chown, which would hand the folders
+// back to the old uid.
+func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
+	cmdParts := []string{}
+
+	if "" != runUid {
+		// The gid defaults to the uid, as busybox does with "uid:". Never write
+		// the trailing colon itself: busybox rejects "1000:100:".
+		ids := strings.SplitN(runUid, ":", 2)
+		uid, gid := ids[0], ids[0]
+		if 2 == len(ids) {
+			gid = ids[1]
+		}
+		mismatch := fmt.Sprintf(`\( ! -user %s -o ! -group %s \) -exec chown -h %s:%s {}`, uid, gid, uid, gid)
+
+		cmdParts = append(cmdParts,
+			// The root and its direct entries, always.
+			fmt.Sprintf("find %s -maxdepth 1 %s +", MOUNT_TARGET, mismatch),
+			// One chown per entry: a find killed by timeout never runs its pending
+			// "+" batch, so everything found before the cap would stay unchanged.
+			// Mismatches are few once a volume has been migrated.
+			fmt.Sprintf("(timeout 120 find %s %s \\; || true)", MOUNT_TARGET, mismatch),
+		)
+	}
+
+	for _, p := range paths {
+		recursiveFlag := ""
+
+		if p.GetRecursive() {
+			recursiveFlag = "-R"
+		}
+
+		cmdParts = append(cmdParts, buildChmodCommandsToApplyExecuteOnlyToFolders(MOUNT_TARGET, p.GetValue(), p.GetPermissions(), p.Recursive)...)
+
+		if p.ChangeOwner && "" != targetUID && "" == runUid {
+			cmdParts = append(cmdParts,
+				fmt.Sprintf(
+					"find %s -type d -wholename \"%s\" -exec chown %s %s: {} \\;",
+					MOUNT_TARGET,
+					p.GetValue(),
+					recursiveFlag,
+					targetUID,
+				),
+			)
+		}
+	}
+
+	return strings.Join(cmdParts, " && ")
 }
 
 type createStudentVolumeDockerClient interface {
