@@ -119,7 +119,7 @@
             "uid": "UID de l'utilisateur de l'image Docker",
             "uid_tooltip": "Utilisé pour changer l'appartenance des dossiers partagés.",
             "run_uid": "Lancer le conteneur en tant que (uid ou uid:gid)",
-            "run_uid_hint": "Laisser vide pour les images root et pour garder l'utilisateur de l'image. Mettre 1000:100 pour partager le volume avec les cours qui tournent avec l'utilisateur 1000. Les fichiers du volume sont rendus à cet utilisateur à chaque démarrage ; revenir en arrière est une opération manuelle. Non testé quand le chemin du volume diffère du dossier personnel de l'image.",
+            "run_uid_hint": "Laisser vide pour garder l'utilisateur de l'image. Mettre 1000:100 pour partager le volume étudiant avec les cours qui s'exécutent en tant qu'utilisateur 1000. Les fichiers du volume appartiennent alors à cet utilisateur, même si vous videz le champ ensuite.",
             "run_uid_error": "Attendu : uid ou uid:gid, entiers positifs, par exemple 1000:100"
           },
           "display_options": {
