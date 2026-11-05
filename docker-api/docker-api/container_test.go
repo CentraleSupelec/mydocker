@@ -542,9 +542,29 @@ func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidWithoutRows() {
 
 	suite.Equal(
 		`find /student_volume -maxdepth 1 \( ! -user 1000 -o ! -group 100 \) -exec chown -h 1000:100 {} + && `+
-			`(timeout 120 find /student_volume \( ! -user 1000 -o ! -group 100 \) -exec chown -h 1000:100 {} \; || true)`,
+			`({ timeout 120 find /student_volume \( ! -user 1000 -o ! -group 100 \) -print0; echo $? >/tmp/walk-exit; } | `+
+			`xargs -0 -r -n 256 -P 8 chown -h 1000:100 2>/dev/null; rc=$?; `+
+			`echo "volume-init walk: find exit $(cat /tmp/walk-exit), xargs exit $rc")`,
 		cmd,
 	)
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitWalkResult() {
+	walk, capHit := volumeInitWalkResult("Terminated\nvolume-init walk: find exit 143, xargs exit 0\n")
+	suite.Equal("143, xargs exit 0", walk)
+	suite.True(capHit)
+
+	walk, capHit = volumeInitWalkResult("volume-init walk: find exit 124, xargs exit 0")
+	suite.Equal("124, xargs exit 0", walk)
+	suite.True(capHit)
+
+	walk, capHit = volumeInitWalkResult("volume-init walk: find exit 0, xargs exit 123")
+	suite.Equal("0, xargs exit 123", walk)
+	suite.False(capHit)
+
+	walk, capHit = volumeInitWalkResult("chmod: /student_volume/x: Operation not permitted")
+	suite.Equal("", walk)
+	suite.False(capHit)
 }
 
 func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidWithoutGid() {

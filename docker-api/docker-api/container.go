@@ -577,6 +577,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 						},
 					}
 
+					started := time.Now()
 					resp, err := dockerClient.ServiceCreate(context.TODO(), serviceSpec, types.ServiceCreateOptions{})
 					if err != nil {
 						return err
@@ -600,8 +601,10 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 						task := tasks[0]
 						switch task.Status.State {
 						case swarm.TaskStateComplete:
+							logVolumeInit(dockerClient, serviceSpec.Name, task, time.Since(started))
 							goto Done
 						case swarm.TaskStateFailed, swarm.TaskStateRejected:
+							logVolumeInit(dockerClient, serviceSpec.Name, task, time.Since(started))
 							return fmt.Errorf("volume init service failed: %s", task.Status.Err)
 						}
 
@@ -810,6 +813,55 @@ func runUser(options *pb.ContainerRequestOptions) (string, error) {
 	return runUid, nil
 }
 
+// volumeInitWalkSeconds caps the ownership walk of a volume-init.
+const volumeInitWalkSeconds = 120
+
+// volumeInitWalkMarker starts the line the walk prints when it ends, followed by
+// find's exit code. busybox timeout reports a cap hit as 143, GNU timeout as 124.
+const volumeInitWalkMarker = "volume-init walk: find exit "
+
+// volumeInitWalkResult returns what the walk reported after the marker, and
+// whether the cap stopped it. It returns "" when the logs hold no marker: no run
+// uid, a walk that never finished, or a marker pushed out of the log tail.
+func volumeInitWalkResult(logs string) (string, bool) {
+	for _, line := range strings.Split(logs, "\n") {
+		if strings.HasPrefix(line, volumeInitWalkMarker) {
+			result := strings.TrimPrefix(line, volumeInitWalkMarker)
+			return result, strings.HasPrefix(result, "143,") || strings.HasPrefix(result, "124,")
+		}
+	}
+	return "", false
+}
+
+// logVolumeInit logs one info line per volume-init run: the walk can cost up to
+// two minutes of a lab start, and nothing else records it.
+func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.Task, elapsed time.Duration) {
+	exitCode := -1
+	if task.Status.ContainerStatus != nil {
+		exitCode = task.Status.ContainerStatus.ExitCode
+	}
+
+	// The deadline covers the read too: a log line must never hold a lab start.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	walk, capHit := "", false
+	reader, err := dockerClient.TaskLogs(ctx, task.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Tail: "200"})
+	if err != nil {
+		log.Warnf("volume-init %s: cannot read logs: %v", serviceName, err)
+	} else {
+		defer func() { _ = reader.Close() }()
+		if logs, _, err := readTaskLogs(reader, 200); err != nil {
+			log.Warnf("volume-init %s: cannot decode logs: %v", serviceName, err)
+		} else {
+			walk, capHit = volumeInitWalkResult(logs)
+		}
+	}
+
+	log.Infof("volume-init %s: %s after %.1f s, exit code %d, walk %q, cap hit %t",
+		serviceName, task.Status.State, elapsed.Seconds(), exitCode, walk, capHit)
+}
+
 // buildVolumeInitCommand returns the shell command the volume-init service runs
 // on the student volume, or "" when there is nothing to do.
 //
@@ -817,9 +869,8 @@ func runUser(options *pb.ContainerRequestOptions) (string, error) {
 // its direct entries unconditionally, then a stat-only walk of the whole tree
 // that chowns only the mismatched entries. The walk is capped at 120 s and its
 // failure ignored, so the largest volumes get partial coverage instead of a
-// failed start. change_owner
-// rows then keep their chmod but skip their chown, which would hand the folders
-// back to the old uid.
+// failed start. change_owner rows then keep their chmod but skip their chown,
+// which would hand the folders back to the old uid.
 func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 	cmdParts := []string{}
 
@@ -831,15 +882,24 @@ func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 		if 2 == len(ids) {
 			gid = ids[1]
 		}
-		mismatch := fmt.Sprintf(`\( ! -user %s -o ! -group %s \) -exec chown -h %s:%s {}`, uid, gid, uid, gid)
+		mismatch := fmt.Sprintf(`\( ! -user %s -o ! -group %s \)`, uid, gid)
 
 		cmdParts = append(cmdParts,
 			// The root and its direct entries, always.
-			fmt.Sprintf("find %s -maxdepth 1 %s +", MOUNT_TARGET, mismatch),
-			// One chown per entry: a find killed by timeout never runs its pending
-			// "+" batch, so everything found before the cap would stay unchanged.
-			// Mismatches are few once a volume has been migrated.
-			fmt.Sprintf("(timeout 120 find %s %s \\; || true)", MOUNT_TARGET, mismatch),
+			fmt.Sprintf("find %s -maxdepth 1 %s -exec chown -h %s:%s {} +", MOUNT_TARGET, mismatch, uid, gid),
+			// The cap kills find only. xargs still chowns every name find printed
+			// and then sees the pipe close, so a capped walk keeps its progress,
+			// which a pending "-exec {} +" batch would not. Over NFS every chown is
+			// a round trip to the server: one at a time managed about 200 entries a
+			// second, 8 batches in parallel about 850, and 16 did no better.
+			// chown errors are dropped so a volume that refuses
+			// every chown cannot flood the log; xargs exits 123 instead. The last
+			// line reports both exit codes for the Go API's log. A find killed
+			// mid-write can leave a truncated last name, which xargs still passes
+			// to chown: accepted, since any path it resolves to lies in the student
+			// volume or in this throwaway container.
+			fmt.Sprintf(`({ timeout %d find %s %s -print0; echo $? >/tmp/walk-exit; } | xargs -0 -r -n 256 -P 8 chown -h %s:%s 2>/dev/null; rc=$?; echo "%s$(cat /tmp/walk-exit), xargs exit $rc")`,
+				volumeInitWalkSeconds, MOUNT_TARGET, mismatch, uid, gid, volumeInitWalkMarker),
 		)
 	}
 
