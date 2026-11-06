@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- Slurm clusters: administrators manage Slurm gateways (display name, technical name, endpoint, secret) in a new admin page, and bind one to a course on a CPU compute type from the course form. The secret is write-only: required on creation, left blank on edit to keep it. Teachers do not see the cluster selector, and a duplicated course starts without a cluster. Needs the back with Slurm support
+
 ## 2.30.9
 ### Added
 - A Delete button on the course edit page, after a confirmation, marks the course deleted. Administrators can filter the course list on deleted courses, and opening the link of a deleted course says it is no longer available. Needs back 2.35.7
