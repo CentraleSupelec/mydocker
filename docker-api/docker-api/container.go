@@ -33,6 +33,8 @@ const (
 	PORT_TO_CADDY_INDEX_KEY                                   = "port_%d_caddy_index"
 	MYDOCKER_USERNAME                                         = "MYDOCKER_USERNAME"
 	MYDOCKER_PASSWORD                                         = "MYDOCKER_PASSWORD"
+	SLURM_API_KEY                                             = "SLURM_API_KEY"
+	SLURM_API_ENDPOINT                                        = "SLURM_API_ENDPOINT"
 	NFS                                        StorageBackend = "NFS"
 	LOCAL                                      StorageBackend = "LOCAL"
 	RBD                                        StorageBackend = "RBD"
@@ -727,6 +729,9 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 	for _, label := range request.GetOptions().GetForbiddenLabels() {
 		constraints = append(constraints, fmt.Sprintf("node.labels.%s!=%s", label.GetKey(), label.GetValue()))
 	}
+
+	envVars := containerEnv(response, request)
+
 	spec := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{
 			Name:   name,
@@ -744,7 +749,7 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 				Args:          args,
 				CapabilityAdd: []string{"SYS_PTRACE"},
 				Mounts:        mounts,
-				Env:           []string{fmt.Sprintf("%s=%s", MYDOCKER_USERNAME, response.GetUserPassword().Username), fmt.Sprintf("%s=%s", MYDOCKER_PASSWORD, response.GetUserPassword().Password)},
+				Env:           envVars,
 			},
 			Resources: &swarm.ResourceRequirements{
 				Limits:       limit,
@@ -756,13 +761,57 @@ func create(name string, response *pb.ContainerResponse, dockerClient *client.Cl
 		EndpointSpec: &swarm.EndpointSpec{
 			Ports: ports,
 		}}
-	s, _ := json.Marshal(spec)
+	// Redact credential env vars (Slurm session key, container password) from
+	// the debug payload: they are secrets and must not land in logs.
+	logSpec := spec
+	logTask := spec.TaskTemplate
+	if logTask.ContainerSpec != nil {
+		csCopy := *logTask.ContainerSpec
+		csCopy.Env = redactEnv(csCopy.Env)
+		logTask.ContainerSpec = &csCopy
+	}
+	logSpec.TaskTemplate = logTask
+	s, _ := json.Marshal(logSpec)
 	log.Debugf("Payload : '%s'", s)
 	_, err := dockerClient.ServiceCreate(context.TODO(), spec, buildServiceCreateOptions(response.GetImageID()))
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// containerEnv returns the environment of a student container: its credentials, plus the Slurm
+// gateway key and endpoint when the request carries both.
+func containerEnv(response *pb.ContainerResponse, request *pb.ContainerRequest) []string {
+	env := []string{
+		fmt.Sprintf("%s=%s", MYDOCKER_USERNAME, response.GetUserPassword().GetUsername()),
+		fmt.Sprintf("%s=%s", MYDOCKER_PASSWORD, response.GetUserPassword().GetPassword()),
+	}
+	slurm := request.GetOptions().GetSlurmApiContainerParams()
+	if slurm.GetKey() != "" && slurm.GetEndpoint() != "" {
+		env = append(env,
+			fmt.Sprintf("%s=%s", SLURM_API_KEY, slurm.GetKey()),
+			fmt.Sprintf("%s=%s", SLURM_API_ENDPOINT, slurm.GetEndpoint()),
+		)
+	}
+	return env
+}
+
+// redactEnv returns a copy of env with the values of credential variables
+// masked, for safe logging. It never mutates the input slice.
+func redactEnv(env []string) []string {
+	redacted := make([]string, len(env))
+	for i, e := range env {
+		if kv := strings.SplitN(e, "=", 2); len(kv) == 2 {
+			switch kv[0] {
+			case SLURM_API_KEY, MYDOCKER_PASSWORD:
+				redacted[i] = kv[0] + "=***REDACTED***"
+				continue
+			}
+		}
+		redacted[i] = e
+	}
+	return redacted
 }
 
 type createStudentVolumeDockerClient interface {

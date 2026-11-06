@@ -197,12 +197,12 @@ type containerInfo struct {
 func parseContainerName(containerName string) (*containerInfo, error) {
 	split := strings.Split(containerName, "-")
 	if split[len(split)-1] == "admin" {
-        courseId := strings.Join(split[:len(split)-1], "-") // Combine toutes les parties sauf "admin"
-        return &containerInfo{userId: "", courseId: courseId, isAdmin: true}, nil
-    }
+		courseId := strings.Join(split[:len(split)-1], "-") // Combine toutes les parties sauf "admin"
+		return &containerInfo{userId: "", courseId: courseId, isAdmin: true}, nil
+	}
 	userId := split[0]
-    courseId := strings.Join(split[1:], "-") // Combine toutes les parties sauf la première
-    return &containerInfo{userId: userId, courseId: courseId, isAdmin: false}, nil
+	courseId := strings.Join(split[1:], "-") // Combine toutes les parties sauf la première
+	return &containerInfo{userId: userId, courseId: courseId, isAdmin: false}, nil
 }
 
 func createStudentVolumeName(userId string) string {
