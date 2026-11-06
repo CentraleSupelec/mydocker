@@ -60,7 +60,7 @@ class ContainerRequestCreatorServiceRunUidTest {
         user.setId(7L);
         user.setUsername("student");
 
-        return service.createRequest(course, user, false, null, false);
+        return service.createRequest(course, user, false, null, null, false);
     }
 
     @Test
