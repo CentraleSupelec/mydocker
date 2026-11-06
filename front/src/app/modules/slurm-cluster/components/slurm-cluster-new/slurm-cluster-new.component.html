@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">{{ 'admin.resources_management.slurm_clusters.create_new' | translate }}</h1>
+
+<app-slurm-cluster-form
+  [formControl]="slurmClusterForm"
+></app-slurm-cluster-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="slurmClusterForm.invalid" (click)="submit()" color="primary">
+    {{ 'admin.resources_management.slurm_clusters.create_submit' | translate }}
+  </button>
+</div>

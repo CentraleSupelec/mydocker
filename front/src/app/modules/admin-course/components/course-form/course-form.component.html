@@ -13,6 +13,7 @@
       formControlName="technical"
       *ngIf="computeTypes && defaultComputeTypeId"
       [computeTypes]="computeTypes"
+      [slurmClusters]="slurmClusters || []"
       [defaultComputeTypeId]="defaultComputeTypeId"
       [clusters]="clusters"
     ></app-course-technical-information-form>

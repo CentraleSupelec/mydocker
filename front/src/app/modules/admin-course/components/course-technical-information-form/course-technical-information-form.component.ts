@@ -10,16 +10,20 @@ import {
   ValidationErrors,
   Validator,
   ValidatorFn,
-  Validators
-} from "@angular/forms";
-import { IAdminCourse } from "../../interfaces/course";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
-import { DockerImageApiService } from "../../../admin-docker-image/services/docker-image-api.service";
-import { MatDialog } from "@angular/material/dialog";
-import { DockerImageChoiceDialogComponent, DockerImageChoiceDialogReturnData } from "../docker-image-choice-dialog/docker-image-choice-dialog.component";
+  Validators,
+} from '@angular/forms';
+import { IAdminCourse } from '../../interfaces/course';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { DockerImageApiService } from '../../../admin-docker-image/services/docker-image-api.service';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  DockerImageChoiceDialogComponent,
+  DockerImageChoiceDialogReturnData,
+} from '../docker-image-choice-dialog/docker-image-choice-dialog.component';
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
-import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
+import { ISlurmCluster } from '../../../slurm-cluster/interfaces/slurm-cluster';
+import { DefaultCourseFormValuesService } from '../../services/default-course-form-values.service';
 import { IPort } from 'src/app/modules/ports-form/interfaces/port';
 import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
 
@@ -31,22 +35,32 @@ import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/clus
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CourseTechnicalInformationFormComponent),
-      multi: true
+      multi: true,
     },
     {
       provide: NG_VALIDATORS,
       useExisting: forwardRef(() => CourseTechnicalInformationFormComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
-export class CourseTechnicalInformationFormComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
+export class CourseTechnicalInformationFormComponent
+  implements OnInit, OnDestroy, ControlValueAccessor, Validator
+{
   readonly courseTechnicalForm: FormGroup;
   private readonly destroy$ = new Subject<void>();
   @Input() computeTypes: Array<IComputeType> = [];
   @Input() clusters?: Array<IClusterBasicInformaion>;
   @Input() defaultComputeTypeId: number = 0;
   selectedImageClusterId: number | null = null;
+  @Input() slurmClusters: Array<ISlurmCluster> = [];
+  @Input() defaultSlurmClusterId: 'none' | number = 'none';
+
+  get cpuIds(): number[] {
+    return this.computeTypes
+      ?.filter((computeType) => !computeType.gpu)
+      .map((computeType) => computeType.id) ?? [];
+  }
 
   constructor(
     formBuilder: FormBuilder,
@@ -61,6 +75,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       nanoCpusLimit: null,
       memoryBytesLimit: null,
       computeTypeId: null,
+      slurmClusterId: null,
       command: null,
 
       saveStudentWork: false,
@@ -82,22 +97,22 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
       .pipe(
         takeUntil(this.destroy$),
       )
-      .subscribe(
-        v => {
-          v.nanoCpusLimit = v.nanoCpusLimit * 1e9;
-          v.memoryBytesLimit = v.memoryBytesLimit * 1e9;
-          this.propagateChange(v);
+      .subscribe((v) => {
+        v.nanoCpusLimit = v.nanoCpusLimit * 1e9;
+        v.memoryBytesLimit = v.memoryBytesLimit * 1e9;
+        if (
+          v.slurmClusterId === 'none' ||
+          !this.cpuIds.includes(v.computeTypeId)
+        ) {
+          v.slurmClusterId = null;
         }
-      )
-      this.courseTechnicalForm.get("dockerImage")?.valueChanges
-        .pipe(
-          takeUntil(this.destroy$),
-        )
-        .subscribe(
-          _v => {
-            this.selectedImageClusterId = null;
-          }
-        )
+        this.propagateChange(v);
+      });
+    this.courseTechnicalForm.get('dockerImage')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.selectedImageClusterId = null;
+      });
   }
 
   registerOnChange(fn: any): void {
@@ -116,7 +131,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
 
   validate(control: AbstractControl): ValidationErrors | null {
     if (this.courseTechnicalForm.invalid) {
-      return {courseTechnicalErrors: this.courseTechnicalForm.errors}
+      return { courseTechnicalErrors: this.courseTechnicalForm.errors };
     }
     return null;
   }
@@ -124,19 +139,26 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   writeValue(obj: IAdminCourse): void {
     this.courseTechnicalForm.setValue(
       DefaultCourseFormValuesService.getTechnicalValues(
-        obj, this.defaultComputeTypeId, true,
-      ),
+        obj,
+        this.defaultComputeTypeId,
+        this.defaultSlurmClusterId,
+        true
+      )
     );
 
     this.changeSaveStudentWork(obj?.saveStudentWork);
   }
 
-  private propagateChange = (_: any) => {}
+  private propagateChange = (_: any) => {};
 
   changeSaveStudentWork(checked: boolean) {
-    if(checked) {
-      this.courseTechnicalForm.get('workdirSize')?.setValidators([Validators.required]);
-      this.courseTechnicalForm.get('workdirPath')?.setValidators([Validators.required]);
+    if (checked) {
+      this.courseTechnicalForm
+        .get('workdirSize')
+        ?.setValidators([Validators.required]);
+      this.courseTechnicalForm
+        .get('workdirPath')
+        ?.setValidators([Validators.required]);
     } else {
       this.courseTechnicalForm.get('workdirSize')?.clearValidators();
       this.courseTechnicalForm.get('workdirPath')?.clearValidators();
@@ -147,8 +169,10 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   }
 
   changeUseStudentVolume(checked: boolean) {
-    if(checked) {
-      this.courseTechnicalForm.get('studentVolumePath')?.setValidators([Validators.required]);
+    if (checked) {
+      this.courseTechnicalForm
+        .get('studentVolumePath')
+        ?.setValidators([Validators.required]);
     } else {
       this.courseTechnicalForm.get('studentVolumePath')?.clearValidators();
     }
@@ -161,9 +185,12 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
   }
 
   openDialog() {
-    this.dialog.open(DockerImageChoiceDialogComponent, {data: {clusters: this.clusters}}).afterClosed()
-    .subscribe(
-      (data: DockerImageChoiceDialogReturnData) => {
+    this.dialog
+      .open(DockerImageChoiceDialogComponent, {
+        data: { clusters: this.clusters ?? [] },
+      })
+      .afterClosed()
+      .subscribe((data: DockerImageChoiceDialogReturnData | undefined) => {
         if (data) {
           // Silent, or the dockerImage subscription would clear the cluster set just below.
           this.courseTechnicalForm.get('dockerImage')?.setValue(data.dockerImageBuild.imageName, { emitEvent: false });
@@ -178,8 +205,7 @@ export class CourseTechnicalInformationFormComponent implements OnInit, OnDestro
           // The parent hears this form only through the group's valueChanges: publish the final value.
           this.courseTechnicalForm.updateValueAndValidity();
         }
-      }
-    )
+      });
   }
 
   /**

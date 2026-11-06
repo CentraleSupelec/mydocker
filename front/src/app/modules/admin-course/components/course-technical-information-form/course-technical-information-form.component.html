@@ -44,6 +44,17 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+    <ng-container *ngxPermissionsOnly="'ROLE_ADMIN'">
+    <mat-form-field *ngIf="cpuIds.includes(courseTechnicalForm.get('computeTypeId')?.value)">
+      <mat-label>{{ 'admin.courses.edit.technical_info.slurm_cluster' | translate }}</mat-label>
+      <mat-select formControlName="slurmClusterId" [matTooltip]="'admin.courses.edit.technical_info.slurm_cluster_tooltip' | translate">
+      <mat-option value="none">{{ 'admin.courses.edit.technical_info.no_slurm_cluster' | translate }}</mat-option>
+      <mat-option [value]="v.id" *ngFor="let v of slurmClusters">
+        {{ v.displayName }}
+      </mat-option>
+      </mat-select>
+    </mat-form-field>
+    </ng-container>
     <mat-form-field>
       <mat-label>{{ 'admin.courses.edit.technical_info.cpu_limit' | translate }}</mat-label>
       <input matInput formControlName="nanoCpusLimit" type="number">

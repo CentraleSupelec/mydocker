@@ -24,6 +24,7 @@
 <app-course-form
   *ngIf="computeTypes"
   [computeTypes]="computeTypes"
+  [slurmClusters]="slurmClusters || []"
   [formControl]="courseForm"
   [sessionsById]="sessionsById"
   [courseUuid]="course?.uuid"

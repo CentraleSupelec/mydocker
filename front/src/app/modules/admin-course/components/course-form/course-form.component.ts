@@ -18,6 +18,7 @@ import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 import { DefaultCourseFormValuesService } from "../../services/default-course-form-values.service";
 import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
+import { ISlurmCluster } from 'src/app/modules/slurm-cluster/interfaces/slurm-cluster';
 
 
 @Component({
@@ -43,6 +44,7 @@ export class CourseFormComponent implements OnInit, ControlValueAccessor, Valida
   defaultComputeTypeId?: number;
   @Input() computeTypes?: Array<IComputeType>;
   @Input() clusters?: Array<IClusterBasicInformaion>;
+  @Input() slurmClusters?: Array<ISlurmCluster>;
   @Input() sessionsById?: ISessionsById;
   @Input() courseUuid?: string;
 

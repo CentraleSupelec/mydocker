@@ -8,6 +8,7 @@ import { TranslateTestingModule } from 'src/testing/translate-testing.module';
 import { APP_CONFIG, IAppConfig } from '../../../../app-config';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
+import { NgxPermissionsModule } from 'ngx-permissions';
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 
 describe('CourseTechnicalInformationFormComponent', () => {
@@ -22,6 +23,7 @@ describe('CourseTechnicalInformationFormComponent', () => {
         AdminCourseModule,
         NoopAnimationsModule,
         HttpClientTestingModule,
+        NgxPermissionsModule.forRoot(),
       ]
     })
     .compileComponents();
@@ -240,6 +242,7 @@ describe('CourseTechnicalInformationFormComponent work volume gating', () => {
         AdminCourseModule,
         NoopAnimationsModule,
         HttpClientTestingModule,
+        NgxPermissionsModule.forRoot(),
       ],
       providers: [
         {

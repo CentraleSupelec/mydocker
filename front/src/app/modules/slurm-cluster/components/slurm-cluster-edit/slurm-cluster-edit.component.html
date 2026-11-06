@@ -1,0 +1,11 @@
+<h1 class="mat-display-1">{{ 'admin.resources_management.slurm_clusters.edit.title' | translate: { name: slurmCluster?.displayName } }}</h1>
+<app-slurm-cluster-form
+  [formControl]="slurmClusterForm"
+  [isEdit]="true"
+></app-slurm-cluster-form>
+
+<div fxLayout="row" fxLayoutAlign="flex-end">
+  <button mat-raised-button [disabled]="slurmClusterForm.invalid  || slurmClusterForm.disabled" (click)="submit()" color="primary">
+    {{ 'admin.resources_management.slurm_clusters.edit.save' | translate }}
+  </button>
+</div>

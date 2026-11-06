@@ -1,6 +1,9 @@
-import { IPort } from "../../ports-form/interfaces/port";
-import {IAdminSession, IAdminUpdateSession} from "../../sessions-form/interfaces/admin-session";
-import { ICourseDisplay } from "./course-display";
+import { IPort } from '../../ports-form/interfaces/port';
+import {
+  IAdminSession,
+  IAdminUpdateSession,
+} from '../../sessions-form/interfaces/admin-session';
+import { ICourseDisplay } from './course-display';
 
 export enum CourseStatus {
   DRAFT = 'DRAFT',
@@ -23,6 +26,7 @@ export interface IAdminCourseBase {
   nanoCpusLimit: number;
   memoryBytesLimit: number;
   computeTypeId: number;
+  slurmClusterId: number;
   command: string;
 
   saveStudentWork: boolean;

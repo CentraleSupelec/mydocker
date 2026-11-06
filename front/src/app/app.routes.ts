@@ -130,6 +130,16 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'slurm-clusters',
+        loadChildren: () => import('./modules/slurm-cluster/slurm-cluster.module').then(m => m.SlurmClusterModule),
+        data: {
+          breadcrumb: 'admin.resources_management.slurm_clusters.breadcrumb',
+          permissions: {
+            only: ['ROLE_ADMIN'],
+          }
+        }
+      },
+      {
         path: 'users',
         loadChildren: () => import('./modules/admin-users/admin-users.module').then(m => m.AdminUsersModule),
         data: {

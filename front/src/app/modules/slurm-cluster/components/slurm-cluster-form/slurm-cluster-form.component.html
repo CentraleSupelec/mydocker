@@ -1,0 +1,23 @@
+<mat-card class="form-container">
+  <mat-card-content>
+    <div fxLayout="column" [formGroup]="slurmClusterForm">
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.slurm_clusters.form.display_name' | translate }}</mat-label>
+        <input matInput formControlName="displayName">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.slurm_clusters.form.technical_name' | translate }}</mat-label>
+        <input matInput formControlName="technicalName">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.slurm_clusters.form.api_endpoint' | translate }}</mat-label>
+        <input matInput formControlName="apiEndpoint">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'admin.resources_management.slurm_clusters.form.secret_key' | translate }}</mat-label>
+        <input matInput type="password" formControlName="secretKey">
+        <mat-hint *ngIf="isEdit">{{ 'admin.resources_management.slurm_clusters.form.secret_key_hint' | translate }}</mat-hint>
+      </mat-form-field>
+    </div>
+  </mat-card-content>
+</mat-card>

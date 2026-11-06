@@ -100,6 +100,9 @@
           "command_unknown_ports_error": "Port inconnu dans la commande : {{ports}}. Déclarez-le dans la liste des ports ci-dessus.",
           "compute_type": "Charge de travail",
           "compute_type_tooltip": "Choisissez GPU uniquement si l'environnement nécessite une carte graphique.",
+          "slurm_cluster": "Cluster Slurm",
+          "slurm_cluster_tooltip": "Sélectionnez un cluster Slurm si l'environnement nécessite un accès ponctuel à un GPU.",
+          "no_slurm_cluster": "Aucun cluster",
           "cpu_limit": "Limite CPU (en VCPU)",
           "memory_limit": "Limite RAM (en Go)",
           "save_student_work": {
@@ -502,6 +505,43 @@
           "success": "Le cluster a bien été mis à jour",
           "error": "Erreur lors de la sauvegarde du cluster",
           "save":"Sauvegarder les changements"
+        }
+      },
+      "slurm_clusters": {
+        "nav_label": "Clusters Slurm",
+        "title": "Administration des clusters Slurm",
+        "breadcrumb": "Clusters Slurm",
+        "create_new": "Ajouter un cluster Slurm",
+        "create_submit": "Ajouter le cluster Slurm",
+        "create_breadcrumb": "Ajout d'un cluster Slurm",
+        "create_success": "Le cluster Slurm a bien été ajouté",
+        "create_error": "Erreur lors de l'ajout du cluster Slurm",
+        "columns": {
+          "display_name": "Nom d'affichage",
+          "technical_name": "Identifiant technique",
+          "api_endpoint": "Point de terminaison API"
+        },
+        "actions": {
+          "add": "Ajouter",
+          "edit": "Modifier",
+          "remove": "Enlever",
+          "remove_confirmation": "Souhaitez-vous vraiment enlever le cluster Slurm \"{name}\" ?",
+          "remove_success": "Le cluster Slurm \"{name}\" a bien été enlevé",
+          "remove_error": "Impossible d'enlever le cluster Slurm \"{name}\""
+        },
+        "form": {
+          "display_name": "Nom d'affichage",
+          "technical_name": "Identifiant technique",
+          "api_endpoint": "Point de terminaison API",
+          "secret_key": "Clé secrète",
+          "secret_key_hint": "Laisser vide pour conserver la clé actuelle"
+        },
+        "edit": {
+          "title": "Édition du cluster Slurm \"{name}\"",
+          "breadcrumb": "Édition d'un cluster Slurm",
+          "save": "Sauvegarder les changements",
+          "success": "Le cluster Slurm a bien été mis à jour",
+          "error": "Erreur lors de la mise à jour du cluster Slurm"
         }
       }
     },

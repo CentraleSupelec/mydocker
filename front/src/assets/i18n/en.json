@@ -100,6 +100,9 @@
           "command_unknown_ports_error": "Unknown port in the command: {{ports}}. Declare it in the list of ports above.",
           "compute_type": "Compute type",
           "compute_type_tooltip": "Only choose GPU if the container requires it.",
+          "slurm_cluster": "Slurm cluster",
+          "slurm_cluster_tooltip": "Select a Slurm cluster if the environment requires intermittent GPU access.",
+          "no_slurm_cluster": "No Slurm cluster",
           "cpu_limit": "CPU limit (in VCPU)",
           "memory_limit": "RAM limit (in GB)",
           "save_student_work": {
@@ -502,6 +505,43 @@
           "success": "The cluster has been successfully updated",
           "error": "An error occurred while updating the cluster",
           "save":"Save changes"
+        }
+      },
+      "slurm_clusters": {
+        "nav_label": "Slurm clusters",
+        "title": "Slurm clusters administration",
+        "breadcrumb": "Slurm clusters",
+        "create_new": "Create a new Slurm cluster",
+        "create_submit": "Create the Slurm cluster",
+        "create_breadcrumb": "Add a Slurm cluster",
+        "create_success": "The Slurm cluster has been added successfully",
+        "create_error": "An error occurred while adding the Slurm cluster",
+        "columns": {
+          "display_name": "Display name",
+          "technical_name": "Technical name",
+          "api_endpoint": "API endpoint"
+        },
+        "actions": {
+          "add": "Add",
+          "edit": "Edit",
+          "remove": "Remove",
+          "remove_confirmation": "Are you sure you want to remove the Slurm cluster \"{name}\"?",
+          "remove_success": "The Slurm cluster \"{name}\" has been removed successfully",
+          "remove_error": "Unable to remove the Slurm cluster \"{name}\""
+        },
+        "form": {
+          "display_name": "Display name",
+          "technical_name": "Technical name",
+          "api_endpoint": "API endpoint",
+          "secret_key": "Secret key",
+          "secret_key_hint": "Leave blank to keep the current key"
+        },
+        "edit": {
+          "title": "Edit Slurm cluster \"{name}\"",
+          "breadcrumb": "Edit a Slurm cluster",
+          "save": "Save changes",
+          "success": "The Slurm cluster has been updated successfully",
+          "error": "An error occurred while updating the Slurm cluster"
         }
       }
     },

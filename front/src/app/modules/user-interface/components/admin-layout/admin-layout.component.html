@@ -146,6 +146,17 @@
         </div>
         <span>{{ 'admin.resources_management.clusters.nav_label' | translate }}</span>
       </a>
+      <a
+        mat-list-item
+        routerLink="/admin/slurm-clusters"
+        routerLinkActive="active-link"
+        *ngxPermissionsOnly="'ROLE_ADMIN'"
+      >
+        <div fxLayout="row">
+          <mat-icon>hub</mat-icon>
+        </div>
+        <span>{{ 'admin.resources_management.slurm_clusters.nav_label' | translate }}</span>
+      </a>
       <h2 *ngxPermissionsOnly="'ROLE_ADMIN'" class="menu-title">{{ 'admin.users_management.title' | translate }}</h2>
       <a
         mat-list-item
@@ -171,4 +182,3 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
-

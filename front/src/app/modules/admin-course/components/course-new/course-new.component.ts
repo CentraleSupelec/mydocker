@@ -9,6 +9,7 @@ import { Location } from '@angular/common';
 import { IComputeType } from '../../../compute-type/interfaces/compute-type';
 import { TranslateService } from '@ngx-translate/core';
 import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
+import { ISlurmCluster } from '../../../slurm-cluster/interfaces/slurm-cluster';
 
 @Component({
   selector: 'app-course-new',
@@ -19,6 +20,7 @@ export class CourseNewComponent implements OnInit {
   readonly courseForm: FormControl;
   computeTypes?: IComputeType[];
   clusters: IClusterBasicInformaion[] = [];
+  slurmClusters?: ISlurmCluster[];
   constructor(
     formBuilder: FormBuilder,
     private readonly adminCoursesApi: AdminCoursesApiService,
@@ -37,12 +39,14 @@ export class CourseNewComponent implements OnInit {
       d => {
         this.computeTypes = d.computeTypes;
         this.clusters = d.clusters;
+        this.slurmClusters = d.slurmClusters;
       }
     )
 
     const prefill: IAdminCourse | undefined = history.state?.prefill;
     if (prefill) {
-      const { id, sessions, status, visible, creator, createdOn, updatedOn, link, ...clone } = prefill as any;
+      // a copy starts without a Slurm cluster: only an admin binds one
+      const { id, sessions, status, visible, creator, createdOn, updatedOn, link, slurmClusterId, ...clone } = prefill as any;
       this.courseForm.setValue({
         ...clone,
         sessions: [],

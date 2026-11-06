@@ -1,0 +1,51 @@
+<h1 class="mat-display-1">{{ 'admin.resources_management.slurm_clusters.title' | translate }}</h1>
+<mat-table [dataSource]="slurmClusters" class="mat-elevation-z3">
+  <ng-container matColumnDef="id">
+    <mat-header-cell *matHeaderCellDef>#</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.id }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="displayName">
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.slurm_clusters.columns.display_name' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.displayName }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="technicalName">
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.slurm_clusters.columns.technical_name' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.technicalName }} </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="apiEndpoint">
+    <mat-header-cell *matHeaderCellDef>{{ 'admin.resources_management.slurm_clusters.columns.api_endpoint' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let element"> {{ element.apiEndpoint }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="action">
+    <mat-header-cell *matHeaderCellDef fxLayoutAlign="end center">
+      <a mat-raised-button color="primary" [routerLink]="'/admin/slurm-clusters/new'">
+        <mat-icon>add</mat-icon>
+        {{ 'admin.resources_management.slurm_clusters.actions.add' | translate }}
+      </a>
+    </mat-header-cell>
+
+    <mat-cell *matCellDef="let element" fxLayout="row" fxLayoutAlign="flex-end center">
+      <a
+        mat-icon-button
+        [routerLink]="[element.id, 'edit']"
+        [matTooltip]="'admin.resources_management.slurm_clusters.actions.edit' | translate"
+      >
+        <mat-icon>edit</mat-icon>
+      </a>
+      <button
+        mat-icon-button
+        (click)="remove(element)"
+        [matTooltip]="'admin.resources_management.slurm_clusters.actions.remove' | translate"
+        >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+  <mat-header-row *matHeaderRowDef="columnsToDisplay"></mat-header-row>
+  <mat-row *matRowDef="let element; columns: columnsToDisplay;">
+  </mat-row>
+</mat-table>

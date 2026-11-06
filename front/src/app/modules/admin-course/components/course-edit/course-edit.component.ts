@@ -12,6 +12,7 @@ import { ISessionsById } from "../../../sessions-form/interfaces/admin-session";
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmDialogService } from "../../../utils/confirm-dialog/confirm-dialog.service";
 import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/cluster';
+import { ISlurmCluster } from 'src/app/modules/slurm-cluster/interfaces/slurm-cluster';
 
 @Component({
   selector: 'app-course-edit',
@@ -21,6 +22,7 @@ import { IClusterBasicInformaion } from 'src/app/modules/cluster/interfaces/clus
 export class CourseEditComponent implements OnInit {
   course: IAdminCourse | undefined;
   computeTypes?: Array<IComputeType>;
+  slurmClusters?: Array<ISlurmCluster>;
   readonly courseForm: FormControl;
   sessionsById: ISessionsById = {};
   readonly deletedStatus = CourseStatus.DELETED;
@@ -50,6 +52,7 @@ export class CourseEditComponent implements OnInit {
         });
         this.computeTypes = d.computeTypes;
         this.clusters = d.clusters;
+        this.slurmClusters = d.slurmClusters;
         this.courseForm.setValue(this.course)
         this.coursePermissionService.hasEditPermission(this.course?.id).then(
           hasPermission => {

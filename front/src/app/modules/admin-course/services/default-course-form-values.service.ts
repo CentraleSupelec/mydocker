@@ -1,19 +1,25 @@
-import { IAdminCourse } from "../interfaces/course";
+import { IAdminCourse } from '../interfaces/course';
 
-const DEFAULT_COMMAND = "{{USERNAME}} {{PASSWORD}}";
+const DEFAULT_COMMAND = '{{USERNAME}} {{PASSWORD}}';
 
 export class DefaultCourseFormValuesService {
-  static getTechnicalValues(obj: IAdminCourse, defaultComputeTypeId?: number, shrinkLimits = false): {
+  static getTechnicalValues(
+    obj: IAdminCourse,
+    defaultComputeTypeId?: number,
+    defaultSlurmClusterId?: "none" | number,
+    shrinkLimits = false
+  ): {
     [key: string]: any;
   } {
     const multiplier = shrinkLimits ? 1e-9 : 1;
     return {
       ports: obj?.ports ?? [],
 
-      dockerImage: obj?.dockerImage ?? "",
-      nanoCpusLimit: obj?.nanoCpusLimit * multiplier  ?? null,
-      memoryBytesLimit: obj?.memoryBytesLimit * multiplier  ?? null,
+      dockerImage: obj?.dockerImage ?? '',
+      nanoCpusLimit: obj?.nanoCpusLimit * multiplier ?? null,
+      memoryBytesLimit: obj?.memoryBytesLimit * multiplier ?? null,
       computeTypeId: obj?.computeTypeId ?? defaultComputeTypeId,
+      slurmClusterId: obj?.slurmClusterId ?? defaultSlurmClusterId,
       command: obj?.command ?? DEFAULT_COMMAND,
 
       saveStudentWork: obj?.saveStudentWork ?? false,
