@@ -12,6 +12,7 @@ import java.util.List;
 
 @Data
 public class AdminCourseBaseDto {
+
     @NotEmpty
     @Pattern(regexp = "^[^/]+$", message = "Title should not contain /")
     private String title;
@@ -42,6 +43,8 @@ public class AdminCourseBaseDto {
 
     @NotNull
     private Long computeTypeId;
+
+    private Long slurmClusterId;
 
     @NotNull
     private Boolean saveStudentWork = false;

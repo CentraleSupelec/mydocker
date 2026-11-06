@@ -3,6 +3,7 @@ package fr.centralesupelec.thuv.repository;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.model.CourseStatus;
+import fr.centralesupelec.thuv.model.SlurmCluster;
 import fr.centralesupelec.thuv.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @Transactional
 public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecificationExecutor<Course> {
     List<Course> findByUserCoursesUserAndStatusInOrderById(User user, List<CourseStatus> status);
+    List<Course> findBySlurmCluster(SlurmCluster slurmCluster);
     Set<Course> findByCreator(User admin);
     Course getCourseByLink(String courseLink);
     long countByComputeType(ComputeType computeType);

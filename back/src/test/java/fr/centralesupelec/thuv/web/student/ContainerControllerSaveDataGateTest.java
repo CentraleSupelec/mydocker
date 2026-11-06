@@ -11,6 +11,7 @@ import fr.centralesupelec.thuv.service.DelayDeletionService;
 import fr.centralesupelec.thuv.service.LogRequestService;
 import fr.centralesupelec.thuv.service.RequestContainerService;
 import fr.centralesupelec.thuv.service.SaveDataService;
+import fr.centralesupelec.thuv.service.SlurmApiService;
 import fr.centralesupelec.thuv.service.ShutdownContainerService;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
 import fr.centralesupelec.thuv.storage.ShutdownStatusStorage;
@@ -45,7 +46,8 @@ class ContainerControllerSaveDataGateTest {
                 mock(ShutdownStatusStorage.class),
                 mock(DelayDeletionService.class),
                 ZoneId.of("UTC"),
-                new LogsMapper()
+                new LogsMapper(),
+                mock(SlurmApiService.class)
         );
         ReflectionTestUtils.setField(controller, "saveStudentWorkEnabled", false);
 

@@ -5,6 +5,7 @@ import static java.lang.Integer.MAX_VALUE;
 import fr.centralesupelec.thuv.permissions.models.CoursePermission;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.*;
@@ -141,4 +142,13 @@ public class Course {
     private String uid;
     @Column(nullable = false)
     private Long numberOfUsers = 0L;
+
+    // LAZY so that loading a course never decrypts the cluster secret: an
+    // undecryptable secret (e.g. key mismatch) must only break Slurm launches,
+    // not every query touching courses (permissions, listings, ...).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "slurm_cluster_id", nullable = true)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private SlurmCluster slurmCluster;
 }

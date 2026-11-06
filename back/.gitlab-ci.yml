@@ -41,7 +41,9 @@ test:
     - openssl x509 -req -in src/main/resources/tls/client.csr -CA src/main/resources/tls/ca.crt -CAkey src/main/resources/tls/ca.key -CAcreateserial -out src/main/resources/tls/client.crt -days 365 -sha256
   script:
     - ./mvnw generate-sources
-    - ./mvnw test || { [ "$DEBUG" = "true" ] && sleep 3600; }
+    # TestSocketTest opens real HTTPS connections to external hosts (badssl.com,
+    # httpstatuses.maor.io, ...) which are unreachable from the CI runner; skip it here.
+    - ./mvnw test -Dtest='!TestSocketTest' -DfailIfNoTests=false || { [ "$DEBUG" = "true" ] && sleep 3600; }
   except:
     - tags
     - master

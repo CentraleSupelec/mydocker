@@ -148,6 +148,10 @@ public class CourseController {
         if (dto.getStatus() == CourseStatus.DELETED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A course is deleted only through mark-deleted");
         }
+        // only an admin binds a Slurm cluster
+        if (dto.getSlurmClusterId() != null && !principal.hasAdminAuthority()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only an admin can bind a Slurm cluster to a course");
+        }
         User user = userRepository.getReferenceById(
                 principal.getUserId());
 

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.centralesupelec.thuv.dtos.AdminUpdateCourseDto;
 import fr.centralesupelec.thuv.model.ComputeType;
 import fr.centralesupelec.thuv.model.Course;
+import fr.centralesupelec.thuv.model.SlurmCluster;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
+import fr.centralesupelec.thuv.repository.SlurmClusterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,7 @@ public class UpdateCourseMapper {
     private final ObjectMapper objectMapper;
     private final ComputeTypeRepository computeTypeRepository;
     private final ZoneId zoneId;
+    private final SlurmClusterRepository slurmClusterRepository;
 
 
     public void updateChanges(Course course, AdminUpdateCourseDto dto) {
@@ -142,6 +145,14 @@ public class UpdateCourseMapper {
                     );
         } catch (JsonProcessingException e) {
             course.setDisplayOptions("{}");
+        }
+
+        if (dto.getSlurmClusterId() != null) {
+            SlurmCluster slurmCluster = slurmClusterRepository.findById(dto.getSlurmClusterId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "SlurmCluster not found"));
+            course.setSlurmCluster(slurmCluster);
+        } else {
+            course.setSlurmCluster(null);
         }
     }
 

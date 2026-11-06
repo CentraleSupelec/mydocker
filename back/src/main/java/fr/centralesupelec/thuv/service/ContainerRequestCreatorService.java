@@ -30,12 +30,18 @@ public class ContainerRequestCreatorService {
         private final CourseInfraRequestService courseInfraRequestService;
         private final PathRepository pathRepository;
 
-    public ContainerRequest createRequest(CourseSession courseSession, User user, boolean forceRecreate) {
+    public ContainerRequest createRequest(
+        CourseSession courseSession,
+        User user,
+        boolean forceRecreate,
+        SlurmApiContainerParams slurmApiContainerParams
+    ) {
         Course course = courseSession.getCourse();
         return createRequest(
                 course,
                 user,
                 forceRecreate,
+                slurmApiContainerParams,
                 courseSession.getEndDateTime(),
                 courseSession.getDestroyContainerAfterEndTime()
         );
@@ -45,6 +51,7 @@ public class ContainerRequestCreatorService {
         Course course, 
         User user,
         boolean forceRecreate,
+        SlurmApiContainerParams slurmApiContainerParams,
         LocalDateTime sesssionEndDateTime,
         Boolean destroyContainerAfterEndTime
     ) {
@@ -53,6 +60,9 @@ public class ContainerRequestCreatorService {
                 .setSaveStudentWork(course.isSaveStudentWork())
                 .setCommand(course.getCommand())
         ;
+        if (slurmApiContainerParams != null) {
+            builder.setSlurmApiContainerParams(slurmApiContainerParams);
+        }
         List<Path> paths = pathRepository.findAll();
 
         builder

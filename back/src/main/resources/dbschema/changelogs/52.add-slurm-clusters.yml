@@ -1,0 +1,95 @@
+databaseChangeLog:
+- changeSet:
+    id: 1753434685623-4
+    author: niniche (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: slurm_clustersPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: api_endpoint
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: display_name
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: secret_key
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: technical_name
+            type: VARCHAR(255)
+        tableName: slurm_clusters
+- changeSet:
+    id: 1753434685623-5
+    author: niniche (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: slurm_cluster_id
+            type: bigint
+        tableName: courses
+- changeSet:
+    id: 1753434685623-6
+    author: niniche (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: display_name
+        constraintName: UC_SLURM_CLUSTERSDISPLAY_NAME_COL
+        tableName: slurm_clusters
+- changeSet:
+    id: 1753434685623-7
+    author: niniche (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: secret_key
+        constraintName: UC_SLURM_CLUSTERSSECRET_KEY_COL
+        tableName: slurm_clusters
+- changeSet:
+    id: 1753434685623-8
+    author: niniche (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: technical_name
+        constraintName: UK94npyomyq21r6d7wxbcag2bk4
+        tableName: slurm_clusters
+- changeSet:
+    id: 1753434685623-9
+    author: niniche (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: slurm_cluster_id
+        baseTableName: courses
+        constraintName: FKq1g2ij1bx84p5hg9e0f3lp8lp
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: slurm_clusters
+        validate: true
+- changeSet:
+    id: 1793900000000-1
+    author: snesiubedreag
+    comment: >-
+      secret_key holds the encrypted secret, about 4/3 of the plaintext plus 53 characters:
+      255 refused any secret over about 150 bytes.
+    changes:
+    - modifyDataType:
+        tableName: slurm_clusters
+        columnName: secret_key
+        newDataType: VARCHAR(1024)
+

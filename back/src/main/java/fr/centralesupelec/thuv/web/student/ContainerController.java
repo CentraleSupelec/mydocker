@@ -1,6 +1,7 @@
 package fr.centralesupelec.thuv.web.student;
 
 import fr.centralesupelec.gRPC.ContainerRequest;
+import fr.centralesupelec.gRPC.SlurmApiContainerParams;
 import fr.centralesupelec.thuv.dtos.DelayDeletionDto;
 import fr.centralesupelec.thuv.dtos.ShutdownContainerDto;
 import fr.centralesupelec.thuv.storage.ContainerStorage;
@@ -50,6 +51,7 @@ public class ContainerController {
     private final DelayDeletionService delayDeletionService;
     private final ZoneId zoneId;
     private final LogsMapper logsMapper;
+    private final SlurmApiService slurmApiService;
 
     // Saving of student work is disabled on every deployment. Turn on with
     // save.student-work.enabled = true (ansible: save_student_work_enabled).
@@ -75,8 +77,11 @@ public class ContainerController {
                 );
         }
 
+        SlurmApiContainerParams slurmApiContainerParams = slurmApiService.getSlurmApiContainerParams(
+                courseSession, user
+        );
         ContainerRequest containerRequest = containerRequestCreatorService.createRequest(
-                courseSession, user, forceRecreate
+                courseSession, user, forceRecreate, slurmApiContainerParams
         );
         requestContainerService.requestContainer(containerRequest);
         return ResponseEntity.status(HttpStatus.OK).build();

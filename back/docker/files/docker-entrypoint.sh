@@ -10,5 +10,5 @@ wait-for-it.sh ${GO_APP_ADDRESS:-localhost} ${GO_APP_PORT:-50000} && echo "GoApp
 
 echo "👨‍💻 Development mode: Enabling hot reload..."
 
-find src/main/java -type f | entr -n -r ./mvnw compile &
+find src/main/java -type f | entr -np ./mvnw compile &
 exec ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev

@@ -46,6 +46,7 @@ public class AdminCourseMapper {
                 .setMemoryBytesLimit(course.getMemoryBytesLimit())
                 .setCommand(course.getCommand())
                 .setComputeTypeId(course.getComputeType().getId())
+                .setSlurmClusterId(course.getSlurmCluster() != null ? course.getSlurmCluster().getId() : null)
                 .setSaveStudentWork(course.isSaveStudentWork())
                 .setWorkdirSize(course.getWorkdirSize())
                 .setWorkdirPath(course.getWorkdirPath())

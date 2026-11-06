@@ -35,7 +35,7 @@ public class ContainerController {
                 user.getId(), course.getId()).ifPresent(userCourse -> userCourse.setLastStartDate(LocalDateTime.now(zoneId))
         );
         ContainerRequest containerRequest = containerRequestCreatorService.createRequest(
-                course, user, forceRecreate, null, false
+                course, user, forceRecreate, null, null, false
         );
         requestContainerService.requestContainer(containerRequest);
         return ResponseEntity.status(HttpStatus.OK).build();

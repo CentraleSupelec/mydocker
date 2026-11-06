@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -30,6 +31,11 @@ public class CourseUpdateService {
         MyUserDetails principal = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             validate(courseDto, course);
+            // only an admin binds a Slurm cluster; a teacher's edit must carry the current binding unchanged
+            Long currentSlurmClusterId = course.getSlurmCluster() != null ? course.getSlurmCluster().getId() : null;
+            if (!Objects.equals(currentSlurmClusterId, courseDto.getSlurmClusterId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only an admin can change the Slurm cluster of a course");
+            }
         }
         updateCourseMapper.updateChanges(course, courseDto);
         courseRepository.saveAndFlush(course);

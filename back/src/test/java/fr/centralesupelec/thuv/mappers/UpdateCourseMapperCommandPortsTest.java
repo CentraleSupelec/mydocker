@@ -5,6 +5,7 @@ import fr.centralesupelec.thuv.dtos.AdminUpdateCourseDto;
 import fr.centralesupelec.thuv.dtos.PortDto;
 import fr.centralesupelec.thuv.model.Course;
 import fr.centralesupelec.thuv.repository.ComputeTypeRepository;
+import fr.centralesupelec.thuv.repository.SlurmClusterRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,7 +36,8 @@ class UpdateCourseMapperCommandPortsTest {
             mock(SessionMapper.class),
             new ObjectMapper(),
             computeTypeRepository,
-            ZoneId.of("Europe/Paris")
+            ZoneId.of("Europe/Paris"),
+            mock(SlurmClusterRepository.class)
     );
 
     private AdminUpdateCourseDto dtoWithCommand(String command) {
