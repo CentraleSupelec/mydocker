@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- `ContainerRequestOptions.slurmApiContainerParams` (field 17): when the back sends both a Slurm key and endpoint, the student container gets them as `SLURM_API_KEY` and `SLURM_API_ENDPOINT`. Without them the container environment is unchanged
+### Fixed
+- The debug log of a service creation masks `MYDOCKER_PASSWORD` and `SLURM_API_KEY`; the container password used to be logged in clear
+
 ## 2.20.4
 ### Fixed
 - A container that fails to start, including a failed service lookup before its creation, is reported with the generic error key `container.start-failed` and the technical reason, instead of leaving the start pending
