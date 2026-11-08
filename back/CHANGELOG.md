@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.36.0
 ### Added
 - Slurm clusters: administrators register a Slurm gateway (display name, technical name, endpoint, secret) under `admin/slurm-clusters` and bind it to a course on a CPU compute type. A student starting a bound course gets a session key from the gateway, passed to the Go API as `slurmApiContainerParams` (field 17). Only administrators list clusters and bind or change a course's cluster; a teacher's request that changes it answers 403. A course without a cluster starts as before. Needs the Go API and front with Slurm support
 - New table `slurm_clusters` and nullable column `courses.slurm_cluster_id` (changeset 52)
