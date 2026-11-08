@@ -813,8 +813,15 @@ func runUser(options *pb.ContainerRequestOptions) (string, error) {
 	return runUid, nil
 }
 
-// volumeInitWalkSeconds caps the ownership walk of a volume-init.
-const volumeInitWalkSeconds = 120
+// volumeInitWalkSeconds returns the cap on the ownership walk of a volume-init:
+// VolumeInitWalkSeconds from the config, or the default when unset or not
+// positive (busybox timeout 0 would mean no cap at all).
+func volumeInitWalkSeconds() int {
+	if c.VolumeInitWalkSeconds > 0 {
+		return c.VolumeInitWalkSeconds
+	}
+	return defaultVolumeInitWalkSeconds
+}
 
 // volumeInitWalkMarker starts the line the walk prints when it ends, followed by
 // find's exit code. busybox timeout reports a cap hit as 143, GNU timeout as 124.
@@ -834,7 +841,7 @@ func volumeInitWalkResult(logs string) (string, bool) {
 }
 
 // logVolumeInit logs one info line per volume-init run: the walk can cost up to
-// two minutes of a lab start, and nothing else records it.
+// its cap (two minutes by default) of a lab start, and nothing else records it.
 func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.Task, elapsed time.Duration) {
 	exitCode := -1
 	if task.Status.ContainerStatus != nil {
@@ -867,9 +874,9 @@ func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.T
 //
 // With a run uid, every start gives the volume back to that uid: the root and
 // its direct entries unconditionally, then a stat-only walk of the whole tree
-// that chowns only the mismatched entries. The walk is capped at 120 s and its
-// failure ignored, so the largest volumes get partial coverage instead of a
-// failed start. change_owner rows then keep their chmod but skip their chown,
+// that chowns only the mismatched entries. The walk is capped
+// (VolumeInitWalkSeconds, default 120 s) and its failure ignored, so the
+// largest volumes get partial coverage instead of a failed start. change_owner rows then keep their chmod but skip their chown,
 // which would hand the folders back to the old uid.
 func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 	cmdParts := []string{}
@@ -899,7 +906,7 @@ func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 			// to chown: accepted, since any path it resolves to lies in the student
 			// volume or in this throwaway container.
 			fmt.Sprintf(`({ timeout %d find %s %s -print0; echo $? >/tmp/walk-exit; } | xargs -0 -r -n 256 -P 8 chown -h %s:%s 2>/dev/null; rc=$?; echo "%s$(cat /tmp/walk-exit), xargs exit $rc")`,
-				volumeInitWalkSeconds, MOUNT_TARGET, mismatch, uid, gid, volumeInitWalkMarker),
+				volumeInitWalkSeconds(), MOUNT_TARGET, mismatch, uid, gid, volumeInitWalkMarker),
 		)
 	}
 

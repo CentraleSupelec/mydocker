@@ -89,6 +89,7 @@ type config struct {
 	LogsDetails             bool
 	LogsTailLines           int
 	LogsMaxTasks            int
+	VolumeInitWalkSeconds   int
 	Monolithic              bool
 	GRPCServerCertPath      string
 	GRPCServerKeyPath       string
@@ -130,6 +131,11 @@ const defaultLogsTailLines = 2000
 // history limit is usually five per slot, so this only bites an environment that
 // has churned unusually.
 const defaultLogsMaxTasks = 20
+
+// Caps the ownership walk of a volume-init, so a lab start with a forced run uid
+// waits at most this long for it. At about 160 us per entry over NFS, 120 s
+// covers a walk with nothing to fix of about 750 000 entries.
+const defaultVolumeInitWalkSeconds = 120
 
 var c config
 
@@ -472,6 +478,7 @@ func main() {
 	viper.SetDefault("LogsDetails", false)
 	viper.SetDefault("LogsTailLines", defaultLogsTailLines)
 	viper.SetDefault("LogsMaxTasks", defaultLogsMaxTasks)
+	viper.SetDefault("VolumeInitWalkSeconds", defaultVolumeInitWalkSeconds)
 	viper.SetDefault("Monolithic", true)
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

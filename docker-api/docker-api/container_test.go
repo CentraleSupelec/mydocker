@@ -549,6 +549,19 @@ func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidWithoutRows() {
 	)
 }
 
+func (suite *ContainerTestSuite) TestVolumeInitWalkCapFromConfig() {
+	saved := c.VolumeInitWalkSeconds
+	defer func() { c.VolumeInitWalkSeconds = saved }()
+
+	c.VolumeInitWalkSeconds = 30
+	suite.Contains(buildVolumeInitCommand(nil, "", "1000:100"), "timeout 30 find ")
+
+	for _, invalid := range []int{0, -5} {
+		c.VolumeInitWalkSeconds = invalid
+		suite.Contains(buildVolumeInitCommand(nil, "", "1000:100"), "timeout 120 find ", "value %d", invalid)
+	}
+}
+
 func (suite *ContainerTestSuite) TestVolumeInitWalkResult() {
 	walk, capHit := volumeInitWalkResult("Terminated\nvolume-init walk: find exit 143, xargs exit 0\n")
 	suite.Equal("143, xargs exit 0", walk)

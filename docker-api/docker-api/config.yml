@@ -38,6 +38,8 @@ LogsTimeout: 500ms
 LogsTailLines: 2000
 # Most recent tasks whose logs are read for one request.
 LogsMaxTasks: 20
+# Seconds a lab start with a forced run uid waits at most for the volume ownership walk.
+VolumeInitWalkSeconds: 120
 DeployEnvSecrets:
   - "AWS_ACCESS_KEY_ID="
   - "AWS_SECRET_ACCESS_KEY="
