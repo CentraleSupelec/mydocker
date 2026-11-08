@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.21.0
 ### Added
 - `ContainerRequestOptions.slurmApiContainerParams` (field 17): when the back sends both a Slurm key and endpoint, the student container gets them as `SLURM_API_KEY` and `SLURM_API_ENDPOINT`. Without them the container environment is unchanged
 - `ContainerRequestOptions.runUid` (field 18, `uid` or `uid:gid`): when set, the student container runs as that user, and the volume-init job gives the student volume to it at every start, the root and its direct entries always, and the rest of the tree through a stat-only walk capped by the config key `VolumeInitWalkSeconds` (default 120 s) that chowns mismatched entries in small batches as it finds them, so a walk cut by the cap keeps what it fixed. `change_owner` paths keep their chmod but skip their chown for such a course. Volume-init now also runs for a course with no paths when `runUid` is set. Empty keeps today's behaviour. A value other than positive integers fails the start
