@@ -833,15 +833,65 @@ const volumeInitWalkMarker = "volume-init walk: find exit "
 func volumeInitWalkResult(logs string) (string, bool) {
 	for _, line := range strings.Split(logs, "\n") {
 		if strings.HasPrefix(line, volumeInitWalkMarker) {
-			result := strings.TrimPrefix(line, volumeInitWalkMarker)
+			// A walk without find errors ends its line with ": ", dropped here.
+			result := strings.TrimSuffix(strings.TrimSpace(strings.TrimPrefix(line, volumeInitWalkMarker)), ":")
 			return result, strings.HasPrefix(result, "143,") || strings.HasPrefix(result, "124,")
 		}
 	}
 	return "", false
 }
 
-// logVolumeInit logs one info line per volume-init run: the walk can cost up to
-// its cap (two minutes by default) of a lab start, and nothing else records it.
+// volumeInitRefusedMarker starts the line a guarded step prints when it fails,
+// followed by the step, its exit code and its first error line.
+const volumeInitRefusedMarker = "volume-init refused: "
+
+// tolerate wraps one step of the volume-init so that its failure, a chown or
+// chmod the volume refuses or a directory find cannot read, prints a marker
+// line instead of ending the && chain: the lab starts on a partly fixed volume
+// rather than not at all. The step's stderr is kept to its first line so a step
+// refused on every file cannot push the markers out of the log tail.
+func tolerate(cmd, step string) string {
+	return fmt.Sprintf(`{ %s 2>/tmp/volume-init-err || { rc=$?; echo "%s%s exit $rc: $(head -n 1 /tmp/volume-init-err)"; }; }`,
+		cmd, volumeInitRefusedMarker, step)
+}
+
+// volumeInitRefusals returns what each failed guarded step reported after the
+// marker, in log order.
+func volumeInitRefusals(logs string) []string {
+	var refused []string
+	for _, line := range strings.Split(logs, "\n") {
+		if strings.HasPrefix(line, volumeInitRefusedMarker) {
+			refused = append(refused, strings.TrimSpace(strings.TrimPrefix(line, volumeInitRefusedMarker)))
+		}
+	}
+	return refused
+}
+
+// volumeInitWalkFailed reports whether the ownership walk did not finish clean:
+// find or xargs exited non-zero, which covers the cap hit, chowns refused deeper
+// in the tree (xargs 123) and directories find could not read. No walk ("") is
+// not a failure; a result that does not parse is.
+func volumeInitWalkFailed(walk string) bool {
+	if "" == walk {
+		return false
+	}
+	var findExit, xargsExit int
+	if n, _ := fmt.Sscanf(walk, "%d, xargs exit %d", &findExit, &xargsExit); 2 != n {
+		return true
+	}
+	return 0 != findExit || 0 != xargsExit
+}
+
+// volumeInitNeedsAttention reports whether a volume-init run left the volume
+// partly fixed or failed. Some prods run the Go API at LogLevel error, so such a
+// run is logged at error level to be seen at all. An unknown exit code (-1, no
+// container status) does not count: a failed task is reported by its caller.
+func volumeInitNeedsAttention(exitCode int, walk string, refused []string) bool {
+	return 0 < exitCode || volumeInitWalkFailed(walk) || 0 < len(refused)
+}
+
+// logVolumeInit logs one line per volume-init run: the walk can cost up to its
+// cap (two minutes by default) of a lab start, and nothing else records it.
 func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.Task, elapsed time.Duration) {
 	exitCode := -1
 	if task.Status.ContainerStatus != nil {
@@ -852,7 +902,7 @@ func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.T
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	walk, capHit := "", false
+	walk, capHit, refused := "", false, []string(nil)
 	reader, err := dockerClient.TaskLogs(ctx, task.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Tail: "200"})
 	if err != nil {
 		log.Warnf("volume-init %s: cannot read logs: %v", serviceName, err)
@@ -862,11 +912,16 @@ func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.T
 			log.Warnf("volume-init %s: cannot decode logs: %v", serviceName, err)
 		} else {
 			walk, capHit = volumeInitWalkResult(logs)
+			refused = volumeInitRefusals(logs)
 		}
 	}
 
-	log.Infof("volume-init %s: %s after %.1f s, exit code %d, walk %q, cap hit %t",
-		serviceName, task.Status.State, elapsed.Seconds(), exitCode, walk, capHit)
+	logf := log.Infof
+	if volumeInitNeedsAttention(exitCode, walk, refused) {
+		logf = log.Errorf
+	}
+	logf("volume-init %s: %s after %.1f s, exit code %d, walk %q, cap hit %t, refused %q",
+		serviceName, task.Status.State, elapsed.Seconds(), exitCode, walk, capHit, refused)
 }
 
 // buildVolumeInitCommand returns the shell command the volume-init service runs
@@ -893,7 +948,7 @@ func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 
 		cmdParts = append(cmdParts,
 			// The root and its direct entries, always.
-			fmt.Sprintf("find %s -maxdepth 1 %s -exec chown -h %s:%s {} +", MOUNT_TARGET, mismatch, uid, gid),
+			tolerate(fmt.Sprintf("find %s -maxdepth 1 %s -exec chown -h %s:%s {} +", MOUNT_TARGET, mismatch, uid, gid), "root chown"),
 			// The cap kills find only. xargs still chowns every name find printed
 			// and then sees the pipe close, so a capped walk keeps its progress,
 			// which a pending "-exec {} +" batch would not. Over NFS every chown is
@@ -905,30 +960,40 @@ func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 			// mid-write can leave a truncated last name, which xargs still passes
 			// to chown: accepted, since any path it resolves to lies in the student
 			// volume or in this throwaway container.
-			fmt.Sprintf(`({ timeout %d find %s %s -print0; echo $? >/tmp/walk-exit; } | xargs -0 -r -n 256 -P 8 chown -h %s:%s 2>/dev/null; rc=$?; echo "%s$(cat /tmp/walk-exit), xargs exit $rc")`,
+			// find's own errors (unreadable directories) go to a file too, and only
+			// their first line reaches the marker, so they cannot push the other
+			// markers out of the log tail.
+			fmt.Sprintf(`({ timeout %d find %s %s -print0 2>/tmp/walk-err; echo $? >/tmp/walk-exit; } | xargs -0 -r -n 256 -P 8 chown -h %s:%s 2>/dev/null; rc=$?; echo "%s$(cat /tmp/walk-exit), xargs exit $rc: $(head -n 1 /tmp/walk-err)")`,
 				volumeInitWalkSeconds(), MOUNT_TARGET, mismatch, uid, gid, volumeInitWalkMarker),
 		)
 	}
 
-	for _, p := range paths {
+	// Rows are named by position, never by pattern: the pattern is admin input
+	// and would land inside the echo's double quotes.
+	for i, p := range paths {
 		recursiveFlag := ""
 
 		if p.GetRecursive() {
 			recursiveFlag = "-R"
 		}
 
-		cmdParts = append(cmdParts, buildChmodCommandsToApplyExecuteOnlyToFolders(MOUNT_TARGET, p.GetValue(), p.GetPermissions(), p.Recursive)...)
+		for _, chmod := range buildChmodCommandsToApplyExecuteOnlyToFolders(MOUNT_TARGET, p.GetValue(), p.GetPermissions(), p.Recursive) {
+			cmdParts = append(cmdParts, tolerate(chmod, fmt.Sprintf("chmod row %d", i+1)))
+		}
 
 		if p.ChangeOwner && "" != targetUID && "" == runUid {
-			cmdParts = append(cmdParts,
+			cmdParts = append(cmdParts, tolerate(
 				fmt.Sprintf(
-					"find %s -type d -wholename \"%s\" -exec chown %s %s: {} \\;",
+					// "{} +", not "\;": with "\;" find ignores a failed chown
+					// and the guard around this step could never report it.
+					"find %s -type d -wholename \"%s\" -exec chown %s %s: {} +",
 					MOUNT_TARGET,
 					p.GetValue(),
 					recursiveFlag,
 					targetUID,
 				),
-			)
+				fmt.Sprintf("change_owner row %d", i+1),
+			))
 		}
 	}
 
@@ -943,14 +1008,17 @@ func buildChmodCommandsToApplyExecuteOnlyToFolders(basePath, pattern string, mod
 	modeStr := fmt.Sprintf("%03d", mode)
 	fileModeStr := stripExecBits(modeStr)
 
+	// "{} +" runs one chmod per batch of names, not one per file: over NFS each
+	// process is a round trip. Unlike "\;", a failed batch makes find exit
+	// non-zero, so callers must guard each command.
 	var cmds []string
 	if recursive {
-		cmdExecFiles := fmt.Sprintf(`find %s -path "%s*" -type f -perm /a=x -exec chmod %s {} \;`, basePath, pattern, modeStr)
-		cmdFiles := fmt.Sprintf(`find %s -path "%s*" -type f ! -perm /a=x -exec chmod %s {} \;`, basePath, pattern, fileModeStr)
-		cmdDirs := fmt.Sprintf(`find %s -path "%s*" -type d -exec chmod %s {} \;`, basePath, pattern, modeStr)
+		cmdExecFiles := fmt.Sprintf(`find %s -path "%s*" -type f -perm /a=x -exec chmod %s {} +`, basePath, pattern, modeStr)
+		cmdFiles := fmt.Sprintf(`find %s -path "%s*" -type f ! -perm /a=x -exec chmod %s {} +`, basePath, pattern, fileModeStr)
+		cmdDirs := fmt.Sprintf(`find %s -path "%s*" -type d -exec chmod %s {} +`, basePath, pattern, modeStr)
 		cmds = []string{cmdExecFiles, cmdFiles, cmdDirs}
 	} else {
-		cmdDir := fmt.Sprintf(`find %s -type d -wholename "%s" -exec chmod %s {} \;`, basePath, pattern, modeStr)
+		cmdDir := fmt.Sprintf(`find %s -type d -wholename "%s" -exec chmod %s {} +`, basePath, pattern, modeStr)
 		cmds = []string{cmdDir}
 	}
 

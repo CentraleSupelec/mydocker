@@ -541,10 +541,11 @@ func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidWithoutRows() {
 	cmd := buildVolumeInitCommand(nil, "", "1000:100")
 
 	suite.Equal(
-		`find /student_volume -maxdepth 1 \( ! -user 1000 -o ! -group 100 \) -exec chown -h 1000:100 {} + && `+
-			`({ timeout 120 find /student_volume \( ! -user 1000 -o ! -group 100 \) -print0; echo $? >/tmp/walk-exit; } | `+
+		`{ find /student_volume -maxdepth 1 \( ! -user 1000 -o ! -group 100 \) -exec chown -h 1000:100 {} + 2>/tmp/volume-init-err || `+
+			`{ rc=$?; echo "volume-init refused: root chown exit $rc: $(head -n 1 /tmp/volume-init-err)"; }; } && `+
+			`({ timeout 120 find /student_volume \( ! -user 1000 -o ! -group 100 \) -print0 2>/tmp/walk-err; echo $? >/tmp/walk-exit; } | `+
 			`xargs -0 -r -n 256 -P 8 chown -h 1000:100 2>/dev/null; rc=$?; `+
-			`echo "volume-init walk: find exit $(cat /tmp/walk-exit), xargs exit $rc")`,
+			`echo "volume-init walk: find exit $(cat /tmp/walk-exit), xargs exit $rc: $(head -n 1 /tmp/walk-err)")`,
 		cmd,
 	)
 }
@@ -593,7 +594,7 @@ func (suite *ContainerTestSuite) TestVolumeInitCommandRowsWithoutRunUid() {
 
 	cmd := buildVolumeInitCommand(paths, "57439", "")
 
-	suite.Contains(cmd, `-exec chown -R 57439: {} \;`)
+	suite.Contains(cmd, `-exec chown -R 57439: {} +`)
 	suite.NotContains(cmd, "chown -h")
 	suite.NotContains(cmd, "timeout")
 }
@@ -607,6 +608,131 @@ func (suite *ContainerTestSuite) TestVolumeInitCommandRunUidSkipsChangeOwnerChow
 	suite.Contains(cmd, "chmod 777")
 	suite.NotContains(cmd, "57439")
 	suite.Less(strings.Index(cmd, "timeout 120"), strings.Index(cmd, "chmod"), "ownership walk runs before the chmod rows")
+}
+
+// runVolumeInit runs a volume-init command on dir instead of the student volume.
+// Each tool in refused is replaced by a stub that prints an error and exits 1,
+// as a chown or chmod the volume refuses would.
+func runVolumeInit(suite *ContainerTestSuite, cmd, dir string, refused ...string) (string, error) {
+	stubs := suite.T().TempDir()
+	for _, tool := range refused {
+		stub := "#!/bin/sh\necho \"" + tool + ": refused by test stub\" >&2\nexit 1\n"
+		suite.Require().NoError(os.WriteFile(filepath.Join(stubs, tool), []byte(stub), 0o755))
+	}
+	run := exec.Command("sh", "-c", strings.ReplaceAll(cmd, MOUNT_TARGET, dir))
+	run.Env = append(os.Environ(), "PATH="+stubs+":"+os.Getenv("PATH"))
+	out, err := run.CombinedOutput()
+	return string(out), err
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitRefusedRootChownDoesNotStopTheRest() {
+	dir := suite.T().TempDir()
+	cache := filepath.Join(dir, ".cache")
+	suite.Require().NoError(os.MkdirAll(cache, 0o555))
+	paths := []*pb.Path{{Value: "*/.cache", Recursive: true, Permissions: 777}}
+
+	out, err := runVolumeInit(suite, buildVolumeInitCommand(paths, "", "4242:4242"), dir, "chown")
+
+	suite.NoError(err, out)
+	suite.Contains(out, "volume-init refused: root chown exit 1: chown: refused by test stub")
+	suite.Contains(out, volumeInitWalkMarker, "the walk still runs")
+	info, statErr := os.Stat(cache)
+	suite.Require().NoError(statErr)
+	suite.Equal(os.FileMode(0o777), info.Mode().Perm(), "the chmod rows still run")
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitRefusedChmodDoesNotStopLaterRows() {
+	dir := suite.T().TempDir()
+	suite.Require().NoError(os.MkdirAll(filepath.Join(dir, "a"), 0o755))
+	suite.Require().NoError(os.MkdirAll(filepath.Join(dir, "b"), 0o755))
+	suite.Require().NoError(os.WriteFile(filepath.Join(dir, "b", "f"), []byte("x"), 0o644))
+	paths := []*pb.Path{
+		{Value: "*/a", Recursive: false, Permissions: 777},
+		{Value: "*/b", Recursive: true, Permissions: 777},
+	}
+
+	out, err := runVolumeInit(suite, buildVolumeInitCommand(paths, "", ""), dir, "chmod")
+
+	suite.NoError(err, out)
+	suite.Contains(out, "volume-init refused: chmod row 1 exit 1: chmod: refused by test stub")
+	suite.Contains(out, "volume-init refused: chmod row 2 exit 1: chmod: refused by test stub")
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitWithoutRefusalPrintsNoRefusedLine() {
+	dir := suite.T().TempDir()
+	suite.Require().NoError(os.MkdirAll(filepath.Join(dir, "b"), 0o755))
+	paths := []*pb.Path{{Value: "*/b", Recursive: true, Permissions: 777}}
+
+	out, err := runVolumeInit(suite, buildVolumeInitCommand(paths, "", ""), dir)
+
+	suite.NoError(err, out)
+	suite.NotContains(out, volumeInitRefusedMarker)
+}
+
+func (suite *ContainerTestSuite) TestChmodCommandsRunInBatches() {
+	for _, recursive := range []bool{false, true} {
+		for _, cmd := range buildChmodCommandsToApplyExecuteOnlyToFolders(MOUNT_TARGET, "*/b", 777, recursive) {
+			suite.Contains(cmd, "{} +", cmd)
+			suite.NotContains(cmd, `\;`, cmd)
+		}
+	}
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitRefusals() {
+	logs := "chmod: /student_volume/x: Operation not permitted\n" +
+		"volume-init refused: root chown exit 1: chown: /student_volume/x: Operation not permitted\n" +
+		"volume-init walk: find exit 0, xargs exit 123\n" +
+		"volume-init refused: chmod row 2 exit 1: \n"
+
+	suite.Equal([]string{
+		"root chown exit 1: chown: /student_volume/x: Operation not permitted",
+		"chmod row 2 exit 1:",
+	}, volumeInitRefusals(logs))
+	suite.Empty(volumeInitRefusals("volume-init walk: find exit 0, xargs exit 0\n"))
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitNeedsAttention() {
+	clean := "0, xargs exit 0"
+	suite.False(volumeInitNeedsAttention(0, "", nil), "no walk")
+	suite.False(volumeInitNeedsAttention(0, clean, nil), "clean walk")
+	suite.False(volumeInitNeedsAttention(-1, clean, nil), "unknown exit code")
+	suite.True(volumeInitNeedsAttention(1, clean, nil), "failed task")
+	suite.True(volumeInitNeedsAttention(0, "143, xargs exit 0", nil), "walk cap hit")
+	suite.True(volumeInitNeedsAttention(0, "0, xargs exit 123", nil), "chown refused in the walk")
+	suite.True(volumeInitNeedsAttention(0, "1, xargs exit 0: find: /student_volume/x: Permission denied", nil), "unreadable directory")
+	suite.True(volumeInitNeedsAttention(0, "garbage", nil), "walk result that does not parse")
+	suite.True(volumeInitNeedsAttention(0, clean, []string{"root chown exit 1:"}), "refused step")
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitWalkResultDropsEmptyErrorSuffix() {
+	walk, capHit := volumeInitWalkResult("volume-init walk: find exit 0, xargs exit 0: \n")
+	suite.Equal("0, xargs exit 0", walk)
+	suite.False(capHit)
+
+	walk, _ = volumeInitWalkResult("volume-init walk: find exit 1, xargs exit 0: find: /student_volume/x: Permission denied\n")
+	suite.Equal("1, xargs exit 0: find: /student_volume/x: Permission denied", walk)
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitRefusedWalkChownIsReported() {
+	dir := suite.T().TempDir()
+	suite.Require().NoError(os.MkdirAll(filepath.Join(dir, "deep", "deeper"), 0o755))
+
+	out, err := runVolumeInit(suite, buildVolumeInitCommand(nil, "", "4242:4242"), dir, "chown")
+
+	suite.NoError(err, out)
+	walk, _ := volumeInitWalkResult(out)
+	suite.True(volumeInitWalkFailed(walk), "walk %q", walk)
+}
+
+func (suite *ContainerTestSuite) TestVolumeInitRefusedChangeOwnerIsReported() {
+	dir := suite.T().TempDir()
+	suite.Require().NoError(os.MkdirAll(filepath.Join(dir, ".cache"), 0o755))
+	paths := []*pb.Path{{Value: "*/.cache", Recursive: true, Permissions: 777, ChangeOwner: true}}
+
+	out, err := runVolumeInit(suite, buildVolumeInitCommand(paths, "4242", ""), dir, "chown")
+
+	suite.NoError(err, out)
+	suite.Contains(out, "volume-init refused: change_owner row 1 exit 1: chown: refused by test stub")
 }
 
 func TestContainerSuite(t *testing.T) {
