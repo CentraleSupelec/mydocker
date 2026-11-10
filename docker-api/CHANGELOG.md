@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.21.1
 ### Fixed
 - A volume-init step that fails, such as a chown or chmod the volume refuses or a directory find cannot read, no longer fails the lab start: the step prints `volume-init refused: <step> exit <code>: <first error line>` and the next steps still run. Steps are named by position (`root chown`, `chmod row N`, `change_owner row N`)
 - The volume-init log line now lists the refused steps, and is logged at error level when the task failed, a step was refused, or the ownership walk did not finish clean (cap hit, chown refused deeper in the tree, directory find could not read), so it shows on a Go API running at `LogLevel: error`. The walk line now carries the first error find printed
