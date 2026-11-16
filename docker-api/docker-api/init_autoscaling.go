@@ -12,8 +12,15 @@ var scaleUpConfig = ScaleUpConfig{ScaleUpOwners: make(map[string]scaleUpOwner)}
 var autoscalingLock sync.Mutex
 
 func (s *server) InitAutoscaling(ctx context.Context, request *pb.InitAutoscalingRequest) (*pb.InitAutoscalingResponse, error) {
+	var err error
+
+	scaleUpConfig.Lock.Lock()
 	log.Debugf("Received autoscaling init config %v", request.GetOwners())
-	owners := make(map[string]scaleUpOwner, len(request.GetOwners()))
+	for owner, _ := range scaleUpConfig.ScaleUpOwners {
+		if _, exist := request.GetOwners()[owner]; !exist {
+			delete(scaleUpConfig.ScaleUpOwners, owner)
+		}
+	}
 	for owner, ownerConfig := range request.GetOwners() { // GPU
 		instancesRegions := []InstanceRegions{}
 		for _, instanceRegions := range ownerConfig.GetInstancesRegions() {
@@ -29,15 +36,19 @@ func (s *server) InitAutoscaling(ctx context.Context, request *pb.InitAutoscalin
 				Regions:      regions,
 			})
 		}
-		owners[owner] = scaleUpOwner{
+		scaleUpConfig.ScaleUpOwners[owner] = scaleUpOwner{
 			MinIdleNodesCount: ownerConfig.GetMinIdleNodesCount(),
 			MaxNodesCount:     ownerConfig.GetMaxNodesCount(),
 			ManualNodesCount:  ownerConfig.GetManualNodesCount(),
 			InstancesRegions:  instancesRegions,
 		}
 	}
-	// A push of the back is a complete list.
-	_, err := s.applyAutoscalingOwners(owners, false)
+	scaleUpConfig.Lock.Unlock()
+	err = addScaleUpCron(s.cronScheduler, s.dockerClient, &autoscalingLock, &scaleUpConfig)
+	if err != nil {
+		return &pb.InitAutoscalingResponse{Error: err.Error()}, nil
+	}
+	err = addScaleDownCron(s.cronScheduler, s.dockerClient, &autoscalingLock, &scaleUpConfig)
 	if err != nil {
 		return &pb.InitAutoscalingResponse{Error: err.Error()}, nil
 	}

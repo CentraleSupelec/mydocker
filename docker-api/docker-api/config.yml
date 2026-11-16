@@ -21,11 +21,6 @@ DeployImage: "myregistry.com/mydocker/deploy"
 AdminImage: "myregistry.com/mydocker/filebrowser:latest"
 Environment: "dev"
 AutoscalingStateBaseUrl: https://example.com/terraform-preprod
-# Back the autoscaling config is pulled from at startup (GET <BackUrl>/internal/autoscaling/<BackClusterName>/compute-types).
-# Without BackUrl nothing is pulled and scale-down waits for a push of the back.
-# BackUrl: "https://example.com/api"
-# BackClusterName: "my-cluster"
-# BackToken: ""
 ScaleUpInterval: "10s"
 ScaleUpCooldown: 30s
 ScaleDownInterval: "7s"
@@ -45,6 +40,9 @@ LogsTailLines: 2000
 LogsMaxTasks: 20
 # Seconds a lab start with a forced run uid waits at most for the volume ownership walk.
 VolumeInitWalkSeconds: 120
+# With a forced run uid, write a .profile and a .bashrc into an empty student volume before the
+# lab first mounts it, so Docker does not copy the image's home into it with the image's owner.
+StudentVolumeSeed: true
 DeployEnvSecrets:
   - "AWS_ACCESS_KEY_ID="
   - "AWS_SECRET_ACCESS_KEY="

@@ -60,10 +60,6 @@ type config struct {
 	Environment             string
 	RegistryCredentials     []registryCredential
 	AutoscalingStateBaseUrl string
-	// BackUrl, BackClusterName, BackToken: where the autoscaling config is pulled at startup.
-	BackUrl                 string
-	BackClusterName         string
-	BackToken               string
 	ContainerStatusInterval string
 	ScaleUpInterval         string
 	ScaleUpCooldown         string
@@ -94,6 +90,7 @@ type config struct {
 	LogsTailLines           int
 	LogsMaxTasks            int
 	VolumeInitWalkSeconds   int
+	StudentVolumeSeed       bool
 	Monolithic              bool
 	GRPCServerCertPath      string
 	GRPCServerKeyPath       string
@@ -483,6 +480,7 @@ func main() {
 	viper.SetDefault("LogsTailLines", defaultLogsTailLines)
 	viper.SetDefault("LogsMaxTasks", defaultLogsMaxTasks)
 	viper.SetDefault("VolumeInitWalkSeconds", defaultVolumeInitWalkSeconds)
+	viper.SetDefault("StudentVolumeSeed", true)
 	viper.SetDefault("Monolithic", true)
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -552,9 +550,7 @@ func main() {
 		grpc.Creds(creds),
 		grpc.MaxRecvMsgSize(c.MaxRecvMsgSize),
 	)
-	srv := &server{dockerClient: cli, ports: ports, cronScheduler: cronS}
-	pb.RegisterContainerServiceServer(s, srv)
-	startAutoscalingPull(srv)
+	pb.RegisterContainerServiceServer(s, &server{dockerClient: cli, ports: ports, cronScheduler: cronS})
 	if err := s.Serve(lis); err != nil {
 		log.Panicf("failed to serve: %v", err)
 	}

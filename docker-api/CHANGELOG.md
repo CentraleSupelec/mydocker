@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 this project does NOT adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- A new student's first start on a course with a forced run uid no longer gets a student volume owned by the image's user. Docker copies the image's content at the mount point into an empty volume with the image's owner and mode, after the volume-init has run on it. The volume-init now first writes a `.profile` and a `.bashrc` into an empty volume and gives them and the volume root to the run uid, so Docker skips the copy. The `.profile` is the stock Debian/Ubuntu skeleton; the `.bashrc` is the skeleton as the Jupyter stack images ship it (colour prompt and `ls` aliases on), and it enters the course environment (micromamba activation script if present, else the conda hook if `conda` is on the `PATH`). A volume that holds anything is left alone, and a file already in place is never overwritten. A volume that holds another start's unfinished seed (its temporary files `.mydocker-seed.XXXXXX`, with at most `.profile` and `.bashrc`) is waited on for up to 60 s; temporary files still there after that are removed as abandoned and the volume is judged again. No other file is ever removed. Image content at the mount point no longer reaches a new student's volume. When a write fails the step removes what it wrote, so the next start retries; any failure prints `volume-init refused: seed exit <code>: <first error line>`, and the start goes on as before
+### Added
+- Config key `StudentVolumeSeed` (default `true`) turns the seed off
+
 ## 2.21.1
 ### Fixed
 - A volume-init step that fails, such as a chown or chmod the volume refuses or a directory find cannot read, no longer fails the lab start: the step prints `volume-init refused: <step> exit <code>: <first error line>` and the next steps still run. Steps are named by position (`root chown`, `chmod row N`, `change_owner row N`)

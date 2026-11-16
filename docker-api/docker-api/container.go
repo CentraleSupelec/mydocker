@@ -927,12 +927,15 @@ func logVolumeInit(dockerClient *client.Client, serviceName string, task swarm.T
 // buildVolumeInitCommand returns the shell command the volume-init service runs
 // on the student volume, or "" when there is nothing to do.
 //
-// With a run uid, every start gives the volume back to that uid: the root and
-// its direct entries unconditionally, then a stat-only walk of the whole tree
-// that chowns only the mismatched entries. The walk is capped
-// (VolumeInitWalkSeconds, default 120 s) and its failure ignored, so the
-// largest volumes get partial coverage instead of a failed start. change_owner rows then keep their chmod but skip their chown,
-// which would hand the folders back to the old uid.
+// With a run uid, an empty volume is first seeded with a .profile and a .bashrc
+// owned by that uid (StudentVolumeSeed, on by default), so Docker no longer
+// copies the image's content into it with the image's owner. Then every start
+// gives the volume back to that uid: the root and its direct entries
+// unconditionally, then a stat-only walk of the whole tree that chowns only the
+// mismatched entries. The walk is capped (VolumeInitWalkSeconds, default 120 s)
+// and its failure ignored, so the largest volumes get partial coverage instead
+// of a failed start. change_owner rows then keep their chmod but skip their
+// chown, which would hand the folders back to the old uid.
 func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 	cmdParts := []string{}
 
@@ -945,6 +948,10 @@ func buildVolumeInitCommand(paths []*pb.Path, targetUID, runUid string) string {
 			gid = ids[1]
 		}
 		mismatch := fmt.Sprintf(`\( ! -user %s -o ! -group %s \)`, uid, gid)
+
+		if c.StudentVolumeSeed {
+			cmdParts = append(cmdParts, tolerate(buildVolumeSeedCommand(uid, gid), "seed"))
+		}
 
 		cmdParts = append(cmdParts,
 			// The root and its direct entries, always.
