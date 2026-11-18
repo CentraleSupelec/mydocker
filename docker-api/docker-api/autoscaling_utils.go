@@ -121,6 +121,9 @@ type scaleUpOwner struct {
 type ScaleUpConfig struct {
 	Lock          sync.Mutex
 	ScaleUpOwners map[string]scaleUpOwner
+	// Loaded is true once a complete list of types was applied, by a push of the back or by the
+	// pull at startup. Nothing is destroyed before.
+	Loaded bool
 }
 
 type InstanceRegions struct {
