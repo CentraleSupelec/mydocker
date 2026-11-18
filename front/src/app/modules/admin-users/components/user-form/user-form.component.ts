@@ -40,7 +40,8 @@ export class UserFormComponent implements OnInit, OnDestroy, ControlValueAccesso
       username: ['', Validators.required],
       name: ['', Validators.required],
       lastname: ['', Validators.required],
-      email: ['', [Validators.email, Validators.required]],
+      // No email format check: CAS users store their bare principal (e.g. "casstudent") as email.
+      email: ['', Validators.required],
       enabled: [true],
       roles: [['ROLE_TEACHER']]
     })
