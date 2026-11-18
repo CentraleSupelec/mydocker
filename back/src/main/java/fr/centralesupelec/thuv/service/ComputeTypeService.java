@@ -77,5 +77,14 @@ public class ComputeTypeService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Compute type is still in use", e);
         }
         this.validateEmptyTechnicalName(computeType.getCluster());
+        // The Go API must drop the deleted type, so send it the complete list again.
+        if (deploymentEnabled && computeType.getCluster().getDeploymentEnabled()) {
+            try {
+                initAutoscalingService.sendInitRequest(computeType.getCluster());
+                logger.info("Successfully updated autoscaling config after a compute type delete");
+            } catch (Exception e) {
+                logger.error(String.format("Could not update autoscaling config : %s", e.getMessage()), e);
+            }
+        }
     }
 }

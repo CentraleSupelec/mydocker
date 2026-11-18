@@ -44,10 +44,13 @@ public class InitAutoscalingService {
         isAutoscalingInitializedMap.put(cluster, isAutoscalingInitialized);
     }
 
-    public void sendInitRequest(Cluster cluster) throws Exception {
-        containerServiceGrpc.containerServiceBlockingStub asyncStub = containerServiceGrpc.newBlockingStub(channels.get(cluster.getName()));
+    /**
+     * The complete autoscaling config of a cluster: every autoscaled compute type, keyed by
+     * technical name. Both the push (initAutoscaling) and the pull endpoint use it.
+     */
+    public InitAutoscalingRequest buildRequest(Cluster cluster) {
         List<ComputeType> computeTypes = computeTypeRepository.findByCluster(cluster);
-        InitAutoscalingRequest request = InitAutoscalingRequest
+        return InitAutoscalingRequest
                 .newBuilder()
                 .putAllOwners(
                         computeTypes
@@ -61,6 +64,11 @@ public class InitAutoscalingService {
                                 )
                 )
                 .build();
+    }
+
+    public void sendInitRequest(Cluster cluster) throws Exception {
+        containerServiceGrpc.containerServiceBlockingStub asyncStub = containerServiceGrpc.newBlockingStub(channels.get(cluster.getName()));
+        InitAutoscalingRequest request = buildRequest(cluster);
         logger.debug("Initializing autoscaling config {}", request);
         InitAutoscalingResponse initAutoscalingResponse = asyncStub.initAutoscaling(request);
         if (!initAutoscalingResponse.getError().isEmpty()) {

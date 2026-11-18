@@ -154,6 +154,8 @@ public class SecurityConfig {
                         .requestMatchers(INIT_PATH).permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/courses/*/externalAccess").permitAll()
+                        // The Go API pulls its autoscaling types; the controller checks X-Autoscaling-Token.
+                        .requestMatchers("/internal/autoscaling/**").permitAll()
                         .anyRequest()
                         .authenticated()
                 )
