@@ -40,13 +40,15 @@ public class UserMapper {
     }
 
     public void applyChange(User user, UpdateUserDto updateUserDto) {
+        // Username and email are the login identity: keep the stored value unless the payload
+        // carries a different non-empty one, so the next login still finds this row
+        if (isIdentityChange(user.getEmail(), updateUserDto.getEmail())) {
+            user.setEmail(updateUserDto.getEmail());
+        }
+        if (isIdentityChange(user.getUsername(), updateUserDto.getUsername())) {
+            user.setUsername(updateUserDto.getUsername());
+        }
         user
-        .setEmail(
-                updateUserDto.getEmail()
-        )
-        .setUsername(
-                updateUserDto.getUsername()
-        )
         .setLastname(
                 updateUserDto.getLastname()
         )
@@ -62,5 +64,9 @@ public class UserMapper {
                         .map(roleRepository::getByName)
                         .toList()
         );
+    }
+
+    private static boolean isIdentityChange(String stored, String requested) {
+        return requested != null && !requested.isEmpty() && !requested.equals(stored);
     }
 }
