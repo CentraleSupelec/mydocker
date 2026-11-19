@@ -80,6 +80,15 @@ func (s *scaleDownService) run() {
 		return
 	}
 
+	// Without a complete list every VM looks orphaned: destroy nothing before one is loaded.
+	s.scaleUpConfig.Lock.Lock()
+	loaded := s.scaleUpConfig.Loaded
+	s.scaleUpConfig.Lock.Unlock()
+	if !loaded {
+		s.logger.Warn("No complete autoscaling config loaded yet. Exiting the scale-down process.")
+		return
+	}
+
 	jobId := RandomString(6)
 	s.logger = s.rootLogger.WithFields(log.Fields{"jobId": jobId})
 	s.logger.Tracef("Start scale down #%s", jobId)

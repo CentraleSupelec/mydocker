@@ -60,6 +60,10 @@ type config struct {
 	Environment             string
 	RegistryCredentials     []registryCredential
 	AutoscalingStateBaseUrl string
+	// BackUrl, BackClusterName, BackToken: where the autoscaling config is pulled at startup.
+	BackUrl                 string
+	BackClusterName         string
+	BackToken               string
 	ContainerStatusInterval string
 	ScaleUpInterval         string
 	ScaleUpCooldown         string
@@ -550,7 +554,9 @@ func main() {
 		grpc.Creds(creds),
 		grpc.MaxRecvMsgSize(c.MaxRecvMsgSize),
 	)
-	pb.RegisterContainerServiceServer(s, &server{dockerClient: cli, ports: ports, cronScheduler: cronS})
+	srv := &server{dockerClient: cli, ports: ports, cronScheduler: cronS}
+	pb.RegisterContainerServiceServer(s, srv)
+	startAutoscalingPull(srv)
 	if err := s.Serve(lis); err != nil {
 		log.Panicf("failed to serve: %v", err)
 	}
